@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { User, Bell, CreditCard, Save, CheckCircle, Smartphone, Mail, QrCode, Barcode, Landmark, Banknote, ShieldCheck, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+interface PaymentMethod {
+  id: string;
+  name: string;
+  enabled: boolean;
+  icon: any;
+  color: string;
+  fields: Record<string, string>;
+  description: string;
+}
+
 const Settings: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'general' | 'financial' | 'notifications'>('financial');
@@ -9,7 +19,7 @@ const Settings: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // --- State: Financial Configuration (The core request) ---
-  const [paymentMethods, setPaymentMethods] = useState([
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
       id: 'pix',
       name: 'Pix',
@@ -205,7 +215,7 @@ const Settings: React.FC = () => {
                                                     </label>
                                                     <input 
                                                         type="text" 
-                                                        value={(method.fields as any)[fieldKey]}
+                                                        value={method.fields[fieldKey]}
                                                         onChange={(e) => updatePaymentField(method.id, fieldKey, e.target.value)}
                                                         className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all dark:text-white font-medium"
                                                     />

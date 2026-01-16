@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapPin, ChevronDown, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, ChevronDown, ArrowRight, ExternalLink } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 
 interface AddPropertyFormProps {
@@ -8,6 +8,13 @@ interface AddPropertyFormProps {
 }
 
 export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSave }) => {
+  const [address, setAddress] = useState('');
+
+  const handleOpenMap = () => {
+    const query = address ? encodeURIComponent(address) : '';
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  };
+
   return (
     <ModalWrapper onClose={onClose} className="md:max-w-lg" title="Adicionar Imóvel" showCloseButton={true}>
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-background-light dark:bg-background-dark">
@@ -19,13 +26,31 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
             <div className="flex flex-col gap-2">
                 <label className="text-slate-800 dark:text-slate-200 text-sm font-semibold">Endereço Completo <span className="text-primary">*</span></label>
                 <div className="relative flex items-center">
-                    <input className="w-full rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-surface-dark h-14 pl-4 pr-12 text-base dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Rua, número, bairro..." type="text"/>
-                    <MapPin className="absolute right-4 text-primary pointer-events-none" size={24} />
+                    <input 
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-surface-dark h-14 pl-4 pr-12 text-base dark:text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none" 
+                        placeholder="Rua, número, bairro..." 
+                        type="text"
+                    />
+                    <button 
+                        onClick={handleOpenMap}
+                        className="absolute right-3 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-primary transition-colors"
+                        title="Buscar no mapa"
+                    >
+                        <MapPin size={22} />
+                    </button>
                 </div>
-                <div className="mt-1 h-24 w-full rounded-lg overflow-hidden relative">
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRbhsUgAbdtQQaBJLPxpd07f4ZN42w4pcmh_4lpFATUfNKYtJN208bpChAOfHyF_BUrfM8I7G0AmGkjPMaQ7idkEsscyEzmRKS21b1pRLmACvtwkDbSpSkloWFznz3CpiGqWmTRZ0pBZfiD9aA95N8wavRBdIYsQtlZUgJ3rnxH7LATyGPFz3uupGKkds-IRUOTDa2iKaDskKga_iysBi89zQapI8XUh1wD2AuDndA7nlwX3EllpYV7JntOZDeuPe72lyg6505Fy51" alt="Map" className="w-full h-full object-cover opacity-60 grayscale" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <span className="text-xs font-bold text-slate-800 bg-white/90 px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">Toque para ajustar no mapa</span>
+                <div 
+                    onClick={handleOpenMap}
+                    className="mt-1 h-24 w-full rounded-lg overflow-hidden relative cursor-pointer group border border-transparent hover:border-primary/50 transition-all"
+                >
+                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRbhsUgAbdtQQaBJLPxpd07f4ZN42w4pcmh_4lpFATUfNKYtJN208bpChAOfHyF_BUrfM8I7G0AmGkjPMaQ7idkEsscyEzmRKS21b1pRLmACvtwkDbSpSkloWFznz3CpiGqWmTRZ0pBZfiD9aA95N8wavRBdIYsQtlZUgJ3rnxH7LATyGPFz3uupGKkds-IRUOTDa2iKaDskKga_iysBi89zQapI8XUh1wD2AuDndA7nlwX3EllpYV7JntOZDeuPe72lyg6505Fy51" alt="Map" className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-80 transition-all" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/5 transition-colors">
+                        <span className="text-xs font-bold text-slate-800 bg-white/90 px-3 py-1.5 rounded-full shadow-sm backdrop-blur-sm flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            {address ? 'Conferir localização no Google Maps' : 'Toque para buscar no mapa'} 
+                            <ExternalLink size={10} />
+                        </span>
                     </div>
                 </div>
             </div>

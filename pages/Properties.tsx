@@ -55,7 +55,8 @@ const Properties: React.FC = () => {
             start_date: '10/01/2024',
             end_date: '10/01/2026',
             value: 'R$ 2.400,00',
-            status: 'active'
+            status: 'active',
+            property: 'Loft Industrial Sul'
           }
         },
         {

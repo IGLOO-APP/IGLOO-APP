@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Home, Search, Building2, Flame, TrendingUp, Plus, Minus, Navigation, Layers, X, MapPin, List, ArrowRight } from 'lucide-react';
+import { Home, Search, Building2, Flame, TrendingUp, Plus, Minus, Navigation, Layers, X, MapPin, List, ArrowRight, ExternalLink } from 'lucide-react';
 import { Property } from '../../types';
 
 interface PropertyMapViewProps {
@@ -354,9 +354,14 @@ export const PropertyMapView: React.FC<PropertyMapViewProps> = ({ properties, on
                                         )}
                                     </div>
                                     <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white leading-tight truncate pr-4">{selectedItem.name}</h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 leading-snug line-clamp-1 flex items-center gap-1">
-                                        <MapPin size={12} /> {selectedItem.address}
-                                    </p>
+                                    <a 
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedItem.address)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 leading-snug line-clamp-1 flex items-center gap-1 hover:text-primary dark:hover:text-primary transition-colors"
+                                    >
+                                        <MapPin size={12} /> {selectedItem.address} <ExternalLink size={10} className="opacity-50" />
+                                    </a>
                                 </div>
                             </div>
                         </div>

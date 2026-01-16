@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, User, Phone, Mail, FileText, Calendar, CheckCircle, DollarSign, ClipboardCheck } from 'lucide-react';
+import { MapPin, User, Phone, Mail, FileText, Calendar, CheckCircle, DollarSign, ClipboardCheck, ExternalLink } from 'lucide-react';
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { PropertyInspection } from './PropertyInspection';
@@ -12,20 +12,37 @@ interface PropertyDetailsProps {
 export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose }) => {
   const [showInspections, setShowInspections] = useState(false);
 
+  const openGoogleMaps = () => {
+    const encodedAddress = encodeURIComponent(property.address);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+  };
+
   return (
     <>
       <ModalWrapper onClose={onClose} className="md:max-w-2xl bg-background-light dark:bg-background-dark">
           {/* Cover Image */}
-          <div className="h-64 w-full bg-cover bg-center shrink-0 relative" style={{ backgroundImage: `url(${property.image})` }}>
+          <div className="h-64 w-full bg-cover bg-center shrink-0 relative group" style={{ backgroundImage: `url(${property.image})` }}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              
+              {/* Google Maps Button Overlay */}
+              <button 
+                onClick={openGoogleMaps}
+                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all opacity-0 group-hover:opacity-100 transform translate-y-[-10px] group-hover:translate-y-0"
+              >
+                <MapPin size={14} /> Ver no Google Maps <ExternalLink size={12} />
+              </button>
+
               <div className="absolute bottom-0 left-0 p-6 w-full">
                   <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold ring-1 ring-inset uppercase tracking-wide mb-2 bg-white/90 backdrop-blur-sm ${property.status_color?.replace('bg-', 'text-').replace('/10', '')}`}>
                       {property.status}
                   </span>
                   <h2 className="text-2xl font-bold text-white leading-tight shadow-sm">{property.name}</h2>
-                  <p className="text-gray-200 text-sm flex items-center gap-1 mt-1 font-medium">
+                  <button 
+                    onClick={openGoogleMaps}
+                    className="text-gray-200 hover:text-white text-sm flex items-center gap-1 mt-1 font-medium hover:underline transition-all"
+                  >
                       <MapPin size={16} /> {property.address}
-                  </p>
+                  </button>
               </div>
           </div>
 

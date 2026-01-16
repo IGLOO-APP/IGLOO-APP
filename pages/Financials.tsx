@@ -1,11 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, TrendingUp, AlertTriangle, DoorOpen, X } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, TrendingUp, AlertTriangle, DoorOpen, X, Calculator, PieChart, Users, DollarSign, Check, CheckCircle } from 'lucide-react';
+import { ModalWrapper } from '../components/ui/ModalWrapper';
+import { calculateLateFee, calculateApportionment, UnitParams } from '../utils/financialCalculations';
 
 const Financials: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showLateCalculator, setShowLateCalculator] = useState(false);
+  const [showApportionment, setShowApportionment] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const location = useLocation();
+
+  // Late Calculator State
+  const [lateOriginalValue, setLateOriginalValue] = useState('');
+  const [lateDueDate, setLateDueDate] = useState('');
+  const [lateResult, setLateResult] = useState<any>(null);
+
+  // Apportionment State
+  const [apportionTotal, setApportionTotal] = useState('');
+  const [apportionMethod, setApportionMethod] = useState<'fixed' | 'people'>('fixed');
+  const [apportionResult, setApportionResult] = useState<any>(null);
+  
+  // Mock Units for Apportionment
+  const [mockUnits, setMockUnits] = useState<UnitParams[]>([
+      { id: '1', name: 'Kitnet 01', isOccupied: true, residentsCount: 2 },
+      { id: '2', name: 'Kitnet 02', isOccupied: true, residentsCount: 1 },
+      { id: '3', name: 'Kitnet 03', isOccupied: false, residentsCount: 0 },
+      { id: '4', name: 'Kitnet 04', isOccupied: true, residentsCount: 2 },
+      { id: '5', name: 'Kitnet 05', isOccupied: true, residentsCount: 1 },
+  ]);
+  
+  // New state to track which units are included in the split
+  const [selectedUnitsIds, setSelectedUnitsIds] = useState<string[]>(['1', '2', '3', '4', '5']);
 
   useEffect(() => {
     if (location.state && (location.state as any).openAdd) {
@@ -17,17 +43,56 @@ const Financials: React.FC = () => {
     }
   }, [location]);
 
+  const handleCalculateLate = () => {
+      if (!lateOriginalValue || !lateDueDate) return;
+      const result = calculateLateFee(parseFloat(lateOriginalValue), lateDueDate);
+      setLateResult(result);
+  };
+
+  const toggleUnitSelection = (id: string) => {
+      if (selectedUnitsIds.includes(id)) {
+          setSelectedUnitsIds(selectedUnitsIds.filter(uid => uid !== id));
+      } else {
+          setSelectedUnitsIds([...selectedUnitsIds, id]);
+      }
+      // Reset result when selection changes to force recalculation
+      setApportionResult(null);
+  };
+
+  const handleCalculateApportionment = () => {
+      if (!apportionTotal) return;
+      // Filter only selected units for calculation
+      const activeUnits = mockUnits.filter(u => selectedUnitsIds.includes(u.id));
+      
+      if (activeUnits.length === 0) {
+          alert("Selecione pelo menos uma unidade.");
+          return;
+      }
+
+      const result = calculateApportionment(parseFloat(apportionTotal), activeUnits, apportionMethod);
+      setApportionResult(result);
+  };
+
   return (
     <div className="h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative">
        <header className="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-4 border-b border-gray-200 dark:border-white/5 transition-colors">
          <div className="flex items-center justify-between px-4 pb-2">
             <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight flex-1">Lançamentos</h1>
-            <button 
-                onClick={() => setShowAddForm(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all"
-            >
-               <Plus size={24} />
-            </button>
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => setShowApportionment(true)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all"
+                    title="Rateio de Despesas"
+                >
+                   <PieChart size={20} />
+                </button>
+                <button 
+                    onClick={() => setShowAddForm(true)}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all"
+                >
+                   <Plus size={24} />
+                </button>
+            </div>
          </div>
          <div className="px-4 pb-4 pt-2">
             <div className="flex gap-3">
@@ -58,11 +123,18 @@ const Financials: React.FC = () => {
                       <span>+12% vs mês anterior</span>
                    </div>
                 </div>
-                <div className="shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors">
+                <div 
+                    onClick={() => setShowLateCalculator(true)}
+                    className="shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors cursor-pointer group hover:border-orange-200 dark:hover:border-orange-900/50"
+                >
+                   <div className="absolute top-0 right-0 p-3 opacity-10">
+                       <Calculator size={64} className="text-orange-500 group-hover:scale-110 transition-transform" />
+                   </div>
                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 relative z-10">Total Pendente</p>
                    <p className="text-slate-900 dark:text-white text-2xl font-bold relative z-10">R$ 1.200,00</p>
-                   <div className="mt-4 flex items-center gap-1 text-orange-500 text-xs font-bold relative z-10">
-                      <span className="bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-md">3 Faturas</span>
+                   <div className="mt-4 flex items-center gap-1 text-orange-500 text-xs font-bold relative z-10 bg-orange-50 dark:bg-orange-900/20 w-fit px-2 py-1 rounded-md">
+                      <span className="group-hover:hidden">3 Faturas</span>
+                      <span className="hidden group-hover:inline">Simular Juros</span>
                    </div>
                 </div>
              </div>
@@ -123,6 +195,200 @@ const Financials: React.FC = () => {
              </div>
           </section>
        </div>
+
+       {showLateCalculator && (
+           <ModalWrapper onClose={() => setShowLateCalculator(false)} title="Calculadora de Atraso" showCloseButton={true}>
+               <div className="p-6 bg-background-light dark:bg-background-dark h-full overflow-y-auto">
+                   <div className="space-y-4">
+                       <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
+                           <p className="text-xs text-orange-800 dark:text-orange-300 font-medium">
+                               Cálculo automático de Multa (10%) e Juros (1% a.m pro rata).
+                           </p>
+                       </div>
+                       
+                       <div>
+                           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Valor Original</label>
+                           <input 
+                                type="number" 
+                                value={lateOriginalValue} 
+                                onChange={(e) => setLateOriginalValue(e.target.value)}
+                                className="w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none"
+                                placeholder="0,00"
+                           />
+                       </div>
+                       <div>
+                           <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Data de Vencimento</label>
+                           <input 
+                                type="date" 
+                                value={lateDueDate} 
+                                onChange={(e) => setLateDueDate(e.target.value)}
+                                className="w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none dark:text-white"
+                           />
+                       </div>
+                       <button 
+                            onClick={handleCalculateLate}
+                            className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95"
+                       >
+                           Calcular
+                       </button>
+
+                       {lateResult && (
+                           <div className="mt-6 space-y-3 animate-slideUp">
+                               <div className="flex justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-lg">
+                                   <span className="text-slate-500 text-sm">Dias de Atraso</span>
+                                   <span className="font-bold dark:text-white">{lateResult.diasAtraso} dias</span>
+                               </div>
+                               <div className="flex justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-lg">
+                                   <span className="text-slate-500 text-sm">Multa (10%)</span>
+                                   <span className="font-bold text-red-500">R$ {lateResult.valorMulta}</span>
+                               </div>
+                               <div className="flex justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-lg">
+                                   <span className="text-slate-500 text-sm">Juros (1% a.m)</span>
+                                   <span className="font-bold text-red-500">R$ {lateResult.valorJuros}</span>
+                               </div>
+                               <div className="flex justify-between p-4 bg-slate-900 dark:bg-white rounded-xl text-white dark:text-slate-900 items-center">
+                                   <span className="font-bold">Total Atualizado</span>
+                                   <span className="text-xl font-extrabold">R$ {lateResult.totalPagar}</span>
+                               </div>
+                           </div>
+                       )}
+                   </div>
+               </div>
+           </ModalWrapper>
+       )}
+
+       {showApportionment && (
+           <ModalWrapper onClose={() => setShowApportionment(false)} title="Rateio de Despesas" showCloseButton={true}>
+               <div className="p-6 bg-background-light dark:bg-background-dark h-full overflow-y-auto">
+                   <div className="space-y-6">
+                       <p className="text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 p-3 rounded-xl">
+                           Divida contas únicas (Água, Luz) proporcionalmente entre as unidades selecionadas.
+                       </p>
+                       
+                       {/* Enhanced Input */}
+                       <div>
+                           <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Valor da Conta</label>
+                           <div className="relative group">
+                               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl group-focus-within:text-primary transition-colors">R$</span>
+                               <input 
+                                    autoFocus
+                                    type="number" 
+                                    value={apportionTotal} 
+                                    onChange={(e) => setApportionTotal(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-gray-700 text-2xl font-bold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder-slate-300"
+                                    placeholder="0,00"
+                               />
+                           </div>
+                       </div>
+
+                       {/* Enhanced Toggle */}
+                       <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+                           <button 
+                                onClick={() => setApportionMethod('fixed')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all ${
+                                    apportionMethod === 'fixed' 
+                                    ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10' 
+                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                }`}
+                           >
+                               <Building2 size={18} />
+                               Por Unidade
+                           </button>
+                           <button 
+                                onClick={() => setApportionMethod('people')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all ${
+                                    apportionMethod === 'people' 
+                                    ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10' 
+                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                }`}
+                           >
+                               <Users size={18} />
+                               Por Pessoa
+                           </button>
+                       </div>
+
+                       {/* Unit Selection */}
+                       <div>
+                           <div className="flex justify-between items-center mb-3">
+                               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Unidades Participantes</label>
+                               <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded-md">
+                                   {selectedUnitsIds.length} selecionadas
+                               </span>
+                           </div>
+                           <div className="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                               {mockUnits.map(unit => {
+                                   const isSelected = selectedUnitsIds.includes(unit.id);
+                                   return (
+                                       <div 
+                                           key={unit.id}
+                                           onClick={() => toggleUnitSelection(unit.id)}
+                                           className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                                               isSelected 
+                                               ? 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-900/30' 
+                                               : 'bg-white dark:bg-surface-dark border-gray-100 dark:border-gray-800 hover:border-gray-300'
+                                           }`}
+                                       >
+                                           <div className="flex items-center gap-3">
+                                               <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 bg-white dark:bg-black/20'}`}>
+                                                   {isSelected && <Check size={14} className="text-white" />}
+                                               </div>
+                                               <div>
+                                                   <p className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-200' : 'text-slate-700 dark:text-slate-400'}`}>{unit.name}</p>
+                                                   <p className="text-[10px] text-slate-500">{unit.residentsCount} moradores • {unit.isOccupied ? 'Ocupado' : 'Vago'}</p>
+                                               </div>
+                                           </div>
+                                       </div>
+                                   );
+                               })}
+                           </div>
+                       </div>
+
+                       <div className="pt-2">
+                           <button 
+                                onClick={handleCalculateApportionment}
+                                className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                           >
+                               <Calculator size={20} />
+                               Calcular Divisão
+                           </button>
+                       </div>
+
+                       {apportionResult && (
+                           <div className="animate-slideUp border-t border-gray-200 dark:border-white/10 pt-6">
+                               <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                   <CheckCircle size={18} className="text-emerald-500" />
+                                   Resultado do Rateio
+                               </h3>
+                               <div className="space-y-3 mb-4">
+                                   {apportionResult.distribution.map((item: any) => (
+                                       <div key={item.id} className="flex justify-between items-center p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm">
+                                           <div>
+                                               <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{item.name}</p>
+                                               <p className="text-xs text-slate-400">
+                                                   {item.note || (apportionMethod === 'people' ? `${item.residentsCount} pessoas` : 'Cota Fixa')}
+                                               </p>
+                                           </div>
+                                           <span className="font-bold text-lg text-primary">R$ {item.share.toFixed(2)}</span>
+                                       </div>
+                                   ))}
+                               </div>
+                               {apportionResult.ownerTotal > 0 && (
+                                   <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800">
+                                       <div className="flex justify-between items-center">
+                                           <div>
+                                               <span className="text-sm font-bold text-orange-800 dark:text-orange-300 block">Custo Proprietário</span>
+                                               <span className="text-xs text-orange-600/80 dark:text-orange-400/70">Unidades vagas ou isentas</span>
+                                           </div>
+                                           <span className="font-bold text-lg text-orange-600 dark:text-orange-400">R$ {apportionResult.ownerTotal.toFixed(2)}</span>
+                                       </div>
+                                   </div>
+                               )}
+                           </div>
+                       )}
+                   </div>
+               </div>
+           </ModalWrapper>
+       )}
 
        {showAddForm && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4 animate-fadeIn">
