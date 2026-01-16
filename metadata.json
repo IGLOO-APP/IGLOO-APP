@@ -1,0 +1,8 @@
+{
+  "name": "Copy of IGLOO Property Manager",
+  "description": "A comprehensive property management dashboard for landlords and investors.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
