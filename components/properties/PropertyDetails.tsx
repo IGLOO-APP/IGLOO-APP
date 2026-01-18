@@ -3,6 +3,7 @@ import { MapPin, User, Phone, Mail, FileText, Calendar, CheckCircle, DollarSign,
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { PropertyInspection } from './PropertyInspection';
+import { PropertyDocuments } from './PropertyDocuments';
 
 interface PropertyDetailsProps {
   property: Property;
@@ -11,6 +12,7 @@ interface PropertyDetailsProps {
 
 export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose }) => {
   const [showInspections, setShowInspections] = useState(false);
+  const [showDocuments, setShowDocuments] = useState(false);
 
   const openGoogleMaps = () => {
     const encodedAddress = encodeURIComponent(property.address);
@@ -58,9 +60,11 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
                       <ClipboardCheck className="text-slate-400 group-hover:text-primary mb-1" size={24} />
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Vistorias</span>
                   </button>
-                  {/* Placeholder buttons for future features */}
-                  <button className="flex-1 min-w-[140px] h-14 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center shadow-sm opacity-50 cursor-not-allowed">
-                      <FileText className="text-slate-400 mb-1" size={24} />
+                  <button 
+                      onClick={() => setShowDocuments(true)}
+                      className="flex-1 min-w-[140px] h-14 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center shadow-sm hover:border-primary/50 transition-colors group"
+                  >
+                      <FileText className="text-slate-400 group-hover:text-primary mb-1" size={24} />
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Documentos</span>
                   </button>
               </div>
@@ -149,6 +153,13 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
         <PropertyInspection 
           property={property} 
           onClose={() => setShowInspections(false)} 
+        />
+      )}
+
+      {showDocuments && (
+        <PropertyDocuments
+          property={property}
+          onClose={() => setShowDocuments(false)}
         />
       )}
     </>
