@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, TrendingUp, AlertTriangle, DoorOpen, X, Calculator, PieChart, Users, DollarSign, Check, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, TrendingUp, AlertTriangle, DoorOpen, X, Calculator, PieChart, Users, DollarSign, Check, CheckCircle, Download } from 'lucide-react';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { calculateLateFee, calculateApportionment, UnitParams } from '../utils/financialCalculations';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const mockTrendData = [
+  { name: 'Jan', receita: 4000, despesa: 2400 },
+  { name: 'Fev', receita: 3000, despesa: 1398 },
+  { name: 'Mar', receita: 2000, despesa: 9800 },
+  { name: 'Abr', receita: 2780, despesa: 3908 },
+  { name: 'Mai', receita: 1890, despesa: 4800 },
+  { name: 'Jun', receita: 2390, despesa: 3800 },
+  { name: 'Jul', receita: 3490, despesa: 4300 },
+];
 
 const Financials: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -80,6 +91,12 @@ const Financials: React.FC = () => {
             <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight flex-1">Lançamentos</h1>
             <div className="flex gap-2">
                 <button 
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 transition-all"
+                    title="Exportar Relatório"
+                >
+                   <Download size={20} />
+                </button>
+                <button 
                     onClick={() => setShowApportionment(true)}
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all"
                     title="Rateio de Despesas"
@@ -113,14 +130,45 @@ const Financials: React.FC = () => {
        </header>
 
        <div className="flex-1 overflow-y-auto px-4 pb-24">
-          <section className="mt-2 mb-6">
+          {/* Trend Chart Area */}
+          <div className="mt-2 mb-6 bg-white dark:bg-surface-dark p-4 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                  <TrendingUp size={16} className="text-primary" /> Tendência Financeira
+              </h3>
+              <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={mockTrendData}>
+                          <defs>
+                              <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                              <linearGradient id="colorDespesa" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                              </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.3} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} />
+                          <Tooltip 
+                              contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                              itemStyle={{ fontSize: 12 }}
+                          />
+                          <Area type="monotone" dataKey="receita" stroke="#10b981" fillOpacity={1} fill="url(#colorReceita)" strokeWidth={2} />
+                          <Area type="monotone" dataKey="despesa" stroke="#ef4444" fillOpacity={1} fill="url(#colorDespesa)" strokeWidth={2} />
+                      </AreaChart>
+                  </ResponsiveContainer>
+              </div>
+          </div>
+
+          <section className="mb-6">
              <div className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar">
                 <div className="shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors">
                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 relative z-10">Total Recebido</p>
                    <p className="text-slate-900 dark:text-white text-2xl font-bold relative z-10">R$ 4.500,00</p>
-                   <div className="mt-4 flex items-center gap-1 text-primary text-xs font-bold relative z-10">
-                      <TrendingUp size={16} />
-                      <span>+12% vs mês anterior</span>
+                   <div className="mt-4 flex items-center gap-1 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 w-fit px-2 py-1 rounded-md">
+                      <ArrowUp size={16} />
+                      <span className="text-xs font-bold">+12% vs mês anterior</span>
                    </div>
                 </div>
                 <div 
@@ -142,8 +190,8 @@ const Financials: React.FC = () => {
 
           <section className="flex flex-col gap-2">
              <div className="py-2 flex justify-between items-center">
-                <h4 className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Março 2024</h4>
-                <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded-md">3 lançamentos</span>
+                <h4 className="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Lançamentos Recentes</h4>
+                <span className="text-xs font-medium text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded-md">3 itens</span>
              </div>
 
              <div className="group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors">
@@ -162,6 +210,7 @@ const Financials: React.FC = () => {
                 </div>
              </div>
 
+             {/* ... existing items ... */}
              <div className="group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors">
                 <div className="flex items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/20 shrink-0 size-12 text-orange-600 dark:text-orange-400">
                    <Building2 size={24} />
@@ -174,22 +223,6 @@ const Financials: React.FC = () => {
                    <div className="flex justify-between items-center mt-1">
                       <p className="text-slate-400 text-sm font-medium truncate">10 Mar • Studio 20</p>
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">Pendente</span>
-                   </div>
-                </div>
-             </div>
-
-             <div className="group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors">
-                <div className="flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/10 shrink-0 size-12 text-slate-600 dark:text-slate-400">
-                   <Wrench size={24} />
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                   <div className="flex justify-between items-start">
-                      <p className="text-slate-900 dark:text-white text-base font-bold truncate">Manutenção Torneira</p>
-                      <p className="text-slate-900 dark:text-white text-base font-bold whitespace-nowrap">- R$ 80,00</p>
-                   </div>
-                   <div className="flex justify-between items-center mt-1">
-                      <p className="text-slate-400 text-sm font-medium truncate">12 Mar • Apt 101</p>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">Pago</span>
                    </div>
                 </div>
              </div>

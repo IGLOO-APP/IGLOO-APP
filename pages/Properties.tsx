@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Map, List } from 'lucide-react';
+import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter } from 'lucide-react';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { PropertyDetails } from '../components/properties/PropertyDetails';
@@ -10,8 +10,14 @@ const Properties: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  
+  // Filters State
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('Todos');
+  const [priceFilter, setPriceFilter] = useState('Todos');
+
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +32,7 @@ const Properties: React.FC = () => {
           name: 'Studio Centro 01',
           address: 'Rua Augusta, 150 - Consolação',
           status: 'DISPONÍVEL',
-          status_color: 'text-primary bg-primary/10 ring-primary/20',
+          status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
           price: 'R$ 1.800,00',
           area: '32m²',
           image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
@@ -38,7 +44,7 @@ const Properties: React.FC = () => {
           name: 'Loft Industrial Sul',
           address: 'Av. Brasil, 890 - Bloco B',
           status: 'ALUGADO',
-          status_color: 'text-indigo-600 bg-indigo-50 ring-indigo-600/10',
+          status_color: 'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 ring-blue-600/20',
           price: 'R$ 2.400,00',
           area: '55m²',
           image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCrarWz4gL9lkfBoellhAl5mW22mgklGbB9dEr_NaGa6vlQy5SqOrn2pM6ppygSc_gLkAc1gFaNbmJjui8AxPoHqC9FzTvxLno9SbfC_2TPnUHnTW1hW3iNpzdSKjvYFZSwlZ6dX_H-1KM-w0s7uUAsl_9l9mwmLwfZ9ojV9I1jzq3g3hHhAdyrN9D8oAVpIC11r1eltNskvYupRGPJK8-DIFVuoxb9lIi6rgbsZE3K35P5p61IdjrVaKjtfGrQONxubXSW-PpczAp-',
@@ -64,7 +70,7 @@ const Properties: React.FC = () => {
           name: 'Kitnet Universitária',
           address: 'Rua dos Estudantes, 55',
           status: 'MANUTENÇÃO',
-          status_color: 'text-amber-600 bg-amber-50 ring-amber-600/10',
+          status_color: 'text-orange-700 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400 ring-orange-600/20',
           price: 'R$ 850,00',
           area: '28m²',
           image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQhrkJXv0C_WrEvHSWZAmhTICaSnjWW23H8O9q1Yfyu_ypj58QZWxWVIY8VxliN8oc_4PaAUnFrDQ0AH_Dksg6L6kZSVdGv4Qo9GPW1d7gk4Sx3utxrI0aAZr_4UljYhGEVvpt4ERkcOtTDjpvJdqsnXJWS-S_GuEI0WiErMDQFDcHqP9bgt2dYFDB0w9085Hng4zTF9kOVAr6VHeJnsm9toSU-uxnV2B897nMPK1owguRfdifypWkDjZ6JV_sl5Udu4CKDzpbGIhV',
@@ -85,9 +91,17 @@ const Properties: React.FC = () => {
     
     if (!matchesSearch) return false;
 
-    if (activeFilter === 'Todos') return true;
-    if (activeFilter === 'Disponível') return prop.status === 'DISPONÍVEL';
-    if (activeFilter === 'Alugado') return prop.status === 'ALUGADO';
+    if (activeFilter !== 'Todos') {
+        if (activeFilter === 'Disponível' && prop.status !== 'DISPONÍVEL') return false;
+        if (activeFilter === 'Alugado' && prop.status !== 'ALUGADO') return false;
+    }
+
+    if (typeFilter !== 'Todos') {
+        // Mock type check
+        if (typeFilter === 'Studio' && !prop.name.includes('Studio')) return false;
+        if (typeFilter === 'Kitnet' && !prop.name.includes('Kitnet')) return false;
+    }
+
     return true;
   });
 
@@ -141,25 +155,70 @@ const Properties: React.FC = () => {
               </div>
            </div>
 
-           <div className="px-6 pb-4">
-              <div className="relative mb-4">
-                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
-                    <Search size={20} />
-                 </div>
-                 <input 
-                    type="text" 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full rounded-2xl border-none bg-white dark:bg-surface-dark py-4 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-800 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all" 
-                    placeholder="Buscar por apelido ou endereço..." 
-                 />
+           <div className="px-6 pb-4 space-y-3">
+              <div className="flex gap-2">
+                  <div className="relative flex-1">
+                     <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                        <Search size={20} />
+                     </div>
+                     <input 
+                        type="text" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full rounded-xl border-none bg-white dark:bg-surface-dark py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-800 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all" 
+                        placeholder="Buscar por apelido ou endereço..." 
+                     />
+                  </div>
+                  <button 
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors ${
+                        showAdvancedFilters 
+                        ? 'bg-primary/10 border-primary text-primary' 
+                        : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'
+                    }`}
+                  >
+                      <Filter size={20} />
+                  </button>
               </div>
-              <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+
+              {/* Collapsible Advanced Filters */}
+              {showAdvancedFilters && (
+                  <div className="animate-slideUp bg-slate-50 dark:bg-black/20 p-3 rounded-xl flex gap-3 overflow-x-auto hide-scrollbar border border-slate-100 dark:border-white/5">
+                      <div className="relative shrink-0">
+                          <select 
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                            className="appearance-none h-10 pl-3 pr-8 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-primary outline-none"
+                          >
+                              <option value="Todos">Tipo: Todos</option>
+                              <option value="Studio">Studio</option>
+                              <option value="Kitnet">Kitnet</option>
+                              <option value="Apartamento">Apartamento</option>
+                          </select>
+                          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                      <div className="relative shrink-0">
+                          <select 
+                            value={priceFilter}
+                            onChange={(e) => setPriceFilter(e.target.value)}
+                            className="appearance-none h-10 pl-3 pr-8 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-primary outline-none"
+                          >
+                              <option value="Todos">Preço: Todos</option>
+                              <option value="low">Até R$ 1.500</option>
+                              <option value="mid">R$ 1.500 - R$ 3.000</option>
+                              <option value="high">Acima de R$ 3.000</option>
+                          </select>
+                          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                  </div>
+              )}
+
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pt-1">
                  {['Todos', 'Disponível', 'Alugado'].map((filter) => (
                     <button 
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
-                        className={`flex h-10 shrink-0 items-center justify-center rounded-full px-6 shadow-sm transition-colors text-sm font-bold ${
+                        className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold ${
                             activeFilter === filter 
                             ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' 
                             : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
@@ -176,13 +235,25 @@ const Properties: React.FC = () => {
                  <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
               ) : filteredProperties.length > 0 ? (
                 filteredProperties.map((prop) => (
-                    <PropertyCard 
-                        key={prop.id} 
-                        property={prop} 
-                        onClick={setSelectedProperty} 
-                        onEdit={(id) => console.log('Edit', id)}
-                        onDelete={(id) => console.log('Delete', id)}
-                    />
+                    <div key={prop.id} className="relative group">
+                        <PropertyCard 
+                            property={prop} 
+                            onClick={setSelectedProperty} 
+                            onEdit={(id) => console.log('Edit', id)}
+                            onDelete={(id) => console.log('Delete', id)}
+                        />
+                        {/* Quick Metrics Overlay in List View */}
+                        <div className="absolute top-3 right-3 flex gap-2">
+                            {prop.status === 'DISPONÍVEL' && (
+                                <div className="flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm">
+                                    <Clock size={10} /> 12 dias
+                                </div>
+                            )}
+                            <div className="flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm">
+                                <Eye size={10} /> 24
+                            </div>
+                        </div>
+                    </div>
                 ))
               ) : (
                  <div className="flex flex-col items-center justify-center py-10 text-center">

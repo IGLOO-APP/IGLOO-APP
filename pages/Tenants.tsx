@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, Phone, Mail, ChevronRight, Plus, User, Briefcase, FileText, X, CloudUpload, Trash2, Filter } from 'lucide-react';
+import { ArrowLeft, Search, Phone, Mail, ChevronRight, Plus, User, Briefcase, FileText, X, CloudUpload, Trash2, Filter, DollarSign, MessageCircle, Star } from 'lucide-react';
 import { TenantDetails } from '../components/tenants/TenantDetails';
 
 // Mock enhanced data for the list
@@ -14,6 +14,7 @@ const MOCK_TENANTS = [
        phone: '+5511999999999',
        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf',
        status: 'active',
+       score: 98,
        property: 'Apt 101 - Ed. Horizonte',
        rent: 'R$ 1.500,00'
     },
@@ -26,6 +27,7 @@ const MOCK_TENANTS = [
        phone: '+5511988888888',
        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD78MRhEj5vokBi3Zr5ORCa84xM4Q0aoHqRqMtmFY5rqqioFglngu_CVvuUlAwFFXylrVwhOX-6rB0xO0RM04aD6spoISdNI-pJR9jsw0SwQsb3-TQPyS3OBbENLbte3Z-Zqv9lEOgt3WuKjxTIrLaStD2Bove6Q5jDIX7PpiUDn1x-gcN2lMoAOEi9fV_nI4dv-32WMg0se3QVylj1o0-E7hPHafz8wUKADMIvPRoIn91W1pDK1-L-SQnqBavDYiPc4Udc_4ypGJ2q',
        status: 'active',
+       score: 100,
        property: 'Kitnet 05 - Centro',
        rent: 'R$ 850,00'
     },
@@ -38,6 +40,7 @@ const MOCK_TENANTS = [
        email: 'carlos.pereira@exemplo.com',
        phone: '+5511977777777',
        status: 'late',
+       score: 65,
        property: 'Studio 22 - Vila Madalena',
        rent: 'R$ 2.400,00'
     }
@@ -108,12 +111,18 @@ const Tenants: React.FC = () => {
              >
                 <div className="p-4 flex items-start gap-4">
                     <div className="relative shrink-0">
-                    {t.image ? (
-                        <div className="h-14 w-14 rounded-2xl bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-sm" style={{ backgroundImage: `url(${t.image})` }}></div>
-                    ) : (
-                        <div className="h-14 w-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border-2 border-white dark:border-surface-dark shadow-sm text-indigo-600 dark:text-indigo-400 font-bold text-xl">{t.initials}</div>
-                    )}
-                    {t.status === 'active' && <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-emerald-500 border-2 border-white dark:border-surface-dark rounded-full"></div>}
+                        {t.image ? (
+                            <div className="h-14 w-14 rounded-2xl bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-sm" style={{ backgroundImage: `url(${t.image})` }}></div>
+                        ) : (
+                            <div className="h-14 w-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border-2 border-white dark:border-surface-dark shadow-sm text-indigo-600 dark:text-indigo-400 font-bold text-xl">{t.initials}</div>
+                        )}
+                        {/* Punctuality Score Badge */}
+                        <div className={`absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold border border-white dark:border-surface-dark shadow-sm flex items-center gap-0.5 ${
+                            t.score >= 90 ? 'bg-emerald-500 text-white' : 
+                            t.score >= 70 ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
+                            <Star size={8} fill="currentColor" /> {t.score}%
+                        </div>
                     </div>
                     
                     <div className="flex flex-1 flex-col justify-center min-w-0">
@@ -124,9 +133,22 @@ const Tenants: React.FC = () => {
                         <p className="text-slate-500 dark:text-slate-400 text-xs font-medium mt-1 uppercase tracking-wider">{t.property}</p>
                         
                         <div className="flex items-center justify-between mt-4">
+                            {/* Quick Actions */}
                             <div className="flex gap-2">
-                                <button onClick={(e) => handleAction(e, 'tel', t.phone)} className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors"><Phone size={16} /></button>
-                                <button onClick={(e) => handleAction(e, 'mailto', t.email)} className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors"><Mail size={16} /></button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); console.log('Cobrar'); }} 
+                                    className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 text-xs font-bold"
+                                    title="Gerar Cobrança"
+                                >
+                                    <DollarSign size={14} /> <span className="hidden sm:inline">Cobrar</span>
+                                </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); console.log('Msg'); }} 
+                                    className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 text-xs font-bold"
+                                    title="Enviar Mensagem"
+                                >
+                                    <MessageCircle size={14} /> <span className="hidden sm:inline">Msg</span>
+                                </button>
                             </div>
                             <div className="text-right">
                                 <p className={`text-[10px] font-bold uppercase tracking-tight ${t.status === 'late' ? 'text-red-500' : 'text-slate-400'}`}>

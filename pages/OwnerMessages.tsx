@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, ChevronLeft, Send, User, Paperclip, MoreVertical, CheckCheck } from 'lucide-react';
+import { Search, ChevronLeft, Send, User, Paperclip, MoreVertical, CheckCheck, AlertCircle } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -17,8 +17,12 @@ interface Chat {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
+  priority?: 'high' | 'medium' | 'normal';
+  category?: 'maintenance' | 'finance' | 'general';
   messages: Message[];
 }
+
+const quickReplies = ["Recebido, obrigado.", "Vou verificar e te retorno.", "Ok, combinado!", "Pode me enviar uma foto?"];
 
 const OwnerMessages: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +39,8 @@ const OwnerMessages: React.FC = () => {
       lastMessage: 'Ok, combinado!',
       lastMessageTime: '09:35',
       unreadCount: 0,
+      priority: 'normal',
+      category: 'general',
       messages: [
         { id: 1, text: 'Olá João, gostaria de agendar a vistoria anual do imóvel para a próxima semana. Por favor, me informe qual o melhor horário.', sender: 'me', time: '09:30', isRead: true },
         { id: 2, text: 'Bom dia! Pode ser na quinta-feira às 14h?', sender: 'tenant', time: '09:32', isRead: true },
@@ -50,6 +56,8 @@ const OwnerMessages: React.FC = () => {
       lastMessage: 'Vou verificar isso hoje.',
       lastMessageTime: 'Ontem',
       unreadCount: 1,
+      priority: 'high',
+      category: 'maintenance',
       messages: [
         { id: 1, text: 'Boa tarde! A torneira da cozinha está pingando.', sender: 'tenant', time: 'Ontem, 15:00', isRead: true },
         { id: 2, text: 'Vou verificar isso hoje e chamar o encanador se necessário.', sender: 'me', time: 'Ontem, 15:10', isRead: true },
@@ -63,6 +71,8 @@ const OwnerMessages: React.FC = () => {
       lastMessage: 'Feliz Natal para você e sua família!',
       lastMessageTime: '25 Dez',
       unreadCount: 0,
+      priority: 'normal',
+      category: 'general',
       messages: [
         { id: 1, text: 'Passando para desejar um Feliz Natal e um próspero Ano Novo!', sender: 'me', time: '25 Dez, 10:00', isRead: true },
         { id: 2, text: 'Muito obrigado! Feliz Natal para você e sua família também!', sender: 'tenant', time: '25 Dez, 11:30', isRead: true }
@@ -74,15 +84,17 @@ const OwnerMessages: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeChatId, chats]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim() || activeChatId === null) return;
+  const handleSendMessage = (e?: React.FormEvent, overrideText?: string) => {
+    if (e) e.preventDefault();
+    const textToSend = overrideText || inputText;
+    
+    if (!textToSend.trim() || activeChatId === null) return;
 
     setChats(prevChats => prevChats.map(chat => {
       if (chat.id === activeChatId) {
         const newMessage: Message = {
           id: Date.now(),
-          text: inputText,
+          text: textToSend,
           sender: 'me',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isRead: false
@@ -90,7 +102,7 @@ const OwnerMessages: React.FC = () => {
         return {
           ...chat,
           messages: [...chat.messages, newMessage],
-          lastMessage: inputText,
+          lastMessage: textToSend,
           lastMessageTime: 'Agora'
         };
       }
@@ -131,9 +143,9 @@ const OwnerMessages: React.FC = () => {
                <div 
                  key={chat.id}
                  onClick={() => setActiveChatId(chat.id)}
-                 className={`group p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-all ${
+                 className={`group p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-all border border-transparent ${
                     activeChatId === chat.id 
-                    ? 'bg-primary/10 dark:bg-primary/20' 
+                    ? 'bg-primary/10 dark:bg-primary/20 border-primary/20' 
                     : 'hover:bg-gray-100 dark:hover:bg-white/5'
                  }`}
                >
@@ -159,10 +171,18 @@ const OwnerMessages: React.FC = () => {
                         <span className="text-[10px] text-slate-400 shrink-0">{chat.lastMessageTime}</span>
                      </div>
                      <p className="text-xs text-slate-400 dark:text-slate-500 mb-0.5 truncate">{chat.property}</p>
-                     <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {chat.messages[chat.messages.length-1].sender === 'me' && <span className="mr-1">Você:</span>}
-                        {chat.lastMessage}
-                     </p>
+                     
+                     <div className="flex items-center gap-2">
+                         {chat.priority === 'high' && (
+                             <span className="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-1.5 py-0.5 text-[10px] font-bold text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/10">
+                                 Urgente
+                             </span>
+                         )}
+                         <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
+                            {chat.messages[chat.messages.length-1].sender === 'me' && <span className="mr-1">Você:</span>}
+                            {chat.lastMessage}
+                         </p>
+                     </div>
                   </div>
                </div>
             ))}
@@ -191,7 +211,10 @@ const OwnerMessages: React.FC = () => {
                         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-surface-dark rounded-full"></span>
                      </div>
                      <div>
-                        <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{activeChat.tenantName}</h2>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{activeChat.tenantName}</h2>
+                            {activeChat.category === 'maintenance' && <Wrench size={12} className="text-orange-500" />}
+                        </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{activeChat.property}</p>
                      </div>
                   </div>
@@ -230,7 +253,20 @@ const OwnerMessages: React.FC = () => {
                </div>
 
                <div className="p-4 md:p-6 bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 shrink-0">
-                  <form onSubmit={handleSendMessage} className="flex gap-3 items-end max-w-4xl mx-auto w-full">
+                  {/* Quick Replies */}
+                  <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1">
+                      {quickReplies.map((reply, i) => (
+                          <button 
+                            key={i}
+                            onClick={() => handleSendMessage(undefined, reply)}
+                            className="whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                          >
+                              {reply}
+                          </button>
+                      ))}
+                  </div>
+
+                  <form onSubmit={(e) => handleSendMessage(e)} className="flex gap-3 items-end max-w-4xl mx-auto w-full">
                      <button type="button" className="p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full">
                         <Paperclip size={20} />
                      </button>
@@ -265,5 +301,10 @@ const OwnerMessages: React.FC = () => {
     </div>
   );
 };
+
+// Helper for icon since we didn't import it at top
+const Wrench = ({ size, className }: { size: number, className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+);
 
 export default OwnerMessages;
