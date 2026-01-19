@@ -140,7 +140,7 @@ export const PropertyDocuments: React.FC<PropertyDocumentsProps> = ({ property, 
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3">
                     {filteredDocs.length > 0 ? (
                         filteredDocs.map(doc => (
-                            <div key={doc.id} className="group bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all flex items-center gap-4">
+                            <div key={doc.id} className="group bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all flex items-center gap-3 md:gap-4">
                                 {/* File Icon */}
                                 <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center shrink-0">
                                     {getIconByType(doc.type)}
@@ -158,22 +158,22 @@ export const PropertyDocuments: React.FC<PropertyDocumentsProps> = ({ property, 
                                     </div>
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                                         <span className="bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded text-slate-500">{doc.category}</span>
-                                        <span>{doc.type} • {doc.size}</span>
+                                        <span className="hidden sm:inline">{doc.type} • {doc.size}</span>
                                         <span className="flex items-center gap-1"><Clock size={10} /> {doc.uploadDate}</span>
                                     </div>
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex gap-1 md:gap-2">
-                                    <button className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors" title="Visualizar">
+                                {/* Actions - Responsive: shrink-0 to prevent squash, adjusted padding for touch targets */}
+                                <div className="flex gap-1 md:gap-2 shrink-0">
+                                    <button className="p-1.5 md:p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors" title="Visualizar">
                                         <Eye size={18} />
                                     </button>
-                                    <button className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors" title="Baixar">
+                                    <button className="p-1.5 md:p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors" title="Baixar">
                                         <Download size={18} />
                                     </button>
                                     <button 
                                         onClick={() => handleDelete(doc.id)}
-                                        className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-red-500 transition-colors" title="Excluir"
+                                        className="p-1.5 md:p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-red-500 transition-colors" title="Excluir"
                                     >
                                         <Trash2 size={18} />
                                     </button>

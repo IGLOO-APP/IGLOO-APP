@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, FileText, Upload, Shield, CheckCircle, Wallet, MapPin, Activity, AlertCircle, Camera, Save, Mail, Phone, Calendar, Briefcase, CreditCard, ChevronRight, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,6 +8,10 @@ const TenantProfile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   
+  // File Upload Refs and State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentDocKey, setCurrentDocKey] = useState<string | null>(null);
+
   // Profile Form State
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -34,11 +38,27 @@ const TenantProfile: React.FC = () => {
   const totalDocs = Object.keys(uploadStatus).length;
   const progressPercentage = Math.round((completedCount / totalDocs) * 100);
 
-  const handleUpload = (key: string) => {
-    setUploadStatus(prev => ({ ...prev, [key]: 'uploading' }));
-    setTimeout(() => {
-      setUploadStatus(prev => ({ ...prev, [key]: 'completed' }));
-    }, 1500);
+  const triggerFileSelect = (key: string) => {
+    setCurrentDocKey(key);
+    if (fileInputRef.current) {
+        fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && currentDocKey) {
+        // Start upload simulation
+        setUploadStatus(prev => ({ ...prev, [currentDocKey]: 'uploading' }));
+        
+        // Reset input so the same file can be selected again if needed
+        e.target.value = '';
+
+        setTimeout(() => {
+            setUploadStatus(prev => ({ ...prev, [currentDocKey]: 'completed' }));
+            setCurrentDocKey(null);
+        }, 2000);
+    }
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -57,7 +77,7 @@ const TenantProfile: React.FC = () => {
     
     if (status === 'completed') {
         return (
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg text-sm font-bold w-full md:w-auto justify-center shadow-sm border border-emerald-100 dark:border-emerald-900/30">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg text-sm font-bold w-full md:w-auto justify-center shadow-sm border border-emerald-100 dark:border-emerald-900/30 cursor-default">
                 <CheckCircle size={16} />
                 <span>Enviado</span>
             </div>
@@ -66,9 +86,9 @@ const TenantProfile: React.FC = () => {
 
     return (
         <button 
-            onClick={() => handleUpload(docKey)}
+            onClick={() => triggerFileSelect(docKey)}
             disabled={status === 'uploading'}
-            className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-all w-full md:w-auto justify-center disabled:opacity-70 shadow-sm"
+            className="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-all w-full md:w-auto justify-center disabled:opacity-70 shadow-sm active:scale-95"
         >
             {status === 'uploading' ? (
                 <>Enviando...</>
@@ -84,6 +104,15 @@ const TenantProfile: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full w-full max-w-md mx-auto md:max-w-4xl relative bg-background-light dark:bg-background-dark">
+      {/* Hidden File Input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        className="hidden" 
+        accept=".pdf,.jpg,.jpeg,.png"
+      />
+
       <header className="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors">
          <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Meu Perfil</h1>

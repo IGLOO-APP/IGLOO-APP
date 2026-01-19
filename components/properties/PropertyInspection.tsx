@@ -1,16 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
     Camera, Plus, Trash2, ChevronRight, CheckCircle, 
     AlertTriangle, Calendar, User, X, LayoutList, 
     Check, Clock, MessageCircle, AlertCircle, 
     ThumbsUp, ThumbsDown, UploadCloud, Loader2, 
     ArrowRightLeft, FileSearch, ArrowRight, ArrowDown,
-    Image as ImageIcon
+    Image as ImageIcon, ZoomIn, ChevronDown, CheckCheck,
+    Shield, Gavel
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Property } from '../../types';
 
 // --- Types ---
+
+interface TenantFeedback {
+    status: 'agreed' | 'contested' | 'pending';
+    comment?: string;
+    photos?: string[];
+    timestamp?: string;
+}
+
+interface OwnerResolution {
+    status: 'accepted' | 'rejected' | 'pending';
+    note?: string;
+}
 
 interface InspectionItem {
   id: string;
@@ -18,10 +31,10 @@ interface InspectionItem {
   status: 'good' | 'damaged' | 'na';
   notes: string;
   photos: string[];
-  tenantFeedback?: {
-      status: 'agreed' | 'contested';
-      comment?: string;
-  };
+  entryPhoto?: string; // URL for comparison
+  exitPhoto?: string;  // URL for comparison
+  tenantFeedback?: TenantFeedback;
+  ownerResolution?: OwnerResolution;
 }
 
 interface Room {
@@ -30,19 +43,10 @@ interface Room {
   items: InspectionItem[];
 }
 
-interface Inspection {
-  id: number;
-  type: 'Entrada' | 'Saída';
-  date: string;
-  inspector: string;
-  status: 'completed' | 'pending_tenant' | 'contested';
-  rooms: Room[];
-}
-
 interface PropertyInspectionProps {
   property: Property;
   onClose: () => void;
-  initialView?: 'list' | 'create' | 'compare' | 'share' | 'tenant_view';
+  initialView?: 'list' | 'detail';
 }
 
 const ROOM_TEMPLATES = [
@@ -53,120 +57,346 @@ const ROOM_TEMPLATES = [
 ];
 
 export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property, onClose, initialView = 'list' }) => {
-  const [view, setView] = useState<'list' | 'create' | 'compare' | 'share' | 'tenant_view'>(initialView);
+  const [view, setView] = useState<'list' | 'detail' | 'create'>('list');
+  const [isOwnerMode, setIsOwnerMode] = useState(true); // Toggle for Demo purposes
   
-  // Mock Data for Comparison
-  const [inspections] = useState<Inspection[]>([
+  // Mock Data: Scenario where Tenant has partially responded
+  const [inspectionData, setInspectionData] = useState<Room[]>([
       {
-          id: 1,
-          type: 'Entrada',
-          date: '10/01/2024',
-          inspector: 'Igloo Oficial',
-          status: 'completed',
-          rooms: [
-              {
-                  id: 'r1',
-                  name: 'Cozinha',
-                  items: [
-                      { id: 'i1', name: 'Pintura', status: 'good', notes: 'Nova', photos: [] },
-                      { id: 'i2', name: 'Piso', status: 'good', notes: 'Sem riscos', photos: [] }
-                  ]
+          id: 'r1',
+          name: 'Sala de Estar',
+          items: [
+              { 
+                  id: 'i1', 
+                  name: 'Pintura das Paredes', 
+                  status: 'damaged', 
+                  notes: 'Manchas escuras e furos de quadros não tapados.', 
+                  entryPhoto: 'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=300', 
+                  exitPhoto: 'https://plus.unsplash.com/premium_photo-1664303847960-586318f59035?auto=format&fit=crop&q=80&w=300', 
+                  photos: [],
+                  tenantFeedback: { 
+                      status: 'contested', 
+                      comment: 'Essas manchas já existiam na entrada, conforme foto do laudo anterior que tenho aqui. Não fiz furos novos.',
+                      timestamp: '10/03/2024 14:30'
+                  },
+                  ownerResolution: { status: 'pending' }
+              },
+              { 
+                  id: 'i2', 
+                  name: 'Piso Laminado', 
+                  status: 'good', 
+                  notes: 'Em bom estado, desgaste natural.', 
+                  entryPhoto: 'https://images.unsplash.com/photo-1581858726768-75e0524d940d?auto=format&fit=crop&q=80&w=300',
+                  exitPhoto: 'https://images.unsplash.com/photo-1581858726768-75e0524d940d?auto=format&fit=crop&q=80&w=300',
+                  photos: [],
+                  tenantFeedback: { status: 'agreed', timestamp: '10/03/2024 14:32' }
               }
           ]
       },
       {
-          id: 2,
-          type: 'Saída',
-          date: '17/01/2026',
-          inspector: 'Igloo Oficial',
-          status: 'pending_tenant',
-          rooms: [
-              {
-                  id: 'r1',
-                  name: 'Cozinha',
-                  items: [
-                      { id: 'i1', name: 'Pintura', status: 'damaged', notes: 'Manchas de gordura e furos', photos: [] },
-                      { id: 'i2', name: 'Piso', status: 'good', notes: 'Mantido', photos: [] }
-                  ]
+          id: 'r2',
+          name: 'Cozinha',
+          items: [
+              { 
+                  id: 'i3', 
+                  name: 'Torneira / Cuba', 
+                  status: 'damaged', 
+                  notes: 'Torneira com vazamento na base.', 
+                  entryPhoto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=300',
+                  exitPhoto: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&q=80&w=300',
+                  photos: [],
+                  tenantFeedback: { status: 'pending' }
               }
           ]
       }
   ]);
 
-  // Create Flow State
-  const [newInspectionType, setNewInspectionType] = useState<'Entrada' | 'Saída'>('Saída');
-  const [addedRooms, setAddedRooms] = useState<Room[]>([]);
-  const [isAddingRoom, setIsAddingRoom] = useState(false);
-  const [customRoomName, setCustomRoomName] = useState('');
-
   // --- Handlers ---
 
-  const addRoomByTemplate = (template: typeof ROOM_TEMPLATES[0]) => {
-      const newRoom: Room = {
-          id: `room-${Date.now()}`,
-          name: template.label,
-          items: template.items.map((name, idx) => ({
-              id: `item-${Date.now()}-${idx}`,
-              name,
-              status: 'good',
-              notes: '',
-              photos: []
-          }))
-      };
-      setAddedRooms([...addedRooms, newRoom]);
-      setIsAddingRoom(false);
-  };
-
-  const addItemToRoom = (roomId: string) => {
-      const itemName = prompt("Nome do item (ex: Ar Condicionado, Cortina):");
-      if (!itemName) return;
-      
-      setAddedRooms(prev => prev.map(room => {
+  const handleTenantAction = (roomId: string, itemId: string, action: 'agreed' | 'contested', comment?: string) => {
+      setInspectionData(prev => prev.map(room => {
           if (room.id !== roomId) return room;
           return {
               ...room,
-              items: [...room.items, {
-                  id: `item-${Date.now()}`,
-                  name: itemName,
-                  status: 'good',
-                  notes: '',
-                  photos: []
-              }]
+              items: room.items.map(item => item.id === itemId ? { 
+                  ...item, 
+                  tenantFeedback: { status: action, comment, timestamp: new Date().toLocaleString() } 
+              } : item)
           };
       }));
   };
 
-  const removeItemFromRoom = (roomId: string, itemId: string) => {
-      setAddedRooms(prev => prev.map(room => {
-          if (room.id !== roomId) return room;
-          return { ...room, items: room.items.filter(i => i.id !== itemId) };
-      }));
-  };
-
-  const updateItemStatus = (roomId: string, itemId: string, status: 'good' | 'damaged' | 'na') => {
-      setAddedRooms(prev => prev.map(room => {
+  const handleOwnerResolution = (roomId: string, itemId: string, action: 'accepted' | 'rejected') => {
+      setInspectionData(prev => prev.map(room => {
           if (room.id !== roomId) return room;
           return {
               ...room,
-              items: room.items.map(item => item.id === itemId ? { ...item, status } : item)
+              items: room.items.map(item => item.id === itemId ? { 
+                  ...item, 
+                  ownerResolution: { status: action } 
+              } : item)
           };
       }));
   };
 
-  // --- Comparison Logic ---
-  const compEntry = inspections[0];
-  const compExit = inspections[1];
-
-  const getStatusIcon = (status: string) => {
-      if (status === 'good') return <CheckCircle size={14} className="text-emerald-500" />;
-      if (status === 'damaged') return <AlertTriangle size={14} className="text-red-500" />;
-      return <X size={14} className="text-slate-400" />;
+  const getProgress = () => {
+      let total = 0;
+      let reviewed = 0;
+      inspectionData.forEach(r => r.items.forEach(i => {
+          total++;
+          if (i.tenantFeedback?.status !== 'pending') reviewed++;
+      }));
+      return Math.round((reviewed / total) * 100);
   };
+
+  const hasContestations = inspectionData.some(r => r.items.some(i => i.tenantFeedback?.status === 'contested'));
 
   return (
-    <ModalWrapper onClose={onClose} className="md:max-w-5xl" showCloseButton={view !== 'tenant_view'}>
-      <div className="flex-1 overflow-hidden flex flex-col h-full bg-background-light dark:bg-background-dark">
+    <ModalWrapper onClose={onClose} className="md:max-w-5xl" showCloseButton={true}>
+      <div className="flex-1 overflow-hidden flex flex-col h-full bg-background-light dark:bg-background-dark relative">
         
+        {/* DEMO TOGGLE: OWNER vs TENANT */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white dark:bg-surface-dark p-1 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 flex">
+            <button 
+                onClick={() => setIsOwnerMode(true)}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${isOwnerMode ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10'}`}
+            >
+                Visão Proprietário
+            </button>
+            <button 
+                onClick={() => setIsOwnerMode(false)}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${!isOwnerMode ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10'}`}
+            >
+                Visão Inquilino
+            </button>
+        </div>
+
+        {/* VIEW: DETAIL / ACTION */}
+        {view === 'detail' && (
+            <div className="flex-1 flex flex-col overflow-hidden animate-fadeIn">
+                {/* Header */}
+                <header className="px-6 py-5 bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0">
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setView('list')} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors">
+                                <ArrowRightLeft size={20} className="text-slate-500" />
+                            </button>
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${isOwnerMode ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'}`}>
+                                        {isOwnerMode ? 'Análise de Divergências' : 'Ação Necessária'}
+                                    </span>
+                                    <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">Vistoria de Saída #2024-03</span>
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                    {isOwnerMode ? 'Resolução de Conflitos' : 'Confirmação de Laudo'}
+                                </h2>
+                            </div>
+                        </div>
+                        <div className="text-right hidden md:block">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Status Geral</p>
+                            <div className="flex items-center gap-2">
+                                <div className="w-32 h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${getProgress()}%` }}></div>
+                                </div>
+                                <span className="text-xs font-bold">{getProgress()}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8 bg-slate-50 dark:bg-black/10">
+                    
+                    {/* Context Banner */}
+                    <div className={`${isOwnerMode ? 'bg-purple-50 border-purple-100 dark:bg-purple-900/10 dark:border-purple-800' : 'bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800'} border p-4 rounded-xl flex gap-3`}>
+                        {isOwnerMode ? (
+                            <Gavel className="text-purple-600 dark:text-purple-400 shrink-0" size={24} />
+                        ) : (
+                            <AlertCircle className="text-blue-600 dark:text-blue-400 shrink-0" size={24} />
+                        )}
+                        <div>
+                            <h4 className={`font-bold text-sm ${isOwnerMode ? 'text-purple-800 dark:text-purple-300' : 'text-blue-800 dark:text-blue-300'}`}>
+                                {isOwnerMode ? 'Ação do Proprietário' : 'Instruções ao Inquilino'}
+                            </h4>
+                            <p className={`text-xs mt-1 leading-relaxed ${isOwnerMode ? 'text-purple-700 dark:text-purple-400' : 'text-blue-700 dark:text-blue-400'}`}>
+                                {isOwnerMode 
+                                    ? "O inquilino finalizou a revisão. Itens contestados precisam da sua análise final para liberação do caução ou cobrança." 
+                                    : "Compare as fotos de Entrada e Saída. Itens marcados como 'AVARIA' indicam danos que podem gerar custos."}
+                            </p>
+                        </div>
+                    </div>
+
+                    {inspectionData.map((room) => (
+                        <div key={room.id} className="space-y-4">
+                            <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2 px-1">
+                                <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                                {room.name}
+                            </h3>
+
+                            {room.items.map((item) => (
+                                <div key={item.id} className={`bg-white dark:bg-surface-dark rounded-2xl border shadow-sm overflow-hidden transition-all ${
+                                    item.tenantFeedback?.status === 'contested' 
+                                    ? 'border-red-200 dark:border-red-900/30 ring-1 ring-red-500/10' 
+                                    : item.status === 'damaged' 
+                                        ? 'border-orange-200 dark:border-orange-900/30' 
+                                        : 'border-gray-100 dark:border-white/5'
+                                }`}>
+                                    
+                                    {/* Item Header */}
+                                    <div className="p-4 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-lg ${item.status === 'damaged' ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'}`}>
+                                                {item.status === 'damaged' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{item.name}</h4>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Vistoria Técnica: <span className="font-bold uppercase">{item.status === 'damaged' ? 'Avaria / Dano' : 'Em ordem'}</span></p>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Status Badge */}
+                                        {item.tenantFeedback?.status === 'agreed' && (
+                                            <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded">
+                                                <CheckCheck size={14} /> Aceite
+                                            </div>
+                                        )}
+                                        {item.tenantFeedback?.status === 'contested' && (
+                                            <div className="flex items-center gap-1 text-red-600 text-xs font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded animate-pulse">
+                                                <X size={14} /> Contestação
+                                            </div>
+                                        )}
+                                        {item.tenantFeedback?.status === 'pending' && !isOwnerMode && (
+                                            <div className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded">Pendente</div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-4 md:p-6 grid md:grid-cols-2 gap-6">
+                                        
+                                        {/* Visuals */}
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><Camera size={12}/> Comparativo Visual</span>
+                                            </div>
+                                            <div className="flex gap-2 h-32 md:h-40">
+                                                <div className="flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5">
+                                                    <img src={item.entryPhoto} alt="Entrada" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded">ENTRADA</div>
+                                                </div>
+                                                <div className="flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5">
+                                                    <img src={item.exitPhoto} alt="Saída" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="absolute top-2 left-2 bg-orange-600/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded">SAÍDA</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions / Details Area */}
+                                        <div className="flex flex-col justify-between h-full">
+                                            {/* Inspector Note */}
+                                            <div className="bg-slate-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-white/5 mb-3">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Apontamento do Vistoriador</p>
+                                                <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 italic">"{item.notes}"</p>
+                                            </div>
+
+                                            {/* OWNER VIEW LOGIC */}
+                                            {isOwnerMode ? (
+                                                <div className="mt-auto">
+                                                    {item.tenantFeedback?.status === 'contested' ? (
+                                                        <div className="space-y-3">
+                                                            <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-3 rounded-xl">
+                                                                <p className="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1 mb-1">
+                                                                    <MessageCircle size={10} /> Justificativa do Inquilino
+                                                                </p>
+                                                                <p className="text-xs text-red-800 dark:text-red-200">{item.tenantFeedback.comment}</p>
+                                                            </div>
+                                                            
+                                                            {item.ownerResolution?.status === 'pending' ? (
+                                                                <div className="flex gap-2">
+                                                                    <button 
+                                                                        onClick={() => handleOwnerResolution(room.id, item.id, 'accepted')}
+                                                                        className="flex-1 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 text-xs font-bold text-slate-600 shadow-sm transition-colors"
+                                                                    >
+                                                                        Acatar Justificativa
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleOwnerResolution(room.id, item.id, 'rejected')}
+                                                                        className="flex-1 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-lg transition-colors"
+                                                                    >
+                                                                        Manter Cobrança
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className={`p-2 rounded-lg text-center text-xs font-bold ${
+                                                                    item.ownerResolution?.status === 'accepted' 
+                                                                    ? 'bg-emerald-100 text-emerald-700' 
+                                                                    : 'bg-slate-800 text-white'
+                                                                }`}>
+                                                                    {item.ownerResolution?.status === 'accepted' ? 'Você acatou a justificativa.' : 'Você manteve a cobrança.'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-slate-400 text-center py-2 bg-slate-50 dark:bg-white/5 rounded-lg">
+                                                            {item.tenantFeedback?.status === 'agreed' ? 'Inquilino concordou com o apontamento.' : 'Aguardando resposta do inquilino.'}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                            /* TENANT VIEW LOGIC */
+                                                <div className="mt-auto">
+                                                    {item.tenantFeedback?.status === 'pending' ? (
+                                                        <div className="flex gap-3">
+                                                            <button 
+                                                                onClick={() => handleTenantAction(room.id, item.id, 'agreed')}
+                                                                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
+                                                            >
+                                                                <ThumbsUp size={16} /> Concordo
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => {
+                                                                    const reason = prompt("Qual o motivo da contestação?");
+                                                                    if(reason) handleTenantAction(room.id, item.id, 'contested', reason);
+                                                                }}
+                                                                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all"
+                                                            >
+                                                                <ThumbsDown size={16} /> Contestar
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={`p-3 rounded-xl border text-xs font-medium ${
+                                                            item.tenantFeedback?.status === 'agreed' 
+                                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                                                            : 'bg-red-50 border-red-100 text-red-700'
+                                                        }`}>
+                                                            {item.tenantFeedback?.status === 'agreed' 
+                                                                ? 'Você concordou com este item.' 
+                                                                : `Contestação enviada: "${item.tenantFeedback?.comment}"`}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Footer Action */}
+                <div className="p-4 md:p-6 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 z-20 flex justify-between items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                    <div className="text-xs text-slate-500 hidden md:block">
+                        {isOwnerMode ? 'Ações irreversíveis após finalização.' : 'Ao finalizar, o laudo será enviado para análise.'}
+                    </div>
+                    <button 
+                        className="w-full md:w-auto h-12 px-8 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2"
+                    >
+                        {isOwnerMode ? 'Finalizar Resoluções' : 'Enviar Revisão'} <CheckCircle size={18} />
+                    </button>
+                </div>
+            </div>
+        )}
+
         {/* VIEW: LIST (HISTORICO) */}
         {view === 'list' && (
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -177,7 +407,6 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property
                 </div>
                 <div className="flex gap-2">
                     <button 
-                        onClick={() => setView('compare')}
                         className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-xl font-bold text-sm border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-100 transition-all"
                     >
                         <ArrowRightLeft size={18} /> Comparar
@@ -191,266 +420,72 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property
                 </div>
             </div>
 
+            {/* List Items with Owner Logic */}
             <div className="grid gap-4">
-              {inspections.map(insp => (
-                <div key={insp.id} onClick={() => setView('compare')} className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer">
-                    <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${insp.type === 'Entrada' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : 'bg-orange-50 text-orange-600 dark:bg-orange-900/20'}`}>
-                            {insp.type.charAt(0)}
+                
+                {/* Item 1: Output Inspection with Contestations */}
+                <div 
+                    onClick={() => { setView('detail'); setIsOwnerMode(true); }} // Default to Owner view for this item
+                    className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-red-200 dark:border-red-900/30 shadow-sm flex items-center justify-between group hover:border-red-400 transition-all cursor-pointer relative overflow-hidden"
+                >
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+                    <div className="flex items-center gap-4 pl-2">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg bg-red-50 text-red-600 dark:bg-red-900/20">
+                            S
                         </div>
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white">Vistoria de {insp.type}</h4>
+                            <h4 className="font-bold text-slate-900 dark:text-white">Vistoria de Saída <span className="text-red-500 text-[10px] uppercase bg-red-100 dark:bg-red-900/20 px-2 py-0.5 rounded ml-2">Divergência</span></h4>
                             <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
-                                <span className="flex items-center gap-1"><Calendar size={12}/> {insp.date}</span>
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${insp.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                                    {insp.status === 'completed' ? 'Concluída' : 'Pendente'}
-                                </span>
+                                <span className="flex items-center gap-1"><Calendar size={12}/> 10 Mar 2024</span>
+                                <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300"><MessageCircle size={12}/> Inquilino contestou 1 item</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-red-600 transition-colors">
+                            Resolver
+                        </button>
+                    </div>
+                </div>
+
+                {/* Item 2: Completed Entry Inspection */}
+                <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">
+                            E
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-slate-900 dark:text-white">Vistoria de Entrada</h4>
+                            <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5">
+                                <span className="flex items-center gap-1"><Calendar size={12}/> 10 Jan 2024</span>
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-600">Concluída</span>
                             </div>
                         </div>
                     </div>
                     <ChevronRight size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
                 </div>
-              ))}
             </div>
           </div>
         )}
 
-        {/* VIEW: COMPARE (LADO A LADO) */}
-        {view === 'compare' && (
-            <div className="flex-1 flex flex-col overflow-hidden animate-fadeIn">
-                <header className="px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center bg-white dark:bg-surface-dark shrink-0">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setView('list')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500"><ChevronRight size={20} className="rotate-180" /></button>
-                        <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <ArrowRightLeft size={18} className="text-primary" />
-                            Comparativo de Vistorias
-                        </h3>
-                    </div>
-                    <button className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
-                        <FileSearch size={14} /> Gerar Laudo PDF
-                    </button>
-                </header>
-
-                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-black/20">
-                    {/* Sticky Table Header */}
-                    <div className="sticky top-0 z-20 grid grid-cols-2 bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shadow-sm">
-                        <div className="p-4 border-r border-gray-100 dark:border-white/5 text-center">
-                            <p className="text-[10px] font-black uppercase text-emerald-500 tracking-widest mb-1">Vistoria Base</p>
-                            <h4 className="font-bold text-sm text-slate-900 dark:text-white">Entrada - {compEntry.date}</h4>
-                        </div>
-                        <div className="p-4 text-center">
-                            <p className="text-[10px] font-black uppercase text-orange-500 tracking-widest mb-1">Vistoria Atual</p>
-                            <h4 className="font-bold text-sm text-slate-900 dark:text-white">Saída - {compExit.date}</h4>
-                        </div>
-                    </div>
-
-                    <div className="p-4 md:p-6 space-y-8">
-                        {compEntry.rooms.map((roomEntry) => {
-                            const roomExit = compExit.rooms.find(r => r.name === roomEntry.name);
-                            return (
-                                <div key={roomEntry.id} className="space-y-3">
-                                    <div className="flex items-center gap-2 px-1">
-                                        <div className="h-4 w-1 bg-primary rounded-full"></div>
-                                        <h5 className="font-black text-xs uppercase text-slate-500 dark:text-slate-400 tracking-tighter">{roomEntry.name}</h5>
-                                    </div>
-                                    
-                                    <div className="bg-white dark:bg-surface-dark rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden divide-y divide-gray-50 dark:divide-white/5">
-                                        {roomEntry.items.map((itemEntry) => {
-                                            const itemExit = roomExit?.items.find(i => i.name === itemEntry.name);
-                                            const hasRegression = itemEntry.status === 'good' && itemExit?.status === 'damaged';
-
-                                            return (
-                                                <div key={itemEntry.id} className="grid grid-cols-2 relative group">
-                                                    {/* Regression Alert Badge */}
-                                                    {hasRegression && (
-                                                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
-                                                            <AlertCircle size={10} /> DANO NOVO
-                                                        </div>
-                                                    )}
-
-                                                    {/* Left Column: Entry */}
-                                                    <div className="p-5 border-r border-gray-50 dark:border-white/5 flex flex-col gap-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <p className="text-sm font-bold text-slate-800 dark:text-white">{itemEntry.name}</p>
-                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-500">{getStatusIcon(itemEntry.status)} BOM</span>
-                                                        </div>
-                                                        <p className="text-xs text-slate-400 line-clamp-2">"{itemEntry.notes}"</p>
-                                                        <div className="flex gap-1 mt-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                            <ImageIcon size={14} className="text-slate-300" />
-                                                            <span className="text-[10px] text-slate-400">2 fotos</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Right Column: Exit */}
-                                                    <div className={`p-5 flex flex-col gap-2 transition-colors ${hasRegression ? 'bg-red-50/30 dark:bg-red-900/10' : ''}`}>
-                                                        <div className="flex items-center justify-between">
-                                                            <p className="text-sm font-bold text-slate-800 dark:text-white">{itemEntry.name}</p>
-                                                            <span className={`flex items-center gap-1 text-[10px] font-bold ${itemExit?.status === 'damaged' ? 'text-red-500' : 'text-emerald-500'}`}>
-                                                                {getStatusIcon(itemExit?.status || 'na')} 
-                                                                {itemExit?.status === 'damaged' ? 'AVARIA' : 'BOM'}
-                                                            </span>
-                                                        </div>
-                                                        <p className={`text-xs ${itemExit?.status === 'damaged' ? 'text-red-600 dark:text-red-400 font-medium' : 'text-slate-400'} line-clamp-2`}>
-                                                            "{itemExit?.notes || 'Nenhuma observação.'}"
-                                                        </p>
-                                                        <div className="flex gap-2 mt-1">
-                                                            <button className="flex items-center gap-1 text-[10px] font-bold text-primary hover:underline">
-                                                                <ImageIcon size={14} /> Ver Foto Atual
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <footer className="p-4 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 flex gap-3">
-                    <button onClick={() => setView('list')} className="flex-1 h-12 rounded-xl border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 font-bold text-sm">Voltar</button>
-                    <button className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20">Aprovar Comparativo</button>
-                </footer>
-            </div>
-        )}
-
-        {/* VIEW: CREATE (WIZARD COM CÔMODOS E ITENS DINÂMICOS) */}
+        {/* Create View */}
         {view === 'create' && (
-          <div className="flex-1 flex flex-col overflow-hidden animate-fadeIn">
-             <header className="px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center bg-white dark:bg-surface-dark shrink-0">
-                <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Montar Vistoria</h3>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-0.5">Laudo de Saída</p>
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={() => setIsAddingRoom(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs font-bold transition-all hover:bg-slate-200">
-                        <Plus size={16} /> Cômodo
-                    </button>
-                    <button onClick={() => setView('share')} className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs shadow-lg shadow-primary/20 flex items-center gap-2">
-                        Finalizar <ArrowRight size={16} />
-                    </button>
-                </div>
-             </header>
-
-             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50 dark:bg-black/10">
-                {addedRooms.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                        <div className="w-20 h-20 rounded-full bg-white dark:bg-surface-dark border-2 border-dashed border-gray-200 dark:border-gray-800 flex items-center justify-center text-slate-300">
-                            <LayoutList size={32} />
-                        </div>
-                        <p className="text-slate-500 text-sm font-medium">Nenhum cômodo no laudo ainda.</p>
-                        <button onClick={() => setIsAddingRoom(true)} className="text-primary font-bold text-sm underline">Clique para começar</button>
+             <div className="flex-1 flex flex-col overflow-hidden animate-fadeIn">
+                <header className="px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center bg-white dark:bg-surface-dark shrink-0">
+                    <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white">Montar Vistoria</h3>
+                        <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-0.5">Laudo de Saída</p>
                     </div>
-                ) : (
-                    <div className="space-y-8">
-                        {addedRooms.map(room => (
-                            <div key={room.id} className="bg-white dark:bg-surface-dark rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden animate-slideUp">
-                                <div className="px-5 py-4 bg-slate-50/50 dark:bg-white/5 flex justify-between items-center border-b border-gray-50 dark:border-white/5">
-                                    <h4 className="font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                        {room.name}
-                                    </h4>
-                                    <button onClick={() => setAddedRooms(addedRooms.filter(r => r.id !== room.id))} className="text-slate-400 hover:text-red-500 p-1 transition-colors"><Trash2 size={16} /></button>
-                                </div>
-                                <div className="p-5 space-y-6">
-                                    {room.items.map(item => (
-                                        <div key={item.id} className="space-y-3 pb-5 border-b last:border-0 border-gray-50 dark:border-white/5 last:pb-0">
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                                <div className="flex items-center gap-2">
-                                                    <button onClick={() => removeItemFromRoom(room.id, item.id)} className="text-slate-300 hover:text-red-500"><X size={14}/></button>
-                                                    <p className="font-bold text-sm text-slate-700 dark:text-slate-200">{item.name}</p>
-                                                </div>
-                                                <div className="flex bg-slate-100 dark:bg-black/30 p-1 rounded-xl gap-1">
-                                                    {[
-                                                        { id: 'good', label: 'BOM', color: 'bg-emerald-500' },
-                                                        { id: 'damaged', label: 'AVARIA', color: 'bg-red-500' }
-                                                    ].map(st => (
-                                                        <button 
-                                                            key={st.id}
-                                                            onClick={() => updateItemStatus(room.id, item.id, st.id as any)}
-                                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all ${item.status === st.id ? `${st.color} text-white shadow-md` : 'text-slate-400'}`}
-                                                        >
-                                                            {st.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {item.status === 'damaged' && (
-                                                <textarea 
-                                                    className="w-full text-xs p-3 rounded-xl bg-red-50/30 dark:bg-red-900/5 border border-red-100 dark:border-red-900/20 text-slate-800 dark:text-slate-200 outline-none placeholder:text-red-300"
-                                                    placeholder="Descreva a avaria..."
-                                                />
-                                            )}
-                                        </div>
-                                    ))}
-                                    <button 
-                                        onClick={() => addItemToRoom(room.id)}
-                                        className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-800 text-slate-400 text-xs font-bold flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-all"
-                                    >
-                                        <Plus size={14} /> Adicionar Item ao Cômodo
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex gap-2">
+                        <button className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs shadow-lg shadow-primary/20 flex items-center gap-2" onClick={() => setView('list')}>
+                            Salvar e Sair
+                        </button>
                     </div>
-                )}
+                </header>
+                <div className="flex-1 flex items-center justify-center text-slate-400">
+                    <p>Interface de criação simplificada para demonstração.</p>
+                </div>
              </div>
-
-             {isAddingRoom && (
-                 <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fadeIn">
-                     <div className="w-full max-w-md bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-2xl animate-scaleUp">
-                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Adicionar Cômodo</h3>
-                            <button onClick={() => setIsAddingRoom(false)} className="text-slate-400 p-2"><X size={24}/></button>
-                         </div>
-                         <div className="grid grid-cols-2 gap-3">
-                            {ROOM_TEMPLATES.map(template => (
-                                <button key={template.id} onClick={() => addRoomByTemplate(template)} className="p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:border-primary hover:text-primary transition-all text-sm font-bold text-slate-600 dark:text-slate-300">
-                                    {template.label}
-                                </button>
-                            ))}
-                         </div>
-                         <div className="mt-6 pt-4 border-t border-gray-100 dark:border-white/5">
-                            <div className="flex gap-2">
-                                <input 
-                                    value={customRoomName} onChange={e => setCustomRoomName(e.target.value)}
-                                    className="flex-1 px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 dark:text-white text-sm" placeholder="Nome personalizado..." 
-                                />
-                                <button onClick={() => {
-                                    const newRoom: Room = { id: `r-${Date.now()}`, name: customRoomName || 'Outro', items: [] };
-                                    setAddedRooms([...addedRooms, newRoom]);
-                                    setCustomRoomName('');
-                                    setIsAddingRoom(false);
-                                }} className="bg-primary text-white px-4 rounded-xl font-bold text-sm">Ok</button>
-                            </div>
-                         </div>
-                     </div>
-                 </div>
-             )}
-          </div>
-        )}
-
-        {/* VIEW: SHARE / FINAL */}
-        {view === 'share' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fadeIn">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6">
-                    <CheckCircle size={40} />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Laudo Pronto!</h3>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm text-sm">
-                    A vistoria foi gerada com sucesso e está pronta para o comparativo final com a vistoria de entrada.
-                </p>
-                <div className="flex flex-col gap-3 w-full max-w-xs mt-10">
-                    <button onClick={() => setView('compare')} className="h-14 rounded-2xl bg-indigo-600 text-white font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-indigo-700 transition-all">
-                        <ArrowRightLeft size={20} /> Ver Comparativo Final
-                    </button>
-                    <button className="h-14 rounded-2xl bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-emerald-600 transition-all">
-                        <MessageCircle size={20} /> Enviar para Inquilino
-                    </button>
-                </div>
-            </div>
         )}
 
       </div>
