@@ -172,7 +172,11 @@ const Dashboard: React.FC = () => {
             <button onClick={toggleTheme} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors">
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform">
+            <button 
+                onClick={() => navigate('/properties', { state: { openAdd: true } })}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform"
+                title="Novo Imóvel"
+            >
                 <Plus size={20} />
             </button>
         </div>

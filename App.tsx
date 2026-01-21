@@ -15,9 +15,7 @@ import Settings from './pages/Settings';
 import TenantDashboard from './pages/tenant/TenantDashboard';
 import TenantMaintenance from './pages/tenant/TenantMaintenance';
 import TenantProfile from './pages/tenant/TenantProfile';
-
-// Placeholder components for tenant routes
-const TenantPayments = () => <div className="p-6 text-center text-slate-500">Histórico de Pagamentos em breve</div>;
+import TenantPayments from './pages/tenant/TenantPayments';
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: 'owner' | 'tenant' }> = ({ children, allowedRole }) => {
   const { user, loading } = useAuth();

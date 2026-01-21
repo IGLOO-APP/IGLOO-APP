@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { PropertyDetails } from '../components/properties/PropertyDetails';
@@ -10,6 +11,7 @@ const Properties: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const location = useLocation();
   
   // Filters State
   const [activeFilter, setActiveFilter] = useState('Todos');
@@ -20,6 +22,15 @@ const Properties: React.FC = () => {
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Check for navigation state to open Add Form
+  useEffect(() => {
+    if (location.state && (location.state as any).openAdd) {
+        setShowAddForm(true);
+        // Clean state to avoid reopening on simple refresh
+        window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchProperties = async () => {

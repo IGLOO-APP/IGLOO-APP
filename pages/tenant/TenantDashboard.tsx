@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, MapPin, CheckCircle, Clock, FileText, AlertTriangle, ChevronRight, Bell, Moon, Sun, User, Settings, LogOut, Download, Barcode, Printer, Share2, X, CreditCard, Lock, Loader, ClipboardCheck } from 'lucide-react';
+import { Copy, MapPin, CheckCircle, Clock, FileText, AlertTriangle, ChevronRight, Bell, Moon, Sun, User, Settings, LogOut, Download, Barcode, Printer, Share2, X, CreditCard, Lock, Loader, ClipboardCheck, MessageCircle, Key, Camera, Info, Star, Award } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
@@ -45,15 +45,6 @@ const TenantDashboard: React.FC = () => {
   const [showCreditCard, setShowCreditCard] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [installments, setInstallments] = useState(1);
-
-  const latestMessage = {
-    id: 1,
-    subject: "Aviso sobre vistoria anual",
-    preview: "Olá João, gostaria de agendar a vistoria anual do imóvel para a próxima semana. Por favor, me informe qual...",
-    date: "Hoje, 09:30",
-    isRead: false
-  };
 
   useEffect(() => {
     const checkTheme = () => {
@@ -81,33 +72,6 @@ const TenantDashboard: React.FC = () => {
     }
   };
 
-  const notifications = [
-    { 
-      id: 0, 
-      title: 'Mensagem do Proprietário', 
-      desc: latestMessage.subject, 
-      time: 'Agora', 
-      type: 'message',
-      path: '/tenant/maintenance'
-    },
-    { 
-      id: 1, 
-      title: 'Fatura Disponível', 
-      desc: 'O boleto de Março já pode ser pago.', 
-      time: '2 h', 
-      type: 'info',
-      path: '/tenant/payments'
-    },
-    { 
-      id: 2, 
-      title: 'Aviso de Manutenção', 
-      desc: 'Manutenção no elevador dia 15/03', 
-      time: '1 dia', 
-      type: 'alert',
-      path: '/tenant/maintenance'
-    },
-  ];
-
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
     if (!showNotifications) setHasUnread(false);
@@ -130,27 +94,16 @@ const TenantDashboard: React.FC = () => {
      setTimeout(() => setInvoiceCopied(false), 2000);
   };
 
-  const cycleStatus = () => {
-    if (paymentStatus === 'pending') setPaymentStatus('paid');
-    else if (paymentStatus === 'paid') setPaymentStatus('late');
-    else setPaymentStatus('pending');
-  };
-
   const handleCardPayment = (e: React.FormEvent) => {
     e.preventDefault();
     setProcessingPayment(true);
-    
-    // Simulate API delay
     setTimeout(() => {
         setProcessingPayment(false);
         setPaymentSuccess(true);
-        setPaymentStatus('paid'); // Update main dashboard status
-        
-        // Close modal after success message
+        setPaymentStatus('paid');
         setTimeout(() => {
             setShowCreditCard(false);
             setPaymentSuccess(false);
-            setInstallments(1);
         }, 2000);
     }, 2500);
   };
@@ -180,22 +133,7 @@ const TenantDashboard: React.FC = () => {
                 <>
                     <div className="fixed inset-0 z-20 cursor-default" onClick={() => setShowUserMenu(false)}></div>
                     <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-scaleUp origin-top-left z-30">
-                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 mb-1">
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">{user?.name}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
-                        </div>
-                        
-                        <button className="w-full text-left px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary font-medium flex items-center gap-2 transition-colors">
-                            <User size={16} /> Meu Perfil
-                        </button>
-                        <button className="w-full text-left px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-primary font-medium flex items-center gap-2 transition-colors">
-                            <Settings size={16} /> Configurações
-                        </button>
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 my-1"></div>
-                        <button 
-                            onClick={() => { setShowUserMenu(false); logout(); }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium flex items-center gap-2 transition-colors"
-                        >
+                        <button onClick={() => { setShowUserMenu(false); logout(); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium flex items-center gap-2 transition-colors">
                             <LogOut size={16} /> Sair da conta
                         </button>
                     </div>
@@ -219,36 +157,18 @@ const TenantDashboard: React.FC = () => {
                     <Bell size={20} />
                     {hasUnread && <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-surface-dark"></span>}
                 </button>
-
                 {showNotifications && (
                     <>
                         <div className="fixed inset-0 z-20 cursor-default" onClick={() => setShowNotifications(false)}></div>
                         <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-scaleUp origin-top-right z-30">
                             <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
                                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notificações</h3>
-                                <button className="text-xs text-primary font-bold hover:underline">Marcar lidas</button>
                             </div>
-                            <div className="max-h-[300px] overflow-y-auto">
-                                {notifications.map((notif) => (
-                                    <div 
-                                        key={notif.id} 
-                                        onClick={() => {
-                                            if (notif.path) navigate(notif.path);
-                                            setShowNotifications(false);
-                                        }}
-                                        className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-gray-50 dark:border-gray-800 last:border-0 cursor-pointer transition-colors flex gap-3 group"
-                                    >
-                                        <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                                            notif.type === 'message' ? 'bg-indigo-500' :
-                                            notif.type === 'info' ? 'bg-blue-500' : 'bg-red-500'
-                                        }`}></div>
-                                        <div>
-                                            <p className={`text-sm font-bold ${notif.type === 'message' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>{notif.title}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">{notif.desc}</p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">{notif.time} atrás</p>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="max-h-[300px] overflow-y-auto px-2">
+                                <div className="p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer">
+                                    <p className="text-sm font-bold text-slate-800 dark:text-white">Pagamento Confirmado</p>
+                                    <p className="text-xs text-slate-500">Março 2024</p>
+                                </div>
                             </div>
                         </div>
                     </>
@@ -276,45 +196,36 @@ const TenantDashboard: React.FC = () => {
           </button>
       </div>
 
-      <div className="px-6 mb-6">
-        <div 
-            onClick={() => navigate('/tenant/maintenance')}
-            className="group bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden"
-        >
-            <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwRIAHlgLaW6OqzLEr6KH9kj4TGcypVin8vG0nCnlg_EiRsv3e561_S0pU6gWh-_QTbZSo1wTTeTa1eUzsn3qDoV7F2ZkeYhUXC1qQ693w1T_qhEMSRNparuohwnqCxmtjp1WP7yfrOyV41z5DUDYQWtT2DN2BOuEvt-l4Zme5iHAST-ZPnDLEWyZDtU3KB7inrHYdgFQW0i41SlR9Gu26TEHY7zIfA7Yz2Y6_85c20Atg3MSIoA-q5EdHHyFckC73eced5eTGvEg3')` }}></div>
-                    <div>
-                        <p className="text-xs font-bold text-blue-600 dark:text-blue-300 uppercase tracking-wide mb-0.5">Mensagem do Proprietário</p>
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{latestMessage.subject}</h3>
-                    </div>
-                </div>
-                <span className="text-[10px] text-blue-500 font-bold bg-white dark:bg-blue-900/30 px-2 py-1 rounded-full shadow-sm">{latestMessage.date}</span>
-            </div>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-3 leading-relaxed line-clamp-2 pl-[52px]">{latestMessage.preview}</p>
-        </div>
-      </div>
-
+      {/* RICH PAYMENT CARD */}
       <div className="px-6 mb-6">
         <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-             <div className="flex justify-between items-start mb-6">
+             <div className="flex justify-between items-start mb-4">
                 <div>
                     <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Próximo Vencimento</p>
                     <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">R$ 1.500,00</h3>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 font-medium">Vence em 10 de Março</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : paymentStatus === 'late' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                            {paymentStatus === 'paid' ? <CheckCircle size={10} /> : <Clock size={10} />}
+                            {paymentStatus === 'paid' ? 'Pago' : paymentStatus === 'late' ? 'Atrasado' : 'A Vencer: 10 Mar'}
+                        </span>
+                    </div>
                 </div>
-                <div 
-                    onClick={cycleStatus} 
-                    className={`h-12 w-12 rounded-2xl flex items-center justify-center cursor-pointer transition-colors ${
-                        paymentStatus === 'pending' ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' :
-                        paymentStatus === 'paid' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' :
-                        'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                    }`}
-                >
-                    {paymentStatus === 'pending' ? <Clock size={24} /> : 
-                     paymentStatus === 'paid' ? <CheckCircle size={24} /> : 
-                     <AlertTriangle size={24} />}
-                </div>
+             </div>
+
+             {/* Breakdown */}
+             <div className="flex gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto hide-scrollbar">
+                 <div className="shrink-0">
+                     <p className="text-[10px] text-slate-400 font-bold uppercase">Aluguel</p>
+                     <p className="font-bold text-slate-700 dark:text-slate-300">R$ 1.200</p>
+                 </div>
+                 <div className="shrink-0">
+                     <p className="text-[10px] text-slate-400 font-bold uppercase">Condomínio</p>
+                     <p className="font-bold text-slate-700 dark:text-slate-300">R$ 200</p>
+                 </div>
+                 <div className="shrink-0">
+                     <p className="text-[10px] text-slate-400 font-bold uppercase">IPTU</p>
+                     <p className="font-bold text-slate-700 dark:text-slate-300">R$ 100</p>
+                 </div>
              </div>
 
              <div className="space-y-3">
@@ -325,58 +236,118 @@ const TenantDashboard: React.FC = () => {
                     {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
                     {copied ? 'Código Pix Copiado!' : 'Copiar Código Pix'}
                 </button>
-                <button 
-                    onClick={() => setShowCreditCard(true)}
-                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all"
-                >
-                    <CreditCard size={18} />
-                    Pagar com Cartão
-                </button>
-                <button 
-                    onClick={() => setShowInvoice(true)}
-                    className="w-full h-12 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                >
-                    <FileText size={18} />
-                    Visualizar Boleto
-                </button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => setShowCreditCard(true)}
+                        className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all"
+                    >
+                        <CreditCard size={18} />
+                        Cartão
+                    </button>
+                    <button 
+                        onClick={() => setShowInvoice(true)}
+                        className="flex-1 h-12 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    >
+                        <Barcode size={18} />
+                        Boleto
+                    </button>
+                </div>
+             </div>
+
+             {/* Inline History */}
+             <div className="mt-6 pt-2">
+                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Últimos Pagamentos</p>
+                 <div className="space-y-3">
+                     {[
+                         { date: '05/02', status: 'paid' },
+                         { date: '04/01', status: 'paid' },
+                         { date: '05/12', status: 'late' }
+                     ].map((p, i) => (
+                         <div key={i} className="flex items-center justify-between text-sm">
+                             <span className="text-slate-600 dark:text-slate-400 font-medium">{p.date}</span>
+                             <span className={`text-xs font-bold ${p.status === 'paid' ? 'text-emerald-500' : 'text-red-500'}`}>
+                                 {p.status === 'paid' ? '✓ Pago' : '⚠️ Atrasado 2 dias'}
+                             </span>
+                         </div>
+                     ))}
+                     <button onClick={() => navigate('/tenant/payments')} className="text-xs font-bold text-primary hover:underline w-full text-center mt-2">Ver histórico completo</button>
+                 </div>
              </div>
         </div>
       </div>
 
-      <div className="px-6 pb-24">
+      {/* QUICK ACCESS GRID */}
+      <div className="px-6 mb-6">
          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Acesso Rápido</h3>
-         <div className="grid grid-cols-2 gap-4">
-            <button 
-                onClick={() => navigate('/tenant/maintenance')}
-                className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-primary/50 transition-colors text-left group"
-            >
-                <div className="h-10 w-10 bg-orange-50 dark:bg-orange-900/10 rounded-xl flex items-center justify-center text-orange-500 mb-3 group-hover:scale-110 transition-transform">
-                    <AlertTriangle size={20} />
-                </div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">Reportar Problema</p>
-                <p className="text-slate-400 text-xs mt-0.5">Manutenção e reparos</p>
-            </button>
-            <button 
-                onClick={() => setShowInspection(true)}
-                className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-primary/50 transition-colors text-left group"
-            >
-                <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-center text-emerald-500 mb-3 group-hover:scale-110 transition-transform">
-                    <ClipboardCheck size={20} />
-                </div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">Vistorias</p>
-                <p className="text-slate-400 text-xs mt-0.5">Laudos e aceites</p>
-            </button>
-            <button 
-                onClick={() => navigate('/tenant/profile')}
-                className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:border-primary/50 transition-colors text-left group"
-            >
-                <div className="h-10 w-10 bg-blue-50 dark:bg-blue-900/10 rounded-xl flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition-transform">
-                    <FileText size={20} />
-                </div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">Meu Contrato</p>
-                <p className="text-slate-400 text-xs mt-0.5">Ver documentos</p>
-            </button>
+         <div className="grid grid-cols-4 gap-3">
+            {[
+                { icon: Camera, label: 'Enviar Foto', color: 'bg-blue-100 text-blue-600', action: () => navigate('/tenant/maintenance') },
+                { icon: FileText, label: 'Docs', color: 'bg-purple-100 text-purple-600', action: () => navigate('/tenant/profile') },
+                { icon: MessageCircle, label: 'Chat', color: 'bg-emerald-100 text-emerald-600', action: () => navigate('/tenant/maintenance') },
+                { icon: Key, label: 'Chaves', color: 'bg-amber-100 text-amber-600', action: () => alert('Solicitação de chave enviada!') },
+            ].map((item, i) => (
+                <button key={i} onClick={item.action} className="flex flex-col items-center gap-2 group">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm ${item.color} dark:bg-opacity-20`}>
+                        <item.icon size={24} />
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 text-center leading-tight">{item.label}</span>
+                </button>
+            ))}
          </div>
+      </div>
+
+      {/* WIDGETS ROW */}
+      <div className="px-6 mb-24 space-y-6">
+          
+          {/* Condo Notices */}
+          <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                  <Info size={16} className="text-slate-400" />
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm">Avisos do Condomínio</h4>
+              </div>
+              <div className="space-y-3">
+                  <div className="flex gap-3 items-start">
+                      <div className="w-1 h-8 bg-blue-500 rounded-full shrink-0 mt-1"></div>
+                      <div>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Manutenção do Elevador</p>
+                          <p className="text-[10px] text-slate-500">Dia 20/03 das 09h às 12h.</p>
+                      </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                      <div className="w-1 h-8 bg-orange-500 rounded-full shrink-0 mt-1"></div>
+                      <div>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Reunião de Assembleia</p>
+                          <p className="text-[10px] text-slate-500">Dia 15/03 no Salão de Festas.</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          {/* Tenant Score */}
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-surface-dark dark:to-black rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute right-0 top-0 p-4 opacity-10">
+                  <Award size={80} />
+              </div>
+              <div className="flex justify-between items-start relative z-10">
+                  <div>
+                      <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Seu Score</p>
+                      <h3 className="text-3xl font-black mt-1 flex items-center gap-2">
+                          95<span className="text-lg text-slate-400 font-medium">/100</span>
+                      </h3>
+                      <div className="flex gap-1 mt-2">
+                          {[1,2,3,4,5].map(s => <Star key={s} size={12} className="text-yellow-400 fill-yellow-400" />)}
+                      </div>
+                  </div>
+                  <div className="text-right">
+                      <p className="text-xs font-medium text-slate-300">Você é um inquilino</p>
+                      <p className="text-lg font-bold text-yellow-400">5 Estrelas!</p>
+                  </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between text-xs text-slate-300">
+                  <span>Pontualidade: 100%</span>
+                  <span>Cuidado: 90%</span>
+              </div>
+          </div>
       </div>
 
       {showInspection && (
@@ -389,7 +360,6 @@ const TenantDashboard: React.FC = () => {
 
       {showInvoice && (
         <ModalWrapper onClose={() => setShowInvoice(false)} showCloseButton={false} className="md:max-w-3xl">
-            {/* ... (Invoice Modal Content Remains Same) ... */}
             <div className="flex flex-col h-full bg-background-light dark:bg-background-dark">
                 <div className="flex items-center justify-between px-4 md:px-6 pt-2 pb-2 md:pb-4 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">Detalhes do Boleto</h2>
@@ -414,7 +384,6 @@ const TenantDashboard: React.FC = () => {
                             </div>
                             <div className="flex-1 text-right font-mono text-xs md:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-200 truncate">34191.79001 01043.510047 91020.150008 5 89230000015000</div>
                         </div>
-                        {/* Simplified Invoice Content for brevity, assume same structure as before */}
                         <div className="p-4 text-center">
                             <p className="font-bold text-lg mb-2">R$ 1.500,00</p>
                             <p className="text-sm text-slate-500">Vencimento: 10/03/2024</p>
@@ -433,7 +402,6 @@ const TenantDashboard: React.FC = () => {
 
      {showCreditCard && (
         <ModalWrapper onClose={() => setShowCreditCard(false)} title="Pagar com Cartão" showCloseButton={true}>
-            {/* ... (Credit Card Modal Content Remains Same) ... */}
              <div className="flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {paymentSuccess ? (
@@ -449,7 +417,6 @@ const TenantDashboard: React.FC = () => {
                                 <CreditCard size={24} className="opacity-80" />
                                 <p className="font-mono text-xl tracking-wider">•••• •••• •••• ••••</p>
                             </div>
-                            {/* Inputs omitted for brevity, logic exists in handleCardPayment */}
                             <div className="p-4 text-center text-sm text-slate-500">Formulário de cartão simulado. Clique em Pagar.</div>
                         </form>
                     )}
