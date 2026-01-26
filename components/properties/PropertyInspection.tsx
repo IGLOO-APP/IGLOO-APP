@@ -47,6 +47,7 @@ interface PropertyInspectionProps {
   property: Property;
   onClose: () => void;
   initialView?: 'list' | 'detail';
+  isTenant?: boolean;
 }
 
 const ROOM_TEMPLATES = [
@@ -56,9 +57,9 @@ const ROOM_TEMPLATES = [
     { id: 'living', label: 'Sala', items: ['Pintura/Paredes', 'Piso', 'Porta Entrada', 'Interfone', 'Tomadas'] }
 ];
 
-export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property, onClose, initialView = 'list' }) => {
-  const [view, setView] = useState<'list' | 'detail' | 'create'>('list');
-  const [isOwnerMode, setIsOwnerMode] = useState(true); // Toggle for Demo purposes
+export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property, onClose, initialView = 'list', isTenant = false }) => {
+  const [view, setView] = useState<'list' | 'detail' | 'create'>(initialView === 'detail' ? 'detail' : 'list');
+  const [isOwnerMode, setIsOwnerMode] = useState(!isTenant); // Toggle for Demo purposes
   
   // Mock Data: Scenario where Tenant has partially responded
   const [inspectionData, setInspectionData] = useState<Room[]>([
@@ -411,12 +412,14 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property
                     >
                         <ArrowRightLeft size={18} /> Comparar
                     </button>
-                    <button 
-                        onClick={() => setView('create')}
-                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all"
-                    >
-                        <Plus size={18} /> Nova
-                    </button>
+                    {!isTenant && (
+                        <button 
+                            onClick={() => setView('create')}
+                            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all"
+                        >
+                            <Plus size={18} /> Nova
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -425,7 +428,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property
                 
                 {/* Item 1: Output Inspection with Contestations */}
                 <div 
-                    onClick={() => { setView('detail'); setIsOwnerMode(true); }} // Default to Owner view for this item
+                    onClick={() => { setView('detail'); setIsOwnerMode(!isTenant); }}
                     className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-red-200 dark:border-red-900/30 shadow-sm flex items-center justify-between group hover:border-red-400 transition-all cursor-pointer relative overflow-hidden"
                 >
                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
@@ -443,7 +446,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({ property
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-red-600 transition-colors">
-                            Resolver
+                            {isTenant ? 'Ver Detalhes' : 'Resolver'}
                         </button>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+
 export type UserRole = 'owner' | 'tenant';
 
 export interface User {
@@ -27,26 +28,54 @@ export interface SignatureAudit {
   integrity_verified: boolean;
 }
 
+export type ContractStatus = 'draft' | 'pending_signature' | 'active' | 'expiring_soon' | 'expired' | 'cancelled' | 'renewed';
+
+export interface Signer {
+  id: string;
+  role: 'owner' | 'tenant' | 'witness';
+  name: string;
+  email: string;
+  status: 'pending' | 'signed' | 'rejected';
+  signed_at?: string;
+}
+
+export interface ContractHistoryEvent {
+  id: string;
+  action: 'created' | 'sent' | 'viewed' | 'signed' | 'activated' | 'cancelled' | 'renewed';
+  description: string;
+  performed_by: string;
+  date: string;
+}
+
 export interface Contract {
   id: number | string;
+  contract_number: string;
+  property: string; // Property Name/Address
+  tenant_name: string;
+  owner_name: string;
+  
+  // Dates
   start_date: string;
   end_date: string;
-  value: string; // Formatted string "R$ 1.500"
-  numeric_value?: number; // Added for calculations
-  status: 'active' | 'draft' | 'ended' | 'pending_signature' | 'signed';
+  signature_date?: string;
+  
+  // Financials
+  value: string; // Formatted "R$ 1.500"
+  numeric_value: number;
+  security_deposit?: number;
+  payment_day: number;
+  
+  // Status & Workflow
+  status: ContractStatus;
+  signers: Signer[];
+  history: ContractHistoryEvent[];
+  
+  // Document
   pdf_url?: string;
-  property: string; // Added for display
-  tenant?: string; // Added for display
-  tenant_phone?: string; // Added for WhatsApp actions
-  // Financial Breakdown
-  rent_amount?: string;
-  condo_amount?: string;
-  iptu_amount?: string;
-  admin_fee?: string;
-  // Signature Logic
-  audit_trail?: SignatureAudit;
-  sent_date?: string; // For "Sent 2 days ago" logic
-  viewed_by_tenant?: boolean; // For "Viewed" feedback
+  template_type?: 'residential' | 'commercial';
+  
+  // Metadata for list view logic
+  days_remaining?: number;
 }
 
 export interface Property {

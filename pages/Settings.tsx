@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { User, Bell, CreditCard, Save, CheckCircle, Smartphone, Mail, QrCode, Barcode, Landmark, Banknote, ShieldCheck, ToggleLeft, ToggleRight, AlertCircle } from 'lucide-react';
+import { User, Bell, CreditCard, Save, CheckCircle, Smartphone, Mail, QrCode, Barcode, Landmark, Banknote, ShieldCheck, ToggleLeft, ToggleRight, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { stripeService } from '../services/stripeService';
 
 interface PaymentMethod {
   id: string;
@@ -17,6 +18,7 @@ const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'financial' | 'notifications'>('financial');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState(false);
 
   // --- State: Financial Configuration (The core request) ---
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
@@ -110,6 +112,13 @@ const Settings: React.FC = () => {
     );
   };
 
+  const handleConnectStripe = async () => {
+      // Simulate Stripe Connect Flow
+      const { url } = await stripeService.createConnectAccountLink();
+      alert(`Em produção, você seria redirecionado para: ${url}\n\nPara o teste, vamos assumir que deu certo.`);
+      setStripeConnected(true);
+  };
+
   return (
     <div className="flex flex-col h-full w-full max-w-md mx-auto md:max-w-5xl relative bg-background-light dark:bg-background-dark">
       
@@ -165,12 +174,41 @@ const Settings: React.FC = () => {
             {/* --- TAB: FINANCIAL (ADMIN) --- */}
             {activeTab === 'financial' && (
                 <div className="animate-fadeIn space-y-6">
+                    
+                    {/* Stripe Connect Onboarding */}
+                    <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div>
+                                <h3 className="font-bold text-xl flex items-center gap-2"><CreditCard /> Stripe Connect</h3>
+                                <p className="text-indigo-100 text-sm mt-2 max-w-md">
+                                    Conecte sua conta bancária para receber pagamentos de aluguéis automaticamente via Cartão e Pix com split de taxas.
+                                </p>
+                            </div>
+                            {stripeConnected ? (
+                                <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-xl font-bold flex items-center gap-2">
+                                    <CheckCircle size={20} className="text-emerald-300" />
+                                    Conta Conectada
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={handleConnectStripe}
+                                    className="bg-white text-indigo-700 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-50 transition-all flex items-center gap-2"
+                                >
+                                    Conectar Agora <ArrowRight size={18} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Decorative circles */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-10 -mb-10"></div>
+                    </div>
+
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-5 flex gap-4">
                         <ShieldCheck className="text-blue-600 dark:text-blue-400 shrink-0" size={28} />
                         <div>
                             <h3 className="font-bold text-blue-900 dark:text-blue-300">Autonomia de Recebimento</h3>
                             <p className="text-sm text-blue-700 dark:text-blue-400 mt-1 leading-relaxed">
-                                Selecione quais formas de pagamento você aceita. As opções ativas aparecerão automaticamente no painel do inquilino para pagamento de aluguel e encargos.
+                                Selecione quais formas de pagamento você aceita. As opções ativas aparecerão automaticamente no painel do inquilino.
                             </p>
                         </div>
                     </div>

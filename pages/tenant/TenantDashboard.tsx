@@ -354,7 +354,8 @@ const TenantDashboard: React.FC = () => {
           <PropertyInspection 
             property={mockTenantProperty} 
             onClose={() => setShowInspection(false)}
-            initialView="tenant_view"
+            initialView="list"
+            isTenant={true}
           />
       )}
 

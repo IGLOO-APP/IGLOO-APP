@@ -69,11 +69,18 @@ const Properties: React.FC = () => {
           },
           contract: {
             id: 501,
+            contract_number: 'CTR-2024-501',
+            property: 'Loft Industrial Sul',
+            tenant_name: 'João Silva',
+            owner_name: 'Investidor Exemplo',
             start_date: '10/01/2024',
             end_date: '10/01/2026',
             value: 'R$ 2.400,00',
+            numeric_value: 2400,
+            payment_day: 10,
             status: 'active',
-            property: 'Loft Industrial Sul'
+            signers: [],
+            history: []
           }
         },
         {

@@ -1,629 +1,196 @@
+
 import React, { useState, useEffect } from 'react';
-import { Plus, Calendar, PlayCircle, Clock, History, AlertTriangle, X, Building2, User, ChevronDown, FileText, Calculator, Printer, ShieldAlert, Upload, Send, CheckCheck, Fingerprint, Lock, Eye, Download, MessageCircle, AlertCircle, Pencil, ArrowLeft, Save } from 'lucide-react';
-import { KITNET_CONTRACT_TEMPLATE, KITNET_RULES_TEMPLATE } from '../utils/contractTemplates';
-import { generateFilledContract, getMockContractData } from '../utils/contractGenerator';
-import { ContractUploader } from '../components/contracts/ContractUploader';
-import { generateSignatureRequestMessage, captureSignerMetadata } from '../utils/signatureLogic';
-import { SignatureAudit, Contract } from '../types';
+import { Plus, Search, Filter, RefreshCw, FileText, BarChart3 } from 'lucide-react';
+import { Contract, ContractStatus } from '../types';
+import { generateMockContracts } from '../utils/contractLogic';
+import { ContractCard } from '../components/contracts/ContractCard';
+import { CreateContractWizard } from '../components/contracts/CreateContractWizard';
+import { ContractDetails } from '../components/contracts/ContractDetails';
 
 const Contracts: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [signModalOpen, setSignModalOpen] = useState(false);
-  const [selectedContractForSign, setSelectedContractForSign] = useState<Contract | null>(null);
-  
-  // New Contract Flow State
-  const [creationMode, setCreationMode] = useState<'template' | 'upload' | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [signRequestStep, setSignRequestStep] = useState<1 | 2 | 3>(1); // 1: Method, 2: Upload/Gen, 3: Select Tenant
-  
-  // Signing State
-  const [isSigning, setIsSigning] = useState(false);
-  const [auditData, setAuditData] = useState<SignatureAudit | null>(null);
-
-  // Contract Generation State
-  const [docType, setDocType] = useState<'contract' | 'rules'>('contract');
-  const [previewContent, setPreviewContent] = useState('');
-  
-  // Tenant Selection State
-  const [selectedTenant, setSelectedTenant] = useState('');
-  const [selectedTenantContact, setSelectedTenantContact] = useState('');
-  const [generatedMessage, setGeneratedMessage] = useState('');
-
-  // Contract Breakdown State (Template)
-  const [rentValue, setRentValue] = useState('');
-  const [condoValue, setCondoValue] = useState('');
-  const [iptuValue, setIptuValue] = useState('');
-  const [feeValue, setFeeValue] = useState('');
-  const [totalValue, setTotalValue] = useState(0);
-
-  // Updated Mock Data with specific statuses for UX demo
-  const [contracts, setContracts] = useState<Contract[]>([
-    {
-      id: 1,
-      property: 'Apto 104 - Centro',
-      start_date: '10 Out 2023',
-      end_date: '10 Out 2024',
-      value: 'R$ 1.500',
-      status: 'pending_signature', // "Pendente de Envio" logic simulation or "Aguardando"
-      sent_date: undefined, // Not sent yet
-      pdf_url: '#',
-      audit_trail: undefined
-    },
-    {
-      id: 2,
-      property: 'Kitnet 05 - Jardins',
-      tenant: 'João Silva',
-      tenant_phone: '5511999999999',
-      start_date: '01 Jan 2024',
-      end_date: '01 Jan 2026',
-      value: 'R$ 1.200',
-      status: 'pending_signature',
-      sent_date: '2024-03-10T10:00:00Z', // Sent 2 days ago
-      viewed_by_tenant: true, // Tenant saw it but didn't sign
-      pdf_url: '#',
-    },
-    {
-      id: 3,
-      property: 'Studio 22 - Vila Madalena',
-      tenant: 'Maria Oliveira',
-      start_date: '01 Fev 2024',
-      end_date: '01 Fev 2026',
-      value: 'R$ 1.800',
-      status: 'active', // Signed
-      audit_trail: {
-          signed_at: '2024-02-01T14:30:00Z',
-          signer_ip: '201.123.45.67',
-          user_agent: 'Mozilla/5.0...',
-          signer_identifier: 'maria@email.com',
-          document_hash: 'a1b2c3d4e5f6...',
-          integrity_verified: true
-      }
-    },
-    {
-        id: 4,
-        property: 'Loft Industrial',
-        tenant: 'Carlos Pereira',
-        start_date: '15 Mar 2023',
-        end_date: '15 Mar 2024', // Expiring Soon (assuming today is Mar 2024)
-        value: 'R$ 2.400',
-        status: 'active',
-        audit_trail: { signed_at: '...', signer_ip: '...', user_agent: '...', signer_identifier: '...', document_hash: '...', integrity_verified: true }
-    }
-  ]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [filter, setFilter] = useState<'all' | ContractStatus>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showWizard, setShowWizard] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const r = parseFloat(rentValue) || 0;
-    const c = parseFloat(condoValue) || 0;
-    const i = parseFloat(iptuValue) || 0;
-    const f = parseFloat(feeValue) || 0;
-    setTotalValue(r + c + i + f);
-  }, [rentValue, condoValue, iptuValue, feeValue]);
+    // Simulate API Fetch
+    setTimeout(() => {
+        setContracts(generateMockContracts());
+        setLoading(false);
+    }, 800);
+  }, []);
 
-  // Generate preview when form opens or doc type changes
-  useEffect(() => {
-      if (showAddForm && creationMode === 'template') {
-          const template = docType === 'contract' ? KITNET_CONTRACT_TEMPLATE : KITNET_RULES_TEMPLATE;
-          const mockData = getMockContractData();
-          if (rentValue) mockData.valor_aluguel = rentValue;
-          if (condoValue) mockData.valor_condominio = condoValue;
-          
-          const content = generateFilledContract(template, mockData);
-          setPreviewContent(content);
-      }
-  }, [showAddForm, docType, rentValue, condoValue, creationMode]);
+  const handleCreateContract = (data: any) => {
+      // Safe Date Logic to prevent crash
+      const startDate = data.startDate ? new Date(data.startDate) : new Date();
+      const durationMonths = parseInt(data.duration) || 30;
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + durationMonths);
 
-  const handleOpenSignModal = (contract: Contract) => {
-      setSelectedContractForSign(contract);
-      setSignModalOpen(true);
-      // Generate preview content for existing contracts if strictly template based
-      // For demo, we just reuse the template text if it's not an uploaded file
-      const template = KITNET_CONTRACT_TEMPLATE;
-      const mockData = getMockContractData();
-      setPreviewContent(generateFilledContract(template, mockData));
-  };
-
-  const handleDigitalSignature = async () => {
-      setIsSigning(true);
+      // Mock Creation Logic
+      const newContract: Contract = {
+          id: Date.now().toString(),
+          contract_number: `CTR-2024-${Math.floor(Math.random() * 1000)}`,
+          property: data.property || 'Imóvel Exemplo',
+          tenant_name: data.tenantName || 'Inquilino',
+          owner_name: 'Investidor Exemplo',
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          value: `R$ ${data.rentValue || '0,00'}`,
+          numeric_value: parseFloat(data.rentValue) || 0,
+          payment_day: 10,
+          status: 'draft',
+          signers: [
+              { id: 's_new_1', role: 'owner', name: 'Investidor', email: 'inv@igloo.com', status: 'pending' },
+              { id: 's_new_2', role: 'tenant', name: data.tenantName || 'Inquilino', email: 'tenant@email.com', status: 'pending' }
+          ],
+          history: [
+              { id: 'h_new', action: 'created', description: 'Rascunho criado', performed_by: 'Investidor', date: new Date().toLocaleString() }
+          ]
+      };
       
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const audit = await captureSignerMetadata(selectedContractForSign?.tenant || 'tenant@email.com');
-      
-      setAuditData(audit);
-      setIsSigning(false);
-      
-      // Update contract list status locally
-      if (selectedContractForSign) {
-          setContracts(prev => prev.map(c => c.id === selectedContractForSign.id ? { ...c, status: 'active', audit_trail: audit } : c));
-      }
+      setContracts([newContract, ...contracts]);
+      setShowWizard(false);
   };
 
-  const handleResetForm = () => {
-      setShowAddForm(false);
-      setSignRequestStep(1);
-      setCreationMode(null);
-      setUploadedFile(null);
-      setSelectedTenant('');
-      setGeneratedMessage('');
+  const handleUpdateContract = (updated: Contract) => {
+      setContracts(contracts.map(c => c.id === updated.id ? updated : c));
+      setSelectedContract(updated);
   };
 
-  const handleProceedToTenant = () => {
-      setSignRequestStep(3);
-      // Simulate message generation
-      const msg = generateSignatureRequestMessage(
-          "Investidor Exemplo", 
-          selectedTenant || "Inquilino", 
-          "Imóvel Selecionado", 
-          "https://igloo.app/sign/contract-123"
-      );
-      setGeneratedMessage(msg);
-  };
+  const filteredContracts = contracts.filter(c => {
+      const matchesSearch = c.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            c.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            c.contract_number.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filter === 'all' || c.status === filter;
+      return matchesSearch && matchesFilter;
+  });
 
-  const handleSendWhatsApp = (contract: Contract) => {
-      const msg = encodeURIComponent(`Olá, segue o link para assinatura do contrato: https://igloo.app/sign/${contract.id}`);
-      window.open(`https://wa.me/${contract.tenant_phone || ''}?text=${msg}`, '_blank');
-  };
-
-  // Helper to determine status display
-  const getStatusDisplay = (contract: Contract) => {
-      // Logic for Expiring Soon
-      const endDate = new Date(contract.end_date);
-      const today = new Date();
-      const diffTime = endDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (contract.status === 'active' && diffDays <= 30 && diffDays > 0) {
-          return { label: 'Vencendo em breve', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: AlertTriangle };
-      }
-
-      if (contract.status === 'active') {
-          return { label: 'Assinado', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: CheckCheck };
-      }
-
-      if (contract.status === 'pending_signature') {
-          if (!contract.sent_date) {
-              return { label: 'Pendente de Envio', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: Send };
-          }
-          return { label: 'Aguardando Assinatura', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Clock };
-      }
-
-      return { label: 'Rascunho', color: 'bg-gray-100 text-gray-500', icon: FileText };
-  };
+  // Stats
+  const activeCount = contracts.filter(c => c.status === 'active').length;
+  const pendingCount = contracts.filter(c => c.status === 'pending_signature').length;
+  const expiringCount = contracts.filter(c => c.status === 'expiring_soon').length;
 
   return (
-    <div className="h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative">
+    <div className="h-full flex flex-col w-full max-w-[1600px] mx-auto relative">
        
-       {/* MAIN LIST VIEW (Hidden when creating contract) */}
-       {!showAddForm && (
-         <>
-           <header className="sticky top-0 z-10 bg-background-light dark:bg-background-dark px-4 py-4 flex items-center justify-between border-b border-gray-200 dark:border-white/5 transition-colors">
-             <div>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Gestão de Contratos</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Status e Assinaturas</p>
-             </div>
-             <button 
-                onClick={() => setShowAddForm(true)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-surface-dark text-primary shadow-sm border border-slate-100 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-             >
-                <Plus size={24} />
-             </button>
-           </header>
+       {/* Header */}
+       <header className="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-5 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors">
+         <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Gestão de Contratos</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Ciclo de vida e assinaturas digitais</p>
+         </div>
+         <button 
+            onClick={() => setShowWizard(true)}
+            className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95"
+         >
+            <Plus size={20} />
+            <span className="hidden md:inline">Novo Contrato</span>
+         </button>
+       </header>
 
-           <div className="px-4 py-2">
-             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-                <button onClick={() => setActiveTab('all')} className={`flex h-9 shrink-0 items-center gap-x-2 rounded-full px-4 shadow-sm transition-all ${activeTab === 'all' ? 'bg-primary text-white' : 'bg-white dark:bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'}`}>
-                    <span className="text-sm font-bold">Todos</span>
-                </button>
-                <button onClick={() => setActiveTab('pending')} className={`flex h-9 shrink-0 items-center gap-x-2 rounded-full px-4 shadow-sm transition-all ${activeTab === 'pending' ? 'bg-primary text-white' : 'bg-white dark:bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'}`}>
-                    <span className="text-sm font-medium">Pendentes</span>
-                </button>
-                <button onClick={() => setActiveTab('active')} className={`flex h-9 shrink-0 items-center gap-x-2 rounded-full px-4 shadow-sm transition-all ${activeTab === 'active' ? 'bg-primary text-white' : 'bg-white dark:bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'}`}>
-                    <span className="text-sm font-medium">Ativos</span>
-                </button>
-             </div>
-           </div>
-
-           <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-4">
-              {contracts.map(contract => {
-                 const statusInfo = getStatusDisplay(contract);
-                 const StatusIcon = statusInfo.icon;
-
-                 return (
-                 <div key={contract.id} className={`flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden transition-all hover:shadow-md`}>
-                     {/* Header Status Bar */}
-                     <div className={`px-4 py-2 flex justify-between items-center border-b ${statusInfo.color.replace('bg-', 'bg-opacity-20 bg-').replace('text-', 'text-opacity-100 ')} dark:bg-opacity-10`}>
-                        <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${statusInfo.color.split(' ')[1]}`}>
-                            <StatusIcon size={14} />
-                            {statusInfo.label}
-                        </div>
-                        {contract.sent_date && !contract.audit_trail && (
-                            <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
-                                <Clock size={10} /> Enviado há 2 dias
-                            </span>
-                        )}
-                     </div>
-
-                     <div className="flex p-4 gap-4">
-                        <div className="w-12 h-12 shrink-0 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 font-bold text-lg">
-                            {contract.tenant ? contract.tenant.charAt(0) : <User size={20} />}
-                        </div>
-                        <div className="flex-1 flex flex-col justify-center">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{contract.property}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{contract.tenant || 'Inquilino não atribuído'}</p>
-                            
-                            {/* Visual Feedback: Viewed */}
-                            {contract.viewed_by_tenant && !contract.audit_trail && (
-                                <div className="flex items-center gap-1 mt-2 text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/10 w-fit px-2 py-0.5 rounded-full animate-pulse">
-                                    <Eye size={10} /> Visualizado pelo inquilino
-                                </div>
-                            )}
-                        </div>
-                        <div className="text-right flex flex-col justify-center">
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">{contract.value}</span>
-                            <span className="text-[10px] text-slate-400">Mensal</span>
-                        </div>
-                     </div>
-                     
-                     {/* Action Footer */}
-                     <div className="px-4 pb-4 pt-0 flex gap-2">
-                         {statusInfo.label === 'Pendente de Envio' && (
-                             <button 
-                                onClick={() => handleSendWhatsApp(contract)}
-                                className="flex-1 h-9 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all"
-                             >
-                                 <MessageCircle size={14} /> Enviar por WhatsApp
-                             </button>
-                         )}
-
-                         {statusInfo.label === 'Aguardando Assinatura' && (
-                             <button 
-                                className="flex-1 h-9 flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
-                             >
-                                 <Send size={14} /> Reenviar Link
-                             </button>
-                         )}
-
-                         {(statusInfo.label === 'Assinado' || statusInfo.label === 'Vencendo em breve') && (
-                             <button 
-                                className="flex-1 h-9 flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm hover:opacity-90 transition-all"
-                             >
-                                 <Download size={14} /> Baixar PDF
-                             </button>
-                         )}
-                         
-                         <button 
-                            onClick={() => handleOpenSignModal(contract)}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 text-slate-400 hover:text-primary hover:border-primary transition-colors"
-                            title="Visualizar"
-                         >
-                             <Eye size={16} />
-                         </button>
-                     </div>
-                 </div>
-              )})}
-           </div>
-         </>
-       )}
-
-       {/* FULL SCREEN CREATE CONTRACT FLOW */}
-       {showAddForm && (
-          <div className="fixed inset-0 z-50 bg-background-light dark:bg-background-dark flex flex-col animate-fadeIn">
-             
-             {/* Full Screen Header */}
-             <div className="flex-none flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark shadow-sm z-30">
-                <div className="flex items-center gap-4">
-                    <button 
-                        onClick={handleResetForm}
-                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">Novo Contrato</h2>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                            <span className={signRequestStep >= 1 ? 'text-primary font-bold' : ''}>1. Tipo</span>
-                            <span>&bull;</span>
-                            <span className={signRequestStep >= 2 ? 'text-primary font-bold' : ''}>2. Edição</span>
-                            <span>&bull;</span>
-                            <span className={signRequestStep >= 3 ? 'text-primary font-bold' : ''}>3. Envio</span>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    {signRequestStep === 2 && (
-                        <button 
-                            onClick={() => setSignRequestStep(3)}
-                            disabled={creationMode === 'upload' && !uploadedFile}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Continuar <Send size={16} />
-                        </button>
-                    )}
-                </div>
-             </div>
-             
-             {/* Content Area - Occupies remaining height */}
-             <div className="flex-1 overflow-hidden relative">
-                
-                {/* STEP 1: SELECT METHOD */}
-                {signRequestStep === 1 && (
-                    <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-black/20">
-                        <div className="text-center mb-10">
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Como deseja criar este contrato?</h3>
-                            <p className="text-slate-500 mt-2">Escolha entre usar nosso modelo inteligente ou enviar um arquivo pronto.</p>
-                        </div>
-                        
-                        <div className="grid md:grid-cols-2 gap-6 w-full max-w-3xl">
-                            <button 
-                                onClick={() => { setCreationMode('upload'); setSignRequestStep(2); }}
-                                className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white dark:bg-surface-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-xl transition-all group"
-                            >
-                                <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                                    <Upload className="w-10 h-10 text-slate-500 group-hover:text-primary" />
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="font-bold text-slate-900 dark:text-white text-xl">Upload de Arquivo</h4>
-                                    <p className="text-sm text-slate-500 mt-2">Tenho um PDF ou DOCX pronto.</p>
-                                </div>
-                            </button>
-
-                            <button 
-                                onClick={() => { setCreationMode('template'); setSignRequestStep(2); }}
-                                className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl bg-white dark:bg-surface-dark border-2 border-transparent hover:border-primary shadow-sm hover:shadow-xl transition-all group"
-                            >
-                                <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                                    <FileText className="w-10 h-10 text-slate-500 group-hover:text-primary" />
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="font-bold text-slate-900 dark:text-white text-xl">Gerar Modelo Igloo</h4>
-                                    <p className="text-sm text-slate-500 mt-2">Preenchimento automático inteligente.</p>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* STEP 2: FULL SCREEN EDITOR */}
-                {signRequestStep === 2 && (
-                    <div className="flex flex-col md:flex-row h-full">
-                        {/* Sidebar: Data Entry */}
-                        <div className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-surface-dark border-r border-gray-200 dark:border-white/5 flex flex-col h-full z-20 shadow-xl">
-                            <div className="p-6 border-b border-gray-200 dark:border-white/5">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
-                                    <Pencil size={18} className="text-primary" /> Dados do Contrato
-                                </h3>
-                                <p className="text-xs text-slate-500 mt-1">Preencha para atualizar o modelo.</p>
-                            </div>
-                            
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                                {creationMode === 'upload' ? (
-                                    <ContractUploader onUploadComplete={(file) => setUploadedFile(file)} />
-                                ) : (
-                                    <>
-                                        <div className="space-y-4">
-                                            <label className="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Valores Mensais</label>
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Aluguel</span>
-                                                    <input type="number" value={rentValue} onChange={e => setRentValue(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="0,00" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Condomínio</span>
-                                                    <input type="number" value={condoValue} onChange={e => setCondoValue(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="0,00" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">IPTU</span>
-                                                    <input type="number" value={iptuValue} onChange={e => setIptuValue(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary dark:text-white" placeholder="0,00" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="pt-4 border-t border-gray-200 dark:border-white/5">
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-bold text-slate-900 dark:text-white">Total Mensal</span>
-                                                <span className="font-bold text-lg text-primary">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Main Area: Document Preview / Edit */}
-                        <div className="flex-1 bg-slate-100 dark:bg-black/30 overflow-y-auto p-4 md:p-8 flex justify-center">
-                            {creationMode === 'template' ? (
-                                <div className="w-full max-w-4xl h-full flex flex-col">
-                                    <div className="bg-white text-black shadow-2xl min-h-full w-full relative">
-                                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-indigo-500"></div>
-                                        <textarea 
-                                            value={previewContent}
-                                            onChange={(e) => setPreviewContent(e.target.value)}
-                                            className="w-full h-full min-h-[800px] p-10 md:p-16 resize-none outline-none font-serif text-sm leading-relaxed text-slate-800 selection:bg-primary/20"
-                                            spellCheck={false}
-                                        />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                                    {uploadedFile ? (
-                                        <div className="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-lg text-center max-w-sm">
-                                            <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <CheckCheck size={40} />
-                                            </div>
-                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Arquivo Pronto</h3>
-                                            <p className="text-sm text-slate-500">{uploadedFile.name}</p>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center">
-                                            <Eye size={48} className="mb-4 opacity-50 mx-auto" />
-                                            <p>Faça upload do arquivo para visualizar a prévia.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* STEP 3: SELECT TENANT & SEND */}
-                {signRequestStep === 3 && (
-                    <div className="h-full overflow-y-auto bg-slate-50 dark:bg-black/20 flex flex-col items-center p-6 md:p-12">
-                        <div className="max-w-2xl w-full space-y-8">
-                            <div className="text-center">
-                                <h3 className="text-3xl font-bold text-slate-900 dark:text-white">Quem deve assinar?</h3>
-                                <p className="text-slate-500 mt-2 text-lg">Selecione o inquilino para enviar a solicitação de assinatura.</p>
-                            </div>
-
-                            <div className="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 space-y-6">
-                                <div className="relative">
-                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Locatário</label>
-                                    <div className="relative">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                                        <select 
-                                            className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 appearance-none outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-medium text-lg"
-                                            onChange={(e) => {
-                                                const selected = e.target.value;
-                                                setSelectedTenant(selected);
-                                                setSelectedTenantContact(selected === 'João Silva' ? '(11) 99999-9999' : '(21) 98888-8888');
-                                                if (selected) handleProceedToTenant();
-                                            }}
-                                        >
-                                            <option value="">Selecione um Inquilino...</option>
-                                            <option value="João Silva">João Silva (Apt 101)</option>
-                                            <option value="Maria Oliveira">Maria Oliveira (Kitnet 05)</option>
-                                        </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                                    </div>
-                                </div>
-
-                                {generatedMessage && (
-                                    <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl p-6 animate-fadeIn">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className="text-xs font-bold uppercase text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-                                                <Send size={14} /> Mensagem Pronta
-                                            </span>
-                                            <button className="text-xs font-bold text-emerald-600 hover:underline" onClick={() => navigator.clipboard.writeText(generatedMessage)}>Copiar</button>
-                                        </div>
-                                        <div className="bg-white dark:bg-black/20 p-4 rounded-xl text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-mono border border-emerald-100 dark:border-white/5 mb-6">
-                                            {generatedMessage}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <button className="h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-                                                <MessageCircle size={18} /> Enviar WhatsApp
-                                            </button>
-                                            <button className="h-12 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 text-slate-800 dark:text-white rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2">
-                                                <Download size={18} /> Baixar PDF
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-             </div>
+       <div className="flex-1 overflow-y-auto px-6 pb-24">
+          
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
+              <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
+                  <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ativos</p>
+                      <p className="text-2xl font-black text-emerald-500">{activeCount}</p>
+                  </div>
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600"><FileText size={24} /></div>
+              </div>
+              <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
+                  <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendentes</p>
+                      <p className="text-2xl font-black text-blue-500">{pendingCount}</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600"><RefreshCw size={24} /></div>
+              </div>
+              <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between">
+                  <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vencendo</p>
+                      <p className="text-2xl font-black text-amber-500">{expiringCount}</p>
+                  </div>
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-amber-600"><BarChart3 size={24} /></div>
+              </div>
           </div>
+
+          {/* Filters & Search */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar contratos..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-sm focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white"
+                  />
+              </div>
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+                  {[
+                      { id: 'all', label: 'Todos' },
+                      { id: 'active', label: 'Ativos' },
+                      { id: 'pending_signature', label: 'Assinatura' },
+                      { id: 'expiring_soon', label: 'Vencendo' },
+                      { id: 'draft', label: 'Rascunhos' },
+                  ].map(f => (
+                      <button 
+                        key={f.id}
+                        onClick={() => setFilter(f.id as any)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
+                            filter === f.id 
+                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent' 
+                            : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/5 hover:bg-slate-50'
+                        }`}
+                      >
+                          {f.label}
+                      </button>
+                  ))}
+              </div>
+          </div>
+
+          {/* Grid of Contracts */}
+          {loading ? (
+              <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredContracts.map(contract => (
+                      <ContractCard 
+                        key={contract.id} 
+                        contract={contract} 
+                        onClick={setSelectedContract}
+                      />
+                  ))}
+              </div>
+          )}
+          
+          {!loading && filteredContracts.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                  <FileText size={48} className="opacity-50 mb-4" />
+                  <p>Nenhum contrato encontrado com os filtros atuais.</p>
+              </div>
+          )}
+       </div>
+
+       {/* Modals */}
+       {showWizard && (
+           <CreateContractWizard 
+             onClose={() => setShowWizard(false)} 
+             onComplete={handleCreateContract} 
+           />
        )}
 
-       {/* SIGNING MODAL (Existing logic preserved) */}
-       {signModalOpen && selectedContractForSign && (
-           <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4 animate-fadeIn">
-               <div className="w-full h-[95vh] md:h-auto md:max-h-[90vh] md:max-w-3xl bg-background-light dark:bg-background-dark rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slideUp ring-1 ring-white/10">
-                   <div className="flex-none flex items-center justify-between px-6 py-4 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-white/5">
-                       <h2 className="text-slate-900 dark:text-white text-lg font-bold flex items-center gap-2">
-                           <Fingerprint className="text-primary" size={24} /> Assinatura Digital
-                       </h2>
-                       <button onClick={() => setSignModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white"><X size={24} /></button>
-                   </div>
-
-                   <div className="flex-1 overflow-y-auto bg-slate-100 dark:bg-black/20 p-4 md:p-8">
-                       {!auditData ? (
-                           <div className="max-w-2xl mx-auto bg-white text-black p-8 shadow-xl min-h-[500px] text-[10px] md:text-xs leading-relaxed font-serif whitespace-pre-wrap select-none relative">
-                               {previewContent}
-                               <div className="mt-12 border-t pt-4">
-                                   <p className="font-bold">ASSINATURAS</p>
-                                   <div className="mt-8 border-b border-black w-1/2"></div>
-                                   <p>LOCADOR: Imobiliária Igloo Ltda</p>
-                                   <div className="mt-8 border-b border-black w-1/2"></div>
-                                   <p>LOCATÁRIO: {selectedContractForSign.tenant || 'Inquilino'}</p>
-                               </div>
-                           </div>
-                       ) : (
-                           <div className="max-w-2xl mx-auto space-y-4 animate-fadeIn">
-                               <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-6 text-center">
-                                   <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600 dark:text-emerald-200">
-                                       <CheckCheck size={32} />
-                                   </div>
-                                   <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">Documento Assinado com Sucesso!</h3>
-                                   <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">Todas as partes foram notificadas.</p>
-                               </div>
-
-                               {/* Audit Trail Card */}
-                               <div className="bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                   <div className="bg-slate-50 dark:bg-white/5 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                                       <Lock size={16} className="text-slate-500" />
-                                       <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Trilha de Auditoria e Integridade</span>
-                                   </div>
-                                   <div className="p-4 space-y-3">
-                                       <div className="grid grid-cols-2 gap-4 text-xs">
-                                           <div>
-                                               <span className="block text-slate-400 uppercase font-bold text-[10px]">Data/Hora UTC</span>
-                                               <span className="font-mono text-slate-800 dark:text-slate-200">{auditData.signed_at}</span>
-                                           </div>
-                                           <div>
-                                               <span className="block text-slate-400 uppercase font-bold text-[10px]">IP do Signatário</span>
-                                               <span className="font-mono text-slate-800 dark:text-slate-200">{auditData.signer_ip}</span>
-                                           </div>
-                                       </div>
-                                       <div>
-                                           <span className="block text-slate-400 uppercase font-bold text-[10px]">Hash do Documento (SHA-256)</span>
-                                           <span className="font-mono text-[10px] break-all text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-black/30 p-1.5 rounded">{auditData.document_hash}</span>
-                                       </div>
-                                       <div>
-                                           <span className="block text-slate-400 uppercase font-bold text-[10px]">Dispositivo / User Agent</span>
-                                           <span className="font-mono text-[10px] text-slate-600 dark:text-slate-400 truncate block">{auditData.user_agent}</span>
-                                       </div>
-                                   </div>
-                               </div>
-                           </div>
-                       )}
-                   </div>
-
-                   <div className="flex-none p-4 md:p-6 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-white/5 z-20">
-                       {!auditData ? (
-                           <div className="space-y-4">
-                               <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30">
-                                   <input type="checkbox" className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary" id="accept-terms" />
-                                   <label htmlFor="accept-terms" className="text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-                                       Li e concordo com os termos do contrato. Reconheço que minha assinatura digital possui validade jurídica conforme MP 2.200-2/2001.
-                                   </label>
-                               </div>
-                               <button 
-                                   onClick={handleDigitalSignature}
-                                   disabled={isSigning}
-                                   className="w-full h-14 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait"
-                               >
-                                   {isSigning ? (
-                                       <>Assinando...</>
-                                   ) : (
-                                       <><Fingerprint size={24} /> Assinar Digitalmente</>
-                                   )}
-                               </button>
-                           </div>
-                       ) : (
-                           <button 
-                               onClick={() => setSignModalOpen(false)}
-                               className="w-full h-12 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold transition-all"
-                           >
-                               Fechar
-                           </button>
-                       )}
-                   </div>
-               </div>
-           </div>
+       {selectedContract && (
+           <ContractDetails 
+             contract={selectedContract} 
+             onClose={() => setSelectedContract(null)} 
+             onUpdate={handleUpdateContract}
+           />
        )}
     </div>
   );

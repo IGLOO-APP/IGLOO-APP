@@ -1,49 +1,65 @@
-export const KITNET_CONTRACT_TEMPLATE = `
-CONTRATO DE LOCAÇÃO RESIDENCIAL (MODELO KITNET/STUDIO)
 
-IDENTIFICAÇÃO DAS PARTES
+export const KITNET_CONTRACT_TEMPLATE = `CONTRATO DE LOCAÇÃO DE IMÓVEL RESIDENCIAL
 
-LOCADOR: {{nome_proprietario}}, inscrito no CPF sob o nº {{cpf_proprietario}}, residente e domiciliado em {{endereco_proprietario}}.
+IDENTIFICAÇÃO DAS PARTES CONTRATANTES
 
-LOCATÁRIO: {{nome_inquilino}}, inscrito no CPF sob o nº {{cpf_inquilino}}, profissão {{profissao_inquilino}}, e-mail {{email_inquilino}}.
+LOCADOR(A): {{nome_proprietario}}, inscrito(a) no CPF sob o nº {{cpf_proprietario}}, residente e domiciliado(a) em {{endereco_proprietario}}.
 
-CLÁUSULA PRIMEIRA - DO OBJETO
-O presente contrato tem como objeto a locação do imóvel residencial tipo "Kitnet/Studio", situado na {{endereco_imovel}}, unidade nº {{numero_unidade}}.
-Parágrafo Único: O imóvel destina-se EXCLUSIVAMENTE para fins residenciais do LOCATÁRIO, sendo vedada a sublocação, cessão ou empréstimo, total ou parcial, inclusive através de plataformas de hospedagem (ex: Airbnb), sem prévia autorização por escrito do LOCADOR. A ocupação máxima permitida é de {{ocupacao_maxima}} pessoa(s), visando evitar a superlotação característica deste tipo de imóvel.
+LOCATÁRIO(A): {{nome_inquilino}}, inscrito(a) no CPF sob o nº {{cpf_inquilino}}, profissão {{profissao_inquilino}}, endereço eletrônico {{email_inquilino}}.
 
-CLÁUSULA SEGUNDA - DO PRAZO
-O prazo de locação é de 30 (trinta) meses, iniciando-se em {{data_inicio}} e terminando em {{data_fim}}.
-Parágrafo Primeiro: Fica acordado que, após 12 (doze) meses de vigência, o LOCATÁRIO poderá rescindir o contrato sem o pagamento de multa contratual, desde que notifique o LOCADOR com antecedência mínima de 30 (trinta) dias.
+As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Locação Residencial, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.
 
-CLÁUSULA TERCEIRA - DO ALUGUEL E ENCARGOS
-O aluguel mensal será de R$ {{valor_aluguel}}, devendo ser pago até o dia {{dia_vencimento}} de cada mês.
-Parágrafo Primeiro: Além do aluguel, o LOCATÁRIO arcará com as despesas de:
-a) Taxa de Condomínio/Rateio de Despesas: R$ {{valor_condominio}};
-b) IPTU (parcela mensal): R$ {{valor_iptu}};
-c) Consumo de energia elétrica e água (caso não inclusos no rateio).
+CLÁUSULA PRIMEIRA - DO OBJETO DO CONTRATO
+O presente contrato tem como OBJETO a locação do imóvel residencial de propriedade do LOCADOR, situado na {{endereco_imovel}}, unidade nº {{numero_unidade}}, na cidade de {{cidade_contrato}}.
 
-CLÁUSULA QUARTA - DA GARANTIA (CAUÇÃO)
-Como garantia das obrigações assumidas neste contrato, o LOCATÁRIO entrega ao LOCADOR a importância de R$ {{valor_caucao}}, equivalente a 3 (três) meses de aluguel, em moeda corrente/transferência bancária.
-Parágrafo Único: Este valor será devolvido ao final da locação, devidamente corrigido pelo índice da poupança, após a vistoria de entrega das chaves e comprovação de quitação de todos os débitos.
+Parágrafo Único: O imóvel entregue na data da assinatura deste contrato, pelo LOCADOR ao LOCATÁRIO, possui as características e condições descritas no Laudo de Vistoria de Entrada, anexo a este instrumento, o qual passa a fazer parte integrante do mesmo.
 
-CLÁUSULA QUINTA - DA RESCISÃO IMEDIATA E DESPEJO
-Constituem motivos para rescisão imediata deste contrato, sem prejuízo da multa cabível e ação de despejo:
-a) O atraso no pagamento do aluguel por período superior ao permitido em lei;
-b) A prática de infrações legais ou crimes no interior do imóvel, notadamente o uso ou tráfico de entorpecentes;
-c) O desrespeito reiterado às normas de convivência e do silêncio, perturbando o sossego dos vizinhos;
-d) A realização de obras ou modificações na estrutura do imóvel sem autorização.
+CLÁUSULA SEGUNDA - DA DESTINAÇÃO
+A presente locação destina-se EXCLUSIVAMENTE para fins residenciais do LOCATÁRIO e de seu grupo familiar, sendo expressamente vedada a sua sublocação, cessão, empréstimo ou transferência, total ou parcial, a qualquer título, sem prévia e expressa autorização por escrito do LOCADOR. A ocupação máxima permitida é de {{ocupacao_maxima}} pessoa(s), visando a preservação do imóvel.
 
-CLÁUSULA SEXTA - DO REGIMENTO INTERNO
-O LOCATÁRIO declara ter recebido, lido e concordado com o "Regimento Interno Simplificado", anexo a este contrato, comprometendo-se a cumpri-lo integralmente.
+CLÁUSULA TERCEIRA - DO PRAZO DE VIGÊNCIA
+O prazo de locação é de {{duracao_meses}} meses, iniciando-se em {{data_inicio}} e terminando em {{data_fim}}, data em que o imóvel deverá ser devolvido nas condições estipuladas na vistoria de entrada, independentemente de aviso ou notificação judicial ou extrajudicial.
 
-E, por estarem justos e contratados, assinam o presente instrumento em 02 (duas) vias de igual teor.
+Parágrafo Primeiro: Caso o LOCATÁRIO devolva o imóvel antes do prazo previsto, pagará uma multa contratual proporcional ao tempo restante de contrato, calculada sobre o valor de 03 (três) aluguéis vigentes.
+
+CLÁUSULA QUARTA - DO VALOR DO ALUGUEL E REAJUSTE
+O valor mensal da locação é de R$ {{valor_aluguel}}, devendo ser pago pontualmente até o dia {{dia_vencimento}} de cada mês subsequente ao vencido, diretamente ao LOCADOR ou a quem este indicar.
+
+Parágrafo Primeiro: O atraso no pagamento implicará automaticamente na cobrança de multa moratória de 10% (dez por cento) sobre o valor do débito, acrescido de juros de mora de 1% (um por cento) ao mês e correção monetária pelo índice oficial.
+Parágrafo Segundo: O valor do aluguel será reajustado anualmente, ou na menor periodicidade permitida por lei, com base na variação acumulada do índice IGP-M/FGV.
+
+CLÁUSULA QUINTA - DOS ENCARGOS E TRIBUTOS
+Além do aluguel mensal, caberá ao LOCATÁRIO o pagamento pontual de todos os encargos que recaiam sobre o imóvel, notadamente:
+a) Taxa de Condomínio (se houver): {{valor_condominio}}
+b) Imposto Predial e Territorial Urbano (IPTU): {{valor_iptu}}
+c) Consumo de energia elétrica, água, gás, internet e outras taxas de serviços públicos ou privados contratados.
+
+CLÁUSULA SEXTA - DA GARANTIA LOCATÍCIA (CAUÇÃO)
+Para garantia das obrigações assumidas neste contrato, o LOCATÁRIO entrega ao LOCADOR, neste ato, a importância de R$ {{valor_caucao}}, a título de CAUÇÃO.
+Parágrafo Único: Este valor será depositado em conta poupança e devolvida ao final da locação, acrescida da correção da poupança, após a devolução das chaves, vistoria de saída aprovada e comprovação de quitação de todos os débitos de aluguel e encargos.
+
+CLÁUSULA SÉTIMA - DA CONSERVAÇÃO E BENFEITORIAS
+O LOCATÁRIO obriga-se a manter o imóvel em perfeitas condições de limpeza e conservação. Não poderá realizar obras ou benfeitorias, sejam elas necessárias, úteis ou voluptuárias, sem o consentimento prévio e por escrito do LOCADOR. As benfeitorias autorizadas aderirão ao imóvel, não gerando direito de retenção ou indenização.
+
+CLÁUSULA OITAVA - DA RESCISÃO
+Considerar-se-á rescindido o presente contrato, de pleno direito, independentemente de qualquer notificação judicial ou extrajudicial, nos casos de:
+a) Infração de qualquer cláusula ou condição deste instrumento;
+b) Falta de pagamento do aluguel e encargos;
+c) Incêndio, desapropriação ou qualquer outro fato que impeça o uso do imóvel.
+
+CLÁUSULA NONA - DO FORO
+Para dirimir quaisquer controvérsias oriundas do presente contrato, as partes elegem o foro da comarca de {{cidade_contrato}}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.
+
+E, por estarem assim justos e contratados, firmam o presente instrumento em 02 (duas) vias de igual teor e forma, na presença de duas testemunhas.
 
 {{cidade_contrato}}, {{data_hoje}}.
 
-__________________________________________
+________________________________________________
+{{nome_proprietario}}
 LOCADOR
 
-__________________________________________
+________________________________________________
+{{nome_inquilino}}
 LOCATÁRIO
 `;
 
