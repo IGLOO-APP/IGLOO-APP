@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { User, FileText, Upload, Shield, CheckCircle, Wallet, MapPin, Activity, AlertCircle, Camera, Save, Mail, Phone, Calendar, Briefcase, CreditCard, ChevronRight, Check, Key, FileCheck, Settings, Bell, Car, Dog, Download } from 'lucide-react';
+import { User, FileText, Upload, Shield, CheckCircle, Wallet, MapPin, Activity, AlertCircle, Camera, Save, Mail, Phone, Calendar, Briefcase, CreditCard, ChevronRight, Check, Key, FileCheck, Settings, Bell, Car, Dog, Download, Eye } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const TenantProfile: React.FC = () => {
@@ -83,9 +84,17 @@ const TenantProfile: React.FC = () => {
     const status = uploadStatus[docKey];
     if (status === 'completed') {
         return (
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg text-sm font-bold w-full md:w-auto justify-center shadow-sm border border-emerald-100 dark:border-emerald-900/30 cursor-default">
-                <CheckCircle size={16} />
-                <span>Enviado</span>
+            <div className="flex items-center gap-2">
+                <button 
+                    className="p-2 text-slate-400 hover:text-primary transition-colors rounded-lg bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/30 shadow-sm"
+                    title="Visualizar Documento"
+                >
+                    <Eye size={18} />
+                </button>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg text-sm font-bold w-full md:w-auto justify-center shadow-sm border border-emerald-100 dark:border-emerald-900/30 cursor-default">
+                    <CheckCircle size={16} />
+                    <span>Enviado</span>
+                </div>
             </div>
         );
     }
@@ -163,7 +172,20 @@ const TenantProfile: React.FC = () => {
                                     </div>
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{doc.name}</span>
                                 </div>
-                                <Download size={18} className="text-slate-400 hover:text-primary" />
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-colors"
+                                        title="Visualizar"
+                                    >
+                                        <Eye size={18} />
+                                    </button>
+                                    <button 
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-colors"
+                                        title="Baixar"
+                                    >
+                                        <Download size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, RefreshCw, FileText, BarChart3 } from 'lucide-react';
+import { Plus, Search, Filter, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
 import { Contract, ContractStatus } from '../types';
-import { generateMockContracts } from '../utils/contractLogic';
 import { ContractCard } from '../components/contracts/ContractCard';
 import { CreateContractWizard } from '../components/contracts/CreateContractWizard';
 import { ContractDetails } from '../components/contracts/ContractDetails';
+import { contractService } from '../services/contractService';
 
 const Contracts: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -16,47 +16,35 @@ const Contracts: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API Fetch
-    setTimeout(() => {
-        setContracts(generateMockContracts());
-        setLoading(false);
-    }, 800);
+    loadContracts();
   }, []);
 
-  const handleCreateContract = (data: any) => {
-      // Safe Date Logic to prevent crash
-      const startDate = data.startDate ? new Date(data.startDate) : new Date();
-      const durationMonths = parseInt(data.duration) || 30;
-      const endDate = new Date(startDate);
-      endDate.setMonth(startDate.getMonth() + durationMonths);
+  const loadContracts = async () => {
+      setLoading(true);
+      try {
+          const data = await contractService.getAll();
+          setContracts(data);
+      } catch (error) {
+          console.error(error);
+      } finally {
+          setLoading(false);
+      }
+  };
 
-      // Mock Creation Logic
-      const newContract: Contract = {
-          id: Date.now().toString(),
-          contract_number: `CTR-2024-${Math.floor(Math.random() * 1000)}`,
-          property: data.property || 'Imóvel Exemplo',
-          tenant_name: data.tenantName || 'Inquilino',
-          owner_name: 'Investidor Exemplo',
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
-          value: `R$ ${data.rentValue || '0,00'}`,
-          numeric_value: parseFloat(data.rentValue) || 0,
-          payment_day: 10,
-          status: 'draft',
-          signers: [
-              { id: 's_new_1', role: 'owner', name: 'Investidor', email: 'inv@igloo.com', status: 'pending' },
-              { id: 's_new_2', role: 'tenant', name: data.tenantName || 'Inquilino', email: 'tenant@email.com', status: 'pending' }
-          ],
-          history: [
-              { id: 'h_new', action: 'created', description: 'Rascunho criado', performed_by: 'Investidor', date: new Date().toLocaleString() }
-          ]
-      };
-      
-      setContracts([newContract, ...contracts]);
-      setShowWizard(false);
+  const handleCreateContract = async (data: any) => {
+      try {
+          // This is now just a wrapper for the service
+          // In a real app we'd need to map the wizard data to the service format more carefully
+          await contractService.create(data);
+          loadContracts();
+          setShowWizard(false);
+      } catch (error) {
+          console.error("Error creating contract", error);
+      }
   };
 
   const handleUpdateContract = (updated: Contract) => {
+      // In a real app, this would also call a service update method
       setContracts(contracts.map(c => c.id === updated.id ? updated : c));
       setSelectedContract(updated);
   };
@@ -156,7 +144,10 @@ const Contracts: React.FC = () => {
 
           {/* Grid of Contracts */}
           {loading ? (
-              <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                  <Loader2 className="animate-spin mb-2" size={32} />
+                  <p>Carregando contratos...</p>
+              </div>
           ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredContracts.map(contract => (
@@ -172,7 +163,7 @@ const Contracts: React.FC = () => {
           {!loading && filteredContracts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                   <FileText size={48} className="opacity-50 mb-4" />
-                  <p>Nenhum contrato encontrado com os filtros atuais.</p>
+                  <p>Nenhum contrato encontrado.</p>
               </div>
           )}
        </div>

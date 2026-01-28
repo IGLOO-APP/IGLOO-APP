@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter } from 'lucide-react';
+import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter, Loader2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { PropertyDetails } from '../components/properties/PropertyDetails';
 import { AddPropertyForm } from '../components/properties/AddPropertyForm';
 import { PropertyMapView } from '../components/properties/PropertyMapView';
+import { propertyService } from '../services/propertyService';
 
 const Properties: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -32,76 +34,50 @@ const Properties: React.FC = () => {
     }
   }, [location]);
 
-  useEffect(() => {
-    const fetchProperties = async () => {
+  const loadProperties = async () => {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const mockData: Property[] = [
-        {
-          id: 1,
-          name: 'Studio Centro 01',
-          address: 'Rua Augusta, 150 - Consolação',
-          status: 'DISPONÍVEL',
-          status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-          price: 'R$ 1.800,00',
-          area: '32m²',
-          image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
-          tenant: null,
-          contract: null
-        },
-        {
-          id: 2,
-          name: 'Loft Industrial Sul',
-          address: 'Av. Brasil, 890 - Bloco B',
-          status: 'ALUGADO',
-          status_color: 'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 ring-blue-600/20',
-          price: 'R$ 2.400,00',
-          area: '55m²',
-          image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCrarWz4gL9lkfBoellhAl5mW22mgklGbB9dEr_NaGa6vlQy5SqOrn2pM6ppygSc_gLkAc1gFaNbmJjui8AxPoHqC9FzTvxLno9SbfC_2TPnUHnTW1hW3iNpzdSKjvYFZSwlZ6dX_H-1KM-w0s7uUAsl_9l9mwmLwfZ9ojV9I1jzq3g3hHhAdyrN9D8oAVpIC11r1eltNskvYupRGPJK8-DIFVuoxb9lIi6rgbsZE3K35P5p61IdjrVaKjtfGrQONxubXSW-PpczAp-',
-          tenant: {
-            id: 101,
-            name: 'João Silva',
-            email: 'joao.silva@email.com',
-            phone: '+55 11 99999-9999',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf',
-            status: 'active'
-          },
-          contract: {
-            id: 501,
-            contract_number: 'CTR-2024-501',
-            property: 'Loft Industrial Sul',
-            tenant_name: 'João Silva',
-            owner_name: 'Investidor Exemplo',
-            start_date: '10/01/2024',
-            end_date: '10/01/2026',
-            value: 'R$ 2.400,00',
-            numeric_value: 2400,
-            payment_day: 10,
-            status: 'active',
-            signers: [],
-            history: []
+      try {
+          const data = await propertyService.getAll();
+          // If in Mock mode and data is empty, we might want to fallback to hardcoded list in component
+          // But propertyService now handles that check or returns []
+          if (data.length === 0) {
+             // Fallback for demo if service returns empty (e.g. no DB connection yet)
+             // This ensures the UI isn't empty during first run without DB setup
+             const mockData: Property[] = [
+                {
+                  id: 1,
+                  name: 'Studio Centro 01 (Demo)',
+                  address: 'Rua Augusta, 150 - Consolação',
+                  status: 'DISPONÍVEL',
+                  status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
+                  price: 'R$ 1.800,00',
+                  area: '32m²',
+                  image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
+                  tenant: null,
+                  contract: null
+                }
+             ];
+             setProperties(mockData);
+          } else {
+             setProperties(data);
           }
-        },
-        {
-          id: 3,
-          name: 'Kitnet Universitária',
-          address: 'Rua dos Estudantes, 55',
-          status: 'MANUTENÇÃO',
-          status_color: 'text-orange-700 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400 ring-orange-600/20',
-          price: 'R$ 850,00',
-          area: '28m²',
-          image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQhrkJXv0C_WrEvHSWZAmhTICaSnjWW23H8O9q1Yfyu_ypj58QZWxWVIY8VxliN8oc_4PaAUnFrDQ0AH_Dksg6L6kZSVdGv4Qo9GPW1d7gk4Sx3utxrI0aAZr_4UljYhGEVvpt4ERkcOtTDjpvJdqsnXJWS-S_GuEI0WiErMDQFDcHqP9bgt2dYFDB0w9085Hng4zTF9kOVAr6VHeJnsm9toSU-uxnV2B897nMPK1owguRfdifypWkDjZ6JV_sl5Udu4CKDzpbGIhV',
-          tenant: null,
-          contract: null
-        }
-      ];
-      setProperties(mockData);
-      setLoading(false);
-    };
+      } catch (error) {
+          console.error("Failed to load properties", error);
+      } finally {
+          setLoading(false);
+      }
+  };
 
-    fetchProperties();
+  useEffect(() => {
+    loadProperties();
   }, []);
+
+  const handleSaveProperty = async (data: any) => {
+      // In a real app, we would call propertyService.create(data)
+      console.log("Saving property", data);
+      setShowAddForm(false);
+      loadProperties(); // Reload list
+  };
 
   const filteredProperties = properties.filter(prop => {
     const matchesSearch = prop.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -250,7 +226,10 @@ const Properties: React.FC = () => {
 
            <div className="flex-1 overflow-y-auto px-6 pb-24 space-y-4">
               {loading ? (
-                 <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+                 <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                     <Loader2 className="animate-spin mb-2" size={32} />
+                     <p>Carregando imóveis...</p>
+                 </div>
               ) : filteredProperties.length > 0 ? (
                 filteredProperties.map((prop) => (
                     <div key={prop.id} className="relative group">
@@ -311,7 +290,7 @@ const Properties: React.FC = () => {
        {showAddForm && (
           <AddPropertyForm 
             onClose={() => setShowAddForm(false)} 
-            onSave={(data) => { console.log(data); setShowAddForm(false); }}
+            onSave={handleSaveProperty}
           />
        )}
     </div>

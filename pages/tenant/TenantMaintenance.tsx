@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Wrench, Clock, CheckCircle, ChevronRight, Camera, Send, User, MessageSquare, LifeBuoy, DollarSign, HelpCircle, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
@@ -135,26 +136,47 @@ const TenantMaintenance: React.FC = () => {
   const FAQSection = () => {
       const [openIndex, setOpenIndex] = useState<number | null>(null);
       const faqs = [
-          { q: "Como trocar uma lâmpada?", a: "Certifique-se de que o interruptor está desligado. Gire a lâmpada queimada no sentido anti-horário e instale a nova." },
-          { q: "O ar condicionado não liga", a: "Verifique se o disjuntor está ligado no quadro de energia e se as pilhas do controle remoto estão funcionando." },
-          { q: "Vazamento pequeno, o que fazer?", a: "Feche o registro geral de água imediatamente e abra um chamado de emergência." }
+          { 
+              q: "Posso furar as paredes (prateleiras/TV)?", 
+              a: "Geralmente é permitido, mas tenha cuidado com canos e fiação. Lembre-se: ao devolver o imóvel, é obrigatório tapar todos os furos e pintar a parede." 
+          },
+          { 
+              q: "A internet/Wi-Fi está lenta", 
+              a: "Se a internet for compartilhada do condomínio, evite downloads pesados em horários de pico. Reinicie seu dispositivo. Se persistir, abra um chamado." 
+          },
+          { 
+              q: "Regras de Silêncio e Barulho", 
+              a: "Em kitnets, o som propaga facilmente. Respeite rigorosamente o silêncio entre 22h e 08h. Use fones de ouvido para música alta ou TV." 
+          },
+          { 
+              q: "Uso da Lavanderia Compartilhada", 
+              a: "Respeite a fila ou agendamento. Limpe o filtro da secadora após o uso e não deixe roupas esquecidas na máquina após o término do ciclo." 
+          },
+          { 
+              q: "Vazamento pequeno, o que fazer?", 
+              a: "Feche o registro local (geralmente embaixo da pia ou no banheiro) imediatamente para evitar desperdício e danos, e abra um chamado de Hidráulica." 
+          },
+          { 
+              q: "Posso receber visitas?", 
+              a: "Visitas são permitidas, mas verifique no seu contrato as regras sobre pernoite frequente e ocupação máxima da unidade." 
+          }
       ];
 
       return (
           <div className="mb-6">
-              <h3 className="font-bold text-slate-900 dark:text-white mb-3 px-1">Perguntas Frequentes</h3>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-3 px-1">Dúvidas Frequentes (Kitnet/Studio)</h3>
               <div className="space-y-2">
                   {faqs.map((faq, i) => (
-                      <div key={i} className="bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden">
+                      <div key={i} className="bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden shadow-sm">
                           <button 
                             onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                            className="w-full flex justify-between items-center p-3 text-left font-medium text-sm text-slate-700 dark:text-slate-200"
+                            className="w-full flex justify-between items-center p-3 text-left font-medium text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                           >
                               {faq.q}
-                              {openIndex === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              {openIndex === i ? <ChevronUp size={16} className="text-primary" /> : <ChevronDown size={16} className="text-slate-400" />}
                           </button>
                           {openIndex === i && (
-                              <div className="px-3 pb-3 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 pt-2">
+                              <div className="px-3 pb-3 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 pt-2 border-t border-gray-100 dark:border-white/5 leading-relaxed">
                                   {faq.a}
                               </div>
                           )}
