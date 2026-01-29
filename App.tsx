@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout';
 import TenantLayout from './components/TenantLayout';
 import Dashboard from './pages/Dashboard';
@@ -37,41 +39,43 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: 'own
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          
-          {/* Owner Routes */}
-          <Route path="/" element={
-            <ProtectedRoute allowedRole="owner">
-              <Layout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="properties" element={<Properties />} />
-            <Route path="tenants" element={<Tenants />} />
-            <Route path="messages" element={<OwnerMessages />} />
-            <Route path="contracts" element={<Contracts />} />
-            <Route path="financials" element={<Financials />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+      <NotificationProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            
+            {/* Owner Routes */}
+            <Route path="/" element={
+              <ProtectedRoute allowedRole="owner">
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="properties" element={<Properties />} />
+              <Route path="tenants" element={<Tenants />} />
+              <Route path="messages" element={<OwnerMessages />} />
+              <Route path="contracts" element={<Contracts />} />
+              <Route path="financials" element={<Financials />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
 
-          {/* Tenant Routes */}
-          <Route path="/tenant" element={
-            <ProtectedRoute allowedRole="tenant">
-              <TenantLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<TenantDashboard />} />
-            <Route path="payments" element={<TenantPayments />} />
-            <Route path="maintenance" element={<TenantMaintenance />} />
-            <Route path="profile" element={<TenantProfile />} />
-          </Route>
+            {/* Tenant Routes */}
+            <Route path="/tenant" element={
+              <ProtectedRoute allowedRole="tenant">
+                <TenantLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<TenantDashboard />} />
+              <Route path="payments" element={<TenantPayments />} />
+              <Route path="maintenance" element={<TenantMaintenance />} />
+              <Route path="profile" element={<TenantProfile />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </HashRouter>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </HashRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 };

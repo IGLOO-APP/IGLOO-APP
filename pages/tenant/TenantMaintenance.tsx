@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Wrench, Clock, CheckCircle, ChevronRight, Camera, Send, User, MessageSquare, LifeBuoy, DollarSign, HelpCircle, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Wrench, Clock, CheckCircle, ChevronRight, Camera, Send, User, MessageSquare, LifeBuoy, DollarSign, HelpCircle, FileText, ChevronDown, ChevronUp, CheckCheck, Paperclip } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 
 interface MaintenanceMessage {
@@ -52,14 +52,17 @@ const TenantMaintenance: React.FC = () => {
       type: 'repair',
       date: '10 Mar 2024',
       status: 'pending',
-      description: 'A torneira da cozinha não fecha completamente, está pingando muito durante a noite.',
+      description: 'A torneira da cozinha não fecha completamente, está pingando muito durante a noite. O registro geral não fecha.',
       timeline: [
-          { id: 1, title: 'Você abriu a solicitação', date: '10 Mar 09:30' },
-          { id: 2, title: 'Visto pelo proprietário', date: '10 Mar 10:15' },
+          { id: 1, title: 'Você abriu a solicitação', date: '10 Mar 09:00' },
+          { id: 2, title: 'Visto pelo proprietário', date: '10 Mar 09:30' },
       ],
       messages: [
-        { id: 1, text: 'Solicitação aberta. Aguardando análise.', sender: 'system', time: '10 Mar, 09:00' },
-        { id: 2, text: 'Olá, poderia enviar uma foto da torneira para eu comprar o reparo correto?', sender: 'owner', time: '10 Mar, 10:30' }
+        { id: 1, text: 'Solicitação aberta automaticamente.', sender: 'system', time: '09:00' },
+        { id: 2, text: 'Olá João, vi seu chamado sobre a torneira. É na cozinha ou banheiro?', sender: 'owner', time: '09:30' },
+        { id: 3, text: 'Na cozinha. Está pingando bastante.', sender: 'me', time: '09:32' },
+        { id: 4, text: 'Vou agendar um encanador para avaliar.', sender: 'owner', time: '09:35' },
+        { id: 5, text: 'Aguardando o técnico.', sender: 'me', time: '10:30' }
       ]
     }
   ]);
@@ -243,16 +246,17 @@ const TenantMaintenance: React.FC = () => {
                             </div>
                             <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${
                                 req.status === 'pending' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 
+                                req.status === 'in_progress' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
                                 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                             }`}>
-                                {req.status === 'pending' ? 'Pendente' : 'Resolvido'}
+                                {req.status === 'pending' ? 'Pendente' : req.status === 'in_progress' ? 'Em Andamento' : 'Resolvido'}
                             </span>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 line-clamp-2 pl-[52px]">{req.description}</p>
                         <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 pt-3 border-t border-gray-50 dark:border-gray-800 pl-[52px]">
                             <span className="flex items-center gap-1"><Clock size={14} /> {req.date}</span>
                             <span className="flex items-center gap-1 text-primary font-bold group-hover:underline">
-                                Ver detalhes <ChevronRight size={14} />
+                                Ver conversa <ChevronRight size={14} />
                             </span>
                         </div>
                     </div>
@@ -403,7 +407,18 @@ const TenantMaintenance: React.FC = () => {
                 
                 {/* Timeline Header */}
                 <div className="bg-white dark:bg-surface-dark p-4 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedRequest.title}</h3>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="font-bold text-slate-900 dark:text-white text-lg">{selectedRequest.title}</h3>
+                            <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                selectedRequest.status === 'pending' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' : 
+                                selectedRequest.status === 'in_progress' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                                'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            }`}>
+                                {selectedRequest.status === 'pending' ? 'Pendente' : selectedRequest.status === 'in_progress' ? 'Em Andamento' : 'Resolvido'}
+                            </span>
+                        </div>
+                    </div>
                     <div className="mt-4 relative pl-4 border-l-2 border-slate-200 dark:border-gray-700 space-y-4">
                         {selectedRequest.timeline?.map((event, idx) => (
                             <div key={idx} className="relative">
@@ -426,12 +441,10 @@ const TenantMaintenance: React.FC = () => {
                      </div>
                      
                      {selectedRequest.messages.map((msg) => (
-                        <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : msg.sender === 'system' ? 'justify-center' : 'justify-start'}`}>
                             {msg.sender === 'system' ? (
-                                <div className="w-full flex justify-center my-2">
-                                    <span className="text-[10px] bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
-                                        {msg.text}
-                                    </span>
+                                <div className="bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm">
+                                    {msg.text}
                                 </div>
                             ) : (
                                 <div className={`max-w-[85%] flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}>
@@ -445,7 +458,7 @@ const TenantMaintenance: React.FC = () => {
                                             className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
                                             msg.sender === 'me' 
                                             ? 'bg-primary text-white rounded-tr-sm' 
-                                            : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-200 dark:border-gray-700'
+                                            : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
                                             }`}
                                         >
                                             {msg.text}
@@ -462,6 +475,9 @@ const TenantMaintenance: React.FC = () => {
                 {/* Input */}
                 <div className="p-4 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 shrink-0 z-20">
                     <form onSubmit={handleSendMessage} className="flex gap-2">
+                        <button type="button" className="p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full">
+                            <Paperclip size={20} />
+                        </button>
                         <input 
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}

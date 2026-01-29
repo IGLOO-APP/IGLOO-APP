@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -5,30 +6,29 @@ import {
     Home, Receipt, LogOut, Settings, User, Moon, Sun, 
     AlertTriangle, TrendingUp, DollarSign, Calendar, 
     MapPin, Activity, Zap, ChevronRight, Filter, PieChart as PieChartIcon,
-    Search, Download, ExternalLink, Lightbulb, MoreHorizontal
+    Search, Download, ExternalLink, Lightbulb, MoreHorizontal, Check
 } from 'lucide-react';
 import { 
     ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
     ResponsiveContainer, Cell, PieChart, Pie, Sector, ReferenceLine
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
-// --- MOCK DATA GENERATION ---
-
+// --- MOCK DATA GENERATION --- (Kept original mock data for charts)
 const FINANCIAL_HISTORY = [
   { month: 'Set', income: 12500, expense: 4200, net: 8300, projected: false },
   { month: 'Out', income: 13200, expense: 3800, net: 9400, projected: false },
   { month: 'Nov', income: 14100, expense: 5100, net: 9000, projected: false },
   { month: 'Dez', income: 15800, expense: 6200, net: 9600, projected: false },
   { month: 'Jan', income: 14500, expense: 4500, net: 10000, projected: false },
-  { month: 'Fev', income: 16200, expense: 4100, net: 12100, projected: false }, // Current
+  { month: 'Fev', income: 16200, expense: 4100, net: 12100, projected: false }, 
   { month: 'Mar', income: 16500, expense: 4000, net: 12500, projected: true },
   { month: 'Abr', income: 17000, expense: 3800, net: 13200, projected: true },
   { month: 'Mai', income: 17500, expense: 3500, net: 14000, projected: true },
 ];
 
 const SPARK_DATA_1 = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const SPARK_DATA_2 = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
 const SPARK_DATA_3 = [80, 85, 82, 88, 90, 95, 92];
 
 const TOP_PROPERTIES = [
@@ -46,6 +46,8 @@ const ACTIVITIES = [
 
 // --- COMPONENTS ---
 
+import { LineChart } from 'recharts';
+
 const Sparkline = ({ data, color }: { data: number[], color: string }) => (
     <div className="h-10 w-24">
         <ResponsiveContainer width="100%" height="100%">
@@ -55,9 +57,6 @@ const Sparkline = ({ data, color }: { data: number[], color: string }) => (
         </ResponsiveContainer>
     </div>
 );
-
-// Helper for Sparkline above (simplified imports in main file, so we need to grab LineChart here locally or assume imports)
-import { LineChart } from 'recharts';
 
 const HeroCard = ({ title, value, subtext, trend, trendUp, icon: Icon, color, sparkData }: any) => (
     <div className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
@@ -100,7 +99,10 @@ const AlertBadge = ({ icon: Icon, label, count, color, onClick }: any) => (
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, triggerTestNotification } = useNotification();
+  
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -126,7 +128,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Occupancy Gauge Data
   const occupancyRate = 60; // Critical
   const gaugeData = [
     { name: 'Occupied', value: occupancyRate },
@@ -154,24 +155,67 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-            <div className="hidden md:flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
-                {['Semana', 'Mês', 'Ano'].map(p => (
-                    <button 
-                        key={p} 
-                        onClick={() => setPeriod(p === 'Semana' ? 'week' : p === 'Mês' ? 'month' : 'year')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                            (p === 'Mês' && period === 'month') || (p === 'Ano' && period === 'year') 
-                            ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                        }`}
-                    >
-                        {p}
-                    </button>
-                ))}
-            </div>
             <button onClick={toggleTheme} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors">
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            
+            {/* NOTIFICATION BELL */}
+            <div className="relative">
+                <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors relative ${showNotifications ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
+                >
+                    <Bell size={20} />
+                    {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark"></span>}
+                </button>
+                
+                {showNotifications && (
+                    <>
+                        <div className="fixed inset-0 z-30" onClick={() => setShowNotifications(false)}></div>
+                        <div className="absolute top-12 right-0 w-80 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 py-2 z-40 animate-scaleUp origin-top-right overflow-hidden">
+                            <div className="px-4 py-3 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
+                                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Notificações</h3>
+                                {unreadCount > 0 && (
+                                    <button onClick={markAllAsRead} className="text-xs text-primary font-bold hover:underline">
+                                        Ler tudo
+                                    </button>
+                                )}
+                            </div>
+                            <div className="max-h-80 overflow-y-auto">
+                                {notifications.length > 0 ? notifications.map(notif => (
+                                    <div 
+                                        key={notif.id} 
+                                        onClick={() => { markAsRead(notif.id); if(notif.link) navigate(notif.link); }}
+                                        className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0 transition-colors ${!notif.is_read ? 'bg-primary/5 dark:bg-primary/10' : ''}`}
+                                    >
+                                        <div className="flex justify-between items-start gap-3">
+                                            <div>
+                                                <p className={`text-sm ${!notif.is_read ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+                                                    {notif.title}
+                                                </p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{notif.message}</p>
+                                                <p className="text-[10px] text-slate-400 mt-1">{new Date(notif.created_at).toLocaleDateString()} {new Date(notif.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                            </div>
+                                            {!notif.is_read && <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></div>}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="p-8 text-center text-slate-400 text-sm">
+                                        <Bell size={24} className="mx-auto mb-2 opacity-50" />
+                                        Nenhuma notificação
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-2 border-t border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 text-center">
+                                <button onClick={triggerTestNotification} className="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors">
+                                    Simular Notificação (Teste)
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+
             <button 
                 onClick={() => navigate('/properties', { state: { openAdd: true } })}
                 className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform"
@@ -391,7 +435,7 @@ const Dashboard: React.FC = () => {
                                     paddingAngle={2}
                                     dataKey="value"
                                 >
-                                    <Cell key="occupied" fill="#ef4444" /> {/* Red because occupancy is low (60%) */}
+                                    <Cell key="occupied" fill="#ef4444" /> 
                                     <Cell key="vacant" fill={isDark ? '#334155' : '#e2e8f0'} />
                                 </Pie>
                             </PieChart>

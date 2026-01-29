@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, TrendingUp, AlertTriangle, DoorOpen, X, Calculator, PieChart, Users, DollarSign, Check, CheckCircle, Download } from 'lucide-react';
+import { 
+    ArrowLeft, Plus, ChevronDown, Calendar, ArrowUp, Wrench, Building2, 
+    TrendingUp, AlertTriangle, DoorOpen, X, Calculator, PieChart, Users, 
+    DollarSign, Check, CheckCircle, Download, UploadCloud, Repeat, Tag,
+    FileText, Home, MoreHorizontal, Clock
+} from 'lucide-react';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { calculateLateFee, calculateApportionment, UnitParams } from '../utils/financialCalculations';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -19,7 +25,18 @@ const Financials: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLateCalculator, setShowLateCalculator] = useState(false);
   const [showApportionment, setShowApportionment] = useState(false);
+  
+  // Transaction Form State
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
+  const [txValue, setTxValue] = useState('');
+  const [txDescription, setTxDescription] = useState('');
+  const [txCategory, setTxCategory] = useState('');
+  const [txDate, setTxDate] = useState(new Date().toISOString().split('T')[0]);
+  const [txProperty, setTxProperty] = useState('');
+  const [txStatus, setTxStatus] = useState<'paid' | 'pending'>('paid');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [hasAttachment, setHasAttachment] = useState(false);
+
   const location = useLocation();
 
   // Late Calculator State
@@ -41,8 +58,9 @@ const Financials: React.FC = () => {
       { id: '5', name: 'Kitnet 05', isOccupied: true, residentsCount: 1 },
   ]);
   
-  // New state to track which units are included in the split
   const [selectedUnitsIds, setSelectedUnitsIds] = useState<string[]>(['1', '2', '3', '4', '5']);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (location.state && (location.state as any).openAdd) {
@@ -53,6 +71,18 @@ const Financials: React.FC = () => {
         window.history.replaceState({}, document.title);
     }
   }, [location]);
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+      if (!showAddForm) {
+          setTxValue('');
+          setTxDescription('');
+          setTxCategory('');
+          setTxProperty('');
+          setIsRecurring(false);
+          setHasAttachment(false);
+      }
+  }, [showAddForm]);
 
   const handleCalculateLate = () => {
       if (!lateOriginalValue || !lateDueDate) return;
@@ -66,13 +96,11 @@ const Financials: React.FC = () => {
       } else {
           setSelectedUnitsIds([...selectedUnitsIds, id]);
       }
-      // Reset result when selection changes to force recalculation
       setApportionResult(null);
   };
 
   const handleCalculateApportionment = () => {
       if (!apportionTotal) return;
-      // Filter only selected units for calculation
       const activeUnits = mockUnits.filter(u => selectedUnitsIds.includes(u.id));
       
       if (activeUnits.length === 0) {
@@ -82,6 +110,12 @@ const Financials: React.FC = () => {
 
       const result = calculateApportionment(parseFloat(apportionTotal), activeUnits, apportionMethod);
       setApportionResult(result);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+          setHasAttachment(true);
+      }
   };
 
   return (
@@ -161,6 +195,7 @@ const Financials: React.FC = () => {
               </div>
           </div>
 
+          {/* ... (Existing Summary and List code remains unchanged) ... */}
           <section className="mb-6">
              <div className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar">
                 <div className="shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors">
@@ -210,7 +245,6 @@ const Financials: React.FC = () => {
                 </div>
              </div>
 
-             {/* ... existing items ... */}
              <div className="group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors">
                 <div className="flex items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/20 shrink-0 size-12 text-orange-600 dark:text-orange-400">
                    <Building2 size={24} />
@@ -229,8 +263,10 @@ const Financials: React.FC = () => {
           </section>
        </div>
 
+       {/* Late Calculator Modal */}
        {showLateCalculator && (
            <ModalWrapper onClose={() => setShowLateCalculator(false)} title="Calculadora de Atraso" showCloseButton={true}>
+               {/* ... (Existing Calculator Code) ... */}
                <div className="p-6 bg-background-light dark:bg-background-dark h-full overflow-y-auto">
                    <div className="space-y-4">
                        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800">
@@ -290,8 +326,10 @@ const Financials: React.FC = () => {
            </ModalWrapper>
        )}
 
+       {/* Apportionment Modal */}
        {showApportionment && (
            <ModalWrapper onClose={() => setShowApportionment(false)} title="Rateio de Despesas" showCloseButton={true}>
+               {/* ... (Existing Apportionment Code) ... */}
                <div className="p-6 bg-background-light dark:bg-background-dark h-full overflow-y-auto">
                    <div className="space-y-6">
                        <p className="text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 p-3 rounded-xl">
@@ -423,85 +461,230 @@ const Financials: React.FC = () => {
            </ModalWrapper>
        )}
 
+       {/* --- IMPROVED ADD TRANSACTION MODAL --- */}
        {showAddForm && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4 animate-fadeIn">
-            <div className="w-full h-[92vh] md:h-auto md:max-h-[85vh] md:max-w-lg bg-background-light dark:bg-background-dark rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slideUp ring-1 ring-white/10">
-                <div className="flex-none pt-4 pb-2 w-full flex justify-center bg-background-light dark:bg-background-dark md:hidden">
-                    <div className="h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-                </div>
-                <div className="flex-none flex items-center justify-between px-6 pb-4 pt-4 md:pt-4 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5">
-                    <button onClick={() => setShowAddForm(false)} className="text-slate-500 dark:text-slate-400 font-medium hover:text-slate-800 dark:hover:text-white transition-colors">Cancelar</button>
-                    <h2 className="text-slate-900 dark:text-white text-lg font-bold">
-                        {transactionType === 'expense' ? 'Nova Despesa' : 'Nova Receita'}
-                    </h2>
-                    <div className="w-[60px]"></div>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-background-light dark:bg-background-dark">
-                    <div className="flex p-1 bg-slate-200 dark:bg-black/30 rounded-xl">
+        <ModalWrapper onClose={() => setShowAddForm(false)} title={transactionType === 'expense' ? 'Nova Despesa' : 'Nova Receita'} showCloseButton={true} className="md:max-w-lg">
+            <div className="flex flex-col h-full w-full bg-background-light dark:bg-background-dark overflow-hidden">
+                
+                {/* 1. Type Switcher */}
+                <div className="px-6 pt-2 pb-4 border-b border-gray-100 dark:border-white/5">
+                    <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
                         <button 
                             onClick={() => setTransactionType('income')}
-                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${transactionType === 'income' ? 'bg-white dark:bg-surface-dark text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                                transactionType === 'income' 
+                                ? 'bg-white dark:bg-surface-dark text-emerald-600 dark:text-emerald-400 shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
                         >
-                            Receita
+                            <TrendingUp size={16} /> Receita
                         </button>
                         <button 
                             onClick={() => setTransactionType('expense')}
-                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${transactionType === 'expense' ? 'bg-white dark:bg-surface-dark text-red-500 dark:text-red-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                                transactionType === 'expense' 
+                                ? 'bg-white dark:bg-surface-dark text-red-500 dark:text-red-400 shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
                         >
-                            Despesa
+                            <TrendingUp size={16} className="rotate-180" /> Despesa
                         </button>
                     </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    
+                    {/* 2. Value Input (Hero) */}
                     <div>
-                        <label className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-2 block">Valor</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block text-center">Valor do Lançamento</label>
+                        <div className={`relative flex justify-center items-center py-6 rounded-2xl border-2 transition-all ${
+                            transactionType === 'income' 
+                            ? 'bg-emerald-50/50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-900/30' 
+                            : 'bg-red-50/50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30'
+                        }`}>
+                            <span className={`text-2xl font-bold mr-1 ${transactionType === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>R$</span>
+                            <input 
+                                autoFocus
+                                type="number" 
+                                value={txValue}
+                                onChange={(e) => setTxValue(e.target.value)}
+                                className={`w-40 bg-transparent text-4xl font-black focus:outline-none text-center ${transactionType === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} placeholder-slate-300`}
+                                placeholder="0,00"
+                            />
+                        </div>
+                    </div>
+
+                    {/* 3. Description & Category */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">Descrição</label>
+                            <input 
+                                type="text" 
+                                value={txDescription}
+                                onChange={(e) => setTxDescription(e.target.value)}
+                                className="w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-base dark:text-white focus:outline-none focus:border-primary transition-colors" 
+                                placeholder={transactionType === 'expense' ? 'Ex: Conserto do portão' : 'Ex: Aluguel Apt 104'} 
+                            />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">Categoria</label>
+                                <div className="relative">
+                                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                    <select 
+                                        value={txCategory}
+                                        onChange={(e) => setTxCategory(e.target.value)}
+                                        className="w-full pl-10 pr-8 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none"
+                                    >
+                                        <option value="" disabled>Selecione</option>
+                                        {transactionType === 'income' ? (
+                                            <>
+                                                <option value="aluguel">Aluguel</option>
+                                                <option value="condominio">Condomínio</option>
+                                                <option value="iptu">Reembolso IPTU</option>
+                                                <option value="extra">Renda Extra</option>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <option value="manutencao">Manutenção</option>
+                                                <option value="impostos">Impostos/Taxas</option>
+                                                <option value="servicos">Serviços (Água/Luz)</option>
+                                                <option value="adm">Taxa Administrativa</option>
+                                            </>
+                                        )}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">Data</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                    <input 
+                                        type="date" 
+                                        value={txDate}
+                                        onChange={(e) => setTxDate(e.target.value)}
+                                        className="w-full pl-10 pr-3 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:border-primary dark:text-white" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 4. Context (Property / Tenant) */}
+                    <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5 space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Building2 size={16} className="text-primary" />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Associação</span>
+                        </div>
+                        
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">R$</span>
-                            <input autoFocus type="number" className="w-full pl-12 pr-4 py-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl text-2xl font-bold text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-slate-300 dark:placeholder-slate-600 transition-colors" placeholder="0,00" />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-2 block">Descrição</label>
-                        <input type="text" className="w-full px-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-base dark:text-white focus:outline-none focus:border-primary transition-colors" placeholder={transactionType === 'expense' ? 'Ex: Manutenção elétrica' : 'Ex: Aluguel Março - Apt 104'} />
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <label className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-2 block">Categoria</label>
+                            <label className="text-xs font-bold text-slate-500 mb-1 block">Propriedade (Opcional)</label>
                             <div className="relative">
-                                <select className="w-full appearance-none px-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-base dark:text-white focus:outline-none focus:border-primary transition-colors">
-                                    {transactionType === 'income' ? (
-                                        <>
-                                            <option>Aluguel (Base)</option>
-                                            <option>Condomínio (Entrada)</option>
-                                            <option>Reembolso IPTU</option>
-                                            <option>Outras Receitas</option>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <option>Manutenção</option>
-                                            <option>Taxa de Gestão</option>
-                                            <option>Condomínio (Pagamento)</option>
-                                            <option>IPTU (Pagamento)</option>
-                                            <option>Impostos</option>
-                                        </>
-                                    )}
+                                <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <select 
+                                    value={txProperty}
+                                    onChange={(e) => setTxProperty(e.target.value)}
+                                    className="w-full pl-10 pr-8 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none"
+                                >
+                                    <option value="">Geral (Sem vínculo)</option>
+                                    <option value="1">Kitnet 01 - Centro</option>
+                                    <option value="2">Apt 104 - Jardins</option>
+                                    <option value="3">Studio 22 - Vila Madalena</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                             </div>
                         </div>
-                        <div className="flex-1">
-                            <label className="text-slate-800 dark:text-slate-200 text-sm font-semibold mb-2 block">Data</label>
-                            <div className="relative">
-                                <input type="date" className="w-full px-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-base focus:outline-none focus:border-primary dark:text-white transition-colors" />
+                    </div>
+
+                    {/* 5. Advanced Options (Status, Recurring, Attachments) */}
+                    <div className="space-y-4">
+                        {/* Recurrence Toggle */}
+                        <div 
+                            onClick={() => setIsRecurring(!isRecurring)}
+                            className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                                isRecurring 
+                                ? 'bg-primary/5 border-primary/30' 
+                                : 'bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${isRecurring ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/10 text-slate-400'}`}>
+                                    <Repeat size={20} />
+                                </div>
+                                <div>
+                                    <p className={`text-sm font-bold ${isRecurring ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>Repetir lançamento</p>
+                                    <p className="text-xs text-slate-500">Criar automaticamente todo mês.</p>
+                                </div>
                             </div>
+                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isRecurring ? 'bg-primary border-primary' : 'border-slate-300 dark:border-slate-600'}`}>
+                                {isRecurring && <Check size={12} className="text-white" />}
+                            </div>
+                        </div>
+
+                        {/* Status Toggle */}
+                        <div className="flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl">
+                            <button 
+                                onClick={() => setTxStatus('paid')}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                    txStatus === 'paid' 
+                                    ? 'bg-white dark:bg-surface-dark text-emerald-600 dark:text-emerald-400 shadow-sm' 
+                                    : 'text-slate-500'
+                                }`}
+                            >
+                                <CheckCircle size={16} /> 
+                                {transactionType === 'income' ? 'Recebido' : 'Pago'}
+                            </button>
+                            <button 
+                                onClick={() => setTxStatus('pending')}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                    txStatus === 'pending' 
+                                    ? 'bg-white dark:bg-surface-dark text-orange-500 dark:text-orange-400 shadow-sm' 
+                                    : 'text-slate-500'
+                                }`}
+                            >
+                                <Clock size={16} /> Pendente
+                            </button>
+                        </div>
+
+                        {/* Attachments */}
+                        <div>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                onChange={handleFileUpload}
+                            />
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className={`w-full py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all ${
+                                    hasAttachment 
+                                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/10 dark:border-emerald-800 dark:text-emerald-400' 
+                                    : 'border-slate-200 dark:border-white/10 text-slate-500 hover:border-primary/50 hover:bg-primary/5 hover:text-primary'
+                                }`}
+                            >
+                                {hasAttachment ? (
+                                    <><FileText size={18} /> Arquivo Anexado</>
+                                ) : (
+                                    <><UploadCloud size={18} /> Anexar Comprovante</>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div className="flex-none p-6 pt-2 bg-background-light dark:bg-background-dark border-t border-transparent z-20">
-                    <button className={`w-full h-14 flex items-center justify-center rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all duration-200 ${transactionType === 'income' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25' : 'bg-red-500 hover:bg-red-600 shadow-red-500/25'}`}>
+
+                <div className="flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20">
+                    <button className={`w-full h-14 flex items-center justify-center rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all duration-200 ${
+                        transactionType === 'income' 
+                        ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25' 
+                        : 'bg-red-500 hover:bg-red-600 shadow-red-500/25'
+                    }`}>
                         Confirmar Lançamento
                     </button>
                 </div>
             </div>
-        </div>
+        </ModalWrapper>
        )}
     </div>
   );
