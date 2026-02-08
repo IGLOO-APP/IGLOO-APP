@@ -26,6 +26,14 @@ const MOCK_USERS: Record<string, any> = {
         name: 'João Silva',
         role: 'tenant',
         avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf'
+    },
+    'admin@teste.com': {
+        id: 'admin-123',
+        email: 'admin@teste.com',
+        name: 'Super Admin',
+        role: 'admin',
+        admin_type: 'super',
+        permissions: ['*']
     }
 };
 
@@ -38,14 +46,16 @@ export const authService = {
         if (isMock) {
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             const user = MOCK_USERS[email];
-            if (user && password === 'teste123') {
+            const isValidPassword = (email === 'admin@teste.com' && password === 'admin123') || password === 'teste123';
+
+            if (user && isValidPassword) {
                 const session = { user };
                 localStorage.setItem('igloo_mock_session', JSON.stringify(session));
                 return { user, session };
             }
-            throw new Error('Credenciais inválidas. Tente: proprietario@teste.com / teste123');
+            throw new Error('Credenciais inválidas. Tente: proprietario@teste.com / teste123 ou admin@teste.com / admin123');
         }
 
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -59,8 +69,8 @@ export const authService = {
 
     async signUp({ email, password, name, role, phone }: SignUpData) {
         if (isMock) {
-             await new Promise(resolve => setTimeout(resolve, 500));
-             const newUser = {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const newUser = {
                 id: `user-${Date.now()}`,
                 email,
                 name,
@@ -74,7 +84,7 @@ export const authService = {
             const profiles = JSON.parse(localStorage.getItem('igloo_mock_profiles') || '{}');
             profiles[newUser.id] = newUser;
             localStorage.setItem('igloo_mock_profiles', JSON.stringify(profiles));
-            
+
             return { user: newUser, session };
         }
 
@@ -127,7 +137,7 @@ export const authService = {
         // This is now handled better in profileService, but keeping for compatibility
         const user = await this.getCurrentUser();
         if (!user) return null;
-        
+
         if (isMock) return user as any;
 
         const { data, error } = await supabase
@@ -164,8 +174,8 @@ export const authService = {
 
     onAuthStateChange(callback: (event: string, session: any) => void) {
         if (isMock) {
-             // Mock subscription
-             return { data: { subscription: { unsubscribe: () => {} } } };
+            // Mock subscription
+            return { data: { subscription: { unsubscribe: () => { } } } };
         }
         return supabase.auth.onAuthStateChange(callback);
     },

@@ -49,7 +49,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
         <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{toast.title}</h4>
         <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">{toast.message}</p>
       </div>
-      <button 
+      <button
         onClick={() => onClose(toast.id)}
         className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
       >

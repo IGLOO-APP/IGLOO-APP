@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { UserRole } from './types';
 import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout';
 import TenantLayout from './components/TenantLayout';
@@ -18,8 +19,16 @@ import TenantDashboard from './pages/tenant/TenantDashboard';
 import TenantMaintenance from './pages/tenant/TenantMaintenance';
 import TenantProfile from './pages/tenant/TenantProfile';
 import TenantPayments from './pages/tenant/TenantPayments';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import SupportCenter from './pages/admin/SupportCenter';
+import SubscriptionManagement from './pages/admin/SubscriptionManagement';
+import SystemSettings from './pages/admin/SystemSettings';
+import AdminManager from './components/admin/AdminManager';
+import ImpersonationBanner from './components/ImpersonationBanner';
 
-const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: 'owner' | 'tenant' }> = ({ children, allowedRole }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: UserRole | UserRole[] }> = ({ children, allowedRole }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -29,7 +38,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: 'own
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (user.role !== allowedRole) {
+  const isAllowed = Array.isArray(allowedRole)
+    ? allowedRole.includes(user.role)
+    : user.role === allowedRole;
+
+  if (!isAllowed) {
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
     return <Navigate to={user.role === 'owner' ? '/' : '/tenant'} replace />;
   }
 
@@ -38,13 +52,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement, allowedRole: 'own
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <HashRouter>
+    <HashRouter>
+      <AuthProvider>
+        <NotificationProvider>
+          <ImpersonationBanner />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            
+
             {/* Owner Routes */}
             <Route path="/" element={
               <ProtectedRoute allowedRole="owner">
@@ -72,11 +87,25 @@ const App: React.FC = () => {
               <Route path="profile" element={<TenantProfile />} />
             </Route>
 
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRole="admin">
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="subscriptions" element={<SubscriptionManagement />} />
+              <Route path="support" element={<SupportCenter />} />
+              <Route path="team" element={<AdminManager />} />
+              <Route path="settings" element={<SystemSettings />} />
+            </Route>
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </HashRouter>
-      </NotificationProvider>
-    </AuthProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </HashRouter>
   );
 };
 

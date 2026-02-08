@@ -15,6 +15,8 @@ const Login: React.FC = () => {
     if (user) {
       if (user.role === 'tenant') {
         navigate('/tenant');
+      } else if (user.role === 'admin') {
+        navigate('/admin');
       } else {
         navigate('/');
       }
@@ -141,6 +143,11 @@ const Login: React.FC = () => {
               <div className="font-bold text-slate-500 uppercase mb-1">Inquilino</div>
               <div className="truncate"><span className="text-slate-400">E:</span> <span className="text-slate-900 dark:text-white">inquilino@teste.com</span></div>
               <div><span className="text-slate-400">S:</span> <span className="text-slate-900 dark:text-white">teste123</span></div>
+            </div>
+            <div className="bg-white dark:bg-surface-dark rounded-lg p-3 font-mono text-xs space-y-1 border border-blue-100 dark:border-white/5 cursor-pointer hover:border-primary/50 transition-colors col-span-1 md:col-span-2" onClick={() => { setEmail('admin@teste.com'); setPassword('admin123'); }}>
+              <div className="font-bold text-amber-500 uppercase mb-1">Admin (Dono)</div>
+              <div className="truncate"><span className="text-slate-400">E:</span> <span className="text-slate-900 dark:text-white">admin@teste.com</span></div>
+              <div><span className="text-slate-400">S:</span> <span className="text-slate-900 dark:text-white">admin123</span></div>
             </div>
           </div>
         </div>

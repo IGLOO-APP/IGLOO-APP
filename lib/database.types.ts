@@ -13,33 +13,54 @@ export interface Database {
                 Row: {
                     id: string
                     email: string
-                    name: string
-                    role: 'owner' | 'tenant'
+                    name: string | null
+                    role: 'owner' | 'tenant' | 'admin'
+                    admin_type: 'super' | 'support' | 'finance' | 'content' | null
+                    permissions: Json
                     avatar_url: string | null
                     phone: string | null
                     cpf: string | null
+                    is_suspended: boolean
+                    suspended_at: string | null
+                    suspended_reason: string | null
+                    last_login_at: string | null
+                    last_login_ip: string | null
                     created_at: string
                     updated_at: string
                 }
                 Insert: {
                     id: string
                     email: string
-                    name: string
-                    role: 'owner' | 'tenant'
+                    name?: string | null
+                    role?: 'owner' | 'tenant' | 'admin'
+                    admin_type?: 'super' | 'support' | 'finance' | 'content' | null
+                    permissions?: Json
                     avatar_url?: string | null
                     phone?: string | null
                     cpf?: string | null
+                    is_suspended?: boolean
+                    suspended_at?: string | null
+                    suspended_reason?: string | null
+                    last_login_at?: string | null
+                    last_login_ip?: string | null
                     created_at?: string
                     updated_at?: string
                 }
                 Update: {
                     id?: string
                     email?: string
-                    name?: string
-                    role?: 'owner' | 'tenant'
+                    name?: string | null
+                    role?: 'owner' | 'tenant' | 'admin'
+                    admin_type?: 'super' | 'support' | 'finance' | 'content' | null
+                    permissions?: Json
                     avatar_url?: string | null
                     phone?: string | null
                     cpf?: string | null
+                    is_suspended?: boolean
+                    suspended_at?: string | null
+                    suspended_reason?: string | null
+                    last_login_at?: string | null
+                    last_login_ip?: string | null
                     created_at?: string
                     updated_at?: string
                 }
