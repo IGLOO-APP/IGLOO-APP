@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, Info, Bell } from 'lucide-react';
 
@@ -16,11 +15,11 @@ interface ToastProps {
 }
 
 const icons = {
-  success: <CheckCircle className="text-emerald-500" size={20} />,
-  error: <AlertCircle className="text-red-500" size={20} />,
-  info: <Info className="text-blue-500" size={20} />,
-  warning: <AlertCircle className="text-amber-500" size={20} />,
-  system: <Bell className="text-primary" size={20} />,
+  success: <CheckCircle className='text-emerald-500' size={20} />,
+  error: <AlertCircle className='text-red-500' size={20} />,
+  info: <Info className='text-blue-500' size={20} />,
+  warning: <AlertCircle className='text-amber-500' size={20} />,
+  system: <Bell className='text-primary' size={20} />,
 };
 
 const bgColors = {
@@ -41,17 +40,21 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   }, [toast, onClose]);
 
   return (
-    <div className={`flex items-start gap-3 p-4 rounded-2xl shadow-lg border backdrop-blur-md mb-3 transition-all animate-slideUp w-full max-w-sm pointer-events-auto ${bgColors[toast.type]}`}>
-      <div className="shrink-0 mt-0.5">
-        {icons[toast.type]}
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{toast.title}</h4>
-        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">{toast.message}</p>
+    <div
+      className={`flex items-start gap-3 p-4 rounded-2xl shadow-lg border backdrop-blur-md mb-3 transition-all animate-slideUp w-full max-w-sm pointer-events-auto ${bgColors[toast.type]}`}
+    >
+      <div className='shrink-0 mt-0.5'>{icons[toast.type]}</div>
+      <div className='flex-1 min-w-0'>
+        <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-tight'>
+          {toast.title}
+        </h4>
+        <p className='text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed'>
+          {toast.message}
+        </p>
       </div>
       <button
         onClick={() => onClose(toast.id)}
-        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+        className='text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors'
       >
         <X size={16} />
       </button>
@@ -59,10 +62,13 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   );
 };
 
-export const ToastContainer: React.FC<{ toasts: ToastMessage[]; removeToast: (id: string) => void }> = ({ toasts, removeToast }) => {
+export const ToastContainer: React.FC<{
+  toasts: ToastMessage[];
+  removeToast: (id: string) => void;
+}> = ({ toasts, removeToast }) => {
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col items-end pointer-events-none gap-2">
-      {toasts.map(toast => (
+    <div className='fixed top-4 right-4 z-[100] flex flex-col items-end pointer-events-none gap-2'>
+      {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onClose={removeToast} />
       ))}
     </div>

@@ -1,4 +1,3 @@
-
 export type UserRole = 'owner' | 'tenant' | 'admin';
 export type AdminType = 'super' | 'support' | 'finance' | 'content';
 
@@ -33,7 +32,14 @@ export interface SignatureAudit {
   integrity_verified: boolean;
 }
 
-export type ContractStatus = 'draft' | 'pending_signature' | 'active' | 'expiring_soon' | 'expired' | 'cancelled' | 'renewed';
+export type ContractStatus =
+  | 'draft'
+  | 'pending_signature'
+  | 'active'
+  | 'expiring_soon'
+  | 'expired'
+  | 'cancelled'
+  | 'renewed';
 
 export interface Signer {
   id: string;

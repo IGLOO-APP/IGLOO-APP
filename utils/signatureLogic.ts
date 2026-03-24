@@ -1,48 +1,64 @@
+import { supabase } from '../lib/supabase';
 import { SignatureAudit } from '../types';
 
 /**
  * Simulates SHA-256 Hashing of a file or string.
- * In a real backend, this would hash the actual file buffer.
  */
 export const generateDocumentHash = async (content: string): Promise<string> => {
-    const msgBuffer = new TextEncoder().encode(content + Date.now().toString());
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const msgBuffer = new TextEncoder().encode(content + Date.now().toString());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 };
 
 /**
- * Captures browser metadata for the Audit Trail.
- * Note: IP Address retrieval usually requires a backend service. 
- * We will simulate a random IP for this frontend demo.
+ * Captures browser metadata and SAVES to Supabase.
  */
-export const captureSignerMetadata = async (identifier: string): Promise<SignatureAudit> => {
-    // Simulate IP fetching
-    const mockIp = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-    
-    // Simulate document content hash
-    const docHash = await generateDocumentHash("contract_content_simulation");
+export const captureAndSaveSignature = async (
+  contractId: string,
+  signerId: string,
+  documentContent: string,
+  signatureDataUrl?: string
+): Promise<boolean> => {
+  try {
+    // 1. Generate Metadata
+    const docHash = await generateDocumentHash(documentContent);
 
-    return {
-        signed_at: new Date().toISOString(),
-        signer_ip: mockIp,
-        user_agent: navigator.userAgent,
-        signer_identifier: identifier,
-        document_hash: docHash,
-        integrity_verified: true
+    // Note: Real IP usually requires a backend function (Edge Function)
+    // For now, we capture browser-side info
+    const payload = {
+      contract_id: contractId,
+      signer_id: signerId,
+      document_hash: docHash,
+      user_agent: navigator.userAgent,
+      signature_image_url: signatureDataUrl, // In production, upload to Storage first
+      integrity_verified: true,
     };
+
+    const { error } = await supabase.from('signature_audits').insert(payload);
+
+    if (error) throw error;
+
+    // 2. Update Contract Status if needed
+    // (Logic to check if all signed and move to 'active' would go here)
+
+    return true;
+  } catch (err) {
+    console.error('Error saving signature audit:', err);
+    return false;
+  }
 };
 
 /**
  * Generates the WhatsApp/Email message template for the tenant.
  */
 export const generateSignatureRequestMessage = (
-    ownerName: string, 
-    tenantName: string, 
-    propertyAddress: string,
-    link: string
+  ownerName: string,
+  tenantName: string,
+  propertyAddress: string,
+  link: string
 ) => {
-    return `Olá, ${tenantName}! 
+  return `Olá, ${tenantName}! 
 
 Aqui é ${ownerName}.
 Acabei de gerar o contrato de locação do imóvel: *${propertyAddress}*.

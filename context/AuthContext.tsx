@@ -42,25 +42,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     checkSession();
 
-    // Check if real supabase is available before subscribing
-    const env = (import.meta as any).env || {};
-    const isMock = !env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL.includes('placeholder');
+    let subscription: { unsubscribe: () => void } = { unsubscribe: () => {} };
 
-    let subscription: { unsubscribe: () => void } = { unsubscribe: () => { } };
-
-    if (!isMock) {
-      const { data } = authService.onAuthStateChange(
-        async (event, session) => {
-          if (session?.user) {
-            await loadUserProfile(session.user.id);
-          } else {
-            setUser(null);
-          }
-          setLoading(false);
-        }
-      );
-      subscription = data.subscription;
-    }
+    const { data } = authService.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await loadUserProfile(session.user.id);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    subscription = data.subscription;
 
     return () => {
       subscription.unsubscribe();
@@ -83,7 +75,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loadUserProfile = async (userId: string) => {
     try {
-      const profile = await profileService.getById(userId);
+      const authUser = await authService.getCurrentUser();
+      const profile =
+        authUser && authUser.id === userId
+          ? await profileService.ensureProfile(authUser as any)
+          : await profileService.getById(userId);
+
       if (profile) {
         setUser({
           id: profile.id,
@@ -151,7 +148,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthenticated: !!user,
         impersonatingFrom,
         startImpersonation,
-        stopImpersonation
+        stopImpersonation,
       }}
     >
       {children}

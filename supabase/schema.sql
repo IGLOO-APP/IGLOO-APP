@@ -151,6 +151,65 @@ create table public.maintenance_requests (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- SIGNATURE AUDIT TRAIL
+create table public.signature_audits (
+  id uuid default uuid_generate_v4() primary key,
+  contract_id uuid references public.contracts(id) on delete cascade not null,
+  signer_id uuid references public.profiles(id) not null,
+  signed_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  signer_ip text,
+  user_agent text,
+  document_hash text not null,
+  signature_image_url text, -- Path to storage
+  integrity_verified boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (
+    id,
+    email,
+    name,
+    role,
+    phone
+  )
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    coalesce((new.raw_user_meta_data->>'role')::text, 'owner'),
+    new.raw_user_meta_data->>'phone'
+  )
+  on conflict (id) do update set
+    email = excluded.email,
+    name = coalesce(excluded.name, public.profiles.name),
+    role = coalesce(excluded.role, public.profiles.role),
+    phone = coalesce(excluded.phone, public.profiles.phone),
+    updated_at = timezone('utc'::text, now());
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- RLS for Audit
+alter table public.signature_audits enable row level security;
+create policy "Users involved can view audits" on public.signature_audits
+  for select using (
+    exists (
+      select 1 from public.contracts
+      where contracts.id = signature_audits.contract_id
+      and (contracts.owner_id = auth.uid() or contracts.tenant_id = auth.uid())
+    ) or is_admin()
+  );
+
 -- RLS POLICIES
 alter table public.profiles enable row level security;
 alter table public.properties enable row level security;
@@ -179,8 +238,16 @@ $$ language plpgsql security definer;
 create policy "Users can view own profile" on public.profiles
   for select using (auth.uid() = id or is_admin());
 
+create policy "Users can create own profile" on public.profiles
+  for insert with check (auth.uid() = id);
+
+create policy "Users can update own profile" on public.profiles
+  for update using (auth.uid() = id or is_admin())
+  with check (auth.uid() = id or is_admin());
+
 create policy "Admins can update any profile" on public.profiles
-  for update using (is_admin());
+  for update using (is_admin())
+  with check (is_admin());
 
 -- Properties Policies
 create policy "Owners can view their properties" on public.properties

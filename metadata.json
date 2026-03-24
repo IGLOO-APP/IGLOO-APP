@@ -1,8 +1,5 @@
 {
   "name": "IGLOO",
   "description": "A comprehensive property management dashboard for landlords and investors.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
+  "requestFramePermissions": ["camera", "microphone"]
 }
