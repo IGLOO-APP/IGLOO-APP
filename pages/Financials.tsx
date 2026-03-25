@@ -18,6 +18,7 @@ import {
   DollarSign,
   Check,
   CheckCircle,
+  Search,
   Download,
   UploadCloud,
   Repeat,
@@ -26,6 +27,8 @@ import {
   Home,
   MoreHorizontal,
   Clock,
+  Eye,
+  FileUp,
 } from 'lucide-react';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import {
@@ -53,10 +56,49 @@ const mockTrendData = [
   { name: 'Jul', receita: 3490, despesa: 4300 },
 ];
 
+const mockTransactions = [
+  {
+    id: 1,
+    title: 'Aluguel - Kitnet Centro',
+    date: '05 Mar',
+    property: 'Apt 101',
+    amount: 1500.0,
+    type: 'income',
+    status: 'paid',
+    hasAttachment: true,
+    attachmentUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800',
+  },
+  {
+    id: 2,
+    title: 'Condomínio - Studio 20',
+    date: '10 Mar',
+    property: 'Studio 20',
+    amount: -350.0,
+    type: 'expense',
+    status: 'pending',
+    hasAttachment: false,
+  },
+  {
+    id: 3,
+    title: 'Manutenção Elétrica',
+    date: '12 Mar',
+    property: 'Kitnet 05',
+    amount: -180.0,
+    type: 'expense',
+    status: 'paid',
+    hasAttachment: true,
+    attachmentUrl: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&q=80&w=800',
+  },
+];
+
 const Financials: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLateCalculator, setShowLateCalculator] = useState(false);
   const [showApportionment, setShowApportionment] = useState(false);
+  const [showImportModal, setShowApportImportModal] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Transaction Form State
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
@@ -150,6 +192,21 @@ const Financials: React.FC = () => {
     }
   };
 
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      // In a real app, this would generate and download a PDF/Excel
+      alert('Relatório Financeiro exportado com sucesso (PDF/Excel)!');
+    }, 1500);
+  };
+
+  const filteredTransactions = mockTransactions.filter(
+    (t) =>
+      t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.property.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative'>
       <header className='sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-4 border-b border-gray-200 dark:border-white/5 transition-colors'>
@@ -159,10 +216,23 @@ const Financials: React.FC = () => {
           </h1>
           <div className='flex gap-2'>
             <button
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 transition-all'
+              onClick={handleExport}
+              disabled={isExporting}
+              className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 transition-all disabled:opacity-50'
               title='Exportar Relatório'
             >
-              <Download size={20} />
+              {isExporting ? (
+                <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
+              ) : (
+                <Download size={20} />
+              )}
+            </button>
+            <button
+              onClick={() => setShowApportImportModal(true)}
+              className='flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all'
+              title='Conciliação Bancária'
+            >
+              <FileUp size={20} />
             </button>
             <button
               onClick={() => setShowApportionment(true)}
@@ -173,13 +243,25 @@ const Financials: React.FC = () => {
             </button>
             <button
               onClick={() => setShowAddForm(true)}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all'
+              className='flex h-10 px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-sm active:scale-95'
             >
-              <Plus size={24} />
+              <Plus size={18} /> Nova Receita
             </button>
           </div>
         </div>
-        <div className='px-4 pb-4 pt-2'>
+        <div className='px-4 pb-4 pt-2 space-y-3'>
+          {/* Search Bar */}
+          <div className='relative'>
+            <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+            <input
+              type='text'
+              placeholder='Buscar lançamentos (ex: aluguel, conserto...)'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='w-full pl-11 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm focus:outline-none focus:border-primary transition-all dark:text-white shadow-sm'
+            />
+          </div>
+
           <div className='flex gap-3'>
             <div className='relative flex-1'>
               <select className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'>
@@ -259,6 +341,18 @@ const Financials: React.FC = () => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+
+          {/* Chart Legend */}
+          <div className='flex items-center gap-4 mt-4 px-2'>
+            <div className='flex items-center gap-2'>
+              <div className='w-2.5 h-2.5 rounded-[2px] bg-[#10b981]'></div>
+              <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='w-2.5 h-2.5 rounded-[2px] bg-[#ef4444]'></div>
+              <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
+            </div>
+          </div>
         </div>
 
         {/* ... (Existing Summary and List code remains unchanged) ... */}
@@ -306,51 +400,65 @@ const Financials: React.FC = () => {
               Lançamentos Recentes
             </h4>
             <span className='text-xs font-medium text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded-md'>
-              3 itens
+              {filteredTransactions.length} itens
             </span>
           </div>
 
-          <div className='group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors'>
-            <div className='flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-12 text-primary'>
-              <Building2 size={24} />
-            </div>
-            <div className='flex flex-col flex-1 min-w-0'>
-              <div className='flex justify-between items-start'>
-                <p className='text-slate-900 dark:text-white text-base font-bold truncate'>
-                  Aluguel - Kitnet Centro
-                </p>
-                <p className='text-primary text-base font-bold whitespace-nowrap'>+ R$ 1.500,00</p>
+          {filteredTransactions.map((tx) => (
+            <div
+              key={tx.id}
+              className='group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors'
+            >
+              <div
+                className={`flex items-center justify-center rounded-xl shrink-0 size-12 ${tx.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'}`}
+              >
+                <Building2 size={24} />
               </div>
-              <div className='flex justify-between items-center mt-1'>
-                <p className='text-slate-400 text-sm font-medium truncate'>05 Mar • Apt 101</p>
-                <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'>
-                  Pago
-                </span>
+              <div className='flex flex-col flex-1 min-w-0'>
+                <div className='flex justify-between items-start'>
+                  <p className='text-slate-900 dark:text-white text-base font-bold truncate'>
+                    {tx.title}
+                  </p>
+                  <p
+                    className={`text-base font-bold whitespace-nowrap ${tx.type === 'income' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
+                  >
+                    {tx.type === 'income' ? '+' : '-'} R$ {Math.abs(tx.amount).toFixed(2)}
+                  </p>
+                </div>
+                <div className='flex justify-between items-center mt-1'>
+                  <p className='text-slate-400 text-sm font-medium truncate'>
+                    {tx.date} • {tx.property}
+                  </p>
+                  <div className='flex items-center gap-2'>
+                    {tx.hasAttachment && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedVoucher(tx.attachmentUrl || null);
+                        }}
+                        className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'
+                        title='Ver Comprovante'
+                      >
+                        <Eye size={14} />
+                      </button>
+                    )}
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${tx.status === 'paid' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'}`}
+                    >
+                      {tx.status === 'paid' ? 'Pago' : 'Pendente'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
 
-          <div className='group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors'>
-            <div className='flex items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900/20 shrink-0 size-12 text-orange-600 dark:text-orange-400'>
-              <Building2 size={24} />
+          {filteredTransactions.length === 0 && (
+            <div className='py-12 text-center text-slate-400'>
+              <Search size={40} className='mx-auto mb-3 opacity-20' />
+              <p>Nenhum lançamento encontrado.</p>
             </div>
-            <div className='flex flex-col flex-1 min-w-0'>
-              <div className='flex justify-between items-start'>
-                <p className='text-slate-900 dark:text-white text-base font-bold truncate'>
-                  Condomínio - Studio 20
-                </p>
-                <p className='text-slate-900 dark:text-white text-base font-bold whitespace-nowrap'>
-                  - R$ 350,00
-                </p>
-              </div>
-              <div className='flex justify-between items-center mt-1'>
-                <p className='text-slate-400 text-sm font-medium truncate'>10 Mar • Studio 20</p>
-                <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'>
-                  Pendente
-                </span>
-              </div>
-            </div>
-          </div>
+          )}
         </section>
       </div>
 
@@ -873,6 +981,66 @@ const Financials: React.FC = () => {
                 Confirmar Lançamento
               </button>
             </div>
+          </div>
+        </ModalWrapper>
+      )}
+      {/* Voucher Viewer Modal */}
+      {selectedVoucher && (
+        <ModalWrapper
+          onClose={() => setSelectedVoucher(null)}
+          title='Visualizar Comprovante'
+          showCloseButton={true}
+          className='md:max-w-2xl'
+        >
+          <div className='p-6 bg-background-light dark:bg-background-dark'>
+            <div className='relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-white/10'>
+              <img src={selectedVoucher} alt='Comprovante' className='w-full h-auto max-h-[70vh] object-contain bg-slate-50 dark:bg-slate-900' />
+            </div>
+            <div className='mt-6 flex gap-3'>
+              <button
+                onClick={() => window.open(selectedVoucher, '_blank')}
+                className='flex-1 h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-lg transition-all hover:opacity-90 active:scale-95'
+              >
+                <Download size={18} /> Baixar Original
+              </button>
+            </div>
+          </div>
+        </ModalWrapper>
+      )}
+
+      {/* Bank Conciliation (Import) Modal */}
+      {showImportModal && (
+        <ModalWrapper
+          onClose={() => setShowApportImportModal(false)}
+          title='Conciliação Bancária'
+          showCloseButton={true}
+          className='md:max-w-lg'
+        >
+          <div className='p-8 bg-background-light dark:bg-background-dark space-y-6'>
+            <div className='p-6 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-center bg-slate-50 dark:bg-white/5 group hover:border-primary transition-colors cursor-pointer'>
+              <div className='w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform'>
+                <FileUp className='text-primary' size={32} />
+              </div>
+              <h4 className='text-lg font-bold text-slate-900 dark:text-white'>Importar Extrato</h4>
+              <p className='text-sm text-slate-500 mt-2'>Arraste seu arquivo OFX ou CSV aqui para processar lançamentos automaticamente.</p>
+              <input type='file' className='hidden' accept='.ofx,.csv' />
+            </div>
+
+            <div className='space-y-4'>
+              <h5 className='text-xs font-bold text-slate-400 uppercase tracking-widest'>Bancos Suportados</h5>
+              <div className='grid grid-cols-2 gap-3'>
+                {['Itaú', 'Nubank', 'Inter', 'Santander'].map(bank => (
+                  <div key={bank} className='px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2'>
+                    <div className='w-2 h-2 rounded-full bg-emerald-500' />
+                    {bank}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className='w-full h-14 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95'>
+              Processar Arquivo
+            </button>
           </div>
         </ModalWrapper>
       )}

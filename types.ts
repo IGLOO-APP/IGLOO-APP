@@ -21,6 +21,11 @@ export interface Tenant {
   cpf?: string;
   image?: string;
   status: 'active' | 'late' | 'inactive';
+  property?: string;
+  rent?: string;
+  due?: number;
+  score?: number;
+  last_payment_date?: string; // ISO format
 }
 
 export interface SignatureAudit {

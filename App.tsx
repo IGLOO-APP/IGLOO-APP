@@ -22,6 +22,7 @@ const Financials = lazy(() => import('./pages/Financials'));
 const Login = lazy(() => import('./pages/Login'));
 const SignUp = lazy(() => import('./pages/SignUp'));
 const OwnerMessages = lazy(() => import('./pages/OwnerMessages'));
+const OwnerProfile = lazy(() => import('./pages/OwnerProfile'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 // Tenant Pages
@@ -95,6 +96,7 @@ const App: React.FC = () => {
                   <Route path='properties' element={<Properties />} />
                   <Route path='tenants' element={<Tenants />} />
                   <Route path='messages' element={<OwnerMessages />} />
+                  <Route path='profile' element={<OwnerProfile />} />
                   <Route path='contracts' element={<Contracts />} />
                   <Route path='financials' element={<Financials />} />
                   <Route path='settings' element={<Settings />} />

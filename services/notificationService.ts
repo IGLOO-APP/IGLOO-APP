@@ -5,6 +5,21 @@ type Notification = Database['public']['Tables']['notifications']['Row'];
 
 export const notificationService = {
   async getNotifications(userId: string): Promise<Notification[]> {
+    if (localStorage.getItem('igloo_dev_session')) {
+      return [
+        {
+          id: 'n1',
+          user_id: userId,
+          title: 'Bem-vindo ao Igloo',
+          message: 'Seu painel está configurado e pronto para uso.',
+          type: 'system',
+          is_read: false,
+          link: null,
+          created_at: new Date().toISOString(),
+        },
+      ] as any[];
+    }
+
     const { data, error } = await supabase
       .from('notifications')
       .select('*')

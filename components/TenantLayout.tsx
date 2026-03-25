@@ -93,7 +93,7 @@ const TenantLayout: React.FC = () => {
             <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
           </button>
           <button
-            onClick={logout}
+            onClick={async () => await logout()}
             className='flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all'
           >
             <LogOut size={20} />
@@ -129,7 +129,7 @@ const TenantLayout: React.FC = () => {
               </NavLink>
             ))}
             <button
-              onClick={logout}
+              onClick={async () => await logout()}
               className='flex flex-col items-center justify-center w-14 gap-1 text-slate-300 hover:text-red-400 transition-colors active:scale-90'
             >
               <LogOut size={22} strokeWidth={2} />

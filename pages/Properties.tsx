@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter, Loader2 } from 'lucide-react';
+import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter, Loader2, Bed, Bath, Square, TrendingUp, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
@@ -20,8 +20,13 @@ const Properties: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [typeFilter, setTypeFilter] = useState('Todos');
-  const [priceFilter, setPriceFilter] = useState('Todos');
+  
+  // Advanced Filters State
+  const [filterBedrooms, setFilterBedrooms] = useState<number | null>(null);
+  const [filterBathrooms, setFilterBathrooms] = useState<number | null>(null);
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [minArea, setMinArea] = useState<string>('');
 
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['properties'],
@@ -78,14 +83,27 @@ const Properties: React.FC = () => {
       if (activeFilter === 'Alugado' && prop.status !== 'ALUGADO') return false;
     }
 
-    if (typeFilter !== 'Todos') {
-      // Mock type check
-      if (typeFilter === 'Studio' && !prop.name.includes('Studio')) return false;
-      if (typeFilter === 'Kitnet' && !prop.name.includes('Kitnet')) return false;
-    }
+    const matchesBedrooms = filterBedrooms === null || (prop.bedrooms && prop.bedrooms >= filterBedrooms);
+    const matchesBathrooms = filterBathrooms === null || (prop.bathrooms && prop.bathrooms >= filterBathrooms);
+    
+    const priceNum = parseFloat(prop.price?.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
+    const matchesMinPrice = !minPrice || priceNum >= parseFloat(minPrice);
+    const matchesMaxPrice = !maxPrice || priceNum <= parseFloat(maxPrice);
+    
+    const areaNum = parseFloat(prop.area?.replace(/\D/g, '') || '0');
+    const matchesMinArea = !minArea || areaNum >= parseFloat(minArea);
 
-    return true;
+    return matchesBedrooms && matchesBathrooms && matchesMinPrice && matchesMaxPrice && matchesMinArea;
   });
+
+  const clearFilters = () => {
+    setFilterBedrooms(null);
+    setFilterBathrooms(null);
+    setMinPrice('');
+    setMaxPrice('');
+    setMinArea('');
+    setActiveFilter('Todos');
+  };
 
   return (
     <div
@@ -182,38 +200,72 @@ const Properties: React.FC = () => {
 
             {/* Collapsible Advanced Filters */}
             {showAdvancedFilters && (
-              <div className='animate-slideUp bg-slate-50 dark:bg-black/20 p-3 rounded-xl flex gap-3 overflow-x-auto hide-scrollbar border border-slate-100 dark:border-white/5'>
-                <div className='relative shrink-0'>
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    className='appearance-none h-10 pl-3 pr-8 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-primary outline-none'
-                  >
-                    <option value='Todos'>Tipo: Todos</option>
-                    <option value='Studio'>Studio</option>
-                    <option value='Kitnet'>Kitnet</option>
-                    <option value='Apartamento'>Apartamento</option>
-                  </select>
-                  <ChevronDown
-                    size={14}
-                    className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
-                  />
+              <div className='animate-slideUp p-6 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 shadow-md space-y-6'>
+                <div className='flex justify-between items-center'>
+                  <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>Filtros Avançados</h4>
+                  <button onClick={clearFilters} className='text-xs font-bold text-primary hover:underline'>Limpar Tudo</button>
                 </div>
-                <div className='relative shrink-0'>
-                  <select
-                    value={priceFilter}
-                    onChange={(e) => setPriceFilter(e.target.value)}
-                    className='appearance-none h-10 pl-3 pr-8 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-primary outline-none'
-                  >
-                    <option value='Todos'>Preço: Todos</option>
-                    <option value='low'>Até R$ 1.500</option>
-                    <option value='mid'>R$ 1.500 - R$ 3.000</option>
-                    <option value='high'>Acima de R$ 3.000</option>
-                  </select>
-                  <ChevronDown
-                    size={14}
-                    className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
-                  />
+                
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Dormitórios & Banheiros</label>
+                    <div className='flex flex-col gap-2'>
+                      <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
+                        {[1, 2, 3, 4].map((n) => (
+                          <button 
+                            key={n}
+                            onClick={() => setFilterBedrooms(n)}
+                            className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBedrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                          >
+                            {n}{n === 4 ? '+' : ''}
+                          </button>
+                        ))}
+                      </div>
+                      <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
+                        {[1, 2, 3].map((n) => (
+                          <button 
+                            key={n}
+                            onClick={() => setFilterBathrooms(n)}
+                            className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBathrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                          >
+                            {n}{n === 3 ? '+' : ''}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Faixa de Aluguel (R$)</label>
+                    <div className='flex items-center gap-2'>
+                      <input 
+                        type='number' 
+                        placeholder='Min' 
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                      />
+                      <span className='text-slate-300'>-</span>
+                      <input 
+                        type='number' 
+                        placeholder='Max' 
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                      />
+                    </div>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Área Mínima (m²)</label>
+                    <input 
+                      type='number' 
+                      placeholder='Ex: 50' 
+                      value={minArea}
+                      onChange={(e) => setMinArea(e.target.value)}
+                      className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -251,14 +303,32 @@ const Properties: React.FC = () => {
                     onDelete={(id) => console.log('Delete', id)}
                   />
                   {/* Quick Metrics Overlay in List View */}
-                  <div className='absolute top-3 right-3 flex gap-2'>
+                  <div className='absolute top-3 right-3 flex flex-col items-end gap-2 pointer-events-none'>
                     {prop.status === 'DISPONÍVEL' && (
                       <div className='flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
-                        <Clock size={10} /> 12 dias
+                        <Clock size={10} /> 12 dias vago
+                      </div>
+                    )}
+                    {prop.status === 'ALUGADO' && (
+                      <div className='flex items-center gap-1 bg-emerald-500/90 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-black text-white shadow-lg'>
+                        <TrendingUp size={10} /> 0.82% Yield
                       </div>
                     )}
                     <div className='flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
                       <Eye size={10} /> 24
+                    </div>
+                  </div>
+
+                  {/* Feature Quick View Overlay */}
+                  <div className='absolute bottom-[104px] left-3 right-3 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 pointer-events-none'>
+                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
+                      <Bed size={12} className='text-primary' /> {prop.bedrooms || 0}
+                    </div>
+                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
+                      <Bath size={12} className='text-primary' /> {prop.bathrooms || 0}
+                    </div>
+                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
+                      <Square size={12} className='text-primary' /> {prop.area}
                     </div>
                   </div>
                 </div>

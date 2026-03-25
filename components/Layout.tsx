@@ -155,7 +155,7 @@ const Layout: React.FC = () => {
               );
             })}
             <button
-              onClick={logout}
+              onClick={async () => await logout()}
               className='flex flex-col items-center justify-center w-16 gap-1 text-slate-300 hover:text-red-400 transition-colors active:scale-90'
             >
               <LogOut size={22} strokeWidth={2} />

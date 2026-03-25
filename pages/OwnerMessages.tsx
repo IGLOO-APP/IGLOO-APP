@@ -19,6 +19,10 @@ import {
   Calendar,
   FileText,
   Phone,
+  LayoutDashboard,
+  ExternalLink,
+  History,
+  FileCheck,
 } from 'lucide-react';
 
 interface Message {
@@ -62,12 +66,13 @@ const quickReplies = [
 
 const OwnerMessages: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const [activeChatId, setActiveChatId] = useState<number | null>(1);
   const [inputText, setInputText] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general'>(
+  const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general' | 'urgent'>(
     'all'
   );
-  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+  const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'tenant'>('ticket');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +82,7 @@ const OwnerMessages: React.FC = () => {
       id: 1,
       tenantName: 'João Silva',
       tenantAvatar:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf',
+        'https://i.pravatar.cc/150?u=joao',
       property: 'Apt 101 - Centro',
       lastMessage: 'Aguardando o técnico.',
       lastMessageTime: '10:30',
@@ -90,17 +95,17 @@ const OwnerMessages: React.FC = () => {
         description:
           'A torneira da cozinha não fecha completamente, está pingando muito durante a noite. O registro geral não fecha.',
         status: 'pending',
-        priority: 'medium',
+        priority: 'urgent',
         images: [
-          'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=300',
+          'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400',
         ],
       },
       messages: [
         {
           id: 1,
-          text: 'Solicitação aberta automaticamente.',
+          text: 'SOLICITAÇÃO ABERTA AUTOMATICAMENTE.',
           sender: 'system',
-          time: '09:00',
+          time: '09:20',
           isRead: true,
         },
         {
@@ -270,7 +275,10 @@ const OwnerMessages: React.FC = () => {
     const matchesSearch =
       chat.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chat.property.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = activeFilter === 'all' || chat.category === activeFilter;
+    const matchesFilter =
+      activeFilter === 'all' || 
+      chat.category === activeFilter || 
+      (activeFilter === 'urgent' && chat.ticket?.priority === 'urgent');
     return matchesSearch && matchesFilter;
   });
 
@@ -310,6 +318,7 @@ const OwnerMessages: React.FC = () => {
           <div className='flex gap-2 overflow-x-auto hide-scrollbar pb-1'>
             {[
               { id: 'all', label: 'Tudo' },
+              { id: 'urgent', label: 'Urgentes' },
               { id: 'maintenance', label: 'Chamados' },
               { id: 'finance', label: 'Financeiro' },
               { id: 'general', label: 'Geral' },
@@ -319,7 +328,9 @@ const OwnerMessages: React.FC = () => {
                 onClick={() => setActiveFilter(f.id as any)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                   activeFilter === f.id
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
+                    ? f.id === 'urgent' 
+                      ? 'bg-red-500 text-white border-transparent' 
+                      : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
                     : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/10 hover:bg-slate-50'
                 }`}
               >
@@ -436,10 +447,23 @@ const OwnerMessages: React.FC = () => {
               </div>
 
               <div className='flex gap-2'>
+                <button
+                  onClick={() => {
+                    setShowDetailsPanel(true);
+                    setActiveRightTab('tenant');
+                  }}
+                  className='p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors'
+                  title='Mini Dashboard do Inquilino'
+                >
+                  <LayoutDashboard size={20} />
+                </button>
                 {activeChat.ticket && (
                   <button
-                    onClick={() => setShowDetailsPanel(!showDetailsPanel)}
-                    className={`p-2 rounded-lg transition-colors ${showDetailsPanel ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
+                    onClick={() => {
+                      setShowDetailsPanel(!showDetailsPanel);
+                      setActiveRightTab('ticket');
+                    }}
+                    className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
                     title='Ver detalhes do chamado'
                   >
                     <FileText size={20} />
@@ -540,96 +564,185 @@ const OwnerMessages: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3. TICKET DETAILS PANEL (Collapsible) */}
-              {showDetailsPanel && activeChat.ticket && (
+              {/* 3. RIGHT PANEL (Collapsible Dashboard/Ticket) */}
+              {showDetailsPanel && (
                 <div className='w-80 bg-white dark:bg-surface-dark border-l border-gray-200 dark:border-white/5 hidden lg:flex flex-col h-full animate-slideLeft'>
-                  <div className='p-4 border-b border-gray-100 dark:border-white/5 flex justify-between items-center'>
-                    <h3 className='font-bold text-slate-900 dark:text-white text-sm'>
-                      Detalhes do Chamado
-                    </h3>
+                  {/* Tabs for Right Panel */}
+                  <div className='flex border-b border-gray-200 dark:border-white/5 p-2 gap-2'>
+                    {activeChat.ticket && (
+                      <button
+                        onClick={() => setActiveRightTab('ticket')}
+                        className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                      >
+                        Chamado
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setActiveRightTab('tenant')}
+                      className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'tenant' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                    >
+                      Inquilino
+                    </button>
                     <button
                       onClick={() => setShowDetailsPanel(false)}
-                      className='p-1 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-slate-400'
+                      className='p-2 text-slate-400 hover:text-slate-600'
                     >
-                      <X size={16} />
+                      <X size={18} />
                     </button>
                   </div>
 
-                  <div className='flex-1 overflow-y-auto p-4 space-y-6'>
-                    <div>
-                      <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
-                        Título
-                      </span>
-                      <p className='font-bold text-slate-900 dark:text-white'>
-                        {activeChat.ticket.title}
-                      </p>
-                      <span className='text-xs text-slate-500'>{activeChat.ticket.id}</span>
-                    </div>
+                  <div className='flex-1 overflow-y-auto'>
+                    {activeRightTab === 'ticket' && activeChat.ticket ? (
+                      <div className='p-4 space-y-6'>
+                        <div>
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
+                            Título
+                          </span>
+                          <p className='font-bold text-slate-900 dark:text-white'>
+                            {activeChat.ticket.title}
+                          </p>
+                          <span className='text-xs text-slate-500'>{activeChat.ticket.id}</span>
+                        </div>
 
-                    <div>
-                      <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
-                        Status Atual
-                      </span>
-                      <div className='flex flex-col gap-2'>
-                        <button
-                          onClick={() => handleStatusChange('pending')}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${activeChat.ticket.status === 'pending' ? 'bg-orange-50 border-orange-200 text-orange-600 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-400' : 'bg-slate-50 border-transparent text-slate-500 hover:border-slate-200 dark:bg-white/5 dark:text-slate-400'}`}
-                        >
-                          <Clock size={14} /> Pendente
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange('in_progress')}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${activeChat.ticket.status === 'in_progress' ? 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400' : 'bg-slate-50 border-transparent text-slate-500 hover:border-slate-200 dark:bg-white/5 dark:text-slate-400'}`}
-                        >
-                          <Wrench size={14} /> Em Andamento
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange('completed')}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${activeChat.ticket.status === 'completed' ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-slate-50 border-transparent text-slate-500 hover:border-slate-200 dark:bg-white/5 dark:text-slate-400'}`}
-                        >
-                          <CheckCircle size={14} /> Resolvido
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
-                        Descrição
-                      </span>
-                      <p className='text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-white/5'>
-                        {activeChat.ticket.description}
-                      </p>
-                    </div>
-
-                    {activeChat.ticket.images.length > 0 && (
-                      <div>
-                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
-                          Fotos Anexadas
-                        </span>
-                        <div className='grid grid-cols-2 gap-2'>
-                          {activeChat.ticket.images.map((img, i) => (
-                            <div
-                              key={i}
-                              className='aspect-square rounded-xl bg-slate-100 dark:bg-white/10 overflow-hidden relative group cursor-pointer'
+                        <div>
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
+                            Status Atual
+                          </span>
+                          <div className='flex flex-col gap-2'>
+                            <button
+                              onClick={() => handleStatusChange('pending')}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                                activeChat.ticket.status === 'pending'
+                                  ? 'bg-orange-500 text-white border-transparent shadow-lg shadow-orange-500/20'
+                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
+                              }`}
                             >
-                              <img src={img} alt='Anexo' className='w-full h-full object-cover' />
-                              <div className='absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white'>
-                                <ImageIcon size={20} />
-                              </div>
+                              <Clock size={14} /> Pendente
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange('in_progress')}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                                activeChat.ticket.status === 'in_progress'
+                                  ? 'bg-blue-500 text-white border-transparent shadow-lg shadow-blue-500/20'
+                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
+                              }`}
+                            >
+                              <Wrench size={14} /> Em Andamento
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange('completed')}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                                activeChat.ticket.status === 'completed'
+                                  ? 'bg-emerald-500 text-white border-transparent shadow-lg shadow-emerald-500/20'
+                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
+                              }`}
+                            >
+                              <CheckCircle size={14} /> Resolvido
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
+                            Descrição
+                          </span>
+                          <p className='text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-white/5'>
+                            {activeChat.ticket.description}
+                          </p>
+                        </div>
+
+                        {activeChat.ticket.images.length > 0 && (
+                          <div>
+                            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
+                              Fotos Anexadas
+                            </span>
+                            <div className='grid grid-cols-2 gap-2'>
+                              {activeChat.ticket.images.map((img, i) => (
+                                <div
+                                  key={i}
+                                  className='aspect-square rounded-xl bg-cover bg-center border border-gray-100 dark:border-white/5 shadow-sm'
+                                  style={{ backgroundImage: `url(${img})` }}
+                                ></div>
+                              ))}
                             </div>
-                          ))}
+                          </div>
+                        )}
+
+                        <div className='pt-4 border-t border-gray-200 dark:border-white/5 space-y-3'>
+                          <button className='w-full py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-200 transition-all'>
+                            <Calendar size={14} /> Agendar Visita Técnica
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className='p-4 space-y-6'>
+                        {/* Mini Dashboard Inquilino */}
+                        <div className='flex flex-col items-center text-center pb-4 border-b border-gray-200 dark:border-white/5'>
+                          <div className='w-20 h-20 rounded-full bg-slate-200 dark:bg-white/10 mb-3 overflow-hidden border-2 border-primary/20'>
+                            {activeChat.tenantAvatar ? (
+                              <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover' />
+                            ) : (
+                              <div className='w-full h-full flex items-center justify-center text-slate-400'>
+                                <User size={40} />
+                              </div>
+                            )}
+                          </div>
+                          <h4 className='font-bold text-slate-900 dark:text-white'>{activeChat.tenantName}</h4>
+                          <p className='text-xs text-slate-500'>{activeChat.property}</p>
+                        </div>
+
+                        <div className='space-y-4'>
+                          <div className='grid grid-cols-2 gap-3'>
+                            <div className='p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30'>
+                              <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-1'>Aluguel</span>
+                              <p className='text-sm font-black text-emerald-700 dark:text-emerald-300'>Em Dia</p>
+                            </div>
+                            <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5'>
+                              <span className='text-[10px] font-bold text-slate-400 uppercase block mb-1'>Score</span>
+                              <p className='text-sm font-black text-slate-900 dark:text-white'>92%</p>
+                            </div>
+                          </div>
+
+                          <div className='p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 space-y-3'>
+                            <div className='flex justify-between items-center'>
+                              <span className='text-xs font-bold text-slate-500'>Fim do Contrato</span>
+                              <span className='text-xs font-medium dark:text-white'>12 Out 2025</span>
+                            </div>
+                            <div className='w-full h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
+                              <div className='h-full bg-primary w-[65%]' />
+                            </div>
+                            <p className='text-[10px] text-slate-400 text-center font-medium'>18 meses restantes</p>
+                          </div>
+
+                          <div className='space-y-2'>
+                            <h5 className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Últimas Atividades</h5>
+                            {[
+                              { label: 'Contrato assinado', date: 'Jan 2024', icon: FileCheck },
+                              { label: 'Vistoria aprovada', date: 'Jan 2024', icon: History },
+                            ].map((act, i) => (
+                              <div key={i} className='flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer'>
+                                <div className='size-8 rounded-lg bg-white dark:bg-black/20 flex items-center justify-center text-slate-400'>
+                                  <act.icon size={16} />
+                                </div>
+                                <div>
+                                  <p className='text-xs font-bold text-slate-700 dark:text-slate-300'>{act.label}</p>
+                                  <p className='text-[10px] text-slate-500'>{act.date}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className='pt-4 border-t border-gray-200 dark:border-white/5 space-y-2'>
+                          <button className='w-full py-3 rounded-xl bg-primary text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
+                            <ExternalLink size={14} /> Ver Perfil Completo
+                          </button>
+                          <button className='w-full py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>
+                            <Phone size={14} /> Ligar via WhatsApp
+                          </button>
                         </div>
                       </div>
                     )}
-
-                    <div>
-                      <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
-                        Contato
-                      </span>
-                      <div className='flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300'>
-                        <Phone size={14} /> (11) 99999-9999
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}

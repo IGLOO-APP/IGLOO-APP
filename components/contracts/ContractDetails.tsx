@@ -17,6 +17,10 @@ import {
   Mail,
   MessageCircle,
   AlertTriangle,
+  Clock,
+  ArrowUpRight,
+  TrendingUp,
+  Percent,
 } from 'lucide-react';
 
 interface ContractDetailsProps {
@@ -157,115 +161,165 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
         <div className='flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-black/10'>
           {activeTab === 'overview' && (
             <div className='grid md:grid-cols-2 gap-6 animate-fadeIn'>
-              {/* Contract Info */}
-              <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
-                <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-                  <FileText size={18} className='text-primary' /> Dados do Contrato
-                </h3>
-                <div className='space-y-3 text-sm'>
-                  <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
-                    <span className='text-slate-500'>Inquilino</span>
-                    <span className='font-medium dark:text-white'>{contract.tenant_name}</span>
+              <div className='space-y-6'>
+                {/* Contract Info */}
+                <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                  <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                    <FileText size={18} className='text-primary' /> Dados do Contrato
+                  </h3>
+                  <div className='space-y-3 text-sm'>
+                    <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
+                      <span className='text-slate-500'>Inquilino</span>
+                      <span className='font-medium dark:text-white'>{contract.tenant_name}</span>
+                    </div>
+                    <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
+                      <span className='text-slate-500'>Proprietário</span>
+                      <span className='font-medium dark:text-white'>{contract.owner_name}</span>
+                    </div>
+                    <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
+                      <span className='text-slate-500'>Início</span>
+                      <span className='font-medium dark:text-white'>
+                        {new Date(contract.start_date).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='text-slate-500'>Término</span>
+                      <span className='font-medium dark:text-white'>
+                        {new Date(contract.end_date).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
                   </div>
-                  <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
-                    <span className='text-slate-500'>Proprietário</span>
-                    <span className='font-medium dark:text-white'>{contract.owner_name}</span>
-                  </div>
-                  <div className='flex justify-between border-b border-slate-50 dark:border-white/5 pb-2'>
-                    <span className='text-slate-500'>Início</span>
-                    <span className='font-medium dark:text-white'>
-                      {new Date(contract.start_date).toLocaleDateString('pt-BR')}
+                </div>
+
+                {/* Smart Rules (Extracted Parameters) */}
+                <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                  <div className='flex justify-between items-center'>
+                    <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                      <ShieldCheck size={18} className='text-emerald-500' /> Regras Inteligentes
+                    </h3>
+                    <span className='text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30'>
+                      Extraído
                     </span>
                   </div>
-                  <div className='flex justify-between'>
-                    <span className='text-slate-500'>Término</span>
-                    <span className='font-medium dark:text-white'>
-                      {new Date(contract.end_date).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Financials */}
-              <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
-                <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-                  <DollarSign size={18} className='text-emerald-500' /> Financeiro
-                </h3>
-                <div className='p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex justify-between items-center'>
-                  <span className='text-emerald-800 dark:text-emerald-300 font-medium'>
-                    Valor Mensal
-                  </span>
-                  <span className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
-                    {contract.value}
-                  </span>
-                </div>
-                <div className='flex justify-between text-sm text-slate-500 px-2'>
-                  <span>Dia do Vencimento</span>
-                  <span className='font-bold text-slate-900 dark:text-white'>
-                    Todo dia {contract.payment_day}
-                  </span>
-                </div>
-              </div>
-
-              {/* Signers Status */}
-              <div className='md:col-span-2 bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <ShieldCheck size={18} className='text-indigo-500' /> Status das Assinaturas
-                </h3>
-                <div className='space-y-3'>
-                  {contract.signers.map((signer) => (
-                    <div
-                      key={signer.id}
-                      className='flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl'
-                    >
-                      <div className='flex items-center gap-3'>
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-                            signer.status === 'signed'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-slate-200 text-slate-500'
-                          }`}
-                        >
-                          {signer.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                            {signer.name}
-                          </p>
-                          <p className='text-xs text-slate-500 capitalize'>
-                            {signer.role === 'owner' ? 'Proprietário' : 'Inquilino'}
-                          </p>
-                        </div>
+                  <div className='grid grid-cols-2 gap-3'>
+                    <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5'>
+                      <div className='flex items-center gap-1.5 mb-1'>
+                        <Percent size={12} className='text-slate-400' />
+                        <span className='text-[10px] font-bold text-slate-500 uppercase'>Multa</span>
                       </div>
-                      <div className='flex items-center gap-2'>
-                        {signer.status === 'pending' && (
-                          <div className='flex gap-2'>
-                            <button
-                              className='p-1.5 rounded bg-white border border-gray-200 hover:text-emerald-600 transition-colors'
-                              title='Reenviar Email'
-                            >
-                              <Mail size={14} />
-                            </button>
-                            <button
-                              className='p-1.5 rounded bg-white border border-gray-200 hover:text-emerald-600 transition-colors'
-                              title='Enviar WhatsApp'
-                            >
-                              <MessageCircle size={14} />
-                            </button>
-                          </div>
-                        )}
-                        <span
-                          className={`text-xs font-bold px-2 py-1 rounded-md ${
-                            signer.status === 'signed'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-amber-100 text-amber-700'
-                          }`}
-                        >
-                          {signer.status === 'signed' ? 'Assinado' : 'Pendente'}
+                      <p className='text-sm font-black dark:text-white'>10%</p>
+                    </div>
+                    <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5'>
+                      <div className='flex items-center gap-1.5 mb-1'>
+                        <TrendingUp size={12} className='text-slate-400' />
+                        <span className='text-[10px] font-bold text-slate-500 uppercase'>
+                          Juros Diários
                         </span>
                       </div>
+                      <p className='text-sm font-black dark:text-white'>0,33%</p>
                     </div>
-                  ))}
+                    <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5'>
+                      <div className='flex items-center gap-1.5 mb-1'>
+                        <RefreshCw size={12} className='text-slate-400' />
+                        <span className='text-[10px] font-bold text-slate-500 uppercase'>
+                          Reajuste
+                        </span>
+                      </div>
+                      <p className='text-sm font-black dark:text-white'>IGP-M (Anual)</p>
+                    </div>
+                    <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5'>
+                      <div className='flex items-center gap-1.5 mb-1'>
+                        <ArrowUpRight size={12} className='text-slate-400' />
+                        <span className='text-[10px] font-bold text-slate-500 uppercase'>
+                          Próximo Reajuste
+                        </span>
+                      </div>
+                      <p className='text-sm font-black text-primary'>Jan 2025</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className='space-y-6'>
+                {/* Financials */}
+                <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                  <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                    <DollarSign size={18} className='text-emerald-500' /> Financeiro
+                  </h3>
+                  <div className='p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex justify-between items-center'>
+                    <span className='text-emerald-800 dark:text-emerald-300 font-medium'>
+                      Valor Mensal
+                    </span>
+                    <span className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
+                      {contract.value}
+                    </span>
+                  </div>
+                  <div className='flex justify-between text-sm text-slate-500 px-2'>
+                    <span>Dia do Vencimento</span>
+                    <span className='font-bold text-slate-900 dark:text-white'>
+                      Todo dia {contract.payment_day}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Signature Progress & Timeline */}
+                <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                  <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                    <PenTool size={18} className='text-primary' /> Timeline de Assinatura
+                  </h3>
+
+                  <div className='relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
+                    {/* Owner Signed */}
+                    <div className='relative'>
+                      <div className='absolute -left-[19px] top-1 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center ring-4 ring-white dark:ring-surface-dark'>
+                        <CheckCircle size={10} className='text-white' />
+                      </div>
+                      <div className='flex justify-between items-start'>
+                        <div>
+                          <p className='text-xs font-bold dark:text-white'>Proprietário Assinou</p>
+                          <p className='text-[10px] text-slate-500'>
+                            IP: 187.54.21.10 • Hash: 4x9f...a2
+                          </p>
+                        </div>
+                        <span className='text-[10px] text-slate-400'>12/01/24 • 14:20</span>
+                      </div>
+                    </div>
+
+                    {/* Tenant Status */}
+                    <div className='relative'>
+                      <div className='absolute -left-[19px] top-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center ring-4 ring-white dark:ring-surface-dark'>
+                        <Clock size={10} className='text-white' />
+                      </div>
+                      <div className='flex justify-between items-start'>
+                        <div>
+                          <p className='text-xs font-bold dark:text-white'>Inquilino Visualizou</p>
+                          <p className='text-[10px] text-slate-500'>
+                            Aguardando confirmação digital
+                          </p>
+                        </div>
+                        <span className='text-[10px] text-slate-400'>14/01/24 • 09:45</span>
+                      </div>
+                    </div>
+
+                    {/* Pending Signer */}
+                    <div className='relative opacity-50'>
+                      <div className='absolute -left-[19px] top-1 w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center ring-4 ring-white dark:ring-surface-dark'>
+                        <div className='w-1.5 h-1.5 rounded-full bg-slate-400' />
+                      </div>
+                      <div className='flex justify-between items-start'>
+                        <div>
+                          <p className='text-xs font-bold dark:text-white'>Fiador pendente</p>
+                          <p className='text-[10px] text-slate-500'>
+                            Link de assinatura não acessado
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button className='w-full py-2.5 rounded-xl border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest hover:bg-primary/5 transition-all'>
+                    Reenviar Link para Fiador
+                  </button>
                 </div>
               </div>
             </div>

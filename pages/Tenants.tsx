@@ -18,14 +18,24 @@ import {
   DollarSign,
   MessageCircle,
   Star,
+  History,
+  CheckCircle,
 } from 'lucide-react';
 import { TenantDetails } from '../components/tenants/TenantDetails';
+import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenantService';
+import { useNotification } from '../context/NotificationContext';
+import { Tenant } from '../types';
 
 const Tenants: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [billingTenant, setBillingTenant] = useState<Tenant | null>(null);
+  const { addToast } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'Todos' | 'Liquidado' | 'Vencendo' | 'Atrasado'>(
+    'Todos'
+  );
   const location = useLocation();
 
   const { data: tenants = [], isLoading } = useQuery({
@@ -45,11 +55,62 @@ const Tenants: React.FC = () => {
     window.location.href = `${type}:${value}`;
   };
 
-  const filteredTenants = tenants.filter(
-    (t) =>
+  const getPaymentStatus = (tenant: Tenant) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    const lastPayment = tenant.last_payment_date ? new Date(tenant.last_payment_date) : null;
+    const isPaidThisMonth =
+      lastPayment && lastPayment.getMonth() === currentMonth && lastPayment.getFullYear() === currentYear;
+
+    if (isPaidThisMonth) {
+      return {
+        type: 'Liquidado',
+        label: 'Liquidado',
+        color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+      };
+    }
+
+    const dueDay = tenant.due || 10;
+    const dueDate = new Date(currentYear, currentMonth, dueDay);
+    dueDate.setHours(0, 0, 0, 0);
+
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      return {
+        type: 'Vencendo',
+        label: `Vence em ${diffDays} dias`,
+        color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      };
+    } else if (diffDays === 0) {
+      return {
+        type: 'Vencendo',
+        label: 'Vence hoje',
+        color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+      };
+    } else {
+      return {
+        type: 'Atrasado',
+        label: `Atrasado ${Math.abs(diffDays)} dias`,
+        color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+      };
+    }
+  };
+
+  const filteredTenants = tenants.filter((t) => {
+    const matchesSearch =
       t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (t.cpf && t.cpf.includes(searchTerm))
-  );
+      (t.cpf && t.cpf.includes(searchTerm));
+
+    if (statusFilter === 'Todos') return matchesSearch;
+
+    const status = getPaymentStatus(t);
+    return matchesSearch && status.type === statusFilter;
+  });
 
   if (isLoading) {
     return (
@@ -74,26 +135,45 @@ const Tenants: React.FC = () => {
           onClick={() => setShowAddForm(true)}
           className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
         >
-          <Plus size={18} /> Novo
+          <Plus size={18} /> Novo Inquilino
         </button>
       </header>
 
-      <div className='px-6 py-4 flex gap-3'>
-        <div className='relative flex-1'>
-          <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400'>
-            <Search size={20} />
+      <div className='px-6 py-4 flex flex-col gap-4'>
+        <div className='flex gap-3'>
+          <div className='relative flex-1'>
+            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400'>
+              <Search size={20} />
+            </div>
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='block w-full h-12 pl-10 pr-4 text-sm border-none rounded-2xl bg-white dark:bg-surface-dark dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary shadow-sm ring-1 ring-gray-100 dark:ring-white/5 transition-all'
+              placeholder='Buscar por nome ou CPF...'
+              type='text'
+            />
           </div>
-          <input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className='block w-full h-12 pl-10 pr-4 text-sm border-none rounded-2xl bg-white dark:bg-surface-dark dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary shadow-sm ring-1 ring-gray-100 dark:ring-white/5 transition-all'
-            placeholder='Buscar por nome ou CPF...'
-            type='text'
-          />
+          <button className='h-12 w-12 flex items-center justify-center rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 text-slate-500 shadow-sm'>
+            <Filter size={20} />
+          </button>
         </div>
-        <button className='h-12 w-12 flex items-center justify-center rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 text-slate-500 shadow-sm'>
-          <Filter size={20} />
-        </button>
+
+        {/* Status Filter Bar */}
+        <div className='flex gap-2 overflow-x-auto pb-2 hide-scrollbar'>
+          {['Todos', 'Liquidado', 'Vencendo', 'Atrasado'].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setStatusFilter(filter as any)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                statusFilter === filter
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
+                  : 'bg-white dark:bg-surface-dark text-slate-500 dark:text-slate-400 border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className='flex-1 overflow-y-auto px-6 pb-24 space-y-4'>
@@ -116,18 +196,6 @@ const Tenants: React.FC = () => {
                       {t.name[0]}
                     </div>
                   )}
-                  {/* Punctuality Score Badge */}
-                  <div
-                    className={`absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold border border-white dark:border-surface-dark shadow-sm flex items-center gap-0.5 ${
-                      (t.score || 100) >= 90
-                        ? 'bg-emerald-500 text-white'
-                        : (t.score || 100) >= 70
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-red-500 text-white'
-                    }`}
-                  >
-                    <Star size={8} fill='currentColor' /> {t.score || 100}%
-                  </div>
                 </div>
 
                 <div className='flex flex-1 flex-col justify-center min-w-0'>
@@ -150,9 +218,9 @@ const Tenants: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('Cobrar');
+                          setBillingTenant(t);
                         }}
-                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 text-xs font-bold'
+                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
                         title='Gerar Cobrança'
                       >
                         <DollarSign size={14} /> <span className='hidden sm:inline'>Cobrar</span>
@@ -162,21 +230,40 @@ const Tenants: React.FC = () => {
                           e.stopPropagation();
                           console.log('Msg');
                         }}
-                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 text-xs font-bold'
+                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
                         title='Enviar Mensagem'
                       >
                         <MessageCircle size={14} /> <span className='hidden sm:inline'>Msg</span>
                       </button>
                     </div>
-                    <div className='text-right'>
-                      <p
-                        className={`text-[10px] font-bold uppercase tracking-tight ${t.status === 'late' ? 'text-red-500' : 'text-slate-400'}`}
-                      >
-                        {t.status === 'late' ? 'Atraso Crítico' : `Vence todo dia ${t.due || 10}`}
-                      </p>
-                      <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                        {t.rent || '-'}
-                      </p>
+
+                    <div className='flex items-center gap-3'>
+                      {/* Monthly Payment Status Badge */}
+                      {(() => {
+                        const status = getPaymentStatus(t);
+                        return (
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border border-transparent shadow-sm ${status.color}`}
+                          >
+                            {status.label}
+                          </span>
+                        );
+                      })()}
+
+                      <div className='text-right'>
+                        {t.status === 'late' ? (
+                          <span className='inline-block px-2 py-0.5 rounded bg-red-600 text-white text-[9px] font-black uppercase tracking-wider mb-1 shadow-sm shadow-red-900/20'>
+                            Atraso Crítico
+                          </span>
+                        ) : (
+                          <p className='text-[10px] font-bold uppercase tracking-tight text-slate-400 mb-0.5'>
+                            Vence todo dia {t.due || 10}
+                          </p>
+                        )}
+                        <p className='text-sm font-bold text-slate-900 dark:text-white leading-none'>
+                          {t.rent || '-'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -325,6 +412,30 @@ const Tenants: React.FC = () => {
       {/* Tenant Detail Dashboard */}
       {selectedTenantId && (
         <TenantDetails id={selectedTenantId} onClose={() => setSelectedTenantId(null)} />
+      )}
+
+      {/* Smart Billing Modal */}
+      {billingTenant && (
+        <BillingModal
+          tenant={billingTenant}
+          onClose={() => setBillingTenant(null)}
+          onConfirm={(data) => {
+            console.log('Billing Confirmed:', data);
+            
+            // Register activity (Demo)
+            const channelLabel = data.channel === 'whatsapp' ? 'WhatsApp' : data.channel === 'copy' ? 'Cópia' : 'Pix/Boleto';
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const date = new Date().toLocaleDateString('pt-BR');
+            
+            addToast(
+              'Cobrança Enviada',
+              `A cobrança para ${billingTenant.name} foi registrada com sucesso via ${channelLabel}.`,
+              'success'
+            );
+            
+            setBillingTenant(null);
+          }}
+        />
       )}
     </div>
   );

@@ -255,13 +255,16 @@ const Dashboard: React.FC = () => {
             <div className='fixed inset-0 z-30' onClick={() => setShowUserMenu(false)}></div>
             <div className='absolute top-20 left-6 w-64 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/5 py-2 z-40 animate-scaleUp origin-top-left'>
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigate('/profile')}
                 className='w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200'
               >
                 <User size={18} /> Meu Perfil
               </button>
               <button
-                onClick={logout}
+                onClick={async () => {
+                  setShowUserMenu(false);
+                  await logout();
+                }}
                 className='w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-3 text-sm font-bold text-red-500'
               >
                 <LogOut size={18} /> Sair
@@ -473,6 +476,22 @@ const Dashboard: React.FC = () => {
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
+
+              {/* Chart Legend */}
+              <div className='flex items-center gap-4 mt-4 px-2'>
+                <div className='flex items-center gap-2'>
+                  <div className='w-2.5 h-2.5 rounded-[2px] bg-[#10b981]'></div>
+                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <div className='w-2.5 h-2.5 rounded-[2px] bg-[#ef4444]'></div>
+                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <div className='w-[18px] h-[2px] bg-[#13c8ec]'></div>
+                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Projeção (3 meses)</span>
+                </div>
+              </div>
             </div>
 
             {/* TOP PROPERTIES TABLE */}
@@ -519,9 +538,29 @@ const Dashboard: React.FC = () => {
                           {prop.yield > 0 ? `${prop.yield}%` : '-'}
                         </td>
                         <td className='py-3 text-center'>
-                          <span
-                            className={`inline-block w-2.5 h-2.5 rounded-full ${prop.status === 'occupied' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'}`}
-                          ></span>
+                          <div className='relative group/tooltip inline-block'>
+                            <span
+                              className={`inline-block w-2.5 h-2.5 rounded-full ${
+                                prop.status === 'occupied'
+                                  ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                                  : prop.status === 'warning'
+                                    ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                                    : prop.status === 'vacant'
+                                      ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                                      : 'bg-slate-400'
+                              }`}
+                            ></span>
+                            <div className='absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50'>
+                              {prop.status === 'occupied'
+                                ? 'Ocupado e em dia'
+                                : prop.status === 'warning'
+                                  ? 'Contrato vencendo em breve'
+                                  : prop.status === 'vacant'
+                                    ? 'Imóvel vago'
+                                    : 'Sem contrato ativo'}
+                              <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900'></div>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -658,9 +697,16 @@ const Dashboard: React.FC = () => {
                       <p className='text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight'>
                         {act.title}
                       </p>
-                      <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>
-                        {act.date} • {act.time}
-                      </p>
+                      <div className='flex items-center gap-1.5 mt-0.5'>
+                        <p className='text-xs text-slate-500 dark:text-slate-400'>
+                          {act.date} • {act.time}
+                        </p>
+                        {act.date === 'Hoje' && (
+                          <span className='px-1.5 py-0.5 bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold rounded-md border border-amber-200 dark:border-amber-500/20'>
+                            Hoje
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
