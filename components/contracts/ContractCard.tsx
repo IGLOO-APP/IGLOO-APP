@@ -9,6 +9,7 @@ import {
   AlertCircle,
   CheckCircle2,
   PenTool,
+  RefreshCw,
 } from 'lucide-react';
 import { Contract } from '../../types';
 import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
@@ -16,11 +17,19 @@ import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
 interface ContractCardProps {
   contract: Contract;
   onClick: (contract: Contract) => void;
+  onRenew?: (contract: Contract) => void;
 }
 
-export const ContractCard: React.FC<ContractCardProps> = ({ contract, onClick }) => {
+export const ContractCard: React.FC<ContractCardProps> = ({ contract, onClick, onRenew }) => {
   const statusColor = getStatusColor(contract.status);
   const statusLabel = getStatusLabel(contract.status);
+
+  // Determine if contract needs renewal (expired or expiring in < 30 days)
+  const today = new Date();
+  const endDate = new Date(contract.end_date);
+  const diffTime = endDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const needsRenewal = diffDays <= 30 && contract.status !== 'renewed' && contract.status !== 'cancelled' && contract.status !== 'draft';
 
   // Calculate signature progress
   const signedCount = contract.signers.filter((s) => s.status === 'signed').length;
@@ -42,6 +51,17 @@ export const ContractCard: React.FC<ContractCardProps> = ({ contract, onClick })
             >
               {statusLabel}
             </span>
+            {needsRenewal && onRenew && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRenew(contract);
+                }}
+                className='flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider border border-primary/20 hover:bg-primary hover:text-white transition-all active:scale-95'
+              >
+                <RefreshCw size={10} /> Renovar
+              </button>
+            )}
             <span className='text-xs text-slate-400 font-mono'>{contract.contract_number}</span>
           </div>
           <h3 className='text-base font-bold text-slate-900 dark:text-white truncate'>

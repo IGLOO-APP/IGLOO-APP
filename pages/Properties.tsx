@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter, Loader2, Bed, Bath, Square, TrendingUp, X } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { PropertyDetails } from '../components/properties/PropertyDetails';
@@ -14,6 +14,7 @@ const Properties: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Filters State
@@ -69,6 +70,10 @@ const Properties: React.FC = () => {
     console.log('Saving property', data);
     setShowAddForm(false);
     queryClient.invalidateQueries({ queryKey: ['properties'] });
+  };
+
+  const handleCreateContract = (property: Property) => {
+    navigate('/contracts', { state: { preSelectedProperty: property.name } });
   };
 
   const filteredProperties = properties.filter((prop) => {
@@ -301,6 +306,7 @@ const Properties: React.FC = () => {
                     onClick={setSelectedProperty}
                     onEdit={(id) => console.log('Edit', id)}
                     onDelete={(id) => console.log('Delete', id)}
+                    onCreateContract={handleCreateContract}
                   />
                   {/* Quick Metrics Overlay in List View */}
                   <div className='absolute top-3 right-3 flex flex-col items-end gap-2 pointer-events-none'>

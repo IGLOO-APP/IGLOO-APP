@@ -29,6 +29,7 @@ import { generateFilledContract } from '../../utils/contractGenerator';
 interface CreateContractWizardProps {
   onClose: () => void;
   onComplete: (data: any) => void;
+  initialProperty?: string;
 }
 
 const STEPS = [
@@ -203,10 +204,11 @@ const SignatureModal: React.FC<{
 export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   onClose,
   onComplete,
+  initialProperty,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    property: '',
+    property: initialProperty || '',
     tenantName: '',
     tenantCpf: '',
     rentValue: '',

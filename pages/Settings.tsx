@@ -45,9 +45,18 @@ interface PaymentMethodConfig {
 
 const Settings: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<
     'general' | 'financial' | 'notifications' | 'subscription'
   >('financial');
+
+  useEffect(() => {
+    if (location.state && (location.state as any).activeTab) {
+      setActiveTab((location.state as any).activeTab);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [stripeConnected, setStripeConnected] = useState(false);

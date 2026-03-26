@@ -1,18 +1,39 @@
 import { propertyService } from './propertyService';
+import { tenantService } from './tenantService';
+import { contractService } from './contractService';
 
 export const dashboardService = {
   async getDashboardData() {
     // In a real app, this would be a single API call or multiple parallel calls
     // For now, we'll use existing services where possible and mock the rest
-    const properties = await propertyService.getAll();
+    const [properties, tenants, contracts] = await Promise.all([
+      propertyService.getAll(),
+      tenantService.getAll(),
+      contractService.getAll(),
+    ]);
 
     const totalProperties = properties.length;
     const occupiedProperties = properties.filter((p) => p.status === 'ALUGADO').length;
     const occupancyRate =
       totalProperties > 0 ? Math.round((occupiedProperties / totalProperties) * 100) : 0;
 
+    // Onboarding Checks
+    const onboarding = {
+      step1: totalProperties > 0, // Has property
+      step2: tenants.length > 0, // Has tenant
+      step3: contracts.some(c => c.status === 'active'), // Has active contract
+      step4: true, // Mocked for now, usually would check settings/payment methods
+      allCompleted: false
+    };
+    
+    // In dev mode with demo data, we might want to simulate "not completed" 
+    // but the requirement says "don't show for users who already have all 4"
+    // So we calculate it normally.
+    onboarding.allCompleted = onboarding.step1 && onboarding.step2 && onboarding.step3 && onboarding.step4;
+
     // Mocking other data for now, but keeping it in the service layer
     return {
+      onboarding,
       metrics: {
         totalWealth: 'R$ 1.5M',
         mrr: 'R$ 16.2k',

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/contracts/ContractCard';
 import { CreateContractWizard } from '../components/contracts/CreateContractWizard';
 import { ContractDetails } from '../components/contracts/ContractDetails';
+import { RenewContractModal } from '../components/contracts/RenewContractModal';
 import { contractService } from '../services/contractService';
+import { useNotification } from '../context/NotificationContext';
 
 const Contracts: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -12,11 +15,21 @@ const Contracts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showWizard, setShowWizard] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [renewingContract, setRenewingContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const { addToast } = useNotification();
 
   useEffect(() => {
     loadContracts();
-  }, []);
+    
+    // Check if coming from Properties with a pre-selected property or from onboarding
+    if (location.state && (location.state as any).preSelectedProperty) {
+      setShowWizard(true);
+    } else if (location.state && (location.state as any).openWizard) {
+      setShowWizard(true);
+    }
+  }, [location]);
 
   const loadContracts = async () => {
     setLoading(true);
@@ -48,6 +61,28 @@ const Contracts: React.FC = () => {
     setSelectedContract(updated);
   };
 
+  const handleRenewContract = async (data: { newEndDate: string; newValue: string; observations: string }) => {
+    if (!renewingContract) return;
+
+    try {
+      // In a real app, we would call a service to renew
+      // 1. Create new contract
+      // 2. Update old contract status to 'renewed'
+      // 3. Log activity for tenant
+      
+      addToast(
+        'Contrato Renovado',
+        `O contrato para ${renewingContract.tenant_name} foi renovado com sucesso.`,
+        'success'
+      );
+      
+      setRenewingContract(null);
+      loadContracts();
+    } catch (error) {
+      console.error('Error renewing contract', error);
+    }
+  };
+
   const filteredContracts = contracts.filter((c) => {
     const matchesSearch =
       c.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,7 +95,16 @@ const Contracts: React.FC = () => {
   // Stats
   const activeCount = contracts.filter((c) => c.status === 'active').length;
   const pendingCount = contracts.filter((c) => c.status === 'pending_signature').length;
-  const expiringCount = contracts.filter((c) => c.status === 'expiring_soon').length;
+  
+  // Calculate correct expiringCount (next 30 days)
+  const expiringCount = contracts.filter((c) => {
+    if (c.status === 'renewed' || c.status === 'cancelled' || c.status === 'draft') return false;
+    const today = new Date();
+    const endDate = new Date(c.end_date);
+    const diffTime = endDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30;
+  }).length;
 
   return (
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
@@ -159,7 +203,12 @@ const Contracts: React.FC = () => {
         ) : (
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
             {filteredContracts.map((contract) => (
-              <ContractCard key={contract.id} contract={contract} onClick={setSelectedContract} />
+              <ContractCard 
+                key={contract.id} 
+                contract={contract} 
+                onClick={setSelectedContract} 
+                onRenew={setRenewingContract}
+              />
             ))}
           </div>
         )}
@@ -175,8 +224,13 @@ const Contracts: React.FC = () => {
       {/* Modals */}
       {showWizard && (
         <CreateContractWizard
-          onClose={() => setShowWizard(false)}
+          onClose={() => {
+            setShowWizard(false);
+            // Clear location state when closing to avoid reopening on refresh
+            window.history.replaceState({}, document.title);
+          }}
           onComplete={handleCreateContract}
+          initialProperty={(location.state as any)?.preSelectedProperty}
         />
       )}
 
@@ -185,6 +239,14 @@ const Contracts: React.FC = () => {
           contract={selectedContract}
           onClose={() => setSelectedContract(null)}
           onUpdate={handleUpdateContract}
+        />
+      )}
+
+      {renewingContract && (
+        <RenewContractModal
+          contract={renewingContract}
+          onClose={() => setRenewingContract(null)}
+          onConfirm={handleRenewContract}
         />
       )}
     </div>

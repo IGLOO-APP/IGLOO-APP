@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, FilePlus2 } from 'lucide-react';
 import { Property } from '../../types';
 
 interface PropertyCardProps {
@@ -7,6 +7,7 @@ interface PropertyCardProps {
   onClick: (property: Property) => void;
   onEdit?: (id: string | number) => void;
   onDelete?: (id: string | number) => void;
+  onCreateContract?: (property: Property) => void;
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({
@@ -14,6 +15,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onClick,
   onEdit,
   onDelete,
+  onCreateContract,
 }) => {
   return (
     <article
@@ -25,14 +27,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           className='h-24 w-24 shrink-0 rounded-xl bg-cover bg-center'
           style={{ backgroundImage: `url(${property.image})` }}
         ></div>
-        <div className='flex flex-1 flex-col justify-between py-1'>
-          <div>
-            <div className='flex items-center justify-between mb-1'>
+        <div className='flex flex-1 flex-col justify-between py-1 min-w-0'>
+          <div className='pr-24'>
+            <div className='flex items-center gap-2 mb-1.5'>
               <span
-                className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wide ${property.status_color || 'bg-gray-100 text-gray-600'}`}
+                className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wide ${property.status_color || 'bg-gray-100 text-gray-600'}`}
               >
                 {property.status}
               </span>
+              <p className={`text-[11px] font-black uppercase tracking-tight ${property.status === 'ALUGADO' ? 'text-primary' : 'text-slate-600 dark:text-slate-400'}`}>
+                {property.status === 'ALUGADO' ? (property.contract?.value || property.price) : property.price}
+              </p>
             </div>
             <h3 className='text-base font-bold text-slate-900 dark:text-white leading-tight line-clamp-1'>
               {property.name}
@@ -42,6 +47,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </p>
           </div>
           <div className='flex items-center justify-end gap-2 mt-2'>
+            {property.status === 'DISPONÍVEL' && onCreateContract && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateContract(property);
+                }}
+                className='flex h-8 px-3 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold shadow-sm shadow-emerald-500/20 transition-all active:scale-95 mr-auto'
+                title='Criar Contrato'
+              >
+                <FilePlus2 size={14} />
+                Criar Contrato
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
