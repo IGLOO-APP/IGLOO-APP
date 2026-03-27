@@ -381,6 +381,12 @@ const Dashboard: React.FC = () => {
                 <User size={18} /> Meu Perfil
               </button>
               <button
+                onClick={() => navigate('/settings')}
+                className='w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200'
+              >
+                <Settings size={18} /> Configurações
+              </button>
+              <button
                 onClick={async () => {
                   setShowUserMenu(false);
                   await logout();

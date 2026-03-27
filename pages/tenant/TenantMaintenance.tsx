@@ -25,6 +25,7 @@ interface MaintenanceMessage {
   text: string;
   sender: 'me' | 'owner' | 'system';
   time: string;
+  isSurvey?: boolean;
 }
 
 interface TimelineEvent {
@@ -45,6 +46,8 @@ interface MaintenanceRequest {
   description: string;
   messages: MaintenanceMessage[];
   timeline: TimelineEvent[];
+  lastResponseDate?: string;
+  surveyCompleted?: boolean;
 }
 
 const TenantMaintenance: React.FC = () => {
@@ -52,6 +55,7 @@ const TenantMaintenance: React.FC = () => {
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [surveyComment, setSurveyComment] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // New Request Form State (Wizard)
@@ -60,6 +64,26 @@ const TenantMaintenance: React.FC = () => {
   const [newCategory, setNewCategory] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [urgency, setUrgency] = useState('Normal');
+
+  // Maintenance Settings (Mocked - in real app would come from a service/context)
+  const maintenanceSettings = {
+    categories: [
+      { id: 'Hidráulico', label: 'Hidráulico', enabled: true, icon: Wrench },
+      { id: 'Elétrico', label: 'Elétrico', enabled: true, icon: Wrench },
+      { id: 'Estrutural', label: 'Estrutural', enabled: true, icon: Wrench },
+      { id: 'Infiltração', label: 'Infiltração', enabled: true, icon: LifeBuoy },
+      { id: 'Fechadura / Segurança', label: 'Segurança', enabled: true, icon: CheckCircle },
+      { id: 'Eletrodoméstico', label: 'Eletrodoméstico', enabled: true, icon: Plus },
+      { id: 'Internet / TV', label: 'Internet / TV', enabled: false, icon: LifeBuoy }, // Mocked disabled
+      { id: 'Limpeza / Área Comum', label: 'Limpeza', enabled: true, icon: CheckCircle },
+      { id: 'Outros', label: 'Outros', enabled: true, icon: MessageSquare },
+    ],
+    urgencies: [
+      { id: 'Normal', enabled: true },
+      { id: 'Alta', enabled: true },
+      { id: 'Emergência', enabled: true },
+    ],
+  };
 
   const [requests, setRequests] = useState<MaintenanceRequest[]>([
     {
@@ -128,9 +152,16 @@ const TenantMaintenance: React.FC = () => {
   };
 
   const handleCreateRequest = () => {
-    const isRepair = ['Hidráulica', 'Elétrica', 'Estrutural', 'Eletrodomésticos'].includes(
-      newCategory
-    );
+    const isRepair = [
+      'Hidráulico',
+      'Elétrico',
+      'Estrutural',
+      'Infiltração',
+      'Fechadura / Segurança',
+      'Eletrodoméstico',
+      'Internet / TV',
+      'Limpeza / Área Comum',
+    ].includes(newCategory);
 
     const newReq: MaintenanceRequest = {
       id: Date.now(),
@@ -144,7 +175,7 @@ const TenantMaintenance: React.FC = () => {
       }),
       status: 'pending',
       description: newDescription,
-      timeline: [{ id: 1, title: 'Solicitação criada', date: 'Agora' }],
+      timeline: [{ id: 1, title: 'Você abriu a solicitação', date: 'Agora' }],
       messages: [
         { id: 1, text: 'Solicitação criada com sucesso.', sender: 'system', time: 'Agora' },
       ],
@@ -164,10 +195,71 @@ const TenantMaintenance: React.FC = () => {
   };
 
   const getIconByCategory = (cat: string) => {
-    if (cat === 'Hidráulica' || cat === 'Elétrica' || cat === 'Estrutural')
+    if (
+      ['Hidráulico', 'Elétrico', 'Estrutural', 'Infiltração', 'Fechadura / Segurança'].includes(cat)
+    )
       return <Wrench size={18} />;
     if (cat === 'Financeiro') return <DollarSign size={18} />;
     return <MessageSquare size={18} />;
+  };
+
+  const getSLAInfo = (req: MaintenanceRequest) => {
+    if (req.status === 'completed') return null;
+
+    if (req.lastResponseDate) {
+      return (
+        <span className='text-emerald-500 font-bold'>
+          Proprietário respondeu em {req.lastResponseDate}
+        </span>
+      );
+    }
+
+    // Simple day calculation from req.date
+    const today = new Date();
+    const createdDate = new Date(req.date); // This is simplified for the mock
+    const diffTime = today.getTime() - createdDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 2) {
+      return (
+        <span className='text-orange-500 font-bold'>Aguardando resposta há {diffDays} dias</span>
+      );
+    }
+
+    return <span className='text-slate-400'>Previsão de retorno: até 24h</span>;
+  };
+
+  const handleSurveyResponse = (resolved: boolean) => {
+    if (!selectedRequest) return;
+
+    const systemMsg: MaintenanceMessage = {
+      id: Date.now(),
+      text: resolved
+        ? `Avaliação concluída: Resolvido. Comentário: ${surveyComment || 'Nenhum'}`
+        : `Avaliação concluída: Ainda persiste. Comentário: ${surveyComment || 'Nenhum'}`,
+      sender: 'system',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const updatedRequest: MaintenanceRequest = {
+      ...selectedRequest,
+      status: resolved ? 'completed' : 'pending',
+      surveyCompleted: true,
+      messages: [...selectedRequest.messages, systemMsg],
+      timeline: resolved
+        ? [
+            ...selectedRequest.timeline,
+            { id: Date.now(), title: 'Encerrado definitivamente', date: 'Agora' },
+          ]
+        : [
+            ...selectedRequest.timeline,
+            { id: Date.now(), title: 'Reaberto pelo inquilino', date: 'Agora' },
+          ],
+    };
+
+    setSelectedRequest(updatedRequest);
+    setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
+    setSurveyComment('');
   };
 
   const FAQSection = () => {
@@ -308,10 +400,13 @@ const TenantMaintenance: React.FC = () => {
                 <p className='text-sm text-slate-600 dark:text-slate-300 mb-3 line-clamp-2 pl-[52px]'>
                   {req.description}
                 </p>
-                <div className='flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 pt-3 border-t border-gray-50 dark:border-gray-800 pl-[52px]'>
-                  <span className='flex items-center gap-1'>
-                    <Clock size={14} /> {req.date}
-                  </span>
+                <div className='flex items-center justify-between text-xs pt-3 border-t border-gray-50 dark:border-gray-800 pl-[52px]'>
+                  <div className='flex flex-col gap-1'>
+                    <span className='flex items-center gap-1 text-slate-400 dark:text-slate-500'>
+                      <Clock size={14} /> {req.date}
+                    </span>
+                    <span className='text-[10px] italic'>{getSLAInfo(req)}</span>
+                  </div>
                   <span className='flex items-center gap-1 text-primary font-bold group-hover:underline'>
                     Ver conversa <ChevronRight size={14} />
                   </span>
@@ -366,27 +461,22 @@ const TenantMaintenance: React.FC = () => {
                     Qual o tipo de problema?
                   </label>
                   <div className='grid grid-cols-2 gap-3'>
-                    {[
-                      { id: 'Hidráulica', label: 'Hidráulica', icon: Wrench },
-                      { id: 'Elétrica', label: 'Elétrica', icon: Wrench },
-                      { id: 'Estrutural', label: 'Estrutural', icon: Wrench },
-                      { id: 'Financeiro', label: 'Financeiro', icon: DollarSign },
-                      { id: 'Dúvidas Gerais', label: 'Dúvida Geral', icon: HelpCircle },
-                      { id: 'Outros', label: 'Outros', icon: MessageSquare },
-                    ].map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setNewCategory(cat.id)}
-                        className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
-                          newCategory === cat.id
-                            ? 'bg-primary/10 border-primary text-primary font-bold shadow-sm'
-                            : 'border-gray-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
-                        }`}
-                      >
-                        <cat.icon size={24} />
-                        <span className='text-sm'>{cat.label}</span>
-                      </button>
-                    ))}
+                    {maintenanceSettings.categories
+                      .filter((c) => c.enabled)
+                      .map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => setNewCategory(cat.id)}
+                          className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                            newCategory === cat.id
+                              ? 'bg-primary/10 border-primary text-primary font-bold shadow-sm'
+                              : 'border-gray-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          <cat.icon size={24} />
+                          <span className='text-sm text-center'>{cat.label}</span>
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -423,19 +513,21 @@ const TenantMaintenance: React.FC = () => {
                       Nível de Urgência
                     </label>
                     <div className='flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl'>
-                      {['Normal', 'Alta', 'Emergência'].map((level) => (
-                        <button
-                          key={level}
-                          onClick={() => setUrgency(level)}
-                          className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
-                            urgency === level
-                              ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
-                              : 'text-slate-500'
-                          }`}
-                        >
-                          {level}
-                        </button>
-                      ))}
+                      {maintenanceSettings.urgencies
+                        .filter((u) => u.enabled)
+                        .map((level) => (
+                          <button
+                            key={level.id}
+                            onClick={() => setUrgency(level.id)}
+                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                              urgency === level.id
+                                ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500'
+                            }`}
+                          >
+                            {level.id}
+                          </button>
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -522,6 +614,12 @@ const TenantMaintenance: React.FC = () => {
                   </span>
                 </div>
               </div>
+              <div className='mt-4 bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/5'>
+                <p className='text-xs font-bold text-slate-500 uppercase tracking-wider mb-1'>
+                  Status do Prazo
+                </p>
+                <div className='text-sm'>{getSLAInfo(selectedRequest)}</div>
+              </div>
               <div className='mt-4 relative pl-4 border-l-2 border-slate-200 dark:border-gray-700 space-y-4'>
                 {selectedRequest.timeline?.map((event, idx) => (
                   <div key={idx} className='relative'>
@@ -581,6 +679,47 @@ const TenantMaintenance: React.FC = () => {
                   )}
                 </div>
               ))}
+
+              {selectedRequest.status === 'completed' && !selectedRequest.surveyCompleted && (
+                <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-primary/20 shadow-xl space-y-4 animate-fadeIn my-4'>
+                  <div className='flex items-center gap-3 text-primary'>
+                    <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0'>
+                      <CheckCircle size={24} />
+                    </div>
+                    <div>
+                      <h4 className='font-bold text-slate-900 dark:text-white'>O problema foi resolvido?</h4>
+                      <p className='text-xs text-slate-500'>Sua avaliação ajuda a manter a qualidade do imóvel.</p>
+                    </div>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <textarea
+                      value={surveyComment}
+                      onChange={(e) => setSurveyComment(e.target.value.slice(0, 200))}
+                      placeholder='Deixe um comentário (opcional)...'
+                      className='w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm resize-none h-20'
+                    />
+                    <div className='flex justify-end'>
+                      <span className='text-[10px] text-slate-400 font-medium'>{surveyComment.length}/200</span>
+                    </div>
+                  </div>
+
+                  <div className='flex gap-3'>
+                    <button
+                      onClick={() => handleSurveyResponse(false)}
+                      className='flex-1 h-11 rounded-xl border-2 border-slate-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
+                    >
+                      Não, ainda persiste
+                    </button>
+                    <button
+                      onClick={() => handleSurveyResponse(true)}
+                      className='flex-1 h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-95'
+                    >
+                      Sim, resolvido
+                    </button>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 

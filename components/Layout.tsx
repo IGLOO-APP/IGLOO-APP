@@ -10,6 +10,7 @@ import {
   Sun,
   LogOut,
   MessageSquare,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,6 +21,7 @@ const navItems = [
   { path: '/messages', label: 'Mensagens', icon: MessageSquare },
   { path: '/contracts', label: 'Contratos', icon: FileText },
   { path: '/financials', label: 'Finanças', icon: Receipt },
+  { path: '/settings', label: 'Configurações', icon: SettingsIcon },
 ];
 
 const Layout: React.FC = () => {

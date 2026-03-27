@@ -82,36 +82,90 @@ const TenantProfile: React.FC = () => {
     guarantee: { status: 'pending' },
   });
 
-  // --- Logic for Completion Percentage ---
-  const calculateCompletion = () => {
-    let totalPoints = 0;
-    let earnedPoints = 0;
+  // --- Logic for Completion Percentage (Updated Ajuste 1) ---
+  const getPendingItems = () => {
+    const items: { id: string; label: string; tab: string; section?: string }[] = [];
 
-    // Profile Fields (60%)
-    const fields = [
-      'name',
-      'phone',
-      'cpf',
-      'birthDate',
-      'occupation',
-      'emergencyName',
-      'emergencyPhone',
-    ];
-    fields.forEach((f) => {
-      totalPoints += 10;
-      if ((profileData as any)[f]) earnedPoints += 10;
-    });
+    // Personal (30%)
+    if (!profileData.name)
+      items.push({ id: 'name', label: 'Nome Completo', tab: 'profile', section: 'personal' });
+    if (!profileData.phone)
+      items.push({ id: 'phone', label: 'Telefone', tab: 'profile', section: 'personal' });
+    if (!profileData.cpf) items.push({ id: 'cpf', label: 'CPF', tab: 'profile', section: 'personal' });
+
+    // Residential (20%)
+    if (!profileData.vehiclePlate)
+      items.push({ id: 'vehiclePlate', label: 'Veículo', tab: 'profile', section: 'residential' });
+    if (!profileData.pets)
+      items.push({ id: 'pets', label: 'Pets', tab: 'profile', section: 'residential' });
+    if (!profileData.residents)
+      items.push({ id: 'residents', label: 'Moradores', tab: 'profile', section: 'residential' });
+
+    // Emergency (10%)
+    if (!profileData.emergencyName || !profileData.emergencyPhone)
+      items.push({
+        id: 'emergencyName',
+        label: 'Contato de Emergência',
+        tab: 'profile',
+        section: 'emergency',
+      });
 
     // Documents (40%)
-    Object.keys(documents).forEach((doc) => {
-      totalPoints += 15;
-      if (documents[doc].status !== 'pending') earnedPoints += 15;
-    });
+    if (documents.income.status === 'pending')
+      items.push({ id: 'income', label: 'Comprovante de Renda', tab: 'documents' });
+    if (documents.residence.status === 'pending')
+      items.push({ id: 'residence', label: 'Comp. de Residência', tab: 'documents' });
+    if (documents.guarantee.status === 'pending')
+      items.push({ id: 'guarantee', label: 'Apólice / Garantia', tab: 'documents' });
 
-    return Math.min(100, Math.round((earnedPoints / totalPoints) * 100));
+    return items;
+  };
+
+  const calculateCompletion = () => {
+    let score = 0;
+
+    // Personal (30%) - 3 fields
+    const personalFields = ['name', 'phone', 'cpf'];
+    const personalFilled = personalFields.filter((f) => (profileData as any)[f]).length;
+    score += (personalFilled / personalFields.length) * 30;
+
+    // Residential (20%) - 3 fields
+    const residentialFields = ['vehiclePlate', 'residents', 'pets'];
+    const residentialFilled = residentialFields.filter((f) => (profileData as any)[f]).length;
+    score += (residentialFilled / residentialFields.length) * 20;
+
+    // Emergency (10%) - 2 fields (must have both)
+    if (profileData.emergencyName && profileData.emergencyPhone) score += 10;
+
+    // Documents (40%) - 3 specific docs
+    const docsToTrack = ['income', 'residence', 'guarantee'];
+    const docsFilled = docsToTrack.filter((d) => documents[d].status !== 'pending').length;
+    score += (docsFilled / docsToTrack.length) * 40;
+
+    return Math.min(100, Math.round(score));
   };
 
   const completion = calculateCompletion();
+  const pendingItems = getPendingItems();
+
+  const handlePendingClick = (item: { id: string; tab: string; section?: string }) => {
+    setActiveTab(item.tab as any);
+    if (item.tab === 'profile') {
+      setIsEditing(true);
+      setTimeout(() => {
+        const element = document.getElementById(item.id) || document.getElementsByName(item.id)[0];
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (element as HTMLElement)?.focus();
+      }, 100);
+    } else {
+      setTimeout(() => {
+        const element = document.getElementById(`doc-${item.id}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+        setTimeout(() => element?.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'), 2000);
+      }, 100);
+    }
+  };
 
   // --- Handlers ---
 
@@ -218,6 +272,26 @@ const TenantProfile: React.FC = () => {
               {completion}% completo
             </span>
           </div>
+          <div className='mt-2 overflow-hidden'>
+            <p className={`text-[10px] font-medium transition-all ${completion === 100 ? 'text-emerald-500' : 'text-slate-400'}`}>
+              {completion === 100 ? (
+                <span className='flex items-center gap-1'><Check size={12} /> Perfil completo</span>
+              ) : (
+                <>
+                  <span className='mr-1'>Faltam:</span>
+                  {pendingItems.map((item, idx) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handlePendingClick(item)}
+                      className='hover:text-primary hover:underline underline-offset-2 transition-colors'
+                    >
+                      {item.label}{idx < pendingItems.length - 1 ? ', ' : ''}
+                    </button>
+                  ))}
+                </>
+              )}
+            </p>
+          </div>
         </div>
         {isEditing ? (
           <button
@@ -288,14 +362,25 @@ const TenantProfile: React.FC = () => {
               <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
                 <div className='absolute top-0 left-0 w-1 h-full bg-blue-500'></div>
                 <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <User size={18} className='text-blue-500' /> Informações Pessoais
+                  <User size={18} className='text-blue-500' /> 
+                  Informações Pessoais
+                  {pendingItems.filter(i => i.section === 'personal').length > 0 && (
+                    <span className='text-[10px] font-normal text-slate-400'>
+                      ({pendingItems.filter(i => i.section === 'personal').length} pendentes)
+                    </span>
+                  )}
                 </h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Nome Completo
+                      {!profileData.name && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='name'
+                      name='name'
                       disabled={!isEditing}
                       value={profileData.name}
                       onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
@@ -303,20 +388,30 @@ const TenantProfile: React.FC = () => {
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       CPF
+                      {!profileData.cpf && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='cpf'
+                      name='cpf'
                       disabled={true} // CPF usually locked
                       value={profileData.cpf}
                       className='w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 opacity-70 cursor-not-allowed font-medium text-sm dark:text-white'
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Telefone
+                      {!profileData.phone && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='phone'
+                      name='phone'
                       disabled={!isEditing}
                       value={profileData.phone}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
@@ -343,14 +438,25 @@ const TenantProfile: React.FC = () => {
               <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
                 <div className='absolute top-0 left-0 w-1 h-full bg-orange-500'></div>
                 <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <Car size={18} className='text-orange-500' /> Dados Residenciais
+                  <Car size={18} className='text-orange-500' /> 
+                  Dados Residenciais
+                  {pendingItems.filter(i => i.section === 'residential').length > 0 && (
+                    <span className='text-[10px] font-normal text-slate-400'>
+                      ({pendingItems.filter(i => i.section === 'residential').length} pendentes)
+                    </span>
+                  )}
                 </h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Veículo (Placa)
+                      {!profileData.vehiclePlate && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='vehiclePlate'
+                      name='vehiclePlate'
                       disabled={!isEditing}
                       value={profileData.vehiclePlate}
                       onChange={(e) =>
@@ -361,10 +467,15 @@ const TenantProfile: React.FC = () => {
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Pets
+                      {!profileData.pets && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='pets'
+                      name='pets'
                       disabled={!isEditing}
                       value={profileData.pets}
                       onChange={(e) => setProfileData({ ...profileData, pets: e.target.value })}
@@ -373,10 +484,15 @@ const TenantProfile: React.FC = () => {
                     />
                   </div>
                   <div className='space-y-2 md:col-span-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Moradores
+                      {!profileData.residents && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='residents'
+                      name='residents'
                       disabled={!isEditing}
                       value={profileData.residents}
                       onChange={(e) =>
@@ -392,14 +508,25 @@ const TenantProfile: React.FC = () => {
               <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
                 <div className='absolute top-0 left-0 w-1 h-full bg-red-500'></div>
                 <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <Activity size={18} className='text-red-500' /> Contato de Emergência
+                  <Activity size={18} className='text-red-500' /> 
+                  Contato de Emergência
+                  {pendingItems.filter(i => i.section === 'emergency').length > 0 && (
+                    <span className='text-[10px] font-normal text-slate-400'>
+                      ({pendingItems.filter(i => i.section === 'emergency').length} pendentes)
+                    </span>
+                  )}
                 </h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Nome
+                      {!profileData.emergencyName && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='emergencyName'
+                      name='emergencyName'
                       disabled={!isEditing}
                       value={profileData.emergencyName}
                       onChange={(e) =>
@@ -409,10 +536,15 @@ const TenantProfile: React.FC = () => {
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
+                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
                       Telefone
+                      {!profileData.emergencyPhone && (
+                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
+                      )}
                     </label>
                     <input
+                      id='emergencyPhone'
+                      name='emergencyPhone'
                       disabled={!isEditing}
                       value={profileData.emergencyPhone}
                       onChange={(e) =>
@@ -503,7 +635,8 @@ const TenantProfile: React.FC = () => {
                   return (
                     <div
                       key={doc.id}
-                      className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4'
+                      id={`doc-${doc.id}`}
+                      className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all'
                     >
                       <div className='flex items-center gap-4'>
                         <div

@@ -32,6 +32,7 @@ import { stripeService } from '../services/stripeService';
 import { subscriptionService } from '../services/subscriptionService';
 import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../types';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
+import { useLocation } from 'react-router-dom';
 
 interface PaymentMethodConfig {
   id: string;
@@ -47,7 +48,7 @@ const Settings: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<
-    'general' | 'financial' | 'notifications' | 'subscription'
+    'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription'
   >('financial');
 
   useEffect(() => {
@@ -115,6 +116,25 @@ const Settings: React.FC = () => {
     email: user?.email || 'investidor@igloo.com',
     phone: '(11) 99999-8888',
     companyName: 'Igloo Asset Management',
+  });
+
+  const [maintenanceSettings, setMaintenanceSettings] = useState({
+    categories: [
+      { id: 'Hidráulico', label: 'Hidráulico', enabled: true },
+      { id: 'Elétrico', label: 'Elétrico', enabled: true },
+      { id: 'Estrutural', label: 'Estrutural', enabled: true },
+      { id: 'Infiltração', label: 'Infiltração', enabled: true },
+      { id: 'Fechadura / Segurança', label: 'Segurança', enabled: true },
+      { id: 'Eletrodoméstico', label: 'Eletrodoméstico', enabled: true },
+      { id: 'Internet / TV', label: 'Internet / TV', enabled: true },
+      { id: 'Limpeza / Área Comum', label: 'Limpeza', enabled: true },
+      { id: 'Outros', label: 'Outros', enabled: true },
+    ],
+    urgencies: [
+      { id: 'Normal', enabled: true },
+      { id: 'Alta', enabled: true },
+      { id: 'Emergência', enabled: true },
+    ],
   });
 
   const [notifications, setNotifications] = useState({
@@ -388,6 +408,12 @@ const Settings: React.FC = () => {
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'subscription' ? 'bg-white dark:bg-surface-dark shadow-sm text-indigo-500 font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
           >
             <Crown size={20} /> Plano e Assinatura
+          </button>
+          <button
+            onClick={() => setActiveTab('maintenance')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'maintenance' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+          >
+            <SettingsIcon size={20} /> Manutenção
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
@@ -721,6 +747,103 @@ const Settings: React.FC = () => {
                 </button>
               </div>
             ))}
+
+          {/* --- TAB: MAINTENANCE --- */}
+          {activeTab === 'maintenance' && (
+            <div className='animate-fadeIn space-y-8 max-w-4xl'>
+              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+                <div className='flex items-center gap-3 mb-6'>
+                  <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
+                    <SettingsIcon size={20} />
+                  </div>
+                  <div>
+                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
+                      Categorias de Chamados
+                    </h3>
+                    <p className='text-sm text-slate-500'>
+                      Ative ou desative categorias que o inquilino pode selecionar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  {maintenanceSettings.categories.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className='flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/10'
+                    >
+                      <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
+                        {cat.label}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setMaintenanceSettings({
+                            ...maintenanceSettings,
+                            categories: maintenanceSettings.categories.map((c) =>
+                              c.id === cat.id ? { ...c, enabled: !c.enabled } : c
+                            ),
+                          })
+                        }
+                        className={`transition-all ${cat.enabled ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      >
+                        {cat.enabled ? (
+                          <ToggleRight size={32} strokeWidth={1.5} />
+                        ) : (
+                          <ToggleLeft size={32} strokeWidth={1.5} />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+                <div className='flex items-center gap-3 mb-6'>
+                  <div className='w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center'>
+                    <AlertTriangle size={20} />
+                  </div>
+                  <div>
+                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
+                      Níveis de Urgência
+                    </h3>
+                    <p className='text-sm text-slate-500'>
+                      Configure quais níveis de prioridade estarão disponíveis.
+                    </p>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  {maintenanceSettings.urgencies.map((urg) => (
+                    <div
+                      key={urg.id}
+                      className='flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/10'
+                    >
+                      <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
+                        {urg.id}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setMaintenanceSettings({
+                            ...maintenanceSettings,
+                            urgencies: maintenanceSettings.urgencies.map((u) =>
+                              u.id === urg.id ? { ...u, enabled: !u.enabled } : u
+                            ),
+                          })
+                        }
+                        className={`transition-all ${urg.enabled ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      >
+                        {urg.enabled ? (
+                          <ToggleRight size={32} strokeWidth={1.5} />
+                        ) : (
+                          <ToggleLeft size={32} strokeWidth={1.5} />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* --- TAB: GENERAL --- */}
           {activeTab === 'general' && (

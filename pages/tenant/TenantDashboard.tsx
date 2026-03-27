@@ -78,6 +78,62 @@ const TenantDashboard: React.FC = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // Due Date Logic (Ajuste 4)
+  const getDueBadge = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Using a fixed due date for the demo month (March 2024) or dynamic based on current date
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const dueDay = 10; // Defined in contract
+    const dueDate = new Date(currentYear, currentMonth, dueDay);
+    dueDate.setHours(0, 0, 0, 0);
+
+    const diffTime = dueDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (paymentStatus === 'paid') {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-100 text-emerald-700'>
+          <CheckCircle size={10} /> Pago
+        </span>
+      );
+    }
+
+    if (diffDays > 7) {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-yellow-100 text-yellow-700'>
+          <Clock size={10} /> Vence em {diffDays} dias
+        </span>
+      );
+    } else if (diffDays >= 3 && diffDays <= 7) {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-orange-100 text-orange-700'>
+          <Clock size={10} /> Vence em {diffDays} dias
+        </span>
+      );
+    } else if (diffDays > 0 && diffDays < 3) {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
+          <Clock size={10} /> Vence em {diffDays} dias
+        </span>
+      );
+    } else if (diffDays === 0) {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
+          <Clock size={10} /> Vence hoje
+        </span>
+      );
+    } else {
+      return (
+        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
+          <AlertTriangle size={10} /> Atrasado {Math.abs(diffDays)} dias
+        </span>
+      );
+    }
+  };
+
   useEffect(() => {
     const checkTheme = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
@@ -313,16 +369,7 @@ const TenantDashboard: React.FC = () => {
                 R$ 1.500,00
               </h3>
               <div className='flex items-center gap-2 mt-1'>
-                <span
-                  className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : paymentStatus === 'late' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}
-                >
-                  {paymentStatus === 'paid' ? <CheckCircle size={10} /> : <Clock size={10} />}
-                  {paymentStatus === 'paid'
-                    ? 'Pago'
-                    : paymentStatus === 'late'
-                      ? 'Atrasado'
-                      : 'A Vencer: 10 Mar'}
-                </span>
+                {getDueBadge()}
               </div>
             </div>
           </div>

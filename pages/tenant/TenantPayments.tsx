@@ -21,6 +21,8 @@ import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { SavedCards } from '../../components/payments/SavedCards';
 import { PaymentForm } from '../../components/payments/PaymentForm';
 import { stripeService, PaymentMethod } from '../../services/stripeService';
+import { useAuth } from '../../context/AuthContext';
+import { calculateLateFee } from '../../utils/financialCalculations';
 
 interface Payment {
   id: number;
@@ -82,6 +84,7 @@ const MOCK_PAYMENTS: Payment[] = [
 ];
 
 const TenantPayments: React.FC = () => {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [isPaying, setIsPaying] = useState(false);
@@ -103,6 +106,66 @@ const TenantPayments: React.FC = () => {
     if (methods.length > 0) {
       setSelectedCardId(methods.find((m) => m.is_default)?.id || methods[0].id);
     }
+  };
+
+  const handleDownloadReceipt = (payment: Payment) => {
+    const content = `
+      =========================================
+                 COMPROVANTE DE PAGAMENTO
+      =========================================
+      IGLOO PROPERTY MANAGER
+      -----------------------------------------
+      Inquilino: ${user?.name || 'Inquilino'}
+      Imóvel: Apt 101 - Ed. Horizonte (Simulado)
+      Mês de Referência: ${payment.month}
+      Data do Pagamento: ${payment.paidDate || '-'}
+      Método: ${payment.method || 'Não especificado'}
+      Contrato: CTR-2024-001 (Simulado)
+      
+      BREAKDOWN:
+      - Aluguel: R$ ${payment.breakdown.rent.toFixed(2)}
+      - Condomínio: R$ ${payment.breakdown.condo.toFixed(2)}
+      - IPTU: R$ ${payment.breakdown.iptu.toFixed(2)}
+      ${payment.breakdown.fine ? `- Multa: R$ ${payment.breakdown.fine.toFixed(2)}` : ''}
+      
+      VALOR TOTAL: R$ ${payment.amount.toFixed(2)}
+      -----------------------------------------
+      Documento gerado automaticamente pelo Igloo Property Manager
+      =========================================
+    `;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `comprovante_${payment.month.replace(' ', '_')}.pdf`; // Mocked as PDF
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePayNow = (payment: Payment) => {
+    let finalPayment = { ...payment };
+    
+    if (payment.status === 'late') {
+      // Logic for late fees based on the same pattern as BillingModal
+      const fees = calculateLateFee(payment.amount, payment.dueDate);
+      if (fees.diasAtraso > 0) {
+        finalPayment = {
+          ...payment,
+          amount: fees.totalPagar,
+          breakdown: {
+            ...payment.breakdown,
+            fine: fees.valorMulta + fees.valorJuros
+          }
+        };
+      }
+    }
+    
+    setSelectedPayment(finalPayment);
+    setStep('details');
+    setShowAddNewCard(false);
   };
 
   const handlePayClick = () => {
@@ -147,7 +210,19 @@ const TenantPayments: React.FC = () => {
     if (filter === 'all') return true;
     if (filter === 'paid') return p.status === 'paid' || p.status === 'late';
     return p.status === 'pending';
+  }).sort((a, b) => {
+    // Sort by due date descending (most recent first)
+    const dateA = new Date(a.dueDate.split('/').reverse().join('-')).getTime();
+    const dateB = new Date(b.dueDate.split('/').reverse().join('-')).getTime();
+    return dateB - dateA;
   });
+
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return '-';
+    const [day, month, year] = dateStr.split('/');
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+  };
 
   const totalPaid2024 = MOCK_PAYMENTS.filter((p) => p.status !== 'pending').reduce(
     (acc, curr) => acc + curr.amount,
@@ -209,6 +284,9 @@ const TenantPayments: React.FC = () => {
                     {onTimePayments}/{totalPayments}
                   </span>
                 </div>
+                <p className='text-[10px] text-indigo-200 mt-1'>
+                  {onTimePayments} de {totalPayments} últimos meses pagos em dia
+                </p>
               </div>
               <div className='bg-black/20 rounded-xl p-3 backdrop-blur-sm flex justify-between items-center'>
                 <div>
@@ -266,7 +344,7 @@ const TenantPayments: React.FC = () => {
                     {payment.month}
                   </h3>
                   <p className='text-xs text-slate-500 mt-1 flex items-center gap-1'>
-                    Vencimento: {payment.dueDate}
+                    Vencimento: {formatDate(payment.dueDate)}
                   </p>
                 </div>
                 <div className='text-right'>
@@ -290,7 +368,7 @@ const TenantPayments: React.FC = () => {
                       <Clock size={10} />
                     )}
                     {payment.status === 'paid'
-                      ? `Pago em ${payment.paidDate}`
+                      ? `Pago em ${formatDate(payment.paidDate)}`
                       : payment.status === 'late'
                         ? 'Atrasado'
                         : 'A Vencer'}
@@ -308,10 +386,41 @@ const TenantPayments: React.FC = () => {
                     <span>Condomínio:</span>{' '}
                     <span className='font-medium'>R$ {payment.breakdown.condo}</span>
                   </p>
+                  {payment.breakdown.fine && (
+                    <p className='text-xs text-red-500 flex justify-between w-32 font-bold'>
+                      <span>Multa/Juros:</span>{' '}
+                      <span>R$ {payment.breakdown.fine.toFixed(2)}</span>
+                    </p>
+                  )}
                 </div>
-                <button className='text-xs font-bold text-primary hover:underline'>
-                  Ver Detalhes
-                </button>
+                <div className='flex items-center gap-3'>
+                  {payment.status === 'paid' ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadReceipt(payment);
+                      }}
+                      className='p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors'
+                      title='Baixar Comprovante'
+                    >
+                      <Download size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePayNow(payment);
+                      }}
+                      className='px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all active:scale-95 flex items-center gap-2'
+                    >
+                      <CreditCard size={14} />
+                      Pagar agora
+                    </button>
+                  )}
+                  <button className='text-xs font-bold text-primary hover:underline'>
+                    Ver Detalhes
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -377,6 +486,14 @@ const TenantPayments: React.FC = () => {
                       R$ {selectedPayment.breakdown.iptu.toFixed(2)}
                     </span>
                   </div>
+                  {selectedPayment.breakdown.fine && (
+                    <div className='flex justify-between text-sm pt-2 border-t border-red-100 dark:border-red-900/20'>
+                      <span className='text-red-500 font-bold'>Multa e Juros</span>
+                      <span className='font-black text-red-500'>
+                        R$ {selectedPayment.breakdown.fine.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className='flex flex-col gap-3'>
