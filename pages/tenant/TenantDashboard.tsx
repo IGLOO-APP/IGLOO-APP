@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Copy,
   MapPin,
+  Calendar,
   CheckCircle,
   Clock,
   FileText,
@@ -190,6 +191,20 @@ const TenantDashboard: React.FC = () => {
     }, 2500);
   };
 
+  const validity = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date('2024-12-31'); // Mocked end date
+    const diffTime = endDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const formattedDate = endDate.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    return { diffDays, formattedDate };
+  })();
+
   return (
     <div className='flex flex-col w-full max-w-md mx-auto md:max-w-4xl md:px-6'>
       <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
@@ -355,6 +370,72 @@ const TenantDashboard: React.FC = () => {
             size={24}
           />
         </button>
+      </div>
+
+      {/* --- PROPERTY & CONTRACT INFO (Ajuste 1 & 2) --- */}
+      <div className='px-6 mb-6 flex flex-col gap-2 animate-fadeIn'>
+        {/* Ajuste 1: Identificação do Imóvel */}
+        <button
+          onClick={() => navigate('/tenant/profile')}
+          className='flex items-center gap-2.5 group w-fit transition-all'
+        >
+          <div className='w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-all'>
+            <MapPin size={18} />
+          </div>
+          <div className='text-left'>
+            <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-none group-hover:text-primary transition-colors'>
+              {mockTenantProperty.name}
+            </h4>
+            <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium'>
+              {mockTenantProperty.address}
+            </p>
+          </div>
+        </button>
+
+        {/* Ajuste 2: Vigência do Contrato */}
+        <div className='flex items-center gap-2.5'>
+          <div className='w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 shrink-0'>
+            <Calendar size={18} />
+          </div>
+          <div className='flex flex-wrap items-center gap-2'>
+            <p
+              className={`text-[11px] font-bold ${
+                validity.diffDays < 0
+                  ? 'text-red-500'
+                  : validity.diffDays < 30
+                    ? 'text-orange-500'
+                    : validity.diffDays <= 90
+                      ? 'text-yellow-600 dark:text-yellow-500'
+                      : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              Contrato vigente até {validity.formattedDate} (
+              {validity.diffDays < 0 ? 'Vencido' : `${validity.diffDays} dias restantes`})
+            </p>
+
+            {validity.diffDays < 0 ? (
+              <button
+                onClick={() => navigate('/tenant/messages')}
+                className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors'
+              >
+                Contrato vencido • Regularizar situação
+              </button>
+            ) : validity.diffDays < 30 ? (
+              <button
+                onClick={() => navigate('/tenant/messages')}
+                className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors'
+              >
+                Atenção: contrato vencendo • Falar com proprietário
+              </button>
+            ) : (
+              validity.diffDays <= 90 && (
+                <span className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-yellow-100 text-yellow-700'>
+                  Vencendo em breve
+                </span>
+              )
+            )}
+          </div>
+        </div>
       </div>
 
       {/* RICH PAYMENT CARD */}
