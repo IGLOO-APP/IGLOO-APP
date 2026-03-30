@@ -20,6 +20,7 @@ const SubscriptionManagement: React.FC = () => {
       trend: 'up',
       icon: DollarSign,
       color: 'emerald',
+      type: 'positive',
     },
     {
       label: 'ARR Estimado',
@@ -28,6 +29,7 @@ const SubscriptionManagement: React.FC = () => {
       trend: 'up',
       icon: TrendingUp,
       color: 'blue',
+      type: 'positive',
     },
     {
       label: 'Churn Rate',
@@ -36,6 +38,7 @@ const SubscriptionManagement: React.FC = () => {
       trend: 'down',
       icon: Users,
       color: 'rose',
+      type: 'negative',
     },
     {
       label: 'Ticket Médio',
@@ -44,8 +47,23 @@ const SubscriptionManagement: React.FC = () => {
       trend: 'up',
       icon: CreditCard,
       color: 'amber',
+      type: 'positive',
     },
   ];
+
+  const getStatColor = (stat: any) => {
+    if (stat.type === 'positive') {
+      return stat.trend === 'up'
+        ? 'text-emerald-500 bg-emerald-500/10'
+        : 'text-rose-500 bg-rose-500/10';
+    }
+    if (stat.type === 'negative') {
+      return stat.trend === 'down'
+        ? 'text-emerald-500 bg-emerald-500/10'
+        : 'text-rose-500 bg-rose-500/10';
+    }
+    return 'text-slate-500 bg-slate-500/10';
+  };
 
   return (
     <div className='p-8 space-y-8 animate-fadeIn'>
@@ -80,9 +98,7 @@ const SubscriptionManagement: React.FC = () => {
               <div className={`p-3 rounded-2xl bg-${m.color}-500/10 text-${m.color}-500`}>
                 <m.icon size={22} />
               </div>
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-full ${m.trend === 'up' ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'}`}
-              >
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${getStatColor(m)}`}>
                 {m.change}
               </span>
             </div>

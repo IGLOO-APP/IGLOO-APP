@@ -4,19 +4,53 @@ import { User, AdminActivityLog, SupportTicket } from '../types';
 export const adminService = {
   // --- User Management ---
 
-  async getUsers(page = 1, limit = 10, search = '', status?: string) {
+  async getUsers(
+    page = 1,
+    limit = 10,
+    search = '',
+    status?: string,
+    plan?: string,
+    role?: string,
+    period?: string
+  ) {
     let query = supabase.from('profiles').select('*', { count: 'exact' });
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
     }
 
-    if (status) {
-      if (status === 'suspended') {
+    if (status && status !== 'Todos') {
+      if (status === 'Suspenso') {
         query = query.eq('is_suspended', true);
-      } else {
-        query = query.eq('is_suspended', false); // Simplified for now
+      } else if (status === 'Ativo') {
+        query = query.eq('is_suspended', false);
+      } else if (status === 'Inativo') {
+        query = query.eq('is_suspended', false).is('last_login', null);
       }
+      // Trial logic would depend on subscription dates, simplified here
+    }
+
+    if (plan && plan !== 'Todos') {
+      query = query.eq('plan', plan);
+    }
+
+    if (role && role !== 'Todos') {
+      const roleMap: Record<string, string> = {
+        Proprietário: 'owner',
+        Inquilino: 'tenant',
+      };
+      query = query.eq('role', roleMap[role] || role.toLowerCase());
+    }
+
+    if (period && period !== 'Todos') {
+      const now = new Date();
+      let startDate = new Date();
+      if (period === 'Hoje') startDate.setHours(0, 0, 0, 0);
+      else if (period === 'Últimos 7 dias') startDate.setDate(now.getDate() - 7);
+      else if (period === 'Último mês') startDate.setMonth(now.getMonth() - 1);
+      else if (period === 'Último ano') startDate.setFullYear(now.getFullYear() - 1);
+
+      query = query.gte('created_at', startDate.toISOString());
     }
 
     const from = (page - 1) * limit;
@@ -28,6 +62,21 @@ export const adminService = {
 
     if (error) throw error;
     return { users: data as User[], total: count };
+  },
+
+  async updateUserPlan(userId: string, plan: string) {
+    const { error } = await supabase.from('profiles').update({ plan }).eq('id', userId);
+
+    if (error) throw error;
+    await this.logActivity('update_plan', 'user', userId, { plan });
+  },
+
+  async exportUserData(userId: string) {
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (error) throw error;
+
+    await this.logActivity('export_data', 'user', userId);
+    return data;
   },
 
   async suspendUser(userId: string, reason: string, notes: string, notifyUser: boolean) {

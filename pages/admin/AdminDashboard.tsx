@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Building2,
@@ -13,6 +14,7 @@ import {
   Cpu,
   Server,
   Bell,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -24,6 +26,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  ReferenceDot,
 } from 'recharts';
 import { adminService } from '../../services/adminService';
 
@@ -38,8 +41,25 @@ const growthData = [
 ];
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('Últimos 6 meses');
+
+  const getAnomalyPoints = (data: any[]) => {
+    const anomalies: any[] = [];
+    for (let i = 1; i < data.length; i++) {
+      const prev = data[i - 1].revenue;
+      const curr = data[i].revenue;
+      const drop = ((prev - curr) / prev) * 100;
+      if (drop > 15) {
+        anomalies.push({ ...data[i], drop: drop.toFixed(1) });
+      }
+    }
+    return anomalies;
+  };
+
+  const anomalies = getAnomalyPoints(growthData);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -63,6 +83,7 @@ const AdminDashboard: React.FC = () => {
       trend: 'up',
       icon: Users,
       color: 'blue',
+      type: 'positive', // Higher is better
     },
     {
       label: 'Receita Mensal (MRR)',
@@ -71,6 +92,7 @@ const AdminDashboard: React.FC = () => {
       trend: 'up',
       icon: TrendingUp,
       color: 'emerald',
+      type: 'positive',
     },
     {
       label: 'Total de Imóveis',
@@ -79,6 +101,7 @@ const AdminDashboard: React.FC = () => {
       trend: 'up',
       icon: Building2,
       color: 'amber',
+      type: 'positive',
     },
     {
       label: 'Churn Rate',
@@ -87,8 +110,43 @@ const AdminDashboard: React.FC = () => {
       trend: 'down',
       icon: AlertCircle,
       color: 'rose',
+      type: 'negative', // Lower is better
+    },
+    {
+      label: 'Trials Ativos',
+      value: '142',
+      change: '+12',
+      trend: 'up',
+      icon: Cpu,
+      color: 'indigo',
+      type: 'neutral', // Growth is informational
+    },
+    {
+      label: 'Tickets Abertos',
+      value: '24',
+      change: '+3',
+      trend: 'up',
+      icon: ShieldAlert,
+      color: 'rose',
+      type: 'negative', // Higher is worse
+      link: '/admin/support?filter=open',
     },
   ];
+
+  const getStatColor = (stat: any) => {
+    if (stat.type === 'neutral') return 'text-blue-500 bg-blue-50 dark:bg-blue-500/10';
+    if (stat.type === 'positive') {
+      return stat.trend === 'up'
+        ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'
+        : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10';
+    }
+    if (stat.type === 'negative') {
+      return stat.trend === 'down'
+        ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'
+        : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10';
+    }
+    return 'text-slate-500 bg-slate-50 dark:bg-slate-500/10';
+  };
 
   const recentUsers = [
     {
@@ -156,11 +214,12 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {dashboardStats.map((stat, i) => (
           <div
             key={stat.label}
-            className='bg-white dark:bg-surface-dark p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-all group'
+            onClick={() => stat.link && navigate(stat.link)}
+            className={`bg-white dark:bg-surface-dark p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-all group ${stat.link ? 'cursor-pointer hover:border-primary/50' : ''}`}
           >
             <div className='flex items-start justify-between mb-4'>
               <div
@@ -169,7 +228,7 @@ const AdminDashboard: React.FC = () => {
                 <stat.icon size={24} />
               </div>
               <div
-                className={`flex items-center gap-1 text-xs font-bold ${stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'} bg-${stat.trend === 'up' ? 'emerald' : 'rose'}-50 dark:bg-${stat.trend === 'up' ? 'emerald' : 'rose'}-500/10 px-3 py-1.5 rounded-full`}
+                className={`flex items-center gap-1 text-xs font-bold ${getStatColor(stat)} px-3 py-1.5 rounded-full shadow-sm transition-all group-hover:scale-105`}
               >
                 {stat.change}
                 {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -197,14 +256,20 @@ const AdminDashboard: React.FC = () => {
               </h3>
               <p className='text-sm text-slate-500'>Crescimento de MRR nos últimos 6 meses</p>
             </div>
-            <select className='bg-slate-50 dark:bg-white/5 border-none rounded-xl text-sm font-bold text-slate-600 px-4 py-2 focus:ring-2 focus:ring-primary cursor-pointer'>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className='bg-slate-50 dark:bg-white/5 border-none rounded-xl text-sm font-bold text-slate-600 px-4 py-2 focus:ring-2 focus:ring-primary cursor-pointer'
+            >
+              <option>Últimos 3 meses</option>
               <option>Últimos 6 meses</option>
-              <option>Este ano</option>
+              <option>Último ano</option>
+              <option>Todo o período</option>
             </select>
           </div>
           <div className='h-[300px] w-full'>
             <ResponsiveContainer width='100%' height='100%'>
-              <AreaChart data={growthData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={growthData} margin={{ top: 20, right: 30, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id='colorRevenue' x1='0' y1='0' x2='0' y2='1'>
                     <stop offset='5%' stopColor='#8b5cf6' stopOpacity={0.3} />
@@ -228,7 +293,7 @@ const AdminDashboard: React.FC = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
-                  tickFormatter={(value) => `R$${value / 1000}k`}
+                  tickFormatter={(value) => `R$${(value / 1000).toFixed(1)}k`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -247,6 +312,22 @@ const AdminDashboard: React.FC = () => {
                   fillOpacity={1}
                   fill='url(#colorRevenue)'
                 />
+                {anomalies.map((a, i) => (
+                  <ReferenceDot
+                    key={i}
+                    x={a.name}
+                    y={a.revenue}
+                    r={6}
+                    fill='#f59e0b'
+                    stroke='#fff'
+                    strokeWidth={2}
+                    className='animate-pulse'
+                  >
+                    <label>
+                      <title>Queda de {a.drop}% em relação ao mês anterior</title>
+                    </label>
+                  </ReferenceDot>
+                ))}
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -309,18 +390,28 @@ const AdminDashboard: React.FC = () => {
                   className='flex gap-3 items-start pb-4 border-b border-gray-50 dark:border-white/5 last:border-0 last:pb-0'
                 >
                   <div
-                    className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
                       activity.type === 'error'
-                        ? 'bg-red-500'
+                        ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
                         : activity.type === 'money'
-                          ? 'bg-emerald-500'
-                          : 'bg-blue-500'
+                          ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                          : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
                     }`}
                   ></div>
-                  <div>
-                    <p className='text-xs font-bold text-slate-700 dark:text-slate-300'>
-                      {activity.text}
-                    </p>
+                  <div className='flex-1'>
+                    <div className='flex items-center justify-between gap-2'>
+                      <p className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                        {activity.text}
+                      </p>
+                      {activity.type === 'error' && (
+                        <button
+                          onClick={() => navigate('/admin/settings?tab=integrations')}
+                          className='text-[10px] font-black text-primary hover:underline uppercase tracking-tighter shrink-0'
+                        >
+                          Ver detalhes
+                        </button>
+                      )}
+                    </div>
                     <p className='text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5'>
                       {activity.time}
                     </p>
