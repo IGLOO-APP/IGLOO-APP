@@ -28,6 +28,13 @@ const AdminLayout: React.FC = () => {
   const { logout, user } = useAuth();
   const [isDark, setIsDark] = useState(false);
 
+  const filteredNavItems = adminNavItems.filter((item) => {
+    if (item.path === '/admin/team') {
+      return user?.admin_type === 'super';
+    }
+    return true;
+  });
+
   useEffect(() => {
     const checkTheme = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
@@ -76,7 +83,7 @@ const AdminLayout: React.FC = () => {
         </div>
 
         <nav className='flex-1 px-4 space-y-1.5 overflow-y-auto mt-4'>
-          {adminNavItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -134,7 +141,7 @@ const AdminLayout: React.FC = () => {
         <header className='h-20 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-8 shrink-0'>
           <div>
             <h2 className='text-lg font-bold text-slate-900 dark:text-white'>
-              {adminNavItems.find((i) => i.path === location.pathname)?.label || 'Dashboard'}
+              {filteredNavItems.find((i) => i.path === location.pathname)?.label || 'Dashboard'}
             </h2>
             <p className='text-xs text-slate-500'>Bem-vindo, {user?.name}</p>
           </div>
@@ -142,9 +149,11 @@ const AdminLayout: React.FC = () => {
           <div className='flex items-center gap-4'>
             <div className='flex flex-col items-end'>
               <span className='text-xs font-bold text-amber-500 uppercase tracking-tighter'>
-                Super Admin
+                {user?.admin_type === 'super' ? 'Super Admin' : 'Admin'}
               </span>
-              <span className='text-[10px] text-slate-400'>Acesso Total</span>
+              <span className='text-[10px] text-slate-400'>
+                {user?.admin_type === 'super' ? 'Acesso Total' : 'Acesso Restrito'}
+              </span>
             </div>
             <div className='w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10 ring-2 ring-amber-500 font-bold flex items-center justify-center text-slate-600 dark:text-white'>
               {user?.name?.charAt(0)}
@@ -159,7 +168,7 @@ const AdminLayout: React.FC = () => {
         {/* Mobile Nav */}
         <nav className='md:hidden fixed bottom-0 w-full bg-slate-900 dark:bg-surface-dark/95 backdrop-blur-xl border-t border-white/5 pb-safe-bottom pt-1 px-2 z-50'>
           <div className='flex justify-around items-center h-16 max-w-lg mx-auto'>
-            {adminNavItems.slice(0, 4).map((item) => {
+            {filteredNavItems.slice(0, 4).map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <NavLink

@@ -22,9 +22,13 @@ import { adminService } from '../../services/adminService';
 import { User } from '../../types';
 import SuspendUserModal from '../../components/admin/modals/SuspendUserModal';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import { useSearchParams } from 'react-router-dom';
 
 const UserManagement: React.FC = () => {
   const { startImpersonation } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialPlan = searchParams.get('plan') || 'Todos';
+
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -34,7 +38,7 @@ const UserManagement: React.FC = () => {
 
   // Filters state
   const [filterStatus, setFilterStatus] = useState('Todos');
-  const [filterPlan, setFilterPlan] = useState('Todos');
+  const [filterPlan, setFilterPlan] = useState(initialPlan);
   const [filterRole, setFilterRole] = useState('Todos');
   const [filterPeriod, setFilterPeriod] = useState('Todos');
 

@@ -1,6 +1,7 @@
 import { propertyService } from './propertyService';
 import { tenantService } from './tenantService';
 import { contractService } from './contractService';
+import { generateCashFlowProjection } from '../utils/financialCalculations';
 
 export const dashboardService = {
   async getDashboardData() {
@@ -31,12 +32,33 @@ export const dashboardService = {
     // So we calculate it normally.
     onboarding.allCompleted = onboarding.step1 && onboarding.step2 && onboarding.step3 && onboarding.step4;
 
+    // Dynamic Cash Flow Projection
+    const pastData = [
+      { name: 'Set', value: 12500 },
+      { name: 'Out', value: 13200 },
+      { name: 'Nov', value: 14100 },
+      { name: 'Dez', value: 15800 },
+      { name: 'Jan', value: 14500 },
+      { name: 'Fev', value: 16200 },
+    ];
+
+    const projection = generateCashFlowProjection(pastData, contracts);
+
+    // Map projection to expected UI format
+    const financialHistory = projection.map((d) => ({
+      month: d.name,
+      income: d.isProjection ? d.projected : d.actual,
+      expense: d.isProjection ? Math.round(d.projected * 0.25) : Math.round(d.actual * 0.3), // Mock expenses
+      net: d.isProjection ? d.projected - Math.round(d.projected * 0.25) : d.actual - Math.round(d.actual * 0.3),
+      projected: d.isProjection,
+    }));
+
     // Mocking other data for now, but keeping it in the service layer
     return {
       onboarding,
       metrics: {
         totalWealth: 'R$ 1.5M',
-        mrr: 'R$ 16.2k',
+        mrr: `R$ ${(financialHistory[financialHistory.length - 4]?.income / 1000).toFixed(1)}k`,
         occupancyRate,
         avgRoi: '7.2%',
         trends: {
@@ -46,17 +68,7 @@ export const dashboardService = {
           roi: '+0.8%',
         },
       },
-      financialHistory: [
-        { month: 'Set', income: 12500, expense: 4200, net: 8300, projected: false },
-        { month: 'Out', income: 13200, expense: 3800, net: 9400, projected: false },
-        { month: 'Nov', income: 14100, expense: 5100, net: 9000, projected: false },
-        { month: 'Dez', income: 15800, expense: 6200, net: 9600, projected: false },
-        { month: 'Jan', income: 14500, expense: 4500, net: 10000, projected: false },
-        { month: 'Fev', income: 16200, expense: 4100, net: 12100, projected: false },
-        { month: 'Mar', income: 16500, expense: 4000, net: 12500, projected: true },
-        { month: 'Abr', income: 17000, expense: 3800, net: 13200, projected: true },
-        { month: 'Mai', income: 17500, expense: 3500, net: 14000, projected: true },
-      ],
+      financialHistory,
       topProperties: properties.slice(0, 3).map((p) => ({
         id: p.id,
         name: p.name,

@@ -158,4 +158,50 @@ export const adminService = {
       nps: 72,
     };
   },
+
+  // --- Team Management ---
+
+  async getAdmins(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'admin')
+      .order('name');
+
+    if (error) throw error;
+    return data as User[];
+  },
+
+  async createAdmin(email: string, name: string, adminType: string, permissions: string[]) {
+    // In a real app, this would use supabase.auth.admin.inviteUserByEmail
+    // Here we simulate adding to profiles with a pending status
+    const { error } = await supabase.from('profiles').insert({
+      email,
+      name,
+      role: 'admin',
+      admin_type: adminType,
+      permissions,
+      is_suspended: false,
+      is_pending: true,
+      created_at: new Date().toISOString(),
+    });
+
+    if (error) throw error;
+    await this.logActivity('invite_admin', 'system', email, { adminType, permissions });
+  },
+
+  async removeAdmin(userId: string) {
+    // Revert to tenant instead of deleting? Requirement says "voltar a ser um usuário comum (Tenant)"
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        role: 'tenant',
+        admin_type: null,
+        permissions: [],
+      })
+      .eq('id', userId);
+
+    if (error) throw error;
+    await this.logActivity('remove_admin_access', 'user', userId);
+  },
 };

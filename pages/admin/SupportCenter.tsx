@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   MessageSquare,
@@ -10,206 +10,701 @@ import {
   MoreVertical,
   Send,
   Paperclip,
+  ChevronDown,
+  Calendar,
+  AlertTriangle,
+  History,
+  UserPlus,
+  X,
+  LayoutDashboard,
+  FileText,
+  CheckCheck,
+  ChevronLeft,
+  DollarSign,
+  Wrench,
+  ExternalLink,
+  Phone,
+  FileCheck,
 } from 'lucide-react';
 
-const SupportCenter: React.FC = () => {
-  const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
+interface Message {
+  id: number;
+  text: string;
+  sender: 'me' | 'user' | 'system';
+  time: string;
+  isRead: boolean;
+}
 
-  const tickets = [
+const SupportCenter: React.FC = () => {
+  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Todos');
+  const [priorityFilter, setPriorityFilter] = useState('Todos');
+  const [assigneeFilter, setAssigneeFilter] = useState('Todos');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+  const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'owner'>('ticket');
+  const [inputText, setInputText] = useState('');
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const quickReplies = [
+    'Estamos verificando seu faturamento.',
+    'Estorno processado com sucesso.',
+    'Pode nos enviar um print do erro?',
+    'Ticket resolvido, obrigado pelo contato.',
+  ];
+
+  // Mock data for agents
+  const agents = [
+    { id: 1, name: 'Ana Souza', initial: 'A' },
+    { id: 2, name: 'Ricardo Lima', initial: 'R' },
+  ];
+
+  const [tickets, setTickets] = useState([
     {
       id: 1234,
       subject: 'Problema com pagamento',
       owner: 'Maria Silva',
+      ownerAvatar: 'https://i.pravatar.cc/150?u=maria',
       status: 'Aberto',
       priority: 'Alta',
       category: 'Billing',
-      time: '10:30',
-      sla: '2h',
+      createdAt: new Date(Date.now() - 1000 * 60 * 30),
+      lastResponseAt: null,
+      assignee: null,
+      messages: [
+        {
+          id: 1,
+          text: 'Olá equipe do Igloo, notei que fui cobrada duas vezes este mês. Podem verificar o que aconteceu com minha fatura do plano Professional?',
+          sender: 'user',
+          time: '10:20',
+          isRead: true,
+        },
+      ],
     },
     {
       id: 1235,
       subject: 'Dificuldade em cadastrar imóvel',
       owner: 'João Santos',
-      status: 'In Progress',
+      ownerAvatar: 'https://i.pravatar.cc/150?u=joao',
+      status: 'Em Andamento',
       priority: 'Média',
       category: 'Technical',
-      time: '11:15',
-      sla: '24h',
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
+      lastResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 4),
+      assignee: { name: 'Ana Souza', initial: 'A' },
+      messages: [
+        {
+          id: 1,
+          text: 'Não consigo subir as fotos do meu novo apartamento.',
+          sender: 'user',
+          time: '08:15',
+          isRead: true,
+        },
+        {
+          id: 2,
+          text: 'Olá João! Qual o formato e tamanho das imagens?',
+          sender: 'me',
+          time: '09:00',
+          isRead: true,
+        },
+      ],
     },
     {
       id: 1236,
       subject: 'Sugestão de nova feature',
       owner: 'Pedro Lima',
-      status: 'Waiting',
+      ownerAvatar: 'https://i.pravatar.cc/150?u=pedro',
+      status: 'Resolvido',
       priority: 'Baixa',
       category: 'Feedback',
-      time: 'Ontem',
-      sla: '48h',
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 25),
+      lastResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
+      assignee: { name: 'Ricardo Lima', initial: 'R' },
+      messages: [
+        {
+          id: 1,
+          text: 'Seria ótimo ter integração com o iFood para inquilinos.',
+          sender: 'user',
+          time: 'Ontem',
+          isRead: true,
+        },
+        {
+          id: 2,
+          text: 'Obrigado pela sugestão! Vamos levar para o time de produto.',
+          sender: 'me',
+          time: 'Ontem',
+          isRead: true,
+        },
+      ],
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [selectedTicketId, tickets]);
+
+  const selectedTicket = tickets.find((t) => t.id === selectedTicketId);
+
+  const handleSendMessage = (e?: React.FormEvent, overrideText?: string) => {
+    if (e) e.preventDefault();
+    const textToSend = overrideText || inputText;
+    if (!textToSend.trim() || !selectedTicketId) return;
+
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id === selectedTicketId) {
+          const newMessage: Message = {
+            id: Date.now(),
+            text: textToSend,
+            sender: 'me',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isRead: false,
+          };
+          return { ...t, messages: [...t.messages, newMessage] };
+        }
+        return t;
+      })
+    );
+    setInputText('');
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    if (!selectedTicketId) return;
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id === selectedTicketId) {
+          const systemMsg: Message = {
+            id: Date.now(),
+            text: `Status do ticket alterado para: ${newStatus}`,
+            sender: 'system',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isRead: true,
+          };
+          return { ...t, status: newStatus, messages: [...t.messages, systemMsg] };
+        }
+        return t;
+      })
+    );
+  };
+
+  const getSLAStatus = (ticket: any) => {
+    if (ticket.status === 'Resolvido' || ticket.status === 'Fechado') return { label: 'Concluído', color: 'text-emerald-500', type: 'success' };
+    if (ticket.lastResponseAt) {
+      const diff = Math.abs(ticket.lastResponseAt.getTime() - ticket.createdAt.getTime());
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      return { label: `Respondido em ${hours}h ${mins}min`, color: 'text-emerald-500', type: 'success' };
+    }
+
+    const diff = Math.abs(new Date().getTime() - ticket.createdAt.getTime());
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    const thresholds: any = { Alta: 8, Média: 24, Baixa: 72 };
+    const limit = thresholds[ticket.priority];
+
+    if (hours >= limit) return { label: `SLA em risco — ${hours}h sem resposta`, color: 'text-rose-500', type: 'danger' };
+    if (hours >= 2) return { label: `Sem resposta há ${hours}h`, color: 'text-amber-500', type: 'warning' };
+    return { label: `Aberto há ${mins} min`, color: 'text-slate-400', type: 'muted' };
+  };
+
+  const filteredTickets = tickets
+    .filter((t) => {
+      const matchesSearch =
+        t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.id.toString().includes(searchTerm);
+      const matchesStatus = statusFilter === 'Todos' || t.status === statusFilter;
+      const matchesPriority = priorityFilter === 'Todos' || t.priority === priorityFilter;
+      const matchesAssignee =
+        assigneeFilter === 'Todos' ||
+        (assigneeFilter === 'Não atribuído' && !t.assignee) ||
+        (assigneeFilter === 'Minha fila' && t.assignee?.name === 'Sua Fila'); // Mocked logic
+      return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
+    })
+    .sort((a, b) => {
+      // Prioritize SLA risks (Danger status)
+      const slaA = getSLAStatus(a);
+      const slaB = getSLAStatus(b);
+      if (slaA.type === 'danger' && slaB.type !== 'danger') return -1;
+      if (slaA.type !== 'danger' && slaB.type === 'danger') return 1;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+
+  const handleAssign = (ticketId: number, agent: any) => {
+    setTickets(tickets.map(t => t.id === ticketId ? { ...t, assignee: agent } : t));
+    // In a real app, this would call adminService.logActivity and trigger email
+  };
 
   return (
-    <div className='flex h-[calc(100vh-80px)] overflow-hidden animate-fadeIn'>
-      {/* Ticket List */}
-      <div className='w-96 border-r border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark flex flex-col'>
-        <div className='p-6 border-b border-gray-100 dark:border-white/5 space-y-4'>
+    <div className='flex flex-row h-[calc(100vh-80px)] overflow-hidden animate-fadeIn bg-background-light dark:bg-background-dark'>
+      {/* 1. Ticket List Sidebar */}
+      <div
+        className={`w-[280px] shrink-0 flex flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full ${selectedTicketId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+      >
+        <div className='p-4 border-b border-gray-200 dark:border-white/5 space-y-3'>
           <div className='flex items-center justify-between'>
-            <h3 className='font-bold text-slate-900 dark:text-white'>Tickets</h3>
-            <button className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400'>
+            <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Central de Suporte</h1>
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`p-2 rounded-lg transition-all ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400'}`}
+            >
               <Filter size={18} />
             </button>
           </div>
+
           <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' size={16} />
             <input
               type='text'
               placeholder='Buscar tickets...'
-              className='w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-white/5 border-none rounded-xl text-sm outline-none focus:ring-1 focus:ring-primary'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='w-full h-10 pl-10 pr-4 rounded-xl bg-gray-100 dark:bg-black/20 border-none text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all'
             />
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+          </div>
+
+          <div className='flex gap-2 overflow-x-auto hide-scrollbar pb-1'>
+            {['Todos', 'Urgentes', 'Aberto', 'Em Andamento', 'Resolvido'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
+                  statusFilter === status || (status === 'Urgentes' && priorityFilter === 'Alta')
+                    ? status === 'Urgentes'
+                      ? 'bg-rose-500 text-white border-transparent'
+                      : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
+                    : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/10 hover:bg-slate-50'
+                }`}
+                onClickCapture={() => {
+                  if (status === 'Urgentes') {
+                    setPriorityFilter('Alta');
+                    setStatusFilter('Todos');
+                  } else {
+                    setPriorityFilter('Todos');
+                    setStatusFilter(status);
+                  }
+                }}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className='flex-1 overflow-y-auto divide-y divide-gray-50 dark:divide-white/5'>
-          {tickets.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSelectedTicket(t.id)}
-              className={`w-full p-6 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-l-4 ${selectedTicket === t.id ? 'border-primary bg-slate-50 dark:bg-white/5' : 'border-transparent'}`}
-            >
-              <div className='flex items-center justify-between mb-2'>
-                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-                  #{t.id}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    t.priority === 'Alta'
-                      ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'
-                      : t.priority === 'Média'
-                        ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400'
-                        : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-400'
-                  }`}
-                >
-                  {t.priority}
-                </span>
+        <div className='flex-1 overflow-y-auto p-2 space-y-1'>
+          {filteredTickets.map((t) => {
+            const sla = getSLAStatus(t);
+            return (
+              <div
+                key={t.id}
+                onClick={() => setSelectedTicketId(t.id)}
+                className={`group p-3 rounded-xl flex items-start gap-3 cursor-pointer transition-all border border-transparent ${
+                  selectedTicketId === t.id
+                    ? 'bg-primary/10 dark:bg-primary/20 border-primary/20'
+                    : 'hover:bg-gray-100 dark:hover:bg-white/5'
+                }`}
+              >
+                <div className='relative shrink-0 mt-1'>
+                  {t.ownerAvatar ? (
+                    <div
+                      className='w-12 h-12 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700'
+                      style={{ backgroundImage: `url(${t.ownerAvatar})` }}
+                    ></div>
+                  ) : (
+                    <div className='w-12 h-12 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400'>
+                      <User size={24} />
+                    </div>
+                  )}
+                  {t.priority === 'Alta' && (
+                    <div className='absolute -bottom-1 -right-1 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-surface-dark'>
+                      <AlertCircle size={12} className='text-white' />
+                    </div>
+                  )}
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <div className='flex justify-between items-baseline mb-0.5'>
+                    <h3 className='text-sm font-bold text-slate-900 dark:text-white truncate pr-2'>
+                      {t.owner}
+                    </h3>
+                    <span className='text-[10px] text-slate-400 shrink-0'>
+                      {t.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <p className='text-[10px] text-primary uppercase font-bold tracking-wider mb-0.5 truncate'>
+                    #{t.id} — {t.subject}
+                  </p>
+                  <div className='flex justify-between items-end'>
+                    <p className={`text-xs truncate max-w-[140px] font-medium ${sla.color}`}>
+                      {sla.label}
+                    </p>
+                    {t.assignee && (
+                      <div className='w-5 h-5 bg-slate-200 dark:bg-white/10 text-[10px] font-bold flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300'>
+                        {t.assignee.initial}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <h4 className='font-bold text-sm text-slate-900 dark:text-white mb-1 line-clamp-1'>
-                {t.subject}
-              </h4>
-              <div className='flex items-center justify-between text-xs text-slate-500'>
-                <span className='flex items-center gap-1'>
-                  <User size={12} /> {t.owner}
-                </span>
-                <span>{t.time}</span>
-              </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Ticket Details */}
-      <div className='flex-1 bg-slate-50 dark:bg-background-dark flex flex-col overflow-hidden'>
+      {/* 2. Chat Area */}
+      <div
+        className={`flex-1 min-w-[320px] flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative w-full h-full transition-transform duration-300 ${selectedTicketId ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+      >
         {selectedTicket ? (
           <>
-            <div className='p-8 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 flex items-center justify-between shadow-sm'>
-              <div className='flex items-center gap-4'>
-                <div className='w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center'>
-                  <MessageSquare size={24} />
-                </div>
-                <div>
-                  <h3 className='text-xl font-bold text-slate-900 dark:text-white'>
-                    Ticket #{selectedTicket}
-                  </h3>
-                  <p className='text-sm text-slate-500'>
-                    Problemas com cobranças duplicadas no cartão
+            <div className='h-16 px-4 md:px-5 flex items-center justify-between bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
+              <div className='flex items-center gap-3'>
+                <button
+                  onClick={() => setSelectedTicketId(null)}
+                  className='md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <div className='min-w-0'>
+                  <div className='flex items-center gap-2'>
+                    <h2 className='text-sm font-bold text-slate-900 dark:text-white leading-tight truncate'>
+                      Ticket #{selectedTicket.id}
+                    </h2>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap ${
+                        selectedTicket.status === 'Resolvido'
+                          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                          : selectedTicket.status === 'Em Andamento'
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                      }`}
+                    >
+                      {selectedTicket.status}
+                    </span>
+                  </div>
+                  <p className='text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]'>
+                    {selectedTicket.subject}
                   </p>
                 </div>
               </div>
-              <div className='flex items-center gap-3'>
-                <button className='flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all'>
-                  <CheckCircle2 size={18} />
-                  Resolver Ticket
+
+              <div className='flex gap-2'>
+                <button
+                  onClick={() => {
+                    setShowDetailsPanel(true);
+                    setActiveRightTab('owner');
+                  }}
+                  className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'owner' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
+                  title='Mini Dashboard do Proprietário'
+                >
+                  <LayoutDashboard size={20} />
                 </button>
-                <button className='p-2.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400 transition-all'>
+                <button
+                  onClick={() => {
+                    setShowDetailsPanel(!showDetailsPanel);
+                    setActiveRightTab('ticket');
+                  }}
+                  className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
+                  title='Ver detalhes do chamado'
+                >
+                  <FileText size={20} />
+                </button>
+                <button className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors'>
                   <MoreVertical size={20} />
                 </button>
               </div>
             </div>
 
-            <div className='flex-1 overflow-y-auto p-8 space-y-6'>
-              {/* Messages */}
-              <div className='flex flex-col gap-6'>
-                <div className='flex gap-4 max-w-2xl self-start'>
-                  <div className='w-10 h-10 rounded-xl bg-slate-200 dark:bg-white/10 shrink-0 font-bold flex items-center justify-center text-slate-600 dark:text-white'>
-                    M
-                  </div>
-                  <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-50 dark:border-white/5'>
-                    <p className='text-sm text-slate-800 dark:text-slate-200 leading-relaxed'>
-                      Olá equipe do Igloo, notei que fui cobrada duas vezes este mês. Podem
-                      verificar o que aconteceu com minha fatura do plano Professional?
-                    </p>
-                    <span className='text-[10px] text-slate-400 font-bold mt-2 block'>
-                      10:30 AM
+            <div className='flex-1 flex overflow-hidden'>
+              {/* Messages Stream */}
+              <div className='flex-1 flex flex-col min-w-0'>
+                <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-4'>
+                  <div className='flex justify-center mb-6'>
+                    <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full'>
+                      Início do Ticket — {selectedTicket.createdAt.toLocaleDateString()}
                     </span>
                   </div>
+
+                  {selectedTicket.messages.map((msg: any) => (
+                    <div
+                      key={msg.id}
+                      className={`flex w-full ${msg.sender === 'me' ? 'justify-end' : msg.sender === 'system' ? 'justify-center' : 'justify-start'}`}
+                    >
+                      {msg.sender === 'system' ? (
+                        <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
+                          {msg.text}
+                        </div>
+                      ) : (
+                        <div
+                          className={`max-w-[80%] flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}
+                        >
+                          <div
+                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${
+                              msg.sender === 'me'
+                                ? 'bg-primary text-white rounded-tr-sm'
+                                : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
+                            }`}
+                          >
+                            {msg.text}
+                          </div>
+                          <div className='flex items-center gap-1 mt-1 px-1'>
+                            <span className='text-[10px] text-slate-400 font-medium'>
+                              {msg.time}
+                            </span>
+                            {msg.sender === 'me' && (
+                              <CheckCheck
+                                size={12}
+                                className={msg.isRead ? 'text-primary' : 'text-slate-300'}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
                 </div>
 
-                <div className='flex gap-4 max-w-2xl self-end flex-row-reverse text-right'>
-                  <div className='w-10 h-10 rounded-xl bg-amber-500 shrink-0 font-bold flex items-center justify-center text-white'>
-                    A
+                <div className='p-4 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 shrink-0'>
+                  <div className='flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1'>
+                    {quickReplies.map((reply, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSendMessage(undefined, reply)}
+                        className='whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
+                      >
+                        {reply}
+                      </button>
+                    ))}
                   </div>
-                  <div className='bg-amber-500 p-4 rounded-2xl rounded-tr-none shadow-lg shadow-amber-500/20 text-white'>
-                    <p className='text-sm leading-relaxed'>
-                      Olá Maria! Estou verificando agora mesmo no painel do Stripe. Por favor,
-                      aguarde um momento enquanto processo o seu estorno.
-                    </p>
-                    <span className='text-[10px] text-white/70 font-bold mt-2 block'>10:45 AM</span>
-                  </div>
-                </div>
 
-                <div className='bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-400/20 p-4 rounded-2xl flex items-start gap-3 max-w-lg self-center'>
-                  <AlertCircle size={20} className='text-blue-500 shrink-0 mt-0.5' />
-                  <div>
-                    <p className='text-xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-widest mb-1'>
-                      Nota Interna
-                    </p>
-                    <p className='text-xs text-blue-600 dark:text-blue-300'>
-                      Duplicação confirmada no Stripe. ID da transação: ch_3Ok2n4L.
-                    </p>
+                  <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
+                    <button
+                      type='button'
+                      className='p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
+                    >
+                      <Paperclip size={20} />
+                    </button>
+                    <div className='flex-1 bg-gray-100 dark:bg-black/20 rounded-2xl border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex items-center'>
+                      <input
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder='Digite uma resposta...'
+                        className='w-full h-12 px-4 bg-transparent border-none focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400'
+                      />
+                    </div>
+                    <button
+                      type='submit'
+                      disabled={!inputText.trim()}
+                      className='h-12 w-12 rounded-full bg-primary disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white flex items-center justify-center shadow-lg shadow-primary/20 disabled:shadow-none hover:bg-primary-dark transition-all active:scale-95 shrink-0'
+                    >
+                      <Send size={20} className={inputText.trim() ? 'ml-0.5' : ''} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* 3. Right Info Panel */}
+              <div className={`w-[260px] shrink-0 bg-white dark:bg-surface-dark border-l border-gray-200 dark:border-white/5 flex-col h-full animate-slideLeft ${showDetailsPanel ? 'flex' : 'hidden'} min-[860px]:flex`}>
+                <div className='flex border-b border-gray-200 dark:border-white/5 p-2 gap-1.5'>
+                    <button
+                      onClick={() => setActiveRightTab('ticket')}
+                      className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                    >
+                      Chamado
+                    </button>
+                    <button
+                      onClick={() => setActiveRightTab('owner')}
+                      className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'owner' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                    >
+                      Proprietário
+                    </button>
+                    <button
+                      onClick={() => setShowDetailsPanel(false)}
+                      className='p-1.5 text-slate-400 hover:text-slate-600 min-[860px]:hidden'
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div className='flex-1 overflow-y-auto'>
+                    {activeRightTab === 'ticket' ? (
+                      <div className='p-4 space-y-5'>
+                        <div>
+                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
+                            ID do Ticket
+                          </span>
+                          <p className='text-sm font-bold text-slate-900 dark:text-white'>#{selectedTicket.id}</p>
+                          <span className='text-[11px] text-slate-500'>{selectedTicket.category}</span>
+                        </div>
+
+                        <div>
+                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
+                            Ações Rápidas
+                          </span>
+                          <div className='flex flex-col gap-2'>
+                            <button
+                              onClick={() => handleStatusChange('Em Andamento')}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold border transition-all ${
+                                selectedTicket.status === 'Em Andamento'
+                                  ? 'bg-blue-500 text-white border-transparent shadow-lg shadow-blue-500/20'
+                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
+                              }`}
+                            >
+                              <Wrench size={14} /> Em Andamento
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange('Resolvido')}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold border transition-all ${
+                                selectedTicket.status === 'Resolvido'
+                                  ? 'bg-emerald-500 text-white border-transparent shadow-lg shadow-emerald-500/20'
+                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
+                              }`}
+                            >
+                              <CheckCircle2 size={14} /> Resolvido
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className='space-y-3'>
+                          <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                            Responsável
+                          </h4>
+                          <div className='relative'>
+                            <select
+                              value={selectedTicket.assignee?.id || ''}
+                              onChange={(e) => {
+                                const agent = agents.find((a) => a.id.toString() === e.target.value);
+                                setTickets((prev) =>
+                                  prev.map((t) =>
+                                    t.id === selectedTicket.id ? { ...t, assignee: agent || null } : t
+                                  )
+                                );
+                              }}
+                              className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
+                            >
+                              <option value=''>Não atribuído</option>
+                              {agents.map((a) => (
+                                <option key={a.id} value={a.id}>
+                                  {a.name}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                          </div>
+                        </div>
+
+                        <div className='space-y-3 pt-4 border-t border-gray-100 dark:border-white/5'>
+                          <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                            SLA e Tempos
+                          </h4>
+                          <div className='flex items-start gap-3'>
+                            <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                              <Calendar size={14} />
+                            </div>
+                            <div>
+                              <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
+                              <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
+                                {selectedTicket.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className='flex items-start gap-3'>
+                            <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                              <History size={14} />
+                            </div>
+                            <div>
+                              <p className='text-[9px] font-bold text-slate-400 uppercase'>Status SLA</p>
+                              <p className={`text-[11px] font-bold ${getSLAStatus(selectedTicket).color}`}>
+                                {getSLAStatus(selectedTicket).label}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className='p-4 space-y-5'>
+                        <div className='flex flex-col items-center text-center pb-4 border-b border-gray-200 dark:border-white/5'>
+                          <div className='w-16 h-16 rounded-full bg-slate-200 dark:bg-white/10 mb-2 overflow-hidden border-2 border-primary/20'>
+                            {selectedTicket.ownerAvatar ? (
+                              <img src={selectedTicket.ownerAvatar} alt='' className='w-full h-full object-cover' />
+                            ) : (
+                              <div className='w-full h-full flex items-center justify-center text-slate-400'>
+                                <User size={32} />
+                              </div>
+                            )}
+                          </div>
+                          <h4 className='text-sm font-bold text-slate-900 dark:text-white'>{selectedTicket.owner}</h4>
+                          <p className='text-[11px] text-slate-500'>Membro desde Jan 2023</p>
+                        </div>
+
+                        <div className='space-y-3'>
+                          <div className='grid grid-cols-2 gap-2'>
+                            <div className='p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30'>
+                              <span className='text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-0.5'>Imóveis</span>
+                              <p className='text-xs font-black text-emerald-700 dark:text-emerald-300'>12 Ativos</p>
+                            </div>
+                            <div className='p-2 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30'>
+                              <span className='text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase block mb-0.5'>Plano</span>
+                              <p className='text-xs font-black text-blue-700 dark:text-blue-300'>PRO</p>
+                            </div>
+                          </div>
+
+                          <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 space-y-2'>
+                            <div className='flex justify-between items-center'>
+                              <span className='text-[10px] font-bold text-slate-500'>MRR Contribuído</span>
+                              <span className='text-xs font-black dark:text-white'>R$ 1.450</span>
+                            </div>
+                            <div className='w-full h-1 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
+                              <div className='h-full bg-primary w-[85%]' />
+                            </div>
+                          </div>
+
+                          <div className='space-y-1.5'>
+                            <h5 className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Histórico Recente</h5>
+                            {[
+                              { label: 'Plano renovado', date: '01 Mar 2024', icon: FileCheck },
+                              { label: 'Novo imóvel cadastrado', date: '15 Fev 2024', icon: History },
+                            ].map((act, i) => (
+                              <div key={i} className='flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer'>
+                                <div className='size-7 rounded-lg bg-white dark:bg-black/20 flex items-center justify-center text-slate-400 shrink-0'>
+                                  <act.icon size={14} />
+                                </div>
+                                <div className='min-w-0'>
+                                  <p className='text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate'>{act.label}</p>
+                                  <p className='text-[9px] text-slate-500'>{act.date}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className='pt-3 border-t border-gray-200 dark:border-white/5 space-y-2'>
+                          <button className='w-full py-2.5 rounded-xl bg-primary text-white text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
+                            <ExternalLink size={14} /> Ver Perfil Admin
+                          </button>
+                          <button className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>
+                            <Phone size={14} /> WhatsApp
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Input Area */}
-            <div className='p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
-              <div className='relative group'>
-                <textarea
-                  placeholder='Escreva sua resposta aqui...'
-                  className='w-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-2xl p-4 pr-32 min-h-[100px] outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none text-slate-900 dark:text-white'
-                ></textarea>
-                <div className='absolute right-4 bottom-4 flex items-center gap-2'>
-                  <button className='p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl text-slate-400 transition-all'>
-                    <Paperclip size={20} />
-                  </button>
-                  <button className='flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
-                    <Send size={18} />
-                    Enviar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
+            </>
         ) : (
-          <div className='flex-1 flex flex-col items-center justify-center text-center p-12 text-slate-400'>
-            <div className='w-24 h-24 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-6'>
-              <MessageSquare size={40} className='opacity-20' />
+          <div className='hidden md:flex flex-1 flex-col items-center justify-center text-center p-6 text-slate-400'>
+            <div className='w-20 h-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-4'>
+              <MessageSquare size={32} className='opacity-50' />
             </div>
             <h3 className='text-lg font-bold text-slate-900 dark:text-white mb-2'>
-              Selecione um ticket
+              Central de Atendimento
             </h3>
-            <p className='text-sm max-w-sm'>
-              Escolha um ticket na lista à esquerda para visualizar os detalhes e interagir com o
-              usuário.
+            <p className='max-w-xs text-sm'>
+              Selecione um ticket na lista à esquerda para iniciar o atendimento e resolver solicitações.
             </p>
           </div>
         )}

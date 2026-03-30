@@ -12,17 +12,74 @@ import {
   Lock,
   Mail,
   Zap,
+  CreditCard,
+  MessageSquare,
+  CheckCircle,
+  AlertTriangle,
+  Send,
+  Trash2,
+  Calendar,
 } from 'lucide-react';
 import FeatureFlagManager from '../../components/admin/FeatureFlagManager';
 import PlanManager from '../../components/admin/PlanManager';
 
 const SystemSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Geral');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const [integrations, setIntegrations] = useState({
+    stripe: { enabled: true, status: 'Online', connected: true },
+    clicksign: { enabled: true, status: 'Erro de conexão', apiKey: 'sk_test_51...f3d' },
+    whatsapp: { enabled: false, apiKey: '', sender: '' },
+    smtp: { host: 'smtp.igloo.pt', port: '587', user: 'noreply@igloo.pt', pass: '********' },
+  });
+
+  const [notifications, setNotifications] = useState({
+    admin: {
+      newOwner: { enabled: true, email: 'admin@igloo.pt' },
+      integrationError: { enabled: true, email: 'dev@igloo.pt' },
+      paymentReceived: { enabled: true },
+      churnDetected: { enabled: true, email: 'success@igloo.pt' },
+      backupCompleted: { enabled: false },
+      suspiciousLogin: { enabled: true }, // Mandatory
+    },
+    owners: {
+      contractExpiry: { enabled: true, daysBefore: 30 },
+      delinquency: { enabled: true, daysAfter: 5 },
+      maintenance: { enabled: false, message: 'Realizaremos uma manutenção programada...' },
+    },
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleToggle = (path: string, value: boolean) => {
+    // Logic to update state based on path (e.g. "integrations.stripe.enabled")
+    // Simplified for now
+    showToast('Alteração salva automaticamente');
+  };
+
+  const testConnection = (name: string) => {
+    const success = name !== 'ClickSign';
+    showToast(
+      success ? `Conexão com ${name} bem-sucedida` : `Falha na conexão com ${name}: API Key inválida`,
+      success ? 'success' : 'error'
+    );
+  };
 
   const tabs = ['Geral', 'Planos', 'Segurança', 'Integrações', 'Notificações', 'Feature Flags'];
 
   return (
-    <div className='p-8 space-y-8 animate-fadeIn'>
+    <div className='p-8 space-y-8 animate-fadeIn relative'>
+      {toast && (
+        <div
+          className={`fixed top-8 right-8 z-50 px-6 py-3 rounded-2xl text-white font-bold shadow-2xl animate-slideDown ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}
+        >
+          {toast.message}
+        </div>
+      )}
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
         <div>
           <h2 className='text-2xl font-bold text-slate-900 dark:text-white tracking-tight'>
@@ -154,6 +211,342 @@ const SystemSettings: React.FC = () => {
             {activeTab === 'Planos' && <PlanManager />}
 
             {activeTab === 'Feature Flags' && <FeatureFlagManager />}
+
+            {activeTab === 'Integrações' && (
+              <div className='space-y-10'>
+                <section className='space-y-4'>
+                  <h4 className='text-xs font-black text-slate-400 uppercase tracking-widest px-1'>
+                    PAGAMENTOS
+                  </h4>
+                  <div className='grid grid-cols-1 gap-4'>
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6'>
+                      <div className='flex items-center gap-4'>
+                        <div className='w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20'>
+                          <CreditCard size={28} />
+                        </div>
+                        <div>
+                          <h5 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                            Stripe
+                            <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse'></span>
+                            <span className='text-[10px] text-emerald-500 font-black uppercase tracking-tighter'>
+                              Online
+                            </span>
+                          </h5>
+                          <p className='text-xs text-slate-500'>
+                            Processamento de cartões e recorrência (MRR).
+                          </p>
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-3'>
+                        <button
+                          onClick={() => testConnection('Stripe')}
+                          className='px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all'
+                        >
+                          Testar conexão
+                        </button>
+                        <button className='px-6 py-2 bg-white dark:bg-white/10 border border-gray-100 dark:border-white/5 rounded-xl text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 transition-all'>
+                          Gerenciar
+                        </button>
+                        <button
+                          onClick={() => handleToggle('stripe', true)}
+                          className='text-primary'
+                        >
+                          <ToggleRight size={40} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6'>
+                      <div className='flex items-center gap-4'>
+                        <div className='w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20'>
+                          <CheckCircle size={28} />
+                        </div>
+                        <div className='space-y-1'>
+                          <h5 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                            ClickSign
+                            <span className='px-2 py-0.5 rounded-lg bg-red-100 text-red-600 text-[8px] font-black uppercase tracking-tighter'>
+                              Erro de conexão
+                            </span>
+                          </h5>
+                          <div className='flex items-center gap-2'>
+                            <input
+                              type='password'
+                              value={integrations.clicksign.apiKey}
+                              className='bg-white/5 border-none p-0 text-xs font-mono text-slate-500 w-32 focus:ring-0'
+                              readOnly
+                            />
+                            <button className='text-[10px] font-bold text-primary hover:underline'>
+                              Alterar Key
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-3'>
+                        <button
+                          onClick={() => testConnection('ClickSign')}
+                          className='px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all'
+                        >
+                          Testar conexão
+                        </button>
+                        <button className='px-6 py-2 bg-white dark:bg-white/10 border border-gray-100 dark:border-white/5 rounded-xl text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 transition-all'>
+                          Configurar
+                        </button>
+                        <button
+                          onClick={() => handleToggle('clicksign', true)}
+                          className='text-primary'
+                        >
+                          <ToggleRight size={40} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className='space-y-4'>
+                  <h4 className='text-xs font-black text-slate-400 uppercase tracking-widest px-1'>
+                    COMUNICAÇÃO
+                  </h4>
+                  <div className='grid grid-cols-1 gap-4'>
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6'>
+                      <div className='flex items-center gap-4'>
+                        <div className='w-14 h-14 rounded-2xl bg-green-500 text-white flex items-center justify-center shadow-lg shadow-green-500/20'>
+                          <MessageSquare size={28} />
+                        </div>
+                        <div>
+                          <h5 className='font-bold text-slate-900 dark:text-white'>
+                            WhatsApp Business API
+                          </h5>
+                          <p className='text-xs text-slate-500'>
+                            Envio de notificações por WhatsApp.
+                          </p>
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-3'>
+                        <button
+                          onClick={() => handleToggle('whatsapp', false)}
+                          className='text-slate-300'
+                        >
+                          <ToggleRight size={40} strokeWidth={1.5} className='rotate-180' />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 space-y-6'>
+                      <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
+                        <div className='flex items-center gap-4'>
+                          <div className='w-14 h-14 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20'>
+                            <Mail size={28} />
+                          </div>
+                          <div>
+                            <h5 className='font-bold text-slate-900 dark:text-white'>SMTP / E-mail</h5>
+                            <p className='text-xs text-slate-500'>
+                              Servidor de e-mail transacional próprio.
+                            </p>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-3'>
+                          <button
+                            onClick={() => testConnection('SMTP')}
+                            className='px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'
+                          >
+                            Testar SMTP
+                          </button>
+                        </div>
+                      </div>
+                      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                        <div className='space-y-1'>
+                          <label className='text-[10px] font-bold text-slate-400 uppercase px-1'>
+                            Host
+                          </label>
+                          <input
+                            type='text'
+                            value={integrations.smtp.host}
+                            className='w-full px-4 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm'
+                          />
+                        </div>
+                        <div className='space-y-1'>
+                          <label className='text-[10px] font-bold text-slate-400 uppercase px-1'>
+                            Porta
+                          </label>
+                          <input
+                            type='text'
+                            value={integrations.smtp.port}
+                            className='w-full px-4 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm'
+                          />
+                        </div>
+                        <div className='space-y-1'>
+                          <label className='text-[10px] font-bold text-slate-400 uppercase px-1'>
+                            Usuário
+                          </label>
+                          <input
+                            type='text'
+                            value={integrations.smtp.user}
+                            className='w-full px-4 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm'
+                          />
+                        </div>
+                        <div className='space-y-1'>
+                          <label className='text-[10px] font-bold text-slate-400 uppercase px-1'>
+                            Senha
+                          </label>
+                          <input
+                            type='password'
+                            value={integrations.smtp.pass}
+                            className='w-full px-4 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'Notificações' && (
+              <div className='space-y-10'>
+                <section className='space-y-4'>
+                  <h4 className='text-xs font-black text-slate-400 uppercase tracking-widest px-1'>
+                    NOTIFICAÇÕES DO SISTEMA — ADMIN
+                  </h4>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {[
+                      {
+                        id: 'newOwner',
+                        label: 'Novo proprietário cadastrado',
+                        email: notifications.admin.newOwner.email,
+                      },
+                      {
+                        id: 'integrationError',
+                        label: 'Erro em integração',
+                        email: notifications.admin.integrationError.email,
+                      },
+                      { id: 'paymentReceived', label: 'Pagamento de assinatura recebido' },
+                      {
+                        id: 'churnDetected',
+                        label: 'Churn detectado',
+                        email: notifications.admin.churnDetected.email,
+                      },
+                      { id: 'backupCompleted', label: 'Backup concluído' },
+                      { id: 'suspiciousLogin', label: 'Acesso suspeito', mandatory: true },
+                    ].map((notif) => (
+                      <div
+                        key={notif.id}
+                        className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 space-y-3'
+                      >
+                        <div className='flex items-center justify-between'>
+                          <span className='font-bold text-slate-700 dark:text-white text-sm'>
+                            {notif.label}
+                          </span>
+                          <div className='flex items-center gap-2'>
+                            {notif.mandatory && (
+                              <span className='px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-white/10 text-slate-500 text-[8px] font-black uppercase tracking-tighter'>
+                                Obrigatório
+                              </span>
+                            )}
+                            <button
+                              disabled={notif.mandatory}
+                              onClick={() => handleToggle(`notifications.admin.${notif.id}`, true)}
+                              className={notif.mandatory ? 'text-primary opacity-50' : 'text-primary'}
+                            >
+                              <ToggleRight size={32} strokeWidth={1.5} />
+                            </button>
+                          </div>
+                        </div>
+                        {notif.email !== undefined && (
+                          <input
+                            type='email'
+                            defaultValue={notif.email}
+                            className='w-full px-4 py-2 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-xs'
+                            placeholder='Email de destino'
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className='space-y-4'>
+                  <h4 className='text-xs font-black text-slate-400 uppercase tracking-widest px-1'>
+                    NOTIFICAÇÕES GLOBAIS — PROPRIETÁRIOS
+                  </h4>
+                  <div className='grid grid-cols-1 gap-4'>
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 space-y-6'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-3'>
+                          <Calendar className='text-primary' size={20} />
+                          <h5 className='font-bold text-slate-900 dark:text-white'>
+                            Lembrete de vencimento de contrato
+                          </h5>
+                        </div>
+                        <button
+                          onClick={() => handleToggle('notifications.owners.contractExpiry', true)}
+                          className='text-primary'
+                        >
+                          <ToggleRight size={32} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                      <div className='flex items-center gap-3'>
+                        <span className='text-sm text-slate-500'>Enviar lembrete</span>
+                        <input
+                          type='number'
+                          defaultValue={notifications.owners.contractExpiry.daysBefore}
+                          className='w-20 px-4 py-2 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none text-center font-bold dark:text-white'
+                        />
+                        <span className='text-sm text-slate-500'>dias antes do vencimento.</span>
+                      </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 space-y-4'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-3'>
+                          <AlertTriangle className='text-orange-500' size={20} />
+                          <h5 className='font-bold text-slate-900 dark:text-white'>
+                            Alerta de inadimplência
+                          </h5>
+                        </div>
+                        <button
+                          onClick={() => handleToggle('notifications.owners.delinquency', true)}
+                          className='text-primary'
+                        >
+                          <ToggleRight size={32} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                      <div className='flex items-center gap-3'>
+                        <span className='text-sm text-slate-500'>Notificar após</span>
+                        <input
+                          type='number'
+                          defaultValue={notifications.owners.delinquency.daysAfter}
+                          className='w-20 px-4 py-2 bg-white dark:bg-white/5 border border-transparent rounded-xl focus:ring-2 focus:ring-primary outline-none text-center font-bold dark:text-white'
+                        />
+                        <span className='text-sm text-slate-500'>dias de atraso.</span>
+                      </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-[32px] border border-gray-100 dark:border-white/5 space-y-4'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center gap-3'>
+                          <Settings className='text-slate-400' size={20} />
+                          <h5 className='font-bold text-slate-900 dark:text-white'>
+                            Aviso de manutenção programada
+                          </h5>
+                        </div>
+                        <button
+                          onClick={() => handleToggle('notifications.owners.maintenance', false)}
+                          className='text-slate-300'
+                        >
+                          <ToggleRight size={32} strokeWidth={1.5} className='rotate-180' />
+                        </button>
+                      </div>
+                      <textarea
+                        defaultValue={notifications.owners.maintenance.message}
+                        rows={3}
+                        className='w-full px-5 py-3.5 bg-white dark:bg-white/5 border border-transparent rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white font-medium text-sm resize-none'
+                        placeholder='Mensagem para os proprietários...'
+                      />
+                    </div>
+                  </div>
+                </section>
+              </div>
+            )}
 
             {activeTab === 'Segurança' && (
               <div className='space-y-6'>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Users,
   Building2,
@@ -15,6 +15,8 @@ import {
   Server,
   Bell,
   ShieldAlert,
+  CheckCircle,
+  X,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -29,6 +31,7 @@ import {
   ReferenceDot,
 } from 'recharts';
 import { adminService } from '../../services/adminService';
+import { InfoTooltip } from '../../components/ui/InfoTooltip';
 
 const growthData = [
   { name: 'Jan', users: 400, revenue: 2400 },
@@ -42,9 +45,22 @@ const growthData = [
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('Últimos 6 meses');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  useEffect(() => {
+    if (location.state && (location.state as any).toastMessage) {
+      setToast({
+        message: (location.state as any).toastMessage,
+        type: (location.state as any).toastType || 'success',
+      });
+      // Clear state to avoid toast reappearing on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const getAnomalyPoints = (data: any[]) => {
     const anomalies: any[] = [];
@@ -84,6 +100,9 @@ const AdminDashboard: React.FC = () => {
       icon: Users,
       color: 'blue',
       type: 'positive', // Higher is better
+      tooltipTitle: 'Proprietários Ativos',
+      tooltipDesc:
+        'Total de proprietários com pelo menos um imóvel cadastrado e plano ativo na plataforma. Variação calculada em relação ao mês anterior.',
     },
     {
       label: 'Receita Mensal (MRR)',
@@ -93,6 +112,9 @@ const AdminDashboard: React.FC = () => {
       icon: TrendingUp,
       color: 'emerald',
       type: 'positive',
+      tooltipTitle: 'Receita Recorrente Mensal',
+      tooltipDesc:
+        'Soma de todas as assinaturas ativas no mês atual. Não inclui planos Free nem pagamentos únicos. Variação calculada em relação ao mês anterior.',
     },
     {
       label: 'Total de Imóveis',
@@ -102,6 +124,9 @@ const AdminDashboard: React.FC = () => {
       icon: Building2,
       color: 'amber',
       type: 'positive',
+      tooltipTitle: 'Total de Imóveis',
+      tooltipDesc:
+        'Soma de todos os imóveis cadastrados na plataforma por todos os proprietários ativos. Inclui imóveis vagos e alugados. Variação calculada em relação ao mês anterior.',
     },
     {
       label: 'Churn Rate',
@@ -111,6 +136,9 @@ const AdminDashboard: React.FC = () => {
       icon: AlertCircle,
       color: 'rose',
       type: 'negative', // Lower is better
+      tooltipTitle: 'Taxa de Cancelamento (Churn)',
+      tooltipDesc:
+        'Percentual de proprietários que cancelaram ou deixaram de renovar o plano no mês atual em relação à base total. Queda no churn é positiva para o negócio.',
     },
     {
       label: 'Trials Ativos',
@@ -120,6 +148,9 @@ const AdminDashboard: React.FC = () => {
       icon: Cpu,
       color: 'indigo',
       type: 'neutral', // Growth is informational
+      tooltipTitle: 'Trials em Andamento',
+      tooltipDesc:
+        'Total de proprietários atualmente em período de avaliação gratuita. Variação em relação ao dia anterior. Acompanhe a conversão desses usuários em Assinaturas.',
     },
     {
       label: 'Tickets Abertos',
@@ -130,6 +161,9 @@ const AdminDashboard: React.FC = () => {
       color: 'rose',
       type: 'negative', // Higher is worse
       link: '/admin/support?filter=open',
+      tooltipTitle: 'Tickets de Suporte em Aberto',
+      tooltipDesc:
+        "Total de tickets na Central de Suporte aguardando resposta ou em andamento. Clique no card para ir direto à fila de suporte com filtro 'Em Aberto' aplicado.",
     },
   ];
 
@@ -191,7 +225,29 @@ const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className='p-8 space-y-8 animate-fadeIn'>
+    <div className='flex flex-col w-full max-w-[1600px] mx-auto p-8 space-y-8 animate-fadeIn relative'>
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-[60] px-6 py-4 rounded-2xl text-white font-bold shadow-2xl animate-slideDown flex items-center gap-3 ${
+            toast.type === 'success'
+              ? 'bg-emerald-500 shadow-emerald-500/20'
+              : 'bg-red-500 shadow-red-500/20'
+          }`}
+        >
+          {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+          <div>
+            <p className='text-sm'>{toast.message}</p>
+          </div>
+          <button
+            onClick={() => setToast(null)}
+            className='ml-2 opacity-70 hover:opacity-100 transition-opacity'
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className='flex justify-between items-center bg-slate-900 text-white p-8 rounded-[32px] shadow-2xl relative overflow-hidden'>
         <div className='relative z-10'>
@@ -216,33 +272,34 @@ const AdminDashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {dashboardStats.map((stat, i) => (
-          <div
-            key={stat.label}
-            onClick={() => stat.link && navigate(stat.link)}
-            className={`bg-white dark:bg-surface-dark p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-all group ${stat.link ? 'cursor-pointer hover:border-primary/50' : ''}`}
-          >
-            <div className='flex items-start justify-between mb-4'>
-              <div
-                className={`p-4 rounded-2xl bg-${stat.color}-50 dark:bg-${stat.color}-500/10 text-${stat.color}-600 dark:text-${stat.color}-400 group-hover:scale-110 transition-transform shadow-sm`}
-              >
-                <stat.icon size={24} />
+          <InfoTooltip key={stat.label} title={stat.tooltipTitle} description={stat.tooltipDesc}>
+            <div
+              onClick={() => stat.link && navigate(stat.link)}
+              className={`h-full bg-white dark:bg-surface-dark p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 hover:shadow-md transition-all group ${stat.link ? 'cursor-pointer hover:border-primary/50' : ''}`}
+            >
+              <div className='flex items-start justify-between mb-4'>
+                <div
+                  className={`p-4 rounded-2xl bg-${stat.color}-50 dark:bg-${stat.color}-500/10 text-${stat.color}-600 dark:text-${stat.color}-400 group-hover:scale-110 transition-transform shadow-sm`}
+                >
+                  <stat.icon size={24} />
+                </div>
+                <div
+                  className={`flex items-center gap-1 text-xs font-bold ${getStatColor(stat)} px-3 py-1.5 rounded-full shadow-sm transition-all group-hover:scale-105`}
+                >
+                  {stat.change}
+                  {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                </div>
               </div>
-              <div
-                className={`flex items-center gap-1 text-xs font-bold ${getStatColor(stat)} px-3 py-1.5 rounded-full shadow-sm transition-all group-hover:scale-105`}
-              >
-                {stat.change}
-                {stat.trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+              <div>
+                <p className='text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1'>
+                  {stat.label}
+                </p>
+                <h3 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>
+                  {stat.value}
+                </h3>
               </div>
             </div>
-            <div>
-              <p className='text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1'>
-                {stat.label}
-              </p>
-              <h3 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>
-                {stat.value}
-              </h3>
-            </div>
-          </div>
+          </InfoTooltip>
         ))}
       </div>
 

@@ -569,19 +569,37 @@ const Dashboard: React.FC = () => {
                     <Bar
                       dataKey='income'
                       name='Receita'
-                      fill='#10b981'
                       radius={[4, 4, 0, 0]}
                       maxBarSize={30}
                       stackId='a'
-                    />
+                    >
+                      {financialHistory.map((entry, index) => (
+                        <Cell
+                          key={`cell-income-${index}`}
+                          fill={entry.projected ? '#10b981' : '#10b981'}
+                          fillOpacity={entry.projected ? 0.4 : 1}
+                          stroke={entry.projected ? '#10b981' : 'none'}
+                          strokeDasharray={entry.projected ? '4 4' : '0'}
+                        />
+                      ))}
+                    </Bar>
                     <Bar
                       dataKey='expense'
                       name='Despesa'
-                      fill='#ef4444'
                       radius={[4, 4, 0, 0]}
                       maxBarSize={30}
                       stackId='a'
-                    />
+                    >
+                      {financialHistory.map((entry, index) => (
+                        <Cell
+                          key={`cell-expense-${index}`}
+                          fill={entry.projected ? '#ef4444' : '#ef4444'}
+                          fillOpacity={entry.projected ? 0.4 : 1}
+                          stroke={entry.projected ? '#ef4444' : 'none'}
+                          strokeDasharray={entry.projected ? '4 4' : '0'}
+                        />
+                      ))}
+                    </Bar>
                     <Line
                       type='monotone'
                       dataKey='net'

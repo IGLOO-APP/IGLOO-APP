@@ -10,6 +10,7 @@ export interface User {
   permissions?: string[];
   avatar?: string;
   is_suspended?: boolean;
+  is_pending?: boolean;
   managed_by_admin_id?: string;
 }
 
