@@ -22,30 +22,32 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
+import { TenantProfileConfigPanel } from '../properties/TenantProfileConfigPanel';
 
 interface TenantDetailsProps {
-  id: number;
+  id: number | string;
   onClose: () => void;
 }
 
 export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs' | 'tenantConfig'>('overview');
+  const [showConfig, setShowConfig] = useState(false);
 
   // Robust Mock Data for a single tenant
   const tenant = {
-    name: id === 3 ? 'Carlos Pereira' : id === 2 ? 'Maria Oliveira' : 'João Silva',
+    name: id === 't3' || id === 3 ? 'Carlos Pereira' : id === 't2' || id === 2 ? 'Maria Oliveira' : 'João Silva',
     image:
-      id === 1
+      id === 't1' || id === 1
         ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf'
-        : id === 2
+        : id === 't2' || id === 2
           ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuD78MRhEj5vokBi3Zr5ORCa84xM4Q0aoHqRqMtmFY5rqqioFglngu_CVvuUlAwFFXylrVwhOX-6rB0xO0RM04aD6spoISdNI-pJR9jsw0SwQsb3-TQPyS3OBbENLbte3Z-Zqv9lEOgt3WuKjxTIrLaStD2Bove6Q5jDIX7PpiUDn1x-gcN2lMoAOEi9fV_nI4dv-32WMg0se3QVylj1o0-E7hPHafz8wUKADMIvPRoIn91W1pDK1-L-SQnqBavDYiPc4Udc_4ypGJ2q'
           : undefined,
-    status: id === 3 ? 'late' : 'active',
+    status: id === 't3' || id === 3 ? 'late' : 'active',
     property: {
       name:
-        id === 3
+        id === 't3' || id === 3
           ? 'Studio 22 - Vila Madalena'
-          : id === 2
+          : id === 't2' || id === 2
             ? 'Kitnet 05 - Centro'
             : 'Apt 101 - Ed. Horizonte',
       address: 'Rua Augusta, 150 - SP',
@@ -54,7 +56,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     },
     financials: {
       totalPaid: 'R$ 18.000,00',
-      pending: id === 3 ? 'R$ 2.400,00' : 'R$ 0,00',
+      pending: id === 't3' || id === 3 ? 'R$ 2.400,00' : 'R$ 0,00',
       performance: '98%',
       lastPayment: '05/02/2024',
     },
@@ -62,13 +64,13 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
       start: '10/01/2024',
       end: '10/01/2026',
       progress: 15, // percentage
-      value: id === 1 ? 'R$ 1.500,00' : id === 2 ? 'R$ 850,00' : 'R$ 2.400,00',
+      value: id === 't1' || id === 1 ? 'R$ 1.500,00' : id === 't2' || id === 2 ? 'R$ 850,00' : 'R$ 2.400,00',
     },
     paymentHistory: [
       {
         id: 1,
         month: 'Março',
-        status: id === 3 ? 'late' : 'paid',
+        status: id === 't3' || id === 3 ? 'late' : 'paid',
         value: 'R$ 1.500,00',
         date: '-',
       },
@@ -128,6 +130,12 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                 >
                   <MessageCircle size={16} /> WhatsApp
                 </button>
+                <button 
+                  onClick={() => setActiveTab('tenantConfig')}
+                  className='px-4 h-10 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
+                >
+                  Configurar exigências
+                </button>
                 <button className='flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 transition-colors'>
                   <MoreVertical size={20} />
                 </button>
@@ -143,11 +151,12 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
               { id: 'payments', label: 'Financeiro', icon: DollarSign },
               { id: 'docs', label: 'Contrato & Docs', icon: FileText },
+              { id: 'tenantConfig', label: 'Exigências', icon: ShieldCheck },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 py-4 text-xs font-bold uppercase tracking-widest border-b-2 transition-all ${
+                className={`flex items-center gap-2 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ${
                   activeTab === tab.id
                     ? 'border-primary text-primary'
                     : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -417,6 +426,12 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   />
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'tenantConfig' && (
+            <div className='animate-fadeIn'>
+              <TenantProfileConfigPanel propertyId={id.toString()} />
             </div>
           )}
         </div>

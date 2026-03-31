@@ -80,7 +80,7 @@ const TenantDashboard: React.FC = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Due Date Logic (Ajuste 4)
-  const getDueBadge = () => {
+  const getDueBadge = (isVertical = false) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -94,45 +94,83 @@ const TenantDashboard: React.FC = () => {
     const diffTime = dueDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+    const baseClasses = `flex items-center gap-1 font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider ${isVertical ? 'text-[11px] mt-2 w-fit' : 'text-[10px]'}`;
+
     if (paymentStatus === 'paid') {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-100 text-emerald-700'>
-          <CheckCircle size={10} /> Pago
+        <span className={`${baseClasses} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400`}>
+          <CheckCircle size={12} /> Em dia
         </span>
       );
     }
 
     if (diffDays > 7) {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-yellow-100 text-yellow-700'>
-          <Clock size={10} /> Vence em {diffDays} dias
+        <span className={`${baseClasses} bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400`}>
+          <Clock size={12} /> Vence em {diffDays} dias
         </span>
       );
     } else if (diffDays >= 3 && diffDays <= 7) {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-orange-100 text-orange-700'>
-          <Clock size={10} /> Vence em {diffDays} dias
+        <span className={`${baseClasses} bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400`}>
+          <Clock size={12} /> Vence em {diffDays} dias
         </span>
       );
     } else if (diffDays > 0 && diffDays < 3) {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
-          <Clock size={10} /> Vence em {diffDays} dias
+        <span className={`${baseClasses} bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400`}>
+          <Clock size={12} /> Vence em {diffDays} dias
         </span>
       );
     } else if (diffDays === 0) {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
-          <Clock size={10} /> Vence hoje
+        <span className={`${baseClasses} bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400`}>
+          <Clock size={12} /> Vence hoje
         </span>
       );
     } else {
       return (
-        <span className='flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700'>
-          <AlertTriangle size={10} /> Atrasado {Math.abs(diffDays)} dias
+        <span className={`${baseClasses} bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400`}>
+          <AlertTriangle size={12} /> Atrasado {Math.abs(diffDays)} dias
         </span>
       );
     }
+  };
+
+  const getNoticeBadge = (dateStr: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Parse date in format "DD/MM" assuming current year
+    const [day, month] = dateStr.split('/').map(Number);
+    const noticeDate = new Date(today.getFullYear(), month - 1, day);
+    noticeDate.setHours(0, 0, 0, 0);
+
+    const diffTime = noticeDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const baseClasses = "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider";
+
+    if (diffDays === 0) return <span className={`${baseClasses} bg-orange-100 text-orange-600`}>Hoje</span>;
+    if (diffDays === 1) return <span className={`${baseClasses} bg-orange-100 text-orange-600`}>Amanhã</span>;
+    if (diffDays > 1 && diffDays < 4) return <span className={`${baseClasses} bg-orange-100 text-orange-600`}>Em {diffDays} dias</span>;
+    if (diffDays >= 4) return <span className={`${baseClasses} bg-slate-100 text-slate-500`}>Em {diffDays} dias</span>;
+    if (diffDays === -1) return <span className={`${baseClasses} bg-slate-100 text-slate-500`}>Ontem</span>;
+    return <span className={`${baseClasses} bg-slate-100 text-slate-50`}>Há {Math.abs(diffDays)} dias</span>;
+  };
+
+  const getFinancialCardBorder = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDay = 10;
+    const dueDate = new Date(today.getFullYear(), today.getMonth(), dueDay);
+    const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (paymentStatus === 'paid') return 'border-emerald-500/30';
+    if (diffDays < 0) return 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]';
+    if (diffDays < 3) return 'border-orange-500/30';
+    if (diffDays < 7) return 'border-yellow-500/30';
+    return 'border-gray-100 dark:border-gray-800';
   };
 
   useEffect(() => {
@@ -373,63 +411,62 @@ const TenantDashboard: React.FC = () => {
       </div>
 
       {/* --- PROPERTY & CONTRACT INFO (Ajuste 1 & 2) --- */}
-      <div className='px-6 mb-6 flex flex-col gap-2 animate-fadeIn'>
+      <div className='px-6 mb-8 flex flex-col gap-3 animate-fadeIn'>
         {/* Ajuste 1: Identificação do Imóvel */}
         <button
           onClick={() => navigate('/tenant/profile')}
-          className='flex items-center gap-2.5 group w-fit transition-all'
+          className='flex items-center gap-3 group w-fit transition-all'
         >
-          <div className='w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-all'>
-            <MapPin size={18} />
+          <div className='w-11 h-11 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center text-slate-500 shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-all'>
+            <MapPin size={22} />
           </div>
           <div className='text-left'>
-            <h4 className='text-sm font-bold text-slate-900 dark:text-white leading-none group-hover:text-primary transition-colors'>
+            <h4 className='text-base font-black text-slate-900 dark:text-white leading-tight group-hover:text-primary transition-colors'>
               {mockTenantProperty.name}
             </h4>
-            <p className='text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium'>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold uppercase tracking-wider'>
               {mockTenantProperty.address}
             </p>
           </div>
         </button>
 
         {/* Ajuste 2: Vigência do Contrato */}
-        <div className='flex items-center gap-2.5'>
-          <div className='w-9 h-9 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 shrink-0'>
-            <Calendar size={18} />
+        <div className='flex items-center gap-3'>
+          <div className='w-11 h-11 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center text-slate-500 shrink-0'>
+            <Calendar size={22} />
           </div>
           <div className='flex flex-wrap items-center gap-2'>
             <p
-              className={`text-[11px] font-bold ${
+              className={`text-xs font-black uppercase tracking-widest ${
                 validity.diffDays < 0
                   ? 'text-red-500'
                   : validity.diffDays < 30
-                    ? 'text-orange-500'
+                    ? 'text-orange-600'
                     : validity.diffDays <= 90
                       ? 'text-yellow-600 dark:text-yellow-500'
                       : 'text-slate-500 dark:text-slate-400'
               }`}
             >
-              Contrato vigente até {validity.formattedDate} (
-              {validity.diffDays < 0 ? 'Vencido' : `${validity.diffDays} dias restantes`})
+              Vigência até {validity.formattedDate}
             </p>
 
             {validity.diffDays < 0 ? (
               <button
                 onClick={() => navigate('/tenant/messages')}
-                className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors'
+                className='text-[11px] font-black uppercase tracking-tighter px-3 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 active:scale-95'
               >
                 Contrato vencido • Regularizar situação
               </button>
             ) : validity.diffDays < 30 ? (
               <button
                 onClick={() => navigate('/tenant/messages')}
-                className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors'
+                className='text-[11px] font-black uppercase tracking-tighter px-3 py-1 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 active:scale-95'
               >
                 Atenção: contrato vencendo • Falar com proprietário
               </button>
             ) : (
               validity.diffDays <= 90 && (
-                <span className='text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded-lg bg-yellow-100 text-yellow-700'>
+                <span className='text-[11px] font-black uppercase tracking-tighter px-3 py-1 rounded-full bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-400/20'>
                   Vencendo em breve
                 </span>
               )
@@ -440,34 +477,32 @@ const TenantDashboard: React.FC = () => {
 
       {/* RICH PAYMENT CARD */}
       <div className='px-6 mb-6'>
-        <div className='bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden'>
-          <div className='flex justify-between items-start mb-4'>
+        <div className={`bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border-2 transition-all duration-300 relative overflow-hidden ${getFinancialCardBorder()}`}>
+          <div className='flex justify-between items-start mb-6'>
             <div>
-              <p className='text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1'>
+              <p className='text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2'>
                 Próximo Vencimento
               </p>
-              <h3 className='text-3xl font-bold text-slate-900 dark:text-white tracking-tight'>
+              <h3 className='text-5xl font-black text-slate-900 dark:text-white tracking-tighter'>
                 R$ 1.500,00
               </h3>
-              <div className='flex items-center gap-2 mt-1'>
-                {getDueBadge()}
-              </div>
+              {getDueBadge(true)}
             </div>
           </div>
 
           {/* Breakdown */}
-          <div className='flex gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto hide-scrollbar'>
+          <div className='flex gap-6 mb-8 pb-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto hide-scrollbar'>
             <div className='shrink-0'>
-              <p className='text-[10px] text-slate-400 font-bold uppercase'>Aluguel</p>
-              <p className='font-bold text-slate-700 dark:text-slate-300'>R$ 1.200</p>
+              <p className='text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1'>Aluguel</p>
+              <p className='text-sm font-bold text-slate-600 dark:text-slate-400'>R$ 1.200</p>
             </div>
             <div className='shrink-0'>
-              <p className='text-[10px] text-slate-400 font-bold uppercase'>Condomínio</p>
-              <p className='font-bold text-slate-700 dark:text-slate-300'>R$ 200</p>
+              <p className='text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1'>Condomínio</p>
+              <p className='text-sm font-bold text-slate-600 dark:text-slate-400'>R$ 200</p>
             </div>
             <div className='shrink-0'>
-              <p className='text-[10px] text-slate-400 font-bold uppercase'>IPTU</p>
-              <p className='font-bold text-slate-700 dark:text-slate-300'>R$ 100</p>
+              <p className='text-[9px] text-slate-400 font-black uppercase tracking-widest mb-1'>IPTU</p>
+              <p className='text-sm font-bold text-slate-600 dark:text-slate-400'>R$ 100</p>
             </div>
           </div>
 
@@ -498,28 +533,32 @@ const TenantDashboard: React.FC = () => {
           </div>
 
           {/* Inline History */}
-          <div className='mt-6 pt-2'>
-            <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-3'>
+          <div className='mt-8 pt-4 border-t border-gray-100 dark:border-gray-800/50'>
+            <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-4 px-1'>
               Últimos Pagamentos
             </p>
-            <div className='space-y-3'>
+            <div className='space-y-4'>
               {[
-                { date: '05/02', status: 'paid' },
-                { date: '04/01', status: 'paid' },
-                { date: '05/12', status: 'late' },
+                { date: '05 Fev 2024', status: 'paid' },
+                { date: '04 Jan 2024', status: 'paid' },
+                { date: '05 Dez 2023', status: 'late' },
               ].map((p, i) => (
-                <div key={i} className='flex items-center justify-between text-sm'>
-                  <span className='text-slate-600 dark:text-slate-400 font-medium'>{p.date}</span>
+                <div key={i} className='flex items-center justify-between px-1'>
+                  <span className='text-sm text-slate-600 dark:text-slate-400 font-bold tracking-tight'>{p.date}</span>
                   <span
-                    className={`text-xs font-bold ${p.status === 'paid' ? 'text-emerald-500' : 'text-red-500'}`}
+                    className={`text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 ${p.status === 'paid' ? 'text-emerald-500' : 'text-red-500'}`}
                   >
-                    {p.status === 'paid' ? '✓ Pago' : '⚠️ Atrasado 2 dias'}
+                    {p.status === 'paid' ? (
+                      <><CheckCircle size={14} /> Pago</>
+                    ) : (
+                      <><AlertTriangle size={14} /> Atrasado</>
+                    )}
                   </span>
                 </div>
               ))}
               <button
                 onClick={() => navigate('/tenant/payments')}
-                className='text-xs font-bold text-primary hover:underline w-full text-center mt-2'
+                className='text-[11px] font-black text-primary uppercase tracking-widest hover:underline w-full text-center mt-6 pt-2'
               >
                 Ver histórico completo
               </button>
@@ -528,32 +567,75 @@ const TenantDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Tenant Score (Moved here) */}
+      <div className='px-6 mb-6'>
+        <div className='bg-slate-900 dark:bg-surface-dark rounded-3xl p-6 text-white shadow-xl relative overflow-hidden'>
+          <div className='absolute right-0 top-0 p-6 opacity-10'>
+            <Award size={100} />
+          </div>
+          <div className='flex justify-between items-start relative z-10'>
+            <div>
+              <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2'>Seu Score</p>
+              <h3 className='text-4xl font-black flex items-center gap-2 tracking-tighter'>
+                95<span className='text-xl text-slate-500 font-bold'>/100</span>
+              </h3>
+              <div className='flex gap-1.5 mt-3'>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} size={14} className='text-yellow-400 fill-yellow-400 shadow-yellow-400/20' />
+                ))}
+              </div>
+            </div>
+            <div className='text-right'>
+              <p className='text-[10px] font-bold text-slate-400 uppercase tracking-wider'>Inquilino Nível</p>
+              <p className='text-xl font-black text-yellow-400 tracking-tight'>5 Estrelas!</p>
+            </div>
+          </div>
+          <p className='text-[10px] text-slate-500 font-medium mt-4 italic'>
+            Seu histórico como inquilino nos últimos 12 meses
+          </p>
+          <div className='mt-5 pt-5 border-t border-white/10 flex justify-between'>
+            <div className='flex flex-col'>
+              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>Pontualidade</span>
+              <span className='text-sm font-bold text-emerald-400'>100%</span>
+            </div>
+            <div className='flex flex-col text-right'>
+              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>Cuidado</span>
+              <span className='text-sm font-bold text-primary'>90%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* QUICK ACCESS GRID */}
       <div className='px-6 mb-6'>
-        <h3 className='text-lg font-bold text-slate-900 dark:text-white mb-4'>Acesso Rápido</h3>
-        <div className='grid grid-cols-4 gap-3'>
+        <h3 className='text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 px-1'>Acesso Rápido</h3>
+        <div className='grid grid-cols-4 gap-4'>
           {[
             {
               icon: Camera,
               label: 'Enviar Foto',
+              desc: 'Registre problemas',
               color: 'bg-blue-100 text-blue-600',
               action: () => navigate('/tenant/maintenance'),
             },
             {
               icon: FileText,
               label: 'Docs',
+              desc: 'Contratos e docs',
               color: 'bg-purple-100 text-purple-600',
               action: () => navigate('/tenant/profile'),
             },
             {
               icon: MessageCircle,
               label: 'Chat',
+              desc: 'Fale com o dono',
               color: 'bg-emerald-100 text-emerald-600',
               action: () => navigate('/tenant/maintenance'),
             },
             {
               icon: Key,
               label: 'Chaves',
+              desc: 'Segunda via',
               color: 'bg-amber-100 text-amber-600',
               action: () => alert('Solicitação de chave enviada!'),
             },
@@ -561,15 +643,18 @@ const TenantDashboard: React.FC = () => {
             <button
               key={i}
               onClick={item.action}
-              className='flex flex-col items-center gap-2 group'
+              className='flex flex-col items-center group'
             >
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm ${item.color} dark:bg-opacity-20`}
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-sm ${item.color} dark:bg-opacity-20 mb-3`}
               >
-                <item.icon size={24} />
+                <item.icon size={26} />
               </div>
-              <span className='text-[10px] font-bold text-slate-600 dark:text-slate-300 text-center leading-tight'>
+              <span className='text-[11px] font-black text-slate-900 dark:text-white text-center leading-none mb-1'>
                 {item.label}
+              </span>
+              <span className='text-[9px] font-medium text-slate-400 dark:text-slate-500 text-center leading-tight px-1'>
+                {item.desc}
               </span>
             </button>
           ))}
@@ -577,62 +662,47 @@ const TenantDashboard: React.FC = () => {
       </div>
 
       {/* WIDGETS ROW */}
-      <div className='px-6 mb-24 space-y-6'>
+      <div className='px-6 mb-24'>
         {/* Condo Notices */}
-        <div className='bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-2xl p-4'>
-          <div className='flex items-center gap-2 mb-3'>
-            <Info size={16} className='text-slate-400' />
-            <h4 className='font-bold text-slate-900 dark:text-white text-sm'>
-              Avisos do Condomínio
-            </h4>
+        <div className='bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-3xl p-6 shadow-sm'>
+          <div className='flex items-center justify-between mb-6'>
+            <div className='flex items-center gap-2.5'>
+              <div className='w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500'>
+                <Info size={18} />
+              </div>
+              <h4 className='font-black text-slate-900 dark:text-white text-sm uppercase tracking-widest'>
+                Avisos
+              </h4>
+            </div>
+            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-white/5 px-2.5 py-1 rounded-full'>
+              2 avisos
+            </span>
           </div>
-          <div className='space-y-3'>
-            <div className='flex gap-3 items-start'>
-              <div className='w-1 h-8 bg-blue-500 rounded-full shrink-0 mt-1'></div>
-              <div>
-                <p className='text-xs font-bold text-slate-800 dark:text-slate-200'>
-                  Manutenção do Elevador
-                </p>
-                <p className='text-[10px] text-slate-500'>Dia 20/03 das 09h às 12h.</p>
+          <div className='space-y-4'>
+            <div className='flex gap-4 items-center group cursor-pointer'>
+              <div className='w-1.5 h-10 bg-slate-200 dark:bg-slate-800 rounded-full shrink-0 group-hover:bg-slate-300 transition-colors'></div>
+              <div className='flex-1'>
+                <div className='flex justify-between items-center mb-1'>
+                  <p className='text-sm font-bold text-slate-800 dark:text-slate-200'>
+                    Manutenção do Elevador
+                  </p>
+                  {getNoticeBadge('20/03')}
+                </div>
+                <p className='text-[11px] text-slate-500 font-medium'>Dia 20/03 das 09h às 12h.</p>
               </div>
             </div>
-            <div className='flex gap-3 items-start'>
-              <div className='w-1 h-8 bg-orange-500 rounded-full shrink-0 mt-1'></div>
-              <div>
-                <p className='text-xs font-bold text-slate-800 dark:text-slate-200'>
-                  Reunião de Assembleia
-                </p>
-                <p className='text-[10px] text-slate-500'>Dia 15/03 no Salão de Festas.</p>
+            <div className='flex gap-4 items-center group cursor-pointer'>
+              <div className='w-1.5 h-10 bg-orange-500 rounded-full shrink-0'></div>
+              <div className='flex-1'>
+                <div className='flex justify-between items-center mb-1'>
+                  <p className='text-sm font-bold text-slate-800 dark:text-slate-200'>
+                    Reunião de Assembleia
+                  </p>
+                  {getNoticeBadge('15/03')}
+                </div>
+                <p className='text-[11px] text-slate-500 font-medium'>Dia 15/03 no Salão de Festas.</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Tenant Score */}
-        <div className='bg-gradient-to-r from-slate-900 to-slate-800 dark:from-surface-dark dark:to-black rounded-2xl p-5 text-white shadow-lg relative overflow-hidden'>
-          <div className='absolute right-0 top-0 p-4 opacity-10'>
-            <Award size={80} />
-          </div>
-          <div className='flex justify-between items-start relative z-10'>
-            <div>
-              <p className='text-xs font-bold text-slate-300 uppercase tracking-wider'>Seu Score</p>
-              <h3 className='text-3xl font-black mt-1 flex items-center gap-2'>
-                95<span className='text-lg text-slate-400 font-medium'>/100</span>
-              </h3>
-              <div className='flex gap-1 mt-2'>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={12} className='text-yellow-400 fill-yellow-400' />
-                ))}
-              </div>
-            </div>
-            <div className='text-right'>
-              <p className='text-xs font-medium text-slate-300'>Você é um inquilino</p>
-              <p className='text-lg font-bold text-yellow-400'>5 Estrelas!</p>
-            </div>
-          </div>
-          <div className='mt-4 pt-4 border-t border-white/10 flex justify-between text-xs text-slate-300'>
-            <span>Pontualidade: 100%</span>
-            <span>Cuidado: 90%</span>
           </div>
         </div>
       </div>

@@ -23,7 +23,18 @@ import {
   ExternalLink,
   History,
   FileCheck,
+  HelpCircle,
+  ChevronRight,
+  Plus,
+  Trash2,
+  Edit,
+  Save,
+  ChevronDown,
+  CheckCircle2,
 } from 'lucide-react';
+import { ModalWrapper } from '../components/ui/ModalWrapper';
+import { faqService } from '../services/faqService';
+import { FAQ } from '../types';
 
 interface Message {
   id: number;
@@ -73,6 +84,52 @@ const OwnerMessages: React.FC = () => {
   );
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'tenant'>('ticket');
+
+  // FAQ Manager State
+  const [showFAQManager, setShowFAQManager] = useState(false);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
+
+  // Advanced Filters State
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState('Todos');
+  const [propertyFilter, setPropertyFilter] = useState('Todos');
+
+  useEffect(() => {
+    if (showFAQManager) {
+      setFaqs(faqService.getFAQs());
+    }
+  }, [showFAQManager]);
+
+  const handleSaveFAQ = () => {
+    if (editingFaq) {
+      faqService.updateFAQ(editingFaq.id, editingFaq);
+    } else if (newFaq.question && newFaq.answer) {
+      faqService.addFAQ({
+        question: newFaq.question,
+        answer: newFaq.answer,
+        order: faqs.length + 1,
+        is_active: newFaq.is_active ?? true,
+      });
+    }
+    setFaqs(faqService.getFAQs());
+    setEditingFaq(null);
+    setNewFaq({ question: '', answer: '', is_active: true });
+    alert('FAQ salva com sucesso!');
+  };
+
+  const handleDeleteFAQ = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta FAQ?')) {
+      faqService.deleteFAQ(id);
+      setFaqs(faqService.getFAQs());
+    }
+  };
+
+  const toggleFAQStatus = (faq: FAQ) => {
+    faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
+    setFaqs(faqService.getFAQs());
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -275,11 +332,18 @@ const OwnerMessages: React.FC = () => {
     const matchesSearch =
       chat.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chat.property.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter =
+    
+    // Base Filter (Tudo, Urgentes, Chamados, etc)
+    const matchesBaseFilter =
       activeFilter === 'all' || 
       chat.category === activeFilter || 
       (activeFilter === 'urgent' && chat.ticket?.priority === 'urgent');
-    return matchesSearch && matchesFilter;
+
+    // Advanced Filters
+    const matchesPriority = priorityFilter === 'Todos' || chat.ticket?.priority === priorityFilter.toLowerCase();
+    const matchesProperty = propertyFilter === 'Todos' || chat.property === propertyFilter;
+
+    return matchesSearch && matchesBaseFilter && matchesPriority && matchesProperty;
   });
 
   const getCategoryIcon = (category: string) => {
@@ -300,7 +364,31 @@ const OwnerMessages: React.FC = () => {
         className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200 dark:border-white/5 bg-surface-light dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
       >
         <div className='p-4 border-b border-gray-200 dark:border-white/5 space-y-4'>
-          <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Central de Mensagens</h1>
+          <div className='flex items-center justify-between'>
+            <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Central de Mensagens</h1>
+            <div className='flex items-center gap-1'>
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`p-2 rounded-xl transition-all ${showAdvancedFilters ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400'}`}
+              >
+                <Filter size={18} />
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowFAQManager(true)}
+            className='w-full p-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group'
+          >
+            <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all'>
+              <HelpCircle size={20} />
+            </div>
+            <div className='text-left'>
+              <p className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>Editar FAQs</p>
+              <p className='text-[10px] text-slate-500'>Gerenciar dúvidas dos inquilinos</p>
+            </div>
+            <ChevronRight size={16} className='ml-auto text-slate-400' />
+          </button>
 
           {/* Search */}
           <div className='relative'>
@@ -313,6 +401,63 @@ const OwnerMessages: React.FC = () => {
             />
             <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
           </div>
+
+          {showAdvancedFilters && (
+            <div className='p-4 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 space-y-4 animate-slideDown'>
+              <div className='space-y-2'>
+                <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Prioridade
+                </label>
+                <div className='relative'>
+                  <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='Todos'>Todas as Prioridades</option>
+                    <option value='Urgent'>Urgente</option>
+                    <option value='High'>Alta</option>
+                    <option value='Medium'>Média</option>
+                    <option value='Low'>Baixa</option>
+                  </select>
+                  <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                </div>
+              </div>
+
+              <div className='space-y-2'>
+                <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Imóvel
+                </label>
+                <div className='relative'>
+                  <select
+                    value={propertyFilter}
+                    onChange={(e) => setPropertyFilter(e.target.value)}
+                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='Todos'>Todos os Imóveis</option>
+                    {Array.from(new Set(chats.map(c => c.property))).map(prop => (
+                      <option key={prop} value={prop}>{prop}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => {
+                  setPriorityFilter('Todos');
+                  setPropertyFilter('Todos');
+                  setActiveFilter('all');
+                  setSearchTerm('');
+                }}
+                className='w-full py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-widest'
+              >
+                Limpar Filtros
+              </button>
+            </div>
+          )}
 
           {/* Filter Tabs */}
           <div className='flex gap-2 overflow-x-auto hide-scrollbar pb-1'>
@@ -762,6 +907,111 @@ const OwnerMessages: React.FC = () => {
           </div>
         )}
       </div>
+
+      {showFAQManager && (
+        <ModalWrapper
+          onClose={() => setShowFAQManager(false)}
+          title='Gerenciar Dúvidas Frequentes'
+          showCloseButton={true}
+          className='max-w-3xl'
+        >
+          <div className='p-6 bg-background-light dark:bg-background-dark min-h-[500px] flex flex-col gap-6'>
+            {/* Editor / Add Form */}
+            <div className='p-5 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+              <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2'>
+                {editingFaq ? <Edit size={16} /> : <Plus size={16} />}
+                {editingFaq ? 'Editar Pergunta' : 'Nova Pergunta'}
+              </h3>
+              
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
+                    Pergunta
+                  </label>
+                  <input
+                    type='text'
+                    value={editingFaq ? editingFaq.question : newFaq.question}
+                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, question: e.target.value}) : setNewFaq({...newFaq, question: e.target.value})}
+                    placeholder='Ex: Como funciona o aluguel?'
+                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-bold text-slate-900 dark:text-white'
+                  />
+                </div>
+                
+                <div>
+                  <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
+                    Resposta
+                  </label>
+                  <textarea
+                    value={editingFaq ? editingFaq.answer : newFaq.answer}
+                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, answer: e.target.value}) : setNewFaq({...newFaq, answer: e.target.value})}
+                    placeholder='Explique detalhadamente...'
+                    rows={3}
+                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-bold text-slate-900 dark:text-white resize-none'
+                  />
+                </div>
+
+                <div className='flex gap-3 pt-2'>
+                  <button
+                    onClick={handleSaveFAQ}
+                    disabled={!(editingFaq ? editingFaq.question && editingFaq.answer : newFaq.question && newFaq.answer)}
+                    className='flex-1 h-12 bg-primary text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2'
+                  >
+                    <Save size={16} /> {editingFaq ? 'Atualizar FAQ' : 'Salvar FAQ'}
+                  </button>
+                  {editingFaq && (
+                    <button
+                      onClick={() => setEditingFaq(null)}
+                      className='px-6 h-12 bg-slate-100 dark:bg-white/5 text-slate-500 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all'
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* List */}
+            <div className='flex-1 space-y-3'>
+              <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Perguntas Atuais ({faqs.length})
+              </h3>
+              <div className='space-y-2'>
+                {faqs.map((faq) => (
+                  <div key={faq.id} className='p-4 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm group hover:border-primary/30 transition-all'>
+                    <div className='flex justify-between items-start gap-4'>
+                      <div className='flex-1 min-w-0'>
+                        <h4 className='text-sm font-black text-slate-900 dark:text-white mb-1'>{faq.question}</h4>
+                        <p className='text-xs text-slate-500 line-clamp-2'>{faq.answer}</p>
+                      </div>
+                      <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
+                        <button
+                          onClick={() => toggleFAQStatus(faq)}
+                          className={`p-2 rounded-lg transition-colors ${faq.is_active ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-300 hover:bg-slate-50'}`}
+                          title={faq.is_active ? 'Ativo' : 'Inativo'}
+                        >
+                          {faq.is_active ? <CheckCircle2 size={18} /> : <X size={18} />}
+                        </button>
+                        <button
+                          onClick={() => setEditingFaq(faq)}
+                          className='p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors'
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFAQ(faq.id)}
+                          className='p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors'
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ModalWrapper>
+      )}
     </div>
   );
 };

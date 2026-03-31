@@ -44,11 +44,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #94a3b8;
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #64748b;
   }
 
   .dark ::-webkit-scrollbar-thumb {
@@ -70,7 +70,7 @@
   }
   .animate-shimmer {
     animation: shimmer 2s infinite linear;
-    background: linear-gradient(to right, #f6f8f8 0%, #e2e8f0 20%, #f6f8f8 40%, #f6f8f8 100%);
+    background: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
     background-size: 1000px 100%;
   }
   .dark .animate-shimmer {

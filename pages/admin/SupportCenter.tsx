@@ -20,12 +20,21 @@ import {
   FileText,
   CheckCheck,
   ChevronLeft,
+  ChevronRight,
   DollarSign,
   Wrench,
   ExternalLink,
   Phone,
   FileCheck,
+  HelpCircle,
+  Plus,
+  Trash2,
+  Edit,
+  Save,
 } from 'lucide-react';
+import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import { faqService } from '../../services/faqService';
+import { FAQ } from '../../types';
 
 interface Message {
   id: number;
@@ -43,8 +52,45 @@ const SupportCenter: React.FC = () => {
   const [assigneeFilter, setAssigneeFilter] = useState('Todos');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+  const [showFAQManager, setShowFAQManager] = useState(false);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'owner'>('ticket');
   const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    if (showFAQManager) {
+      setFaqs(faqService.getFAQs());
+    }
+  }, [showFAQManager]);
+
+  const handleSaveFAQ = () => {
+    if (editingFaq) {
+      faqService.updateFAQ(editingFaq.id, editingFaq);
+    } else if (newFaq.question && newFaq.answer) {
+      faqService.addFAQ({
+        question: newFaq.question,
+        answer: newFaq.answer,
+        order: faqs.length + 1,
+        is_active: newFaq.is_active ?? true,
+      });
+    }
+    setFaqs(faqService.getFAQs());
+    setEditingFaq(null);
+    setNewFaq({ question: '', answer: '', is_active: true });
+  };
+
+  const handleDeleteFAQ = (id: string) => {
+    faqService.deleteFAQ(id);
+    setFaqs(faqService.getFAQs());
+  };
+
+  const toggleFAQStatus = (faq: FAQ) => {
+    faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
+    setFaqs(faqService.getFAQs());
+  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -170,6 +216,33 @@ const SupportCenter: React.FC = () => {
     setInputText('');
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedTicketId) return;
+
+    // Simulate file upload with a system message
+    setTickets((prev) =>
+      prev.map((t) => {
+        if (t.id === selectedTicketId) {
+          const newMessage: Message = {
+            id: Date.now(),
+            text: `Arquivo anexado: ${file.name}`,
+            sender: 'system',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isRead: false,
+          };
+          return { ...t, messages: [...t.messages, newMessage] };
+        }
+        return t;
+      })
+    );
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleStatusChange = (newStatus: string) => {
     if (!selectedTicketId) return;
     setTickets((prev) =>
@@ -247,13 +320,29 @@ const SupportCenter: React.FC = () => {
         <div className='p-4 border-b border-gray-200 dark:border-white/5 space-y-3'>
           <div className='flex items-center justify-between'>
             <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Central de Suporte</h1>
-            <button
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`p-2 rounded-lg transition-all ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400'}`}
-            >
-              <Filter size={18} />
-            </button>
+            <div className='flex items-center gap-1'>
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`p-2 rounded-xl transition-all ${showAdvancedFilters ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm' : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400'}`}
+              >
+                <Filter size={18} />
+              </button>
+            </div>
           </div>
+
+          <button
+            onClick={() => setShowFAQManager(true)}
+            className='w-full p-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group'
+          >
+            <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all'>
+              <HelpCircle size={20} />
+            </div>
+            <div className='text-left'>
+              <p className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>Editar FAQs</p>
+              <p className='text-[10px] text-slate-500'>Gerenciar dúvidas dos inquilinos</p>
+            </div>
+            <ChevronRight size={16} className='ml-auto text-slate-400' />
+          </button>
 
           <div className='relative'>
             <input
@@ -265,6 +354,64 @@ const SupportCenter: React.FC = () => {
             />
             <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
           </div>
+
+          {showAdvancedFilters && (
+            <div className='p-4 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 space-y-4 animate-slideDown'>
+              <div className='space-y-2'>
+                <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Prioridade
+                </label>
+                <div className='relative'>
+                  <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='Todos' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Todas as Prioridades</option>
+                    <option value='Alta' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Alta</option>
+                    <option value='Média' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Média</option>
+                    <option value='Baixa' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Baixa</option>
+                  </select>
+                  <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                </div>
+              </div>
+
+              <div className='space-y-2'>
+                <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Atendente
+                </label>
+                <div className='relative'>
+                  <select
+                    value={assigneeFilter}
+                    onChange={(e) => setAssigneeFilter(e.target.value)}
+                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='Todos' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Todos os Atendentes</option>
+                    <option value='Minha fila' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Minha Fila</option>
+                    <option value='Não atribuído' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não Atribuídos</option>
+                    {agents.map(a => (
+                      <option key={a.id} value={a.name} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>{a.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => {
+                  setPriorityFilter('Todos');
+                  setAssigneeFilter('Todos');
+                  setStatusFilter('Todos');
+                  setSearchTerm('');
+                }}
+                className='w-full py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-widest'
+              >
+                Limpar Filtros
+              </button>
+            </div>
+          )}
 
           <div className='flex gap-2 overflow-x-auto hide-scrollbar pb-1'>
             {['Todos', 'Urgentes', 'Aberto', 'Em Andamento', 'Resolvido'].map((status) => (
@@ -481,8 +628,15 @@ const SupportCenter: React.FC = () => {
                   </div>
 
                   <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
+                    <input
+                      type='file'
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className='hidden'
+                    />
                     <button
                       type='button'
+                      onClick={() => fileInputRef.current?.click()}
                       className='p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
                     >
                       <Paperclip size={20} />
@@ -584,10 +738,11 @@ const SupportCenter: React.FC = () => {
                                 );
                               }}
                               className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
+                              style={{ colorScheme: 'dark' }}
                             >
-                              <option value=''>Não atribuído</option>
+                              <option value='' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não atribuído</option>
                               {agents.map((a) => (
-                                <option key={a.id} value={a.id}>
+                                <option key={a.id} value={a.id} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>
                                   {a.name}
                                 </option>
                               ))}
@@ -607,7 +762,7 @@ const SupportCenter: React.FC = () => {
                             <div>
                               <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
                               <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
-                                {selectedTicket.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                {selectedTicket.createdAt.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
                           </div>
@@ -709,6 +864,136 @@ const SupportCenter: React.FC = () => {
           </div>
         )}
       </div>
+
+      {showFAQManager && (
+        <ModalWrapper
+          onClose={() => setShowFAQManager(false)}
+          title='Gerenciar Dúvidas Frequentes'
+          showCloseButton={true}
+          className='max-w-3xl'
+        >
+          <div className='p-6 bg-background-light dark:bg-background-dark min-h-[500px] flex flex-col gap-6'>
+            {/* Editor / Add Form */}
+            <div className='p-5 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+              <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2'>
+                {editingFaq ? <Edit size={16} /> : <Plus size={16} />}
+                {editingFaq ? 'Editar Pergunta' : 'Nova Pergunta'}
+              </h3>
+              
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
+                    Pergunta
+                  </label>
+                  <input
+                    type='text'
+                    value={editingFaq ? editingFaq.question : newFaq.question}
+                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, question: e.target.value}) : setNewFaq({...newFaq, question: e.target.value})}
+                    placeholder='Ex: Como funciona o aluguel?'
+                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-bold text-slate-900 dark:text-white'
+                  />
+                </div>
+                
+                <div>
+                  <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
+                    Resposta
+                  </label>
+                  <textarea
+                    value={editingFaq ? editingFaq.answer : newFaq.answer}
+                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, answer: e.target.value}) : setNewFaq({...newFaq, answer: e.target.value})}
+                    placeholder='Descreva a resposta detalhadamente...'
+                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-medium text-slate-600 dark:text-slate-300 h-24 resize-none'
+                  />
+                </div>
+
+                <div className='flex items-center justify-between pt-2'>
+                  <label className='flex items-center gap-2 cursor-pointer group'>
+                    <div 
+                      onClick={() => editingFaq ? setEditingFaq({...editingFaq, is_active: !editingFaq.is_active}) : setNewFaq({...newFaq, is_active: !newFaq.is_active})}
+                      className={`w-10 h-5 rounded-full relative transition-all ${((editingFaq ? editingFaq.is_active : newFaq.is_active)) ? 'bg-primary' : 'bg-slate-200 dark:bg-white/10'}`}
+                    >
+                      <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${((editingFaq ? editingFaq.is_active : newFaq.is_active)) ? 'left-6' : 'left-1'}`} />
+                    </div>
+                    <span className='text-xs font-bold text-slate-500'>Visível para Inquilinos</span>
+                  </label>
+
+                  <div className='flex gap-2'>
+                    {editingFaq && (
+                      <button
+                        onClick={() => setEditingFaq(null)}
+                        className='px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                    <button
+                      onClick={handleSaveFAQ}
+                      disabled={editingFaq ? !editingFaq.question || !editingFaq.answer : !newFaq.question || !newFaq.answer}
+                      className='px-6 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2'
+                    >
+                      <Save size={14} />
+                      {editingFaq ? 'Salvar Alterações' : 'Adicionar FAQ'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* List */}
+            <div className='space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar'>
+              <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Perguntas Existentes ({faqs.length})
+              </h3>
+              
+              {faqs.length === 0 ? (
+                <div className='py-12 flex flex-col items-center justify-center text-slate-400 opacity-50 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl'>
+                  <HelpCircle size={40} className='mb-2' />
+                  <p className='text-sm font-bold'>Nenhuma FAQ cadastrada</p>
+                </div>
+              ) : (
+                <div className='space-y-3'>
+                  {[...faqs].sort((a,b) => a.order - b.order).map((faq) => (
+                    <div 
+                      key={faq.id}
+                      className={`p-4 rounded-2xl border transition-all ${editingFaq?.id === faq.id ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white dark:bg-surface-dark border-gray-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 shadow-sm'}`}
+                    >
+                      <div className='flex justify-between items-start gap-4 mb-2'>
+                        <div className='flex-1 min-w-0'>
+                          <h4 className='text-sm font-bold text-slate-900 dark:text-white mb-1'>{faq.question}</h4>
+                          <p className='text-xs text-slate-500 line-clamp-2'>{faq.answer}</p>
+                        </div>
+                        <div className='flex items-center gap-1 shrink-0'>
+                          <button
+                            onClick={() => toggleFAQStatus(faq)}
+                            className={`p-2 rounded-lg transition-colors ${faq.is_active ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
+                            title={faq.is_active ? 'Desativar' : 'Ativar'}
+                          >
+                            <CheckCheck size={16} />
+                          </button>
+                          <button
+                            onClick={() => setEditingFaq(faq)}
+                            className='p-2 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors'
+                            title='Editar'
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFAQ(faq.id)}
+                            className='p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors'
+                            title='Excluir'
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </ModalWrapper>
+      )}
     </div>
   );
 };

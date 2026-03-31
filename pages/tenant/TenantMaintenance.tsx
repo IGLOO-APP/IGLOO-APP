@@ -19,6 +19,8 @@ import {
   Paperclip,
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import { faqService } from '../../services/faqService';
+import { FAQ } from '../../types';
 
 interface MaintenanceMessage {
   id: number;
@@ -56,7 +58,9 @@ const TenantMaintenance: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [surveyComment, setSurveyComment] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // New Request Form State (Wizard)
   const [step, setStep] = useState(1);
@@ -114,11 +118,17 @@ const TenantMaintenance: React.FC = () => {
     },
   ]);
 
-  const filteredRequests = requests.filter((r) =>
-    activeTab === 'open'
-      ? r.status === 'pending' || r.status === 'in_progress'
-      : r.status === 'completed'
-  );
+  const filteredRequests = requests.filter((r) => {
+    const matchesTab =
+      activeTab === 'open'
+        ? r.status === 'pending' || r.status === 'in_progress'
+        : r.status === 'completed';
+    const matchesSearch =
+      r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.category.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -149,6 +159,31 @@ const TenantMaintenance: React.FC = () => {
     setSelectedRequest(updatedRequest);
     setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
     setNewMessage('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedRequest) return;
+
+    const msg: MaintenanceMessage = {
+      id: Date.now(),
+      text: `Arquivo anexado: ${file.name}`,
+      sender: 'system',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const updatedRequest = {
+      ...selectedRequest,
+      messages: [...selectedRequest.messages, msg],
+    };
+
+    setSelectedRequest(updatedRequest);
+    setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCreateRequest = () => {
@@ -263,59 +298,49 @@ const TenantMaintenance: React.FC = () => {
   };
 
   const FAQSection = () => {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const faqs = [
-      {
-        q: 'Posso furar as paredes (prateleiras/TV)?',
-        a: 'Geralmente é permitido, mas tenha cuidado com canos e fiação. Lembre-se: ao devolver o imóvel, é obrigatório tapar todos os furos e pintar a parede.',
-      },
-      {
-        q: 'A internet/Wi-Fi está lenta',
-        a: 'Se a internet for compartilhada do condomínio, evite downloads pesados em horários de pico. Reinicie seu dispositivo. Se persistir, abra um chamado.',
-      },
-      {
-        q: 'Regras de Silêncio e Barulho',
-        a: 'Em kitnets, o som propaga facilmente. Respeite rigorosamente o silêncio entre 22h e 08h. Use fones de ouvido para música alta ou TV.',
-      },
-      {
-        q: 'Uso da Lavanderia Compartilhada',
-        a: 'Respeite a fila ou agendamento. Limpe o filtro da secadora após o uso e não deixe roupas esquecidas na máquina após o término do ciclo.',
-      },
-      {
-        q: 'Vazamento pequeno, o que fazer?',
-        a: 'Feche o registro local (geralmente embaixo da pia ou no banheiro) imediatamente para evitar desperdício e danos, e abra um chamado de Hidráulica.',
-      },
-      {
-        q: 'Posso receber visitas?',
-        a: 'Visitas são permitidas, mas verifique no seu contrato as regras sobre pernoite frequente e ocupação máxima da unidade.',
-      },
-    ];
+    const [openIndex, setOpenIndex] = useState<string | null>(null);
+    const [faqs, setFaqs] = useState<FAQ[]>([]);
+
+    useEffect(() => {
+      setFaqs(faqService.getActiveFAQs());
+    }, []);
+
+    if (faqs.length === 0) return null;
 
     return (
-      <div className='mb-6'>
-        <h3 className='font-bold text-slate-900 dark:text-white mb-3 px-1'>
-          Dúvidas Frequentes (Kitnet/Studio)
-        </h3>
-        <div className='space-y-2'>
-          {faqs.map((faq, i) => (
+      <div className='mb-8'>
+        <div className='flex items-center gap-2 mb-4 px-1'>
+          <div className='w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
+            <HelpCircle size={18} />
+          </div>
+          <h3 className='font-bold text-slate-900 dark:text-white'>
+            Dúvidas Frequentes
+          </h3>
+        </div>
+        <div className='grid grid-cols-1 gap-3'>
+          {faqs.map((faq) => (
             <div
-              key={i}
-              className='bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl overflow-hidden shadow-sm'
+              key={faq.id}
+              className='group bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300'
             >
               <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className='w-full flex justify-between items-center p-3 text-left font-medium text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors'
+                onClick={() => setOpenIndex(openIndex === faq.id ? null : faq.id)}
+                className='w-full flex justify-between items-center p-4 text-left font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors'
               >
-                {faq.q}
-                {openIndex === i ? (
-                  <ChevronUp size={16} className='text-primary' />
-                ) : (
-                  <ChevronDown size={16} className='text-slate-400' />
-                )}
+                <span className='pr-4'>{faq.question}</span>
+                <div className={`shrink-0 p-1.5 rounded-lg transition-all ${openIndex === faq.id ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/10 text-slate-400'}`}>
+                  {openIndex === faq.id ? (
+                    <ChevronUp size={14} />
+                  ) : (
+                    <ChevronDown size={14} />
+                  )}
+                </div>
               </button>
-              {openIndex === i && (
-                <div className='px-3 pb-3 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 pt-2 border-t border-gray-100 dark:border-white/5 leading-relaxed'>
-                  {faq.a}
+              {openIndex === faq.id && (
+                <div className='px-4 pb-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-white/5 pt-0 border-t border-gray-50 dark:border-white/5 leading-relaxed animate-fadeIn'>
+                  <div className='pt-3 border-t border-gray-100 dark:border-white/5'>
+                    {faq.answer}
+                  </div>
                 </div>
               )}
             </div>
@@ -327,7 +352,7 @@ const TenantMaintenance: React.FC = () => {
 
   return (
     <div className='flex flex-col h-full w-full max-w-md mx-auto md:max-w-4xl relative bg-background-light dark:bg-background-dark'>
-      <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
+      <header className='sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
         <div>
           <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Central de Ajuda</h1>
           <p className='text-sm text-slate-500 dark:text-slate-400'>Solicitações e Suporte</p>
@@ -341,7 +366,7 @@ const TenantMaintenance: React.FC = () => {
         </button>
       </header>
 
-      <div className='px-6 py-4'>
+      <div className='px-6 py-4 space-y-4 sticky top-[73px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5'>
         <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl'>
           <button
             onClick={() => setActiveTab('open')}
@@ -356,9 +381,20 @@ const TenantMaintenance: React.FC = () => {
             Concluídos
           </button>
         </div>
+
+        <div className='relative'>
+          <input
+            type='text'
+            placeholder='Buscar solicitações...'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='w-full h-11 pl-11 pr-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all shadow-sm'
+          />
+          <HelpCircle className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+        </div>
       </div>
 
-      <div className='flex-1 overflow-y-auto px-6 pb-24'>
+      <div className='flex-1 overflow-y-auto px-6 pb-24 pt-4'>
         {activeTab === 'open' && !showNewRequest && <FAQSection />}
 
         <div className='space-y-4'>
@@ -367,22 +403,26 @@ const TenantMaintenance: React.FC = () => {
               <div
                 key={req.id}
                 onClick={() => setSelectedRequest(req)}
-                className='bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 transition-all hover:border-primary/50 cursor-pointer group'
+                className='bg-white dark:bg-surface-dark p-5 rounded-[24px] shadow-sm border border-gray-100 dark:border-white/5 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/30 cursor-pointer group relative overflow-hidden'
               >
-                <div className='flex justify-between items-start mb-2'>
-                  <div className='flex items-center gap-3'>
-                    <span className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300'>
+                <div className='flex justify-between items-start mb-4'>
+                  <div className='flex items-center gap-4'>
+                    <div className='w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:bg-primary/10 group-hover:text-primary transition-colors'>
                       {getIconByCategory(req.category)}
-                    </span>
+                    </div>
                     <div>
-                      <h3 className='font-bold text-slate-900 dark:text-white leading-tight'>
+                      <h3 className='font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
                         {req.title}
                       </h3>
-                      <p className='text-xs text-slate-500 dark:text-slate-400'>{req.category}</p>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>{req.category}</span>
+                        <span className='w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700' />
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>#{req.id}</span>
+                      </div>
                     </div>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${
+                  <div
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
                       req.status === 'pending'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
                         : req.status === 'in_progress'
@@ -395,21 +435,27 @@ const TenantMaintenance: React.FC = () => {
                       : req.status === 'in_progress'
                         ? 'Em Andamento'
                         : 'Resolvido'}
-                  </span>
+                  </div>
                 </div>
-                <p className='text-sm text-slate-600 dark:text-slate-300 mb-3 line-clamp-2 pl-[52px]'>
+
+                <p className='text-sm text-slate-600 dark:text-slate-300 mb-5 line-clamp-2 pl-1'>
                   {req.description}
                 </p>
-                <div className='flex items-center justify-between text-xs pt-3 border-t border-gray-50 dark:border-gray-800 pl-[52px]'>
-                  <div className='flex flex-col gap-1'>
-                    <span className='flex items-center gap-1 text-slate-400 dark:text-slate-500'>
+
+                <div className='flex items-center justify-between pt-4 border-t border-gray-50 dark:border-white/5'>
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-1.5 text-[11px] font-bold text-slate-400'>
                       <Clock size={14} /> {req.date}
-                    </span>
-                    <span className='text-[10px] italic'>{getSLAInfo(req)}</span>
+                    </div>
+                    {req.status !== 'completed' && (
+                      <div className='flex items-center gap-1.5 text-[11px] font-black italic'>
+                        {getSLAInfo(req)}
+                      </div>
+                    )}
                   </div>
-                  <span className='flex items-center gap-1 text-primary font-bold group-hover:underline'>
-                    Ver conversa <ChevronRight size={14} />
-                  </span>
+                  <div className='flex items-center gap-1 text-[11px] font-black text-primary uppercase tracking-widest group-hover:gap-2 transition-all'>
+                    Ver Detalhes <ChevronRight size={14} />
+                  </div>
                 </div>
               </div>
             ))
@@ -457,9 +503,10 @@ const TenantMaintenance: React.FC = () => {
             <div className='space-y-6'>
               {step === 1 && (
                 <div className='animate-fadeIn'>
-                  <label className='block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3'>
-                    Qual o tipo de problema?
-                  </label>
+                  <div className='mb-6'>
+                    <h4 className='text-lg font-black text-slate-900 dark:text-white mb-1'>O que aconteceu?</h4>
+                    <p className='text-xs text-slate-500'>Selecione a categoria que melhor descreve o seu problema.</p>
+                  </div>
                   <div className='grid grid-cols-2 gap-3'>
                     {maintenanceSettings.categories
                       .filter((c) => c.enabled)
@@ -467,14 +514,16 @@ const TenantMaintenance: React.FC = () => {
                         <button
                           key={cat.id}
                           onClick={() => setNewCategory(cat.id)}
-                          className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                          className={`p-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
                             newCategory === cat.id
-                              ? 'bg-primary/10 border-primary text-primary font-bold shadow-sm'
-                              : 'border-gray-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
+                              ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10'
+                              : 'border-gray-100 dark:border-white/5 hover:border-primary/20 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400'
                           }`}
                         >
-                          <cat.icon size={24} />
-                          <span className='text-sm text-center'>{cat.label}</span>
+                          <div className={`p-3 rounded-xl transition-colors ${newCategory === cat.id ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
+                            <cat.icon size={22} />
+                          </div>
+                          <span className='text-xs font-bold text-center uppercase tracking-wider'>{cat.label}</span>
                         </button>
                       ))}
                   </div>
@@ -482,47 +531,47 @@ const TenantMaintenance: React.FC = () => {
               )}
 
               {step === 2 && (
-                <div className='animate-fadeIn space-y-4'>
+                <div className='animate-fadeIn space-y-5'>
                   <div>
-                    <label className='block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2'>
-                      Título do Problema
+                    <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1'>
+                      Título da Solicitação
                     </label>
                     <input
                       type='text'
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
-                      className='w-full px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white'
-                      placeholder='Ex: Torneira pingando'
+                      className='w-full px-5 py-3.5 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/10 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm text-slate-900 dark:text-white font-bold placeholder-slate-400'
+                      placeholder='Ex: Vazamento na pia da cozinha'
                     />
                   </div>
 
                   <div>
-                    <label className='block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2'>
+                    <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1'>
                       Descrição Detalhada
                     </label>
                     <textarea
                       value={newDescription}
                       onChange={(e) => setNewDescription(e.target.value)}
-                      className='w-full px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white resize-none h-32'
-                      placeholder='Descreva o que está acontecendo...'
+                      className='w-full px-5 py-4 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/10 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm text-slate-900 dark:text-white font-medium resize-none h-40 placeholder-slate-400'
+                      placeholder='Descreva o problema com o máximo de detalhes possível para agilizar o atendimento...'
                     ></textarea>
                   </div>
 
                   <div>
-                    <label className='block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2'>
+                    <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1'>
                       Nível de Urgência
                     </label>
-                    <div className='flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl'>
+                    <div className='flex bg-slate-100 dark:bg-white/5 p-1.5 rounded-[20px] gap-1'>
                       {maintenanceSettings.urgencies
                         .filter((u) => u.enabled)
                         .map((level) => (
                           <button
                             key={level.id}
                             onClick={() => setUrgency(level.id)}
-                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                               urgency === level.id
                                 ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
-                                : 'text-slate-500'
+                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                             }`}
                           >
                             {level.id}
@@ -726,8 +775,15 @@ const TenantMaintenance: React.FC = () => {
             {/* Input */}
             <div className='p-4 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 shrink-0 z-20'>
               <form onSubmit={handleSendMessage} className='flex gap-2'>
+                <input
+                  type='file'
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className='hidden'
+                />
                 <button
                   type='button'
+                  onClick={() => fileInputRef.current?.click()}
                   className='p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
                 >
                   <Paperclip size={20} />

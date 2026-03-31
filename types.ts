@@ -244,3 +244,52 @@ export interface GlobalStats {
   churn_rate: number;
   nps: number;
 }
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category?: string;
+  order: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export type RequirementStatus = 'required' | 'optional' | 'hidden';
+
+export interface TenantRequirement {
+  id: string;
+  label: string;
+  status: RequirementStatus;
+  description?: string;
+}
+
+export interface TenantProfileConfig {
+  propertyId: string | 'global';
+  sections: {
+    personal: {
+      occupation: RequirementStatus;
+    };
+    residential: {
+      vehicle: RequirementStatus;
+      pets: RequirementStatus;
+      residents: RequirementStatus;
+    };
+    emergency: {
+      status: RequirementStatus; // Controls the whole section
+    };
+    sharedDocs: {
+      contract: boolean;
+      inspection: boolean;
+      rules: boolean;
+      custom: { id: string; label: string; active: boolean }[];
+    };
+    requiredDocs: {
+      id_card: RequirementStatus;
+      income: RequirementStatus;
+      residence: RequirementStatus;
+      guarantee: RequirementStatus;
+      custom: { id: string; label: string; description: string; status: RequirementStatus }[];
+    };
+  };
+}

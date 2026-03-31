@@ -1,43 +1,52 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  User,
-  FileText,
-  Upload,
-  Shield,
-  CheckCircle,
-  Wallet,
-  MapPin,
-  Activity,
-  AlertCircle,
+import React, { useState, useRef } from 'react';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  Calendar, 
+  Briefcase, 
+  Car, 
+  Users, 
+  Heart, 
+  Activity, 
+  FileText, 
+  Download, 
+  Upload, 
+  CheckCircle, 
+  Clock, 
+  AlertCircle, 
+  Shield, 
+  Bell, 
+  ChevronRight, 
+  LogOut, 
+  ArrowLeft,
   Camera,
-  Save,
-  Mail,
-  Phone,
-  Calendar,
-  Briefcase,
-  CreditCard,
-  ChevronRight,
-  Check,
-  Key,
   FileCheck,
-  Settings,
-  Bell,
-  Car,
-  Dog,
-  Download,
-  Eye,
+  Key,
+  Edit,
+  Save,
+  X,
   Lock,
+  Star,
+  ChevronDown,
   Edit2,
   RefreshCw,
-  X,
+  Eye
 } from 'lucide-react';
+import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { useAuth } from '../../context/AuthContext';
+import { tenantConfigService } from '../../services/tenantConfigService';
+import { TenantProfileConfig, RequirementStatus } from '../../types';
 
 const TenantProfile: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'documents' | 'preferences'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showReminderSelect, setShowReminderSelect] = useState(false);
+
+  // Profile Config (Ajuste Controle Total)
+  const config = tenantConfigService.getConfigForProperty('101'); // Mock propertyId for demo
 
   // File Upload Refs and State
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,8 +55,8 @@ const TenantProfile: React.FC = () => {
 
   // Profile Form State
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
+    name: user?.name || 'Inquilino Demo',
+    email: user?.email || 'inquilino@exemplo.com',
     phone: '(11) 99876-5432',
     cpf: '123.456.789-00',
     birthDate: '1990-05-15',
@@ -60,7 +69,8 @@ const TenantProfile: React.FC = () => {
     emergencyPhone: '(11) 99999-9999',
     avatar:
       user?.avatar ||
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf',
+      'https://i.pravatar.cc/150?u=tenant',
+    lastPasswordChange: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 7), // 7 meses atrás (mock para alerta)
   });
 
   // Settings State
@@ -68,145 +78,16 @@ const TenantProfile: React.FC = () => {
     emailNotif: true,
     whatsappNotif: true,
     paymentReminder: true,
+    reminderDays: '5 dias',
     condoAlerts: true,
-    marketing: false,
   });
 
-  // Document Upload State
-  const [documents, setDocuments] = useState<
-    Record<string, { status: 'pending' | 'analyzing' | 'approved'; file?: string }>
-  >({
-    rg: { status: 'approved' },
-    income: { status: 'analyzing' },
-    residence: { status: 'pending' },
-    guarantee: { status: 'pending' },
+  const [documents, setDocuments] = useState<any>({
+    rg: { status: 'approved', date: '10/01/2024' },
+    income: { status: 'pending', date: null },
+    residence: { status: 'review', date: '01/03/2024' },
+    guarantee: { status: 'pending', date: null },
   });
-
-  // --- Logic for Completion Percentage (Updated Ajuste 1) ---
-  const getPendingItems = () => {
-    const items: { id: string; label: string; tab: string; section?: string }[] = [];
-
-    // Personal (30%)
-    if (!profileData.name)
-      items.push({ id: 'name', label: 'Nome Completo', tab: 'profile', section: 'personal' });
-    if (!profileData.phone)
-      items.push({ id: 'phone', label: 'Telefone', tab: 'profile', section: 'personal' });
-    if (!profileData.cpf) items.push({ id: 'cpf', label: 'CPF', tab: 'profile', section: 'personal' });
-
-    // Residential (20%)
-    if (!profileData.vehiclePlate)
-      items.push({ id: 'vehiclePlate', label: 'Veículo', tab: 'profile', section: 'residential' });
-    if (!profileData.pets)
-      items.push({ id: 'pets', label: 'Pets', tab: 'profile', section: 'residential' });
-    if (!profileData.residents)
-      items.push({ id: 'residents', label: 'Moradores', tab: 'profile', section: 'residential' });
-
-    // Emergency (10%)
-    if (!profileData.emergencyName || !profileData.emergencyPhone)
-      items.push({
-        id: 'emergencyName',
-        label: 'Contato de Emergência',
-        tab: 'profile',
-        section: 'emergency',
-      });
-
-    // Documents (40%)
-    if (documents.income.status === 'pending')
-      items.push({ id: 'income', label: 'Comprovante de Renda', tab: 'documents' });
-    if (documents.residence.status === 'pending')
-      items.push({ id: 'residence', label: 'Comp. de Residência', tab: 'documents' });
-    if (documents.guarantee.status === 'pending')
-      items.push({ id: 'guarantee', label: 'Apólice / Garantia', tab: 'documents' });
-
-    return items;
-  };
-
-  const calculateCompletion = () => {
-    let score = 0;
-
-    // Personal (30%) - 3 fields
-    const personalFields = ['name', 'phone', 'cpf'];
-    const personalFilled = personalFields.filter((f) => (profileData as any)[f]).length;
-    score += (personalFilled / personalFields.length) * 30;
-
-    // Residential (20%) - 3 fields
-    const residentialFields = ['vehiclePlate', 'residents', 'pets'];
-    const residentialFilled = residentialFields.filter((f) => (profileData as any)[f]).length;
-    score += (residentialFilled / residentialFields.length) * 20;
-
-    // Emergency (10%) - 2 fields (must have both)
-    if (profileData.emergencyName && profileData.emergencyPhone) score += 10;
-
-    // Documents (40%) - 3 specific docs
-    const docsToTrack = ['income', 'residence', 'guarantee'];
-    const docsFilled = docsToTrack.filter((d) => documents[d].status !== 'pending').length;
-    score += (docsFilled / docsToTrack.length) * 40;
-
-    return Math.min(100, Math.round(score));
-  };
-
-  const completion = calculateCompletion();
-  const pendingItems = getPendingItems();
-
-  const handlePendingClick = (item: { id: string; tab: string; section?: string }) => {
-    setActiveTab(item.tab as any);
-    if (item.tab === 'profile') {
-      setIsEditing(true);
-      setTimeout(() => {
-        const element = document.getElementById(item.id) || document.getElementsByName(item.id)[0];
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        (element as HTMLElement)?.focus();
-      }, 100);
-    } else {
-      setTimeout(() => {
-        const element = document.getElementById(`doc-${item.id}`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element?.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
-        setTimeout(() => element?.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'), 2000);
-      }, 100);
-    }
-  };
-
-  // --- Handlers ---
-
-  const triggerFileSelect = (key: string) => {
-    setCurrentDocKey(key);
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && currentDocKey) {
-      // Simulate upload
-      setDocuments((prev) => ({
-        ...prev,
-        [currentDocKey]: { status: 'analyzing', file: file.name },
-      }));
-      setTimeout(() => {
-        // Simulate approval for demo
-        setDocuments((prev) => ({
-          ...prev,
-          [currentDocKey]: { ...prev[currentDocKey], status: 'approved' },
-        }));
-      }, 3000);
-    }
-    e.target.value = ''; // Reset input
-  };
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setProfileData((prev) => ({ ...prev, avatar: ev.target!.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,459 +95,530 @@ const TenantProfile: React.FC = () => {
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
-    }, 1000);
+      alert('Perfil atualizado com sucesso!');
+    }, 1500);
   };
 
-  // --- Render Helpers ---
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData({ ...profileData, avatar: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const StatusBadge = ({ status }: { status: string }) => {
+  const handleDocUpload = (key: string) => {
+    setCurrentDocKey(key);
+    fileInputRef.current?.click();
+  };
+
+  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && currentDocKey) {
+      setDocuments({
+        ...documents,
+        [currentDocKey]: { status: 'review', date: new Date().toLocaleDateString() },
+      });
+      alert('Documento enviado para análise!');
+    }
+  };
+
+  const handleReminderChange = (days: string) => {
+    setPreferences({ ...preferences, reminderDays: days });
+    setShowReminderSelect(false);
+    alert(`Lembrete alterado para ${days} antes do vencimento`);
+  };
+
+  // --- Logic for Completion Percentage (Updated Ajuste Controle Total) ---
+  const getPendingItems = () => {
+    const items: { id: string; label: string; tab: string; section?: string }[] = [];
+
+    // Personal (Fixed required)
+    if (!profileData.name)
+      items.push({ id: 'name', label: 'Nome Completo', tab: 'profile', section: 'personal' });
+    if (!profileData.phone)
+      items.push({ id: 'phone', label: 'Telefone', tab: 'profile', section: 'personal' });
+    if (!profileData.cpf) items.push({ id: 'cpf', label: 'CPF', tab: 'profile', section: 'personal' });
+
+    // Personal (Configurable)
+    if (config.sections.personal.occupation === 'required' && !profileData.occupation)
+      items.push({ id: 'occupation', label: 'Profissão', tab: 'profile', section: 'personal' });
+
+    // Residential (Configurable)
+    if (config.sections.residential.vehicle === 'required' && !profileData.vehiclePlate)
+      items.push({ id: 'vehiclePlate', label: 'Veículo', tab: 'profile', section: 'residential' });
+    if (config.sections.residential.pets === 'required' && !profileData.pets)
+      items.push({ id: 'pets', label: 'Pets', tab: 'profile', section: 'residential' });
+    if (config.sections.residential.residents === 'required' && !profileData.residents)
+      items.push({ id: 'residents', label: 'Moradores', tab: 'profile', section: 'residential' });
+
+    // Emergency (Configurable)
+    if (config.sections.emergency.status === 'required' && (!profileData.emergencyName || !profileData.emergencyPhone))
+      items.push({
+        id: 'emergencyName',
+        label: 'Contato de Emergência',
+        tab: 'profile',
+        section: 'emergency',
+      });
+
+    // Documents (Configurable)
+    if (config.sections.requiredDocs.id_card === 'required' && documents.rg.status === 'pending')
+      items.push({ id: 'id_card', label: 'RG ou CNH', tab: 'documents' });
+    if (config.sections.requiredDocs.income === 'required' && documents.income.status === 'pending')
+      items.push({ id: 'income', label: 'Comprovante de Renda', tab: 'documents' });
+    if (config.sections.requiredDocs.residence === 'required' && documents.residence.status === 'pending')
+      items.push({ id: 'residence', label: 'Comp. de Residência', tab: 'documents' });
+    if (config.sections.requiredDocs.guarantee === 'required' && documents.guarantee.status === 'pending')
+      items.push({ id: 'guarantee', label: 'Apólice / Garantia', tab: 'documents' });
+
+    return items;
+  };
+
+  const pendingItems = getPendingItems();
+  
+  // Total possible required items based on config
+  const getTotalRequiredCount = () => {
+    let count = 3; // Name, Phone, CPF are always fixed required
+    if (config.sections.personal.occupation === 'required') count++;
+    if (config.sections.residential.vehicle === 'required') count++;
+    if (config.sections.residential.pets === 'required') count++;
+    if (config.sections.residential.residents === 'required') count++;
+    if (config.sections.emergency.status === 'required') count++;
+    if (config.sections.requiredDocs.id_card === 'required') count++;
+    if (config.sections.requiredDocs.income === 'required') count++;
+    if (config.sections.requiredDocs.residence === 'required') count++;
+    if (config.sections.requiredDocs.guarantee === 'required') count++;
+    return count;
+  };
+
+  const totalRequired = getTotalRequiredCount();
+  const completionPercent = totalRequired > 0 
+    ? Math.round(((totalRequired - pendingItems.length) / totalRequired) * 100) 
+    : 100;
+
+  const getStatusBadge = (status: string, requirementStatus: RequirementStatus = 'required') => {
     if (status === 'approved')
-      return (
-        <span className='flex items-center gap-1 text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md border border-emerald-100 dark:border-emerald-900/30'>
-          <CheckCircle size={12} /> Aprovado
-        </span>
-      );
-    if (status === 'analyzing')
-      return (
-        <span className='flex items-center gap-1 text-[10px] uppercase font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-900/30'>
-          <RefreshCw size={12} className='animate-spin' /> Em Análise
-        </span>
-      );
-    return (
-      <span className='flex items-center gap-1 text-[10px] uppercase font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-md border border-amber-100 dark:border-amber-900/30'>
-        <AlertCircle size={12} /> Pendente
-      </span>
-    );
+      return <span className='min-w-[80px] text-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider'>APROVADO</span>;
+    if (status === 'review')
+      return <span className='min-w-[80px] text-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-black uppercase tracking-wider'>EM ANÁLISE</span>;
+    
+    if (requirementStatus === 'optional') return null;
+    
+    return <span className='min-w-[80px] text-center px-3 py-1 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-black uppercase tracking-wider'>PENDENTE</span>;
+  };
+
+  const getFieldClass = (value: string) => {
+    return `w-full px-4 py-3 rounded-xl border transition-all text-sm font-bold ${
+      isEditing 
+        ? 'bg-white dark:bg-surface-dark border-primary/30 focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white' 
+        : 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-600 dark:text-slate-400 cursor-default'
+    }`;
   };
 
   return (
-    <div className='flex flex-col h-full w-full max-w-md mx-auto md:max-w-4xl relative bg-background-light dark:bg-background-dark'>
-      {/* Hidden Inputs */}
-      <input
-        type='file'
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        className='hidden'
-        accept='.pdf,.jpg,.jpeg,.png'
-      />
-      <input
-        type='file'
-        ref={avatarInputRef}
-        onChange={handleAvatarChange}
-        className='hidden'
-        accept='image/*'
-      />
+    <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
+      {/* Hidden inputs for uploads */}
+      <input type='file' ref={fileInputRef} onChange={onFileSelected} className='hidden' />
+      <input type='file' ref={avatarInputRef} onChange={handleAvatarChange} className='hidden' />
 
-      {/* Header */}
-      <header className='sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
-        <div>
-          <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Meu Perfil</h1>
-          <div className='flex items-center gap-2 mt-1'>
-            <div className='w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+      {/* --- COMPACT HORIZONTAL HEADER (Ajuste 1) --- */}
+      <div className='px-6 py-6 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
+        <div className='flex items-center justify-between mb-4'>
+          <div className='flex items-center gap-4'>
+            <div className='relative group'>
               <div
-                className={`h-full rounded-full transition-all duration-1000 ${completion === 100 ? 'bg-emerald-500' : 'bg-primary'}`}
-                style={{ width: `${completion}%` }}
-              ></div>
+                className={`w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
+                style={{ backgroundImage: `url("${profileData.avatar}")` }}
+                onClick={() => isEditing && avatarInputRef.current?.click()}
+              >
+                {isEditing && (
+                  <div className='absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'>
+                    <Camera size={16} className='text-white' />
+                  </div>
+                )}
+              </div>
             </div>
-            <span className='text-xs font-bold text-slate-500 dark:text-slate-400'>
-              {completion}% completo
-            </span>
+            <div>
+              <h1 className='text-xl font-black text-slate-900 dark:text-white leading-tight'>
+                {profileData.name}
+              </h1>
+              <p className='text-xs font-bold text-slate-500 uppercase tracking-widest'>
+                {profileData.occupation}
+              </p>
+            </div>
           </div>
-          <div className='mt-2 overflow-hidden'>
-            <p className={`text-[10px] font-medium transition-all ${completion === 100 ? 'text-emerald-500' : 'text-slate-400'}`}>
-              {completion === 100 ? (
-                <span className='flex items-center gap-1'><Check size={12} /> Perfil completo</span>
-              ) : (
-                <>
-                  <span className='mr-1'>Faltam:</span>
-                  {pendingItems.map((item, idx) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handlePendingClick(item)}
-                      className='hover:text-primary hover:underline underline-offset-2 transition-colors'
-                    >
-                      {item.label}{idx < pendingItems.length - 1 ? ', ' : ''}
-                    </button>
-                  ))}
-                </>
-              )}
-            </p>
+
+          <div className='flex gap-2'>
+            {isEditing ? (
+              <>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className='px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-all'
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                  className='px-6 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all flex items-center gap-2'
+                >
+                  {isSaving ? <Clock size={14} className='animate-spin' /> : <Save size={14} />}
+                  Salvar
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className='px-6 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2'
+              >
+                <Edit2 size={14} />
+                Editar
+              </button>
+            )}
           </div>
         </div>
-        {isEditing ? (
-          <button
-            onClick={() => setIsEditing(false)}
-            className='p-2 rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-red-500 transition-colors'
-          >
-            <X size={20} />
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              setActiveTab('profile');
-              setIsEditing(true);
-            }}
-            className='flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold shadow-lg hover:opacity-90 transition-all active:scale-95'
-          >
-            <Edit2 size={14} /> Editar
-          </button>
-        )}
-      </header>
 
-      {/* Tabs */}
-      <div className='px-6 py-4'>
+        {/* Completion Progress */}
+        <div className='space-y-2'>
+          <div className='flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]'>
+            <span className='text-slate-400'>Progresso do Perfil</span>
+            <span className='text-primary'>{completionPercent}%</span>
+          </div>
+          <div className='h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden'>
+            <div
+              className='h-full bg-primary transition-all duration-1000'
+              style={{ width: `${completionPercent}%` }}
+            ></div>
+          </div>
+          {pendingItems.length > 0 && (
+            <p className='text-[10px] text-slate-400 font-medium'>
+              Faltam: {pendingItems.map((item, i) => (
+                <button 
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.tab as any);
+                    if (item.tab === 'profile') setIsEditing(true);
+                  }}
+                  className='hover:text-primary hover:underline transition-colors'
+                >
+                  {item.label}{i < pendingItems.length - 1 ? ', ' : ''}
+                </button>
+              ))}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* --- TABS NAVIGATION --- */}
+      <div className='px-6 pt-4 pb-2 sticky top-[154px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md'>
         <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl overflow-x-auto hide-scrollbar'>
           {[
             { id: 'profile', label: 'Meus Dados', icon: User },
             { id: 'documents', label: 'Documentação', icon: FileText },
-            { id: 'preferences', label: 'Configurações', icon: Settings },
+            { id: 'preferences', label: 'Configurações', icon: Shield },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 min-w-[110px] py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex-1 min-w-[110px] py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
-              <tab.icon size={16} /> {tab.label}
+              <tab.icon size={14} /> {tab.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className='flex-1 overflow-y-auto px-6 pb-24 space-y-6 scroll-smooth'>
+      <div className='flex-1 overflow-y-auto px-6 pb-24 space-y-6 scroll-smooth pt-4'>
         {/* --- PROFILE TAB --- */}
         {activeTab === 'profile' && (
-          <div className='animate-fadeIn pb-8'>
-            {/* Avatar Section */}
-            <div className='bg-white dark:bg-surface-dark rounded-2xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center relative'>
-              <div className='relative group'>
-                <div
-                  onClick={() => isEditing && avatarInputRef.current?.click()}
-                  className={`w-28 h-28 rounded-full border-4 border-white dark:border-surface-dark shadow-lg bg-cover bg-center transition-all ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
-                  style={{ backgroundImage: `url("${profileData.avatar}")` }}
-                ></div>
-                {isEditing && (
-                  <div className='absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-md hover:scale-110 transition-transform cursor-pointer pointer-events-none'>
-                    <Camera size={16} />
-                  </div>
-                )}
-              </div>
-              <h3 className='mt-4 text-xl font-bold text-slate-900 dark:text-white'>
-                {profileData.name}
-              </h3>
-              <p className='text-sm text-slate-500'>{profileData.occupation}</p>
-            </div>
-
+          <div className='animate-fadeIn pb-8 space-y-6'>
             {/* Form */}
             <form onSubmit={handleSaveProfile} className='space-y-6'>
               {/* Personal Info */}
               <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
                 <div className='absolute top-0 left-0 w-1 h-full bg-blue-500'></div>
-                <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
+                <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
                   <User size={18} className='text-blue-500' /> 
                   Informações Pessoais
-                  {pendingItems.filter(i => i.section === 'personal').length > 0 && (
-                    <span className='text-[10px] font-normal text-slate-400'>
-                      ({pendingItems.filter(i => i.section === 'personal').length} pendentes)
-                    </span>
-                  )}
                 </h3>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                       Nome Completo
-                      {!profileData.name && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
                     </label>
                     <input
-                      id='name'
-                      name='name'
-                      disabled={!isEditing}
+                      type='text'
                       value={profileData.name}
+                      readOnly={!isEditing}
                       onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-sm dark:text-white'
+                      className={getFieldClass(profileData.name)}
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      CPF
-                      {!profileData.cpf && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      E-mail
                     </label>
                     <input
-                      id='cpf'
-                      name='cpf'
-                      disabled={true} // CPF usually locked
-                      value={profileData.cpf}
-                      className='w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 opacity-70 cursor-not-allowed font-medium text-sm dark:text-white'
+                      type='email'
+                      value={profileData.email}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                      className={getFieldClass(profileData.email)}
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                       Telefone
-                      {!profileData.phone && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
                     </label>
                     <input
-                      id='phone'
-                      name='phone'
-                      disabled={!isEditing}
+                      type='text'
                       value={profileData.phone}
+                      readOnly={!isEditing}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
+                      className={getFieldClass(profileData.phone)}
                     />
                   </div>
                   <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'>
-                      Profissão
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      CPF
                     </label>
                     <input
-                      disabled={!isEditing}
-                      value={profileData.occupation}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, occupation: e.target.value })
-                      }
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
+                      type='text'
+                      value={profileData.cpf}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, cpf: e.target.value })}
+                      className={getFieldClass(profileData.cpf)}
                     />
+                  </div>
+                  {config.sections.personal.occupation !== 'hidden' && (
+                    <div className='space-y-2'>
+                      <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                        Profissão
+                      </label>
+                      <input
+                        type='text'
+                        value={profileData.occupation}
+                        readOnly={!isEditing}
+                        onChange={(e) => setProfileData({ ...profileData, occupation: e.target.value })}
+                        className={getFieldClass(profileData.occupation)}
+                      />
+                    </div>
+                  )}
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Estado Civil
+                    </label>
+                    <select
+                      disabled={!isEditing}
+                      value={profileData.maritalStatus}
+                      onChange={(e) => setProfileData({ ...profileData, maritalStatus: e.target.value })}
+                      className={getFieldClass(profileData.maritalStatus)}
+                    >
+                      <option>Solteiro(a)</option>
+                      <option>Casado(a)</option>
+                      <option>Divorciado(a)</option>
+                      <option>Viúvo(a)</option>
+                    </select>
                   </div>
                 </div>
               </section>
 
               {/* Residential Info */}
-              <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-                <div className='absolute top-0 left-0 w-1 h-full bg-orange-500'></div>
-                <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <Car size={18} className='text-orange-500' /> 
-                  Dados Residenciais
-                  {pendingItems.filter(i => i.section === 'residential').length > 0 && (
-                    <span className='text-[10px] font-normal text-slate-400'>
-                      ({pendingItems.filter(i => i.section === 'residential').length} pendentes)
-                    </span>
-                  )}
-                </h3>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-                  <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      Veículo (Placa)
-                      {!profileData.vehiclePlate && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
-                    </label>
-                    <input
-                      id='vehiclePlate'
-                      name='vehiclePlate'
-                      disabled={!isEditing}
-                      value={profileData.vehiclePlate}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, vehiclePlate: e.target.value })
-                      }
-                      placeholder='Não possui'
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
-                    />
+              {(config.sections.residential.vehicle !== 'hidden' || 
+                config.sections.residential.pets !== 'hidden' || 
+                config.sections.residential.residents !== 'hidden') && (
+                <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
+                  <div className='absolute top-0 left-0 w-1 h-full bg-emerald-500'></div>
+                  <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                    <Car size={18} className='text-emerald-500' /> 
+                    Dados Residenciais
+                  </h3>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    {config.sections.residential.vehicle !== 'hidden' && (
+                      <div className='space-y-2'>
+                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                          Placa do Veículo
+                        </label>
+                        <input
+                          type='text'
+                          value={profileData.vehiclePlate}
+                          readOnly={!isEditing}
+                          placeholder='Ex: ABC-1234'
+                          onChange={(e) => setProfileData({ ...profileData, vehiclePlate: e.target.value })}
+                          className={getFieldClass(profileData.vehiclePlate)}
+                        />
+                      </div>
+                    )}
+                    {config.sections.residential.residents !== 'hidden' && (
+                      <div className='space-y-2'>
+                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                          Moradores
+                        </label>
+                        <input
+                          type='text'
+                          value={profileData.residents}
+                          readOnly={!isEditing}
+                          onChange={(e) => setProfileData({ ...profileData, residents: e.target.value })}
+                          className={getFieldClass(profileData.residents)}
+                        />
+                      </div>
+                    )}
+                    {config.sections.residential.pets !== 'hidden' && (
+                      <div className='md:col-span-2 space-y-2'>
+                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                          Animais de Estimação
+                        </label>
+                        <input
+                          type='text'
+                          value={profileData.pets}
+                          readOnly={!isEditing}
+                          onChange={(e) => setProfileData({ ...profileData, pets: e.target.value })}
+                          className={getFieldClass(profileData.pets)}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      Pets
-                      {!profileData.pets && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
-                    </label>
-                    <input
-                      id='pets'
-                      name='pets'
-                      disabled={!isEditing}
-                      value={profileData.pets}
-                      onChange={(e) => setProfileData({ ...profileData, pets: e.target.value })}
-                      placeholder='Não possui'
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
-                    />
-                  </div>
-                  <div className='space-y-2 md:col-span-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      Moradores
-                      {!profileData.residents && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
-                    </label>
-                    <input
-                      id='residents'
-                      name='residents'
-                      disabled={!isEditing}
-                      value={profileData.residents}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, residents: e.target.value })
-                      }
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
-                    />
-                  </div>
-                </div>
-              </section>
+                </section>
+              )}
 
               {/* Emergency Contact */}
-              <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-                <div className='absolute top-0 left-0 w-1 h-full bg-red-500'></div>
-                <h3 className='font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2'>
-                  <Activity size={18} className='text-red-500' /> 
-                  Contato de Emergência
-                  {pendingItems.filter(i => i.section === 'emergency').length > 0 && (
-                    <span className='text-[10px] font-normal text-slate-400'>
-                      ({pendingItems.filter(i => i.section === 'emergency').length} pendentes)
-                    </span>
-                  )}
-                </h3>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-                  <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      Nome
-                      {!profileData.emergencyName && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
-                    </label>
-                    <input
-                      id='emergencyName'
-                      name='emergencyName'
-                      disabled={!isEditing}
-                      value={profileData.emergencyName}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, emergencyName: e.target.value })
-                      }
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
-                    />
+              {config.sections.emergency.status !== 'hidden' && (
+                <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
+                  <div className='absolute top-0 left-0 w-1 h-full bg-red-500'></div>
+                  <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                    <Activity size={18} className='text-red-500' /> 
+                    Contato de Emergência
+                  </h3>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    <div className='space-y-2'>
+                      <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                        Nome do Contato
+                      </label>
+                      <input
+                        type='text'
+                        value={profileData.emergencyName}
+                        readOnly={!isEditing}
+                        onChange={(e) => setProfileData({ ...profileData, emergencyName: e.target.value })}
+                        className={getFieldClass(profileData.emergencyName)}
+                      />
+                    </div>
+                    <div className='space-y-2'>
+                      <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                        Telefone de Emergência
+                      </label>
+                      <input
+                        type='text'
+                        value={profileData.emergencyPhone}
+                        readOnly={!isEditing}
+                        onChange={(e) => setProfileData({ ...profileData, emergencyPhone: e.target.value })}
+                        className={getFieldClass(profileData.emergencyPhone)}
+                      />
+                    </div>
                   </div>
-                  <div className='space-y-2'>
-                    <label className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-2'>
-                      Telefone
-                      {!profileData.emergencyPhone && (
-                        <span className='px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-[8px] font-black tracking-tighter'>PENDENTE</span>
-                      )}
-                    </label>
-                    <input
-                      id='emergencyPhone'
-                      name='emergencyPhone'
-                      disabled={!isEditing}
-                      value={profileData.emergencyPhone}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, emergencyPhone: e.target.value })
-                      }
-                      className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 disabled:opacity-60 focus:border-primary outline-none transition-all font-medium text-sm dark:text-white'
-                    />
-                  </div>
-                </div>
-              </section>
-
-              {isEditing && (
-                <div className='pt-2 sticky bottom-0 z-10 pb-4 bg-background-light dark:bg-background-dark'>
-                  <button
-                    type='submit'
-                    disabled={isSaving}
-                    className='w-full h-14 flex items-center justify-center gap-2 rounded-xl text-white font-bold shadow-xl transition-all active:scale-[0.98] bg-primary hover:bg-primary-dark'
-                  >
-                    {isSaving ? (
-                      <span className='flex items-center gap-2'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>{' '}
-                        Salvando...
-                      </span>
-                    ) : (
-                      <>
-                        <Save size={20} /> Salvar Alterações
-                      </>
-                    )}
-                  </button>
-                </div>
+                </section>
               )}
             </form>
           </div>
         )}
 
-        {/* --- DOCUMENTS TAB --- */}
+        {/* --- DOCUMENTATION TAB --- */}
         {activeTab === 'documents' && (
-          <div className='space-y-8 animate-fadeIn'>
-            {/* 1. Property Docs (Read Only) */}
+          <div className='animate-fadeIn pb-8 space-y-8'>
+            {/* 1. Property Docs */}
             <section>
-              <h3 className='font-bold text-lg text-slate-900 dark:text-white mb-3 flex items-center gap-2 px-1'>
-                <Key className='text-primary' size={20} /> Documentos do Imóvel
-              </h3>
+              <div className='px-1 mb-4'>
+                <h3 className='font-black text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-widest'>
+                  <Key className='text-primary' size={20} /> Documentos do Imóvel
+                </h3>
+                <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1'>
+                  Compartilhado pelo proprietário
+                </p>
+              </div>
               <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm'>
                 {[
-                  { name: 'Contrato de Locação Assinado', icon: FileCheck, date: '10/01/2024' },
-                  { name: 'Laudo de Vistoria de Entrada', icon: Camera, date: '08/01/2024' },
-                  { name: 'Regimento Interno do Condomínio', icon: Shield, date: '01/01/2024' },
-                ].map((doc, i) => (
+                  { id: 'contract', name: 'Contrato de Locação Assinado', icon: FileCheck, date: '10/01/2024', active: config.sections.sharedDocs.contract },
+                  { id: 'inspection', name: 'Laudo de Vistoria de Entrada', icon: Camera, date: '08/01/2024', active: config.sections.sharedDocs.inspection },
+                  { id: 'rules', name: 'Regimento Interno do Condomínio', icon: Shield, date: '01/01/2024', active: config.sections.sharedDocs.rules },
+                ].filter(doc => doc.active).map((doc, i) => (
                   <div
-                    key={i}
-                    className='flex items-center justify-between p-4 border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group'
+                    key={doc.id}
+                    className='flex items-center justify-between p-5 border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group'
                   >
                     <div className='flex items-center gap-4'>
-                      <div className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-500 group-hover:text-primary transition-colors'>
-                        <doc.icon size={20} />
+                      <div className='p-3 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-500 group-hover:text-primary transition-colors'>
+                        <doc.icon size={22} />
                       </div>
                       <div>
-                        <span className='text-sm font-bold text-slate-800 dark:text-slate-200 block'>
+                        <span className='text-sm font-black text-slate-800 dark:text-slate-200 block mb-0.5'>
                           {doc.name}
                         </span>
-                        <span className='text-[10px] text-slate-400 font-medium'>
+                        <span className='text-[10px] text-slate-400 font-bold uppercase tracking-wider'>
                           Disponível desde {doc.date}
                         </span>
                       </div>
                     </div>
-                    <button className='p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-colors'>
-                      <Download size={20} />
+                    <button className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'>
+                      <Download size={22} />
                     </button>
                   </div>
                 ))}
               </div>
             </section>
 
-            {/* 2. Personal Docs (Upload) */}
+            {/* SEPARATOR */}
+            <div className='h-px w-full bg-gradient-to-r from-transparent via-gray-200 dark:via-white/10 to-transparent my-10'></div>
+
+            {/* 2. Personal Docs */}
             <section>
-              <h3 className='font-bold text-lg text-slate-900 dark:text-white mb-3 flex items-center gap-2 px-1'>
+              <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 px-1 text-sm uppercase tracking-widest'>
                 <FileText className='text-indigo-500' size={20} /> Meus Documentos
               </h3>
               <div className='grid gap-4'>
                 {[
-                  { id: 'rg', label: 'RG ou CNH', desc: 'Frente e Verso' },
-                  { id: 'income', label: 'Comprovante de Renda', desc: 'Holerite ou Extrato' },
-                  { id: 'residence', label: 'Comp. de Residência', desc: 'Conta de luz/água' },
-                  { id: 'guarantee', label: 'Apólice / Garantia', desc: 'Doc. do seguro fiança' },
-                ].map((doc) => {
-                  const status = documents[doc.id].status;
+                  { id: 'id_card', label: 'RG ou CNH', desc: 'Frente e Verso', status: config.sections.requiredDocs.id_card },
+                  { id: 'income', label: 'Comprovante de Renda', desc: 'Holerite ou Extrato', status: config.sections.requiredDocs.income },
+                  { id: 'residence', label: 'Comp. de Residência', desc: 'Conta de luz/água', status: config.sections.requiredDocs.residence },
+                  { id: 'guarantee', label: 'Apólice / Garantia', desc: 'Doc. do seguro fiança', status: config.sections.requiredDocs.guarantee },
+                ].filter(doc => doc.status !== 'hidden').map((doc) => {
+                  const docState = documents[doc.id] || { status: 'pending', date: null };
                   return (
                     <div
                       key={doc.id}
-                      id={`doc-${doc.id}`}
-                      className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all'
+                      className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
                     >
                       <div className='flex items-center gap-4'>
-                        <div
-                          className={`p-3 rounded-xl ${status === 'approved' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20' : 'bg-slate-100 text-slate-500 dark:bg-white/10'}`}
-                        >
-                          <FileText size={20} />
+                        <div className={`p-3 rounded-xl ${docState.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'} dark:bg-opacity-10`}>
+                          <FileText size={22} />
                         </div>
                         <div>
-                          <p className='font-bold text-sm text-slate-900 dark:text-white'>
+                          <h4 className='text-sm font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
                             {doc.label}
+                          </h4>
+                          <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                            {doc.desc}
                           </p>
-                          <p className='text-xs text-slate-500'>{doc.desc}</p>
                         </div>
                       </div>
 
-                      <div className='flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0'>
-                        <StatusBadge status={status} />
-                        {status !== 'approved' && (
+                      <div className='flex items-center gap-4 ml-auto md:ml-0'>
+                        {docState.date && (
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline'>
+                            Enviado em {docState.date}
+                          </span>
+                        )}
+                        {getStatusBadge(docState.status, doc.status as RequirementStatus)}
+                        <div className='flex flex-col items-center gap-1'>
                           <button
-                            onClick={() => triggerFileSelect(doc.id)}
-                            className='px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2 shadow-sm active:scale-95 whitespace-nowrap'
+                            onClick={() => handleDocUpload(doc.id)}
+                            className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-primary hover:bg-primary/10 transition-all active:scale-95'
                           >
-                            <Upload size={14} /> Enviar
+                            <Upload size={20} />
                           </button>
-                        )}
-                        {status === 'approved' && (
-                          <button className='p-2 text-slate-400 hover:text-primary transition-colors'>
-                            <Eye size={18} />
-                          </button>
-                        )}
+                          <span className='text-[9px] font-bold text-slate-400 uppercase'>PDF ou imagem, máx. 5MB</span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -676,87 +628,143 @@ const TenantProfile: React.FC = () => {
           </div>
         )}
 
-        {/* --- PREFERENCES TAB --- */}
+        {/* --- SETTINGS TAB --- */}
         {activeTab === 'preferences' && (
-          <div className='animate-fadeIn space-y-4'>
-            <div className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
-              <h3 className='font-bold text-lg text-slate-900 dark:text-white mb-4'>
-                Notificações
+          <div className='animate-fadeIn pb-8 space-y-8'>
+            {/* Notifications */}
+            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+              <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                <Bell size={18} className='text-primary' /> Central de Notificações
               </h3>
-              <div className='space-y-4'>
+              <div className='space-y-6'>
                 {[
-                  {
-                    id: 'emailNotif',
-                    label: 'Alertas por Email',
-                    desc: 'Receba boletos e avisos importantes.',
-                  },
-                  {
-                    id: 'whatsappNotif',
-                    label: 'Mensagens WhatsApp',
-                    desc: 'Contato direto do proprietário.',
-                  },
-                  {
-                    id: 'paymentReminder',
-                    label: 'Lembrete de Pagamento',
-                    desc: 'Aviso 3 dias antes do vencimento.',
-                  },
-                  {
-                    id: 'condoAlerts',
-                    label: 'Avisos do Condomínio',
-                    desc: 'Manutenções e comunicados gerais.',
-                  },
-                  {
-                    id: 'marketing',
-                    label: 'Ofertas e Parceiros',
-                    desc: 'Descontos em serviços de mudança/limpeza.',
-                  },
-                ].map((pref) => (
-                  <div
-                    key={pref.id}
-                    className='flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-black/20 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer'
-                    onClick={() =>
-                      setPreferences({ ...preferences, [pref.id]: !(preferences as any)[pref.id] })
-                    }
-                  >
+                  { id: 'emailNotif', label: 'Notificações por E-mail', desc: 'Receba alertas importantes no seu inbox.' },
+                  { id: 'whatsappNotif', label: 'Notificações por WhatsApp', desc: 'Alertas rápidos e lembretes no seu celular.' },
+                  { id: 'condoAlerts', label: 'Avisos do Condomínio', desc: 'Seja avisado sobre reuniões e manutenções.' },
+                ].map((item) => (
+                  <div key={item.id} className='flex items-center justify-between group'>
                     <div>
-                      <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                        {pref.label}
+                      <p className='text-sm font-black text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors'>
+                        {item.label}
                       </p>
-                      <p className='text-xs text-slate-500'>{pref.desc}</p>
+                      <p className='text-xs text-slate-500 font-medium'>{item.desc}</p>
                     </div>
-                    <div
-                      className={`w-11 h-6 rounded-full p-1 transition-colors relative ${
-                        (preferences as any)[pref.id]
-                          ? 'bg-primary'
-                          : 'bg-slate-300 dark:bg-slate-600'
-                      }`}
-                    >
-                      <div
-                        className={`w-4 h-4 bg-white rounded-full shadow-sm absolute top-1 transition-transform ${
-                          (preferences as any)[pref.id] ? 'left-[calc(100%-1.25rem)]' : 'left-1'
-                        }`}
-                      ></div>
-                    </div>
+                    <label className='relative inline-flex items-center cursor-pointer'>
+                      <input
+                        type='checkbox'
+                        className='sr-only peer'
+                        checked={(preferences as any)[item.id]}
+                        onChange={() => setPreferences({ ...preferences, [item.id]: !(preferences as any)[item.id] })}
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
                   </div>
                 ))}
-              </div>
-            </div>
 
-            <div className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
-              <h3 className='font-bold text-lg text-slate-900 dark:text-white mb-4'>Segurança</h3>
-              <button className='w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 hover:border-primary/30 transition-all group'>
-                <div className='flex items-center gap-3'>
-                  <div className='p-2 bg-white dark:bg-white/10 rounded-lg text-slate-500 group-hover:text-primary transition-colors'>
-                    <Lock size={20} />
-                  </div>
-                  <div className='text-left'>
-                    <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                      Alterar Senha
+                <div className='flex items-center justify-between group pt-4 border-t border-gray-50 dark:border-white/5'>
+                  <div>
+                    <p className='text-sm font-black text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors'>
+                      Lembrete de Pagamento
                     </p>
-                    <p className='text-xs text-slate-500'>Última alteração há 3 meses</p>
+                    <div className='flex items-center gap-2 mt-0.5'>
+                      <span className='text-xs text-slate-500 font-medium'>Aviso</span>
+                      <div className='relative'>
+                        <button 
+                          onClick={() => setShowReminderSelect(!showReminderSelect)}
+                          className='flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-black uppercase tracking-widest hover:bg-primary/20 transition-all'
+                        >
+                          {preferences.reminderDays} antes <ChevronDown size={12} />
+                        </button>
+                        {showReminderSelect && (
+                          <div className='absolute top-full left-0 mt-2 w-32 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/10 rounded-xl shadow-xl z-30 py-1 animate-scaleUp'>
+                            {['3 dias', '5 dias', '7 dias', '10 dias'].map((days) => (
+                              <button
+                                key={days}
+                                onClick={() => handleReminderChange(days)}
+                                className='w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors'
+                              >
+                                {days}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  <label className='relative inline-flex items-center cursor-pointer'>
+                    <input
+                      type='checkbox'
+                      className='sr-only peer'
+                      checked={preferences.paymentReminder}
+                      onChange={() => setPreferences({ ...preferences, paymentReminder: !preferences.paymentReminder })}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
                 </div>
-                <ChevronRight size={18} className='text-slate-400 group-hover:text-primary' />
+              </div>
+            </section>
+
+            {/* Security */}
+            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+              <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                <Lock size={18} className='text-amber-500' /> Segurança e Privacidade
+              </h3>
+              <div className='space-y-6'>
+                <div className='flex items-center justify-between group'>
+                  <div className='flex items-center gap-4'>
+                    <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500'>
+                      <Key size={20} />
+                    </div>
+                    <div>
+                      <p className='text-sm font-black text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors'>
+                        Alterar Senha
+                      </p>
+                      <div className='flex items-center gap-2'>
+                        {new Date().getTime() - profileData.lastPasswordChange.getTime() > 1000 * 60 * 60 * 24 * 30 * 6 ? (
+                          <div className='flex items-center gap-1.5 text-amber-500 group/tooltip relative'>
+                            <AlertCircle size={14} />
+                            <span className='text-[10px] font-bold uppercase tracking-widest'>Recomendamos alterar</span>
+                            <div className='absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-40 shadow-xl'>
+                              Recomendamos alterar sua senha a cada 6 meses por segurança.
+                            </div>
+                          </div>
+                        ) : (
+                          <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Última alteração há 3 meses</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <button className='px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all'>
+                    Atualizar
+                  </button>
+                </div>
+
+                <div className='flex items-center justify-between group pt-4 border-t border-gray-50 dark:border-white/5'>
+                  <div className='flex items-center gap-4'>
+                    <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500'>
+                      <Shield size={20} />
+                    </div>
+                    <div>
+                      <p className='text-sm font-black text-slate-800 dark:text-slate-200'>
+                        Autenticação em Duas Etapas
+                      </p>
+                      <p className='text-xs text-slate-500 font-medium'>Proteção extra para sua conta.</p>
+                    </div>
+                  </div>
+                  <button className='px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all'>
+                    Ativar 2FA
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Account Management */}
+            <div className='flex justify-between items-center px-2'>
+              <button className='text-xs font-black text-rose-500 uppercase tracking-widest hover:underline'>
+                Excluir minha conta
+              </button>
+              <button className='flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all'>
+                <LogOut size={16} /> Sair da Conta
               </button>
             </div>
           </div>

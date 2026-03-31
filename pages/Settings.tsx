@@ -33,6 +33,7 @@ import { subscriptionService } from '../services/subscriptionService';
 import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../types';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { useLocation } from 'react-router-dom';
+import { TenantProfileConfigPanel } from '../components/properties/TenantProfileConfigPanel';
 
 interface PaymentMethodConfig {
   id: string;
@@ -48,7 +49,7 @@ const Settings: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<
-    'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription'
+    'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription' | 'tenantProfile'
   >('financial');
 
   useEffect(() => {
@@ -420,6 +421,12 @@ const Settings: React.FC = () => {
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'notifications' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
           >
             <Bell size={20} /> Notificações
+          </button>
+          <button
+            onClick={() => setActiveTab('tenantProfile')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'tenantProfile' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+          >
+            <User size={20} /> Perfil Inquilino
           </button>
         </nav>
 
@@ -915,6 +922,16 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'tenantProfile' && (
+            <div className='animate-fadeIn space-y-6 max-w-4xl'>
+              <div className='mb-6 px-1'>
+                <h2 className='text-xl font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]'>Perfil Padrão do Inquilino</h2>
+                <p className='text-sm text-slate-500 font-medium mt-1'>Defina as exigências base que serão aplicadas automaticamente a todos os seus novos imóveis.</p>
+              </div>
+              <TenantProfileConfigPanel propertyId="global" />
             </div>
           )}
         </div>
