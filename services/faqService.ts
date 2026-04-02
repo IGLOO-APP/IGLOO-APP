@@ -98,8 +98,10 @@ export const faqService = {
 
   reorderFAQs(orderedIds: string[]) {
     const faqs = this.getFAQs();
+    const faqMap = new Map(faqs.map(f => [f.id, f])); // Create a map for O(1) lookup
+
     const reordered = orderedIds.map((id, index) => {
-      const faq = faqs.find(f => f.id === id);
+      const faq = faqMap.get(id); // Use map for faster lookup
       if (faq) return { ...faq, order: index + 1 };
       return null;
     }).filter(f => f !== null) as FAQ[];

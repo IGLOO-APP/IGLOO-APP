@@ -127,7 +127,14 @@ export const propertyService = {
   },
 
   async getById(id: string): Promise<Property | null> {
-    const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+      .from('properties')
+      .select(
+        `
+                *,
+                contracts:contracts(id, contract_number, start_date, end_date, monthly_value, payment_day, status, profiles:tenant_id(id, name, email, phone, avatar_url))
+            `
+      ).eq('id', id).single();
 
     if (error) {
       console.error('Error fetching property:', error);
