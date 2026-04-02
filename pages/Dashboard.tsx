@@ -476,15 +476,15 @@ const Dashboard: React.FC = () => {
           <div className='grid grid-cols-2 md:flex gap-3 shrink-0'>
             <button
               onClick={() => navigate('/financials', { state: { openAdd: true, type: 'expense' } })}
-              className='h-12 md:h-14 px-4 md:px-6 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 font-bold text-[10px] md:text-sm text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2'
+              className='h-12 md:h-14 px-3 md:px-6 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 font-bold text-[10px] md:text-sm text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5 md:gap-2'
             >
-              <Receipt size={16} className='text-red-500' /> Despesa
+              <Receipt size={16} className='text-red-500 shrink-0' /> <span className='truncate'>Despesa</span>
             </button>
             <button
               onClick={() => navigate('/tenants', { state: { openAdd: true } })}
-              className='h-12 md:h-14 px-4 md:px-6 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-[10px] md:text-sm shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2'
+              className='h-12 md:h-14 px-3 md:px-6 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-[10px] md:text-sm shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-1.5 md:gap-2'
             >
-              <UserPlus size={16} /> Inquilino
+              <UserPlus size={16} className='shrink-0' /> <span className='truncate'>Inquilino</span>
             </button>
           </div>
         </section>

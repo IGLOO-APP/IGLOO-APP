@@ -85,15 +85,15 @@ export const AlertBadge = ({ icon: Icon, label, count, color, onClick }: AlertBa
     className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl border transition-all active:scale-95 shrink-0 ${color} bg-opacity-10 border-opacity-20 hover:bg-opacity-20`}
   >
     <div className='relative shrink-0'>
-      <Icon size={18} className='md:hidden' />
-      <Icon size={20} className='hidden md:block' />
+      <Icon size={18} className='md:hidden shrink-0' />
+      <Icon size={20} className='hidden md:block shrink-0' />
       {count > 0 && (
         <span className='absolute -top-1 -right-1 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark'></span>
       )}
     </div>
-    <div className='text-left min-w-0'>
+    <div className='text-left flex-1 min-w-0'>
       <p className='text-[9px] md:text-xs font-bold uppercase opacity-80 truncate'>{label}</p>
-      {count > 0 && <p className='text-[11px] md:text-sm font-bold truncate'>{count} pendentes</p>}
+      {count > 0 && <p className='text-[10px] md:text-sm font-bold truncate'>{count} pendentes</p>}
     </div>
     <ChevronRight size={14} className='opacity-50 shrink-0' />
   </button>

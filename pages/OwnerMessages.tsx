@@ -516,11 +516,11 @@ const OwnerMessages: React.FC = () => {
               <div className='flex-1 min-w-0'>
                 <div className='flex justify-between items-baseline mb-0.5'>
                   <h3
-                    className={`text-sm truncate pr-2 ${chat.unreadCount > 0 ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`}
+                    className={`text-sm truncate flex-1 min-w-0 pr-2 ${chat.unreadCount > 0 ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`}
                   >
                     {chat.tenantName}
                   </h3>
-                  <span className='text-[10px] text-slate-400 shrink-0'>
+                  <span className='text-[10px] text-slate-400 shrink-0 font-medium'>
                     {chat.lastMessageTime}
                   </span>
                 </div>
@@ -528,9 +528,9 @@ const OwnerMessages: React.FC = () => {
                   {chat.ticket?.id || chat.property}
                 </p>
 
-                <div className='flex justify-between items-end'>
+                <div className='flex justify-between items-end gap-2'>
                   <p
-                    className={`text-xs truncate max-w-[140px] ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}`}
+                    className={`text-xs truncate flex-1 min-w-0 ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}`}
                   >
                     {chat.messages[chat.messages.length - 1].sender === 'me' && (
                       <span className='mr-1'>Você:</span>
@@ -538,7 +538,7 @@ const OwnerMessages: React.FC = () => {
                     {chat.lastMessage}
                   </p>
                   {chat.unreadCount > 0 && (
-                    <div className='w-5 h-5 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full'>
+                    <div className='w-5 h-5 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full shrink-0 mb-0.5'>
                       {chat.unreadCount}
                     </div>
                   )}
@@ -565,8 +565,8 @@ const OwnerMessages: React.FC = () => {
                 </button>
 
                 <div>
-                  <div className='flex items-center gap-2'>
-                    <h2 className='text-sm font-bold text-slate-900 dark:text-white leading-tight'>
+                  <div className='flex flex-wrap items-center gap-1.5 md:gap-2'>
+                    <h2 className='text-sm md:text-base font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[140px] md:max-w-none'>
                       {activeChat.tenantName}
                     </h2>
                     <span
@@ -694,9 +694,10 @@ const OwnerMessages: React.FC = () => {
                   <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
                     <button
                       type='button'
-                      className='p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
+                      className='p-2 md:p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
                     >
-                      <Paperclip size={20} />
+                      <Paperclip size={18} className='md:hidden' />
+                      <Paperclip size={20} className='hidden md:block' />
                     </button>
                     <div className='flex-1 bg-gray-100 dark:bg-black/20 rounded-2xl border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex items-center'>
                       <input
