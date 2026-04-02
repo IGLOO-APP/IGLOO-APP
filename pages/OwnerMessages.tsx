@@ -620,6 +620,14 @@ const OwnerMessages: React.FC = () => {
               </div>
             </div>
 
+            {/* Mobile Swipe-to-close Overlay for Details Panel */}
+            {showDetailsPanel && (
+              <div 
+                className='fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden'
+                onClick={() => setShowDetailsPanel(false)}
+              ></div>
+            )}
+
             <div className='flex-1 flex overflow-hidden'>
               {/* Messages Stream */}
               <div className='flex-1 flex flex-col min-w-0'>
@@ -711,7 +719,9 @@ const OwnerMessages: React.FC = () => {
 
               {/* 3. RIGHT PANEL (Collapsible Dashboard/Ticket) */}
               {showDetailsPanel && (
-                <div className='w-80 bg-white dark:bg-surface-dark border-l border-gray-200 dark:border-white/5 hidden lg:flex flex-col h-full animate-slideLeft'>
+                <div 
+                  className={`fixed lg:relative inset-y-0 right-0 w-80 md:w-96 lg:w-80 bg-white dark:bg-surface-dark border-l border-gray-200 dark:border-white/5 flex flex-col h-full z-40 lg:z-10 shadow-2xl lg:shadow-none transition-transform duration-300 animate-slideLeft`}
+                >
                   {/* Tabs for Right Panel */}
                   <div className='flex border-b border-gray-200 dark:border-white/5 p-2 gap-2'>
                     {activeChat.ticket && (
@@ -732,7 +742,7 @@ const OwnerMessages: React.FC = () => {
                       onClick={() => setShowDetailsPanel(false)}
                       className='p-2 text-slate-400 hover:text-slate-600'
                     >
-                      <X size={18} />
+                      <X size={20} />
                     </button>
                   </div>
 

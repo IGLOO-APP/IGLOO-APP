@@ -38,6 +38,7 @@ const propertySchema = z.object({
   condoValue: z.string().optional(),
   iptuValue: z.string().optional(),
   description: z.string().optional(),
+  coverImage: z.string().nullable().optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -228,8 +229,8 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                 <MapPin size={14} /> Localização
               </h3>
               <div className='space-y-4'>
-                <div className='flex gap-4'>
-                  <div className='w-40 space-y-2'>
+                <div className='flex flex-col md:flex-row gap-4'>
+                  <div className='w-full md:w-40 space-y-2'>
                     <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
                       CEP
                     </label>
@@ -368,7 +369,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2'>
                 <DollarSign size={14} /> Composição Financeira
               </h3>
-              <div className='grid grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
                 <div className='space-y-2'>
                   <label className='text-sm font-bold text-emerald-600 dark:text-emerald-400'>
                     Aluguel

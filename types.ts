@@ -105,6 +105,9 @@ export interface Property {
   numeric_price?: number; // Numeric rental price for calculations
   area: string;
   image: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  yield?: string | number;
   status_color?: string;
   tenant?: Tenant | null;
   contract?: Contract | null;

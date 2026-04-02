@@ -206,67 +206,6 @@ const Login: React.FC = () => {
           </div>
         </form>
 
-        <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-sm'>
-          <p className='font-semibold text-blue-900 dark:text-blue-300 mb-2'>
-            🧪 Modo de Desenvolvimento
-          </p>
-          <p className='text-blue-700 dark:text-blue-400 mb-3'>
-            Use as credenciais abaixo para testar os perfis:
-          </p>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-            <div
-              className='bg-white dark:bg-surface-dark rounded-lg p-3 font-mono text-xs space-y-1 border border-blue-100 dark:border-white/5 cursor-pointer hover:border-primary/50 transition-colors'
-              onClick={() => {
-                setEmail('proprietario@teste.com');
-                setPassword('teste123');
-              }}
-            >
-              <div className='font-bold text-slate-500 uppercase mb-1'>Proprietário</div>
-              <div className='truncate'>
-                <span className='text-slate-400'>E:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>proprietario@teste.com</span>
-              </div>
-              <div>
-                <span className='text-slate-400'>S:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>teste123</span>
-              </div>
-            </div>
-            <div
-              className='bg-white dark:bg-surface-dark rounded-lg p-3 font-mono text-xs space-y-1 border border-blue-100 dark:border-white/5 cursor-pointer hover:border-primary/50 transition-colors'
-              onClick={() => {
-                setEmail('inquilino@teste.com');
-                setPassword('teste123');
-              }}
-            >
-              <div className='font-bold text-slate-500 uppercase mb-1'>Inquilino</div>
-              <div className='truncate'>
-                <span className='text-slate-400'>E:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>inquilino@teste.com</span>
-              </div>
-              <div>
-                <span className='text-slate-400'>S:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>teste123</span>
-              </div>
-            </div>
-            <div
-              className='bg-white dark:bg-surface-dark rounded-lg p-3 font-mono text-xs space-y-1 border border-blue-100 dark:border-white/5 cursor-pointer hover:border-primary/50 transition-colors col-span-1 md:col-span-2'
-              onClick={() => {
-                setEmail('admin@teste.com');
-                setPassword('admin123');
-              }}
-            >
-              <div className='font-bold text-amber-500 uppercase mb-1'>Admin (Dono)</div>
-              <div className='truncate'>
-                <span className='text-slate-400'>E:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>admin@teste.com</span>
-              </div>
-              <div>
-                <span className='text-slate-400'>S:</span>{' '}
-                <span className='text-slate-900 dark:text-white'>admin123</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <p className='text-center text-xs text-slate-400 dark:text-slate-600'>
           Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade.

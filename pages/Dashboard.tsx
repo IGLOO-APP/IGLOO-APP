@@ -123,7 +123,7 @@ const OnboardingChecklist: React.FC<{ onboarding: any }> = ({ onboarding }) => {
             </div>
           </div>
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-3 pt-2'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pt-2'>
             {steps.map((step) => (
               <div 
                 key={step.id}
@@ -407,7 +407,7 @@ const Dashboard: React.FC = () => {
         )}
 
         {/* --- 1. HERO METRICS --- */}
-        <section className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+        <section className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
           <HeroCard
             title='Patrimônio Total'
             value={metrics.totalWealth}
@@ -450,7 +450,7 @@ const Dashboard: React.FC = () => {
 
         {/* --- 2. ALERTS & ACTIONS --- */}
         <section className='flex flex-col md:flex-row gap-6'>
-          <div className='flex-1 overflow-x-auto hide-scrollbar flex gap-4 pb-2 md:pb-0'>
+          <div className='flex-1 overflow-x-auto hide-scrollbar flex gap-3 pb-2 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0'>
             <AlertBadge
               icon={AlertTriangle}
               label='Vacância Crítica'
@@ -473,18 +473,18 @@ const Dashboard: React.FC = () => {
               onClick={() => navigate('/messages')}
             />
           </div>
-          <div className='flex gap-3 shrink-0'>
+          <div className='grid grid-cols-2 md:flex gap-3 shrink-0'>
             <button
               onClick={() => navigate('/financials', { state: { openAdd: true, type: 'expense' } })}
-              className='h-14 px-6 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 font-bold text-sm text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2'
+              className='h-12 md:h-14 px-4 md:px-6 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 font-bold text-[10px] md:text-sm text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2'
             >
-              <Receipt size={18} className='text-red-500' /> Nova Despesa
+              <Receipt size={16} className='text-red-500' /> Despesa
             </button>
             <button
               onClick={() => navigate('/tenants', { state: { openAdd: true } })}
-              className='h-14 px-6 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm shadow-lg hover:opacity-90 transition-all flex items-center gap-2'
+              className='h-12 md:h-14 px-4 md:px-6 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-[10px] md:text-sm shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2'
             >
-              <UserPlus size={18} /> Novo Inquilino
+              <UserPlus size={16} /> Inquilino
             </button>
           </div>
         </section>
@@ -508,7 +508,7 @@ const Dashboard: React.FC = () => {
                   <Download size={18} className='text-slate-400' />
                 </button>
               </div>
-              <div className='h-[350px] w-full'>
+              <div className='h-[250px] md:h-[350px] w-full mt-4 md:mt-0'>
                 <ResponsiveContainer width='100%' height='100%'>
                   <ComposedChart
                     data={financialHistory}
@@ -630,15 +630,15 @@ const Dashboard: React.FC = () => {
               <div className='flex items-center gap-4 mt-4 px-2'>
                 <div className='flex items-center gap-2'>
                   <div className='w-2.5 h-2.5 rounded-[2px] bg-[#10b981]'></div>
-                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
+                  <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
                 </div>
                 <div className='flex items-center gap-2'>
                   <div className='w-2.5 h-2.5 rounded-[2px] bg-[#ef4444]'></div>
-                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
+                  <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
                 </div>
                 <div className='flex items-center gap-2'>
                   <div className='w-[18px] h-[2px] bg-[#13c8ec]'></div>
-                  <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Projeção (3 meses)</span>
+                  <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Projeção (3 meses)</span>
                 </div>
               </div>
             </div>

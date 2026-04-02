@@ -211,7 +211,7 @@ const Properties: React.FC = () => {
                   <button onClick={clearFilters} className='text-xs font-bold text-primary hover:underline'>Limpar Tudo</button>
                 </div>
                 
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
                   <div className='space-y-3'>
                     <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Dormitórios & Banheiros</label>
                     <div className='flex flex-col gap-2'>
@@ -311,22 +311,22 @@ const Properties: React.FC = () => {
                   {/* Quick Metrics Overlay in List View */}
                   <div className='absolute top-3 right-3 flex flex-col items-end gap-2 pointer-events-none'>
                     {prop.status === 'DISPONÍVEL' && (
-                      <div className='flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
-                        <Clock size={10} /> 12 dias vago
+                      <div className='flex items-center gap-1 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
+                        <Clock size={10} /> 12 d.
                       </div>
                     )}
                     {prop.status === 'ALUGADO' && (
-                      <div className='flex items-center gap-1 bg-emerald-500/90 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-black text-white shadow-lg'>
-                        <TrendingUp size={10} /> 0.82% Yield
+                      <div className='flex items-center gap-1 bg-emerald-500/90 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-black text-white shadow-lg'>
+                        <TrendingUp size={10} /> {prop.yield || '0.82'}% Yield
                       </div>
                     )}
-                    <div className='flex items-center gap-1 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
+                    <div className='flex items-center gap-1 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
                       <Eye size={10} /> 24
                     </div>
                   </div>
 
-                  {/* Feature Quick View Overlay */}
-                  <div className='absolute bottom-[104px] left-3 right-3 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 pointer-events-none'>
+                  {/* Feature Quick View Overlay - Visible on Mobile, Hover on Desktop */}
+                  <div className='absolute bottom-[104px] left-3 right-3 flex justify-center gap-2 md:gap-3 md:opacity-0 md:group-hover:opacity-100 transition-all md:translate-y-2 md:group-hover:translate-y-0 pointer-events-none'>
                     <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
                       <Bed size={12} className='text-primary' /> {prop.bedrooms || 0}
                     </div>
