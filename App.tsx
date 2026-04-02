@@ -12,6 +12,7 @@ import AdminLayout from './components/AdminLayout';
 
 // Components
 import ImpersonationBanner from './components/ImpersonationBanner';
+import PWAPrompt from './components/PWAPrompt';
 
 // Lazy Loaded Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -79,6 +80,7 @@ const App: React.FC = () => {
         <AuthProvider>
           <NotificationProvider>
             <ImpersonationBanner />
+            <PWAPrompt />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path='/login' element={<Login />} />
