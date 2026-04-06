@@ -11,7 +11,8 @@ import {
   Trash2, 
   ToggleLeft, 
   ToggleRight,
-  ChevronDown
+  ChevronDown,
+  RefreshCw
 } from 'lucide-react';
 import { RequirementStatus, TenantProfileConfig } from '../../types';
 import { tenantConfigService, TEMPLATES } from '../../services/tenantConfigService';
@@ -26,6 +27,7 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
     tenantConfigService.getConfigForProperty(propertyId)
   );
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
   
   const [newSharedDoc, setNewSharedDoc] = useState('');
   const [newRequiredDoc, setNewRequiredDoc] = useState({ label: '', description: '' });
@@ -131,7 +133,13 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       propertyId,
       sections: JSON.parse(JSON.stringify(template.config.sections))
     });
+    setIsTemplateMenuOpen(false);
+    addToast('Template Aplicado', `Configuração "${template.label}" aplicada.`, 'success');
   };
+
+  const currentTemplate = Object.values(TEMPLATES).find(t => 
+    JSON.stringify(t.config.sections) === JSON.stringify(config.sections)
+  ) || TEMPLATES.default;
 
   const StatusSelector = ({ section, field, currentStatus }: { section: any, field: string, currentStatus: RequirementStatus }) => (
     <div className='flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl gap-1'>
@@ -153,21 +161,48 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
 
   return (
     <div className='space-y-8 animate-fadeIn pb-10'>
-      {/* Template Selector */}
+      {/* Template Selector (Premium Custom Dropdown) */}
       <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
         <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1'>
           Template de Configuração
         </label>
+        
         <div className='relative'>
-          <select 
-            onChange={(e) => applyTemplate(e.target.value as any)}
-            className='w-full pl-4 pr-10 py-3 bg-slate-50 dark:bg-white/5 border border-transparent rounded-xl text-sm font-bold text-slate-900 dark:text-white appearance-none outline-none focus:ring-2 focus:ring-primary cursor-pointer'
+          <button
+            onClick={() => setIsTemplateMenuOpen(!isTemplateMenuOpen)}
+            className={`w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 dark:bg-black/20 border rounded-xl text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-white/5 active:scale-[0.99] group ${isTemplateMenuOpen ? 'border-primary ring-2 ring-primary/10' : 'border-slate-100 dark:border-white/5'}`}
           >
-            {Object.entries(TEMPLATES).map(([key, t]) => (
-              <option key={key} value={key}>{t.label}</option>
-            ))}
-          </select>
-          <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={16} />
+            <span className='flex items-center gap-2'>
+              <RefreshCw size={14} className={`text-primary transition-all duration-500 ${isTemplateMenuOpen ? 'rotate-180' : 'opacity-0 group-hover:opacity-100'}`} />
+              {currentTemplate.label}
+            </span>
+            <ChevronDown size={18} className={`text-slate-400 transition-transform duration-300 ${isTemplateMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isTemplateMenuOpen && (
+            <>
+              <div 
+                className='fixed inset-0 z-40' 
+                onClick={() => setIsTemplateMenuOpen(false)} 
+              />
+              <div className='absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-scaleUp origin-top backdrop-blur-xl'>
+                <div className='p-2 space-y-1'>
+                  {Object.entries(TEMPLATES).map(([key, t]) => (
+                    <button
+                      key={key}
+                      onClick={() => applyTemplate(key as any)}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between hover:bg-primary/5 group ${currentTemplate.label === t.label ? 'text-primary bg-primary/5' : 'text-slate-600 dark:text-slate-300 hover:text-primary'}`}
+                    >
+                      {t.label}
+                      {currentTemplate.label === t.label && (
+                        <div className='w-1.5 h-1.5 bg-primary rounded-full animate-pulse' />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

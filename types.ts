@@ -23,6 +23,7 @@ export interface Tenant {
   image?: string;
   status: 'active' | 'late' | 'inactive';
   property?: string;
+  property_id?: string;
   rent?: string;
   due?: number;
   score?: number;

@@ -181,7 +181,7 @@ const Tenants: React.FC = () => {
           filteredTenants.map((t) => (
             <div
               key={t.id}
-              onClick={() => setSelectedTenantId(t.id)}
+              onClick={() => setSelectedTenantId(t.id.toString())}
               className='group flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-transparent dark:border-white/5 hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative select-none overflow-hidden'
             >
               <div className='p-4 flex items-start gap-4'>
@@ -279,15 +279,6 @@ const Tenants: React.FC = () => {
         )}
       </div>
 
-      {/* Floating Add Button */}
-      <div className='absolute bottom-6 right-6 z-20 md:fixed md:bottom-6 md:right-6'>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className='flex items-center justify-center w-14 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full shadow-2xl cursor-pointer transform hover:scale-105 active:scale-95 transition-all'
-        >
-          <Plus size={28} />
-        </button>
-      </div>
 
       {/* Add Tenant Modal */}
       {showAddForm && (

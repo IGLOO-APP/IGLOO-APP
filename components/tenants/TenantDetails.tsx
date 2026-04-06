@@ -31,7 +31,13 @@ interface TenantDetailsProps {
 
 export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs' | 'tenantConfig'>('overview');
-  const [showConfig, setShowConfig] = useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo(0, 0);
+    }
+  }, [activeTab]);
 
   // Robust Mock Data for a single tenant
   const tenant = {
@@ -51,6 +57,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
             ? 'Kitnet 05 - Centro'
             : 'Apt 101 - Ed. Horizonte',
       address: 'Rua Augusta, 150 - SP',
+      id: id === 't3' || id === 3 ? 'studio-22' : id === 't2' || id === 2 ? '105' : '101',
       image:
         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=300',
     },
@@ -170,7 +177,10 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         </div>
 
         {/* 3. Content Area */}
-        <div className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'>
+        <div 
+          ref={scrollContainerRef}
+          className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'
+        >
           {activeTab === 'overview' && (
             <div className='space-y-6 animate-fadeIn'>
               {/* Associated Property Card */}
@@ -431,7 +441,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
 
           {activeTab === 'tenantConfig' && (
             <div className='animate-fadeIn'>
-              <TenantProfileConfigPanel propertyId={id.toString()} />
+              <TenantProfileConfigPanel propertyId={tenant.property.id} />
             </div>
           )}
         </div>

@@ -352,15 +352,6 @@ const Properties: React.FC = () => {
             )}
           </div>
 
-          <div className='absolute bottom-6 right-6 z-20 md:fixed md:bottom-6 md:right-6'>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className='flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-dark text-white font-bold text-lg h-14 pl-5 pr-6 shadow-lg shadow-primary/30 transition-all transform active:scale-95'
-            >
-              <Plus size={24} />
-              <span>Adicionar Imóvel</span>
-            </button>
-          </div>
         </>
       ) : (
         <PropertyMapView properties={properties} onBack={() => setViewMode('list')} />
