@@ -174,6 +174,16 @@ const TenantProfile: React.FC = () => {
     if (config.sections.requiredDocs.guarantee === 'required' && documents.guarantee.status === 'pending')
       items.push({ id: 'guarantee', label: 'Apólice / Garantia', tab: 'documents' });
 
+    // Custom Documents (Configurable)
+    config.sections.requiredDocs.custom.forEach(custom => {
+      if (custom.status === 'required') {
+        const docStatus = documents[custom.id]?.status || 'pending';
+        if (docStatus === 'pending') {
+          items.push({ id: custom.id, label: custom.label, tab: 'documents' });
+        }
+      }
+    });
+
     return items;
   };
 
@@ -191,6 +201,10 @@ const TenantProfile: React.FC = () => {
     if (config.sections.requiredDocs.income === 'required') count++;
     if (config.sections.requiredDocs.residence === 'required') count++;
     if (config.sections.requiredDocs.guarantee === 'required') count++;
+    
+    // Custom required docs
+    count += config.sections.requiredDocs.custom.filter(c => c.status === 'required').length;
+    
     return count;
   };
 
@@ -565,6 +579,31 @@ const TenantProfile: React.FC = () => {
                     </button>
                   </div>
                 ))}
+
+                {/* Custom Shared Docs */}
+                {config.sections.sharedDocs.custom.filter(doc => doc.active).map((doc, i) => (
+                  <div
+                    key={doc.id}
+                    className='flex items-center justify-between p-5 border-b border-gray-50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group'
+                  >
+                    <div className='flex items-center gap-4'>
+                      <div className='p-3 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-500 group-hover:text-primary transition-colors'>
+                        <FileCheck size={22} />
+                      </div>
+                      <div>
+                        <span className='text-sm font-black text-slate-800 dark:text-slate-200 block mb-0.5'>
+                          {doc.label}
+                        </span>
+                        <span className='text-[10px] text-slate-400 font-bold uppercase tracking-wider'>
+                          Documento Complementar
+                        </span>
+                      </div>
+                    </div>
+                    <button className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'>
+                      <Download size={22} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -599,6 +638,49 @@ const TenantProfile: React.FC = () => {
                           </h4>
                           <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
                             {doc.desc}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className='flex items-center gap-4 ml-auto md:ml-0'>
+                        {docState.date && (
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline'>
+                            Enviado em {docState.date}
+                          </span>
+                        )}
+                        {getStatusBadge(docState.status, doc.status as RequirementStatus)}
+                        <div className='flex flex-col items-center gap-1'>
+                          <button
+                            onClick={() => handleDocUpload(doc.id)}
+                            className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-primary hover:bg-primary/10 transition-all active:scale-95'
+                          >
+                            <Upload size={20} />
+                          </button>
+                          <span className='text-[9px] font-bold text-slate-400 uppercase'>PDF ou imagem, máx. 5MB</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Custom Required Docs */}
+                {config.sections.requiredDocs.custom.filter(doc => doc.status !== 'hidden').map((doc) => {
+                  const docState = documents[doc.id] || { status: 'pending', date: null };
+                  return (
+                    <div
+                      key={doc.id}
+                      className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
+                    >
+                      <div className='flex items-center gap-4'>
+                        <div className={`p-3 rounded-xl ${docState.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'} dark:bg-opacity-10`}>
+                          <FileText size={22} />
+                        </div>
+                        <div>
+                          <h4 className='text-sm font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
+                            {doc.label}
+                          </h4>
+                          <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                            {doc.description || 'Documento exigido'}
                           </p>
                         </div>
                       </div>

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { RequirementStatus, TenantProfileConfig } from '../../types';
 import { tenantConfigService, TEMPLATES } from '../../services/tenantConfigService';
+import { ToastContainer, ToastMessage } from '../ui/Toast';
 
 interface TenantProfileConfigPanelProps {
   propertyId: string;
@@ -24,6 +25,19 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
   const [config, setConfig] = useState<TenantProfileConfig>(
     tenantConfigService.getConfigForProperty(propertyId)
   );
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  
+  const [newSharedDoc, setNewSharedDoc] = useState('');
+  const [newRequiredDoc, setNewRequiredDoc] = useState({ label: '', description: '' });
+
+  const addToast = (title: string, message: string, type: ToastMessage['type']) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts(prev => [...prev, { id, title, message, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   const handleStatusChange = (section: keyof TenantProfileConfig['sections'], field: string, status: RequirementStatus) => {
     setConfig(prev => {
@@ -35,23 +49,80 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       } else if (section === 'emergency') {
         newConfig.sections.emergency.status = status;
       } else if (section === 'requiredDocs') {
-        (newConfig.sections.requiredDocs as any)[field] = status;
+        const foundCustom = newConfig.sections.requiredDocs.custom.find((c: any) => c.id === field);
+        if (foundCustom) {
+          foundCustom.status = status;
+        } else {
+          (newConfig.sections.requiredDocs as any)[field] = status;
+        }
       }
       return newConfig;
     });
   };
 
-  const handleToggleSharedDoc = (field: keyof TenantProfileConfig['sections']['sharedDocs']) => {
+  const handleToggleSharedDoc = (field: string) => {
     setConfig(prev => {
       const newConfig = JSON.parse(JSON.stringify(prev));
-      (newConfig.sections.sharedDocs as any)[field] = !(newConfig.sections.sharedDocs as any)[field];
+      const foundCustom = newConfig.sections.sharedDocs.custom.find((c: any) => c.id === field);
+      if (foundCustom) {
+        foundCustom.active = !foundCustom.active;
+      } else {
+        (newConfig.sections.sharedDocs as any)[field] = !(newConfig.sections.sharedDocs as any)[field];
+      }
+      return newConfig;
+    });
+  };
+
+  const addCustomSharedDoc = () => {
+    if (!newSharedDoc.trim()) return;
+    setConfig(prev => {
+      const newConfig = JSON.parse(JSON.stringify(prev));
+      newConfig.sections.sharedDocs.custom.push({
+        id: Math.random().toString(36).substring(2, 9),
+        label: newSharedDoc,
+        active: true
+      });
+      return newConfig;
+    });
+    setNewSharedDoc('');
+    addToast('Documento Adicionado', 'Tipo de documento personalizado criado.', 'success');
+  };
+
+  const removeCustomSharedDoc = (id: string) => {
+    setConfig(prev => {
+      const newConfig = JSON.parse(JSON.stringify(prev));
+      newConfig.sections.sharedDocs.custom = newConfig.sections.sharedDocs.custom.filter((c: any) => c.id !== id);
+      return newConfig;
+    });
+  };
+
+  const addCustomRequiredDoc = () => {
+    if (!newRequiredDoc.label.trim()) return;
+    setConfig(prev => {
+      const newConfig = JSON.parse(JSON.stringify(prev));
+      newConfig.sections.requiredDocs.custom.push({
+        id: Math.random().toString(36).substring(2, 9),
+        label: newRequiredDoc.label,
+        description: newRequiredDoc.description,
+        status: 'required'
+      });
+      return newConfig;
+    });
+    setNewRequiredDoc({ label: '', description: '' });
+    addToast('Documento Adicionado', 'Pendente de envio pelo inquilino.', 'success');
+  };
+
+  const removeCustomRequiredDoc = (id: string) => {
+    setConfig(prev => {
+      const newConfig = JSON.parse(JSON.stringify(prev));
+      newConfig.sections.requiredDocs.custom = newConfig.sections.requiredDocs.custom.filter((c: any) => c.id !== id);
       return newConfig;
     });
   };
 
   const handleSave = () => {
     tenantConfigService.saveConfig(config);
-    alert('Configurações aplicadas para os inquilinos deste imóvel');
+    addToast('Salvo com Sucesso', 'Configurações aplicadas para os inquilinos deste imóvel.', 'success');
   };
 
   const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
@@ -175,6 +246,48 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
             <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>Apólice / Garantia</span>
             <StatusSelector section="requiredDocs" field="guarantee" currentStatus={config.sections.requiredDocs.guarantee} />
           </div>
+          {config.sections.requiredDocs.custom.map((custom) => (
+            <div key={custom.id} className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between group'>
+              <div className='flex items-center gap-3'>
+                <button 
+                  onClick={() => removeCustomRequiredDoc(custom.id)}
+                  className='text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all'
+                >
+                  <Trash2 size={16} />
+                </button>
+                <div className='flex flex-col'>
+                  <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>{custom.label}</span>
+                  <span className='text-[10px] text-slate-400 font-medium'>{custom.description}</span>
+                </div>
+              </div>
+              <StatusSelector section="requiredDocs" field={custom.id} currentStatus={custom.status} />
+            </div>
+          ))}
+          {/* Add Custom Required Doc */}
+          <div className='p-4 bg-slate-50 dark:bg-white/5 space-y-3'>
+            <div className='flex gap-3'>
+              <input 
+                type="text"
+                placeholder="Título do novo documento (ex: Declaração de IR)"
+                className="flex-1 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
+                value={newRequiredDoc.label}
+                onChange={(e) => setNewRequiredDoc({...newRequiredDoc, label: e.target.value})}
+              />
+              <button 
+                onClick={addCustomRequiredDoc}
+                className='px-4 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary-dark transition-all'
+              >
+                <Plus size={16} /> Adicionar
+              </button>
+            </div>
+            <input 
+              type="text"
+              placeholder="Descrição breve (opcional)"
+              className="w-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-xs outline-none focus:ring-1 focus:ring-primary"
+              value={newRequiredDoc.description}
+              onChange={(e) => setNewRequiredDoc({...newRequiredDoc, description: e.target.value})}
+            />
+          </div>
         </div>
       </section>
 
@@ -199,6 +312,41 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               </button>
             </div>
           ))}
+          {config.sections.sharedDocs.custom.map((custom) => (
+            <div key={custom.id} className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between group'>
+              <div className='flex items-center gap-3'>
+                <button 
+                  onClick={() => removeCustomSharedDoc(custom.id)}
+                  className='text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all'
+                >
+                  <Trash2 size={16} />
+                </button>
+                <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>{custom.label}</span>
+              </div>
+              <button 
+                onClick={() => handleToggleSharedDoc(custom.id)}
+                className={`p-1 rounded-full transition-colors ${custom.active ? 'text-primary' : 'text-slate-300'}`}
+              >
+                {custom.active ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+              </button>
+            </div>
+          ))}
+          {/* Add Custom Shared Doc */}
+          <div className='p-4 bg-slate-50 dark:bg-white/5 flex gap-3'>
+            <input 
+              type="text"
+              placeholder="Nome do documento personalizado"
+              className="flex-1 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
+              value={newSharedDoc}
+              onChange={(e) => setNewSharedDoc(e.target.value)}
+            />
+            <button 
+              onClick={addCustomSharedDoc}
+              className='px-4 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary-dark transition-all'
+            >
+              <Plus size={16} /> Adicionar
+            </button>
+          </div>
         </div>
       </section>
 
@@ -209,6 +357,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       >
         <Save size={20} /> Salvar Configurações
       </button>
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };
