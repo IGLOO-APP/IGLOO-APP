@@ -12,6 +12,7 @@ export interface User {
   is_suspended?: boolean;
   is_pending?: boolean;
   managed_by_admin_id?: string;
+  property_id?: string;
 }
 
 export interface Tenant {

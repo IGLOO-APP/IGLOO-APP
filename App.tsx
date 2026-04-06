@@ -38,6 +38,8 @@ const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const SupportCenter = lazy(() => import('./pages/admin/SupportCenter'));
 const SubscriptionManagement = lazy(() => import('./pages/admin/SubscriptionManagement'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
+const Announcements = lazy(() => import('./pages/admin/Announcements'));
+const ConversionReport = lazy(() => import('./pages/admin/ConversionReport'));
 const AdminManager = lazy(() => import('./components/admin/AdminManager'));
 
 const queryClient = new QueryClient();
@@ -130,6 +132,8 @@ const App: React.FC = () => {
                   <Route path='users' element={<UserManagement />} />
                   <Route path='subscriptions' element={<SubscriptionManagement />} />
                   <Route path='support' element={<SupportCenter />} />
+                  <Route path='announcements' element={<Announcements />} />
+                  <Route path='conversion' element={<ConversionReport />} />
                   <Route path='team' element={<AdminManager />} />
                   <Route path='settings' element={<SystemSettings />} />
                 </Route>

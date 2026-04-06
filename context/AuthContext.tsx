@@ -91,6 +91,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           permissions: (profile as any).permissions,
           is_suspended: (profile as any).is_suspended,
           avatar: (profile as any).avatar_url || undefined,
+          property_id: (profile as any).property_id,
         } as User);
       }
     } catch (error) {

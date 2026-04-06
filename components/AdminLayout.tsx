@@ -11,6 +11,8 @@ import {
   LogOut,
   ShieldCheck,
   UserCog,
+  Megaphone,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,6 +22,8 @@ const adminNavItems = [
   { path: '/admin/team', label: 'Minha Equipe', icon: UserCog },
   { path: '/admin/subscriptions', label: 'Assinaturas', icon: CreditCard },
   { path: '/admin/support', label: 'Central de Suporte', icon: LifeBuoy },
+  { path: '/admin/announcements', label: 'Comunicados', icon: Megaphone },
+  { path: '/admin/conversion', label: 'Conversão', icon: BarChart3 },
   { path: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 

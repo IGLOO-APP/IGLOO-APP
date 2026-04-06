@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -53,6 +53,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { dashboardService } from '../services/dashboardService';
 import { HeroCard, AlertBadge } from '../components/ui/DashboardComponents';
+const AnnouncementBanner = lazy(() => import('../components/AnnouncementBanner'));
 
 const OnboardingChecklist: React.FC<{ onboarding: any }> = ({ onboarding }) => {
   const navigate = useNavigate();
@@ -405,6 +406,11 @@ const Dashboard: React.FC = () => {
         {!dashboardData.onboarding?.allCompleted && (
           <OnboardingChecklist onboarding={dashboardData.onboarding} />
         )}
+
+        {/* --- 0. ANNOUNCEMENTS --- */}
+        <Suspense fallback={<div className='h-40 bg-slate-100 dark:bg-white/5 rounded-[32px] animate-pulse'></div>}>
+          <AnnouncementBanner />
+        </Suspense>
 
         {/* --- 1. HERO METRICS --- */}
         <section className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>

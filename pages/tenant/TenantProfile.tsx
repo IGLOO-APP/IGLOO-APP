@@ -46,7 +46,7 @@ const TenantProfile: React.FC = () => {
   const [showReminderSelect, setShowReminderSelect] = useState(false);
 
   // Profile Config (Ajuste Controle Total)
-  const config = tenantConfigService.getConfigForProperty('101'); // Mock propertyId for demo
+  const config = tenantConfigService.getConfigForProperty(user?.property_id?.toString() || '101'); 
 
   // File Upload Refs and State
   const fileInputRef = useRef<HTMLInputElement>(null);
