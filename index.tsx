@@ -4,10 +4,10 @@ import './index.css';
 import App from './App';
 import { ClerkProvider } from '@clerk/clerk-react';
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Clerk Publishable Key in .env");
+if (!PUBLISHABLE_KEY && import.meta.env.PROD) {
+  console.warn("Aviso: VITE_CLERK_PUBLISHABLE_KEY não encontrada. Verifique as variáveis de ambiente no Vercel.");
 }
 
 const rootElement = document.getElementById('root');
