@@ -38,6 +38,7 @@ export const adminService = {
       const roleMap: Record<string, string> = {
         Proprietário: 'owner',
         Inquilino: 'tenant',
+        Administrador: 'admin',
       };
       query = query.eq('role', roleMap[role] || role.toLowerCase());
     }

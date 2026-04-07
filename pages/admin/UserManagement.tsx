@@ -79,10 +79,8 @@ const UserManagement: React.FC = () => {
   }, [searchTerm, filterStatus, filterPlan, filterRole, filterPeriod, currentPage]);
 
   const handleImpersonate = (u: User) => {
-    const confirm = window.confirm(`Deseja acessar o sistema como ${u.name}?`);
-    if (confirm) {
+    if (window.confirm(`Deseja acessar o sistema como ${u.name}?`)) {
       startImpersonation(u);
-      window.open('#/', '_blank');
     }
   };
 
@@ -251,13 +249,13 @@ const UserManagement: React.FC = () => {
           <FilterSelect
             label='Plano'
             value={filterPlan}
-            options={['Todos', 'Free', 'Starter', 'Professional', 'Enterprise']}
+            options={['Todos', 'Free', 'Pro', 'Elite', 'Trial', 'Premium']}
             onChange={setFilterPlan}
           />
           <FilterSelect
             label='Role'
             value={filterRole}
-            options={['Todos', 'Proprietário', 'Inquilino']}
+            options={['Todos', 'Proprietário', 'Inquilino', 'Administrador']}
             onChange={setFilterRole}
           />
           <FilterSelect
@@ -377,18 +375,26 @@ const UserManagement: React.FC = () => {
                     <td className='px-8 py-5'>
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                          u.role === 'owner'
+                          u.role === 'admin'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
+                            : u.role === 'owner'
                             ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                             : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
                         }`}
                       >
-                        {u.role === 'owner' ? 'Proprietário' : 'Inquilino'}
+                        {u.role === 'admin' ? 'Administrador' : u.role === 'owner' ? 'Proprietário' : 'Inquilino'}
                       </span>
                     </td>
                     <td className='px-8 py-5'>
-                      <span className='text-[10px] font-black px-2.5 py-1 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 dark:text-slate-400 uppercase tracking-widest'>
-                        {(u as any).plan || 'Free'}
-                      </span>
+                      {u.role === 'admin' ? (
+                        <span className='text-[10px] font-black px-2.5 py-1 bg-amber-500/10 text-amber-600 rounded-lg uppercase tracking-widest'>
+                          Sistema
+                        </span>
+                      ) : (
+                        <span className='text-[10px] font-black px-2.5 py-1 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 dark:text-slate-400 uppercase tracking-widest'>
+                          {(u as any).plan || 'Free'}
+                        </span>
+                      )}
                     </td>
                     <td className='px-8 py-5'>
                       <span
@@ -558,9 +564,8 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* User Profile Modal */}
-      {selectedUser && (
+      {selectedUser && isProfileModalOpen && (
         <ModalWrapper
-          isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
           title='Perfil Completo do Usuário'
           className='md:max-w-2xl'
@@ -671,9 +676,8 @@ const UserManagement: React.FC = () => {
       )}
 
       {/* Change Plan Modal */}
-      {selectedUser && (
+      {selectedUser && isPlanModalOpen && (
         <ModalWrapper
-          isOpen={isPlanModalOpen}
           onClose={() => setIsPlanModalOpen(false)}
           title='Alterar Plano do Usuário'
           className='md:max-w-md'
@@ -691,7 +695,7 @@ const UserManagement: React.FC = () => {
                 Selecione o Novo Plano
               </label>
               <div className='grid grid-cols-1 gap-2'>
-                {['Free', 'Starter', 'Professional', 'Enterprise'].map((p) => (
+                {['Free', 'Pro', 'Elite', 'Trial', 'Premium'].map((p) => (
                   <button
                     key={p}
                     onClick={() => setNewPlan(p)}

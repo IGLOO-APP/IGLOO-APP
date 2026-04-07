@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, UserRole } from '../types';
-import { authService } from '../services/authService';
+import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { profileService } from '../services/profileService';
+import { User, UserRole } from '../types';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  signIn: () => Promise<void>;
+  signUp: () => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   impersonatingFrom?: User | null;
@@ -19,123 +19,122 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerkAuth();
   const [user, setUser] = useState<User | null>(null);
   const [impersonatingFrom, setImpersonatingFrom] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const startImpersonation = (targetUser: User) => {
-    setImpersonatingFrom(user);
-    setUser(targetUser);
-    // Use window.location as navigate might not be available at this level if not wrapped correctly
-    window.location.hash = '#/';
-  };
-
-  const stopImpersonation = () => {
-    if (impersonatingFrom) {
-      setUser(impersonatingFrom);
-      setImpersonatingFrom(null);
-      window.location.hash = '#/admin/users';
-    }
-  };
-
+  // Inicializa o estado de impersonação a partir do sessionStorage
   useEffect(() => {
-    checkSession();
-
-    let subscription: { unsubscribe: () => void } = { unsubscribe: () => {} };
-
-    const { data } = authService.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        await loadUserProfile(session.user.id);
-      } else {
-        setUser(null);
-      }
+    const savedTarget = sessionStorage.getItem('igloo_impersonated_user');
+    const savedAdmin = sessionStorage.getItem('igloo_admin_user');
+    
+    if (savedTarget && savedAdmin) {
+      setUser(JSON.parse(savedTarget));
+      setImpersonatingFrom(JSON.parse(savedAdmin));
       setLoading(false);
-    });
-    subscription = data.subscription;
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    }
   }, []);
 
-  const checkSession = async () => {
-    try {
-      const session = await authService.getSession();
-      if (session?.user) {
-        await loadUserProfile(session.user.id);
+  useEffect(() => {
+    const isImpersonating = !!sessionStorage.getItem('igloo_impersonated_user');
+    
+    // Só carrega do Clerk se NÃO estivermos no modo de impersonação salvo
+    if (isLoaded && !isImpersonating) {
+      if (clerkUser) {
+        loadUserProfile(clerkUser);
       } else {
+        setUser(null);
         setLoading(false);
       }
-    } catch (error) {
-      console.error('Error checking session:', error);
+    } else if (isLoaded && isImpersonating) {
+      // Se estamos impersonando, já definimos o user no useEffect acima
       setLoading(false);
     }
-  };
+  }, [clerkUser, isLoaded]);
 
-  const loadUserProfile = async (userId: string) => {
+  const loadUserProfile = async (clerkUser: any) => {
     try {
-      const authUser = await authService.getCurrentUser();
-      const profile =
-        authUser && authUser.id === userId
-          ? await profileService.ensureProfile(authUser as any)
-          : await profileService.getById(userId);
+      const profile = await profileService.ensureProfile({
+        id: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress || '',
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+      } as any);
 
       if (profile) {
-        setUser({
+        const userData: User = {
           id: profile.id,
           name: profile.name || '',
           email: profile.email,
-          role: profile.role as UserRole,
+          role: (clerkUser.publicMetadata.role as UserRole) || (profile.role as UserRole) || 'owner',
           admin_type: (profile as any).admin_type,
           permissions: (profile as any).permissions,
           is_suspended: (profile as any).is_suspended,
-          avatar: (profile as any).avatar_url || undefined,
+          avatar: clerkUser.imageUrl || (profile as any).avatar_url,
           property_id: (profile as any).property_id,
-        } as User);
+        } as User;
+        setUser(userData);
       }
     } catch (error) {
-      console.error('Error loading user profile:', error);
-      setUser(null);
+      console.error('Error loading user profile from Supabase:', error);
+      
+      // FALLBACK: Se o Supabase falhar, usamos os dados do Clerk para não travar o usuário
+      if (clerkUser) {
+        setUser({
+          id: clerkUser.id,
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Usuário Igloo',
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          role: (clerkUser.publicMetadata.role as UserRole) || 'owner',
+          avatar: clerkUser.imageUrl,
+        } as User);
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      const data = await authService.signIn(email, password);
-      // For mock mode, we need to manually trigger profile load
-      if (data.user) {
-        await loadUserProfile(data.user.id);
-      }
-    } catch (error: any) {
-      console.error('Sign in error:', error);
-      throw new Error(error.message || 'Erro ao fazer login');
+  const startImpersonation = (targetUser: User) => {
+    // Salva no sessionStorage para persistir no reload
+    sessionStorage.setItem('igloo_impersonated_user', JSON.stringify(targetUser));
+    sessionStorage.setItem('igloo_admin_user', JSON.stringify(user));
+    
+    setImpersonatingFrom(user);
+    setUser(targetUser);
+    
+    // Redireciona via hard reload para limpar estados globais e caches
+    if (targetUser.role === 'tenant') {
+      window.location.href = '/tenant';
+    } else {
+      window.location.href = '/';
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, role: UserRole) => {
-    try {
-      const data = await authService.signUp({ email, password, name, role } as any);
-      // For mock mode, we need to manually trigger profile load
-      if (data.user) {
-        await loadUserProfile(data.user.id);
-      }
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      throw new Error(error.message || 'Erro ao criar conta');
+  const stopImpersonation = () => {
+    const admin = sessionStorage.getItem('igloo_admin_user');
+    sessionStorage.removeItem('igloo_impersonated_user');
+    sessionStorage.removeItem('igloo_admin_user');
+    
+    if (admin) {
+      const adminData = JSON.parse(admin);
+      setUser(adminData);
+      setImpersonatingFrom(null);
+      window.location.href = '/admin/users';
     }
   };
 
   const logout = async () => {
     try {
-      await authService.signOut();
+      sessionStorage.removeItem('igloo_impersonated_user');
+      sessionStorage.removeItem('igloo_admin_user');
+      await signOut();
       setUser(null);
       navigate('/login');
     } catch (error: any) {
       console.error('Sign out error:', error);
-      throw new Error(error.message || 'Erro ao fazer logout');
     }
   };
 
@@ -143,9 +142,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider
       value={{
         user,
-        loading,
-        signIn,
-        signUp,
+        loading: !isLoaded || loading,
+        signIn: async () => navigate('/login'),
+        signUp: async () => navigate('/signup'),
         logout,
         isAuthenticated: !!user,
         impersonatingFrom,

@@ -12,12 +12,15 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@clerk/backend": "^3.2.4",
+    "@clerk/clerk-react": "^5.61.4",
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/supabase-js": "^2.39.0",
     "@tanstack/react-query": "^5.95.2",
+    "dotenv": "^17.4.1",
     "lucide-react": "^0.563.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

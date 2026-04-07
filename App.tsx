@@ -1,9 +1,11 @@
 import React, { Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { SignedIn, SignedOut, useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { UserRole } from './types';
 import { NotificationProvider } from './context/NotificationContext';
+import { useAuth } from './context/AuthContext';
 
 // Layouts
 import Layout from './components/Layout';
@@ -63,13 +65,15 @@ const ProtectedRoute: React.FC<{
     return <Navigate to='/login' state={{ from: location }} replace />;
   }
 
+  const role = user.role;
+
   const isAllowed = Array.isArray(allowedRole)
-    ? allowedRole.includes(user.role)
-    : user.role === allowedRole;
+    ? allowedRole.includes(role)
+    : role === allowedRole;
 
   if (!isAllowed) {
-    if (user.role === 'admin') return <Navigate to='/admin' replace />;
-    return <Navigate to={user.role === 'owner' ? '/' : '/tenant'} replace />;
+    if (role === 'admin') return <Navigate to='/admin' replace />;
+    return <Navigate to={role === 'owner' ? '/' : '/tenant'} replace />;
   }
 
   return children;
@@ -78,7 +82,7 @@ const ProtectedRoute: React.FC<{
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <HashRouter>
+      <BrowserRouter>
         <AuthProvider>
           <NotificationProvider>
             <ImpersonationBanner />
@@ -143,7 +147,7 @@ const App: React.FC = () => {
             </Suspense>
           </NotificationProvider>
         </AuthProvider>
-      </HashRouter>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
