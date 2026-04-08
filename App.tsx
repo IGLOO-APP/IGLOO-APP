@@ -24,6 +24,7 @@ const Contracts = lazy(() => import('./pages/Contracts'));
 const Financials = lazy(() => import('./pages/Financials'));
 const Login = lazy(() => import('./pages/Login'));
 const SignUp = lazy(() => import('./pages/SignUp'));
+const SSOCallback = lazy(() => import('./pages/SSOCallback'));
 const OwnerMessages = lazy(() => import('./pages/OwnerMessages'));
 const OwnerProfile = lazy(() => import('./pages/OwnerProfile'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -91,6 +92,7 @@ const App: React.FC = () => {
               <Routes>
                 <Route path='/login' element={<Login />} />
                 <Route path='/signup' element={<SignUp />} />
+                <Route path='/sso-callback' element={<SSOCallback />} />
                 {/* Rest of the routes */}
                 <Route
                   path='/'
