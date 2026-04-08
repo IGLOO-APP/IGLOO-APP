@@ -15,6 +15,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../hooks/useTheme';
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,7 +31,7 @@ const adminNavItems = [
 const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
 
   const filteredNavItems = adminNavItems.filter((item) => {
     if (item.path === '/admin/team') {
@@ -38,30 +39,6 @@ const AdminLayout: React.FC = () => {
     }
     return true;
   });
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    checkTheme();
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') checkTheme();
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.theme = 'dark';
-    }
-  };
 
   return (
     <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark transition-colors duration-300 pointer-events-auto'>

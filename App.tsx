@@ -1,8 +1,7 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
-import { SignedIn, SignedOut, useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { UserRole } from './types';
 import { NotificationProvider } from './context/NotificationContext';
 import { useAuth } from './context/AuthContext';
@@ -11,6 +10,11 @@ import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import TenantLayout from './components/TenantLayout';
 import AdminLayout from './components/AdminLayout';
+
+// Services for Loaders
+import { dashboardService } from './services/dashboardService';
+import { propertyService } from './services/propertyService';
+import { adminService } from './services/adminService';
 
 // Components
 import ImpersonationBanner from './components/ImpersonationBanner';
@@ -80,78 +84,136 @@ const ProtectedRoute: React.FC<{
   return children;
 };
 
+// Root componente que envolve a aplicação com os provedores necessários
+// Isso é necessário porque o AuthProvider usa useNavigate, que requer o contexto do Router
+const Root = () => (
+  <AuthProvider>
+    <NotificationProvider>
+      <ImpersonationBanner />
+      <PWAPrompt />
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </NotificationProvider>
+  </AuthProvider>
+);
+
+const router = createBrowserRouter([
+  {
+    element: <Root />,
+    children: [
+      {
+        path: '/login',
+        element: <Login />,
+      },
+      {
+        path: '/signup',
+        element: <SignUp />,
+      },
+      {
+        path: '/sso-callback',
+        element: <SSOCallback />,
+      },
+      // Owner Routes
+      {
+        path: '/',
+        element: (
+          <ProtectedRoute allowedRole='owner'>
+            <Layout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { 
+            index: true, 
+            element: <Dashboard />,
+            loader: async () => {
+              // Pre-fetch dashboard data
+              await queryClient.prefetchQuery({
+                queryKey: ['dashboardData'],
+                queryFn: () => dashboardService.getDashboardData(),
+              });
+              return null;
+            }
+          },
+          { 
+            path: 'properties', 
+            element: <Properties />,
+            loader: async () => {
+              // Pre-fetch properties data
+              await queryClient.prefetchQuery({
+                queryKey: ['properties'],
+                queryFn: () => propertyService.getAll(),
+              });
+              return null;
+            }
+          },
+          { path: 'tenants', element: <Tenants /> },
+          { path: 'messages', element: <OwnerMessages /> },
+          { path: 'profile', element: <OwnerProfile /> },
+          { path: 'contracts', element: <Contracts /> },
+          { path: 'financials', element: <Financials /> },
+          { path: 'settings', element: <Settings /> },
+        ],
+      },
+      // Tenant Routes
+      {
+        path: '/tenant',
+        element: (
+          <ProtectedRoute allowedRole='tenant'>
+            <TenantLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <TenantDashboard /> },
+          { path: 'payments', element: <TenantPayments /> },
+          { path: 'maintenance', element: <TenantMaintenance /> },
+          { path: 'profile', element: <TenantProfile /> },
+        ],
+      },
+      // Admin Routes
+      {
+        path: '/admin',
+        element: (
+          <ProtectedRoute allowedRole='admin'>
+            <AdminLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { 
+            path: 'users', 
+            element: <UserManagement />,
+            loader: async () => {
+              await queryClient.prefetchQuery({
+                queryKey: ['users', 1, '', 'Todos', 'Todos', 'Todos', 'Todos'],
+                queryFn: () => adminService.getUsers(1, 10, '', 'Todos', 'Todos', 'Todos', 'Todos'),
+              });
+              return null;
+            }
+          },
+          { path: 'subscriptions', element: <SubscriptionManagement /> },
+          { path: 'support', element: <SupportCenter /> },
+          { path: 'announcements', element: <Announcements /> },
+          { path: 'conversion', element: <ConversionReport /> },
+          { path: 'team', element: <AdminManager /> },
+          { path: 'settings', element: <SystemSettings /> },
+        ],
+      },
+      {
+        path: '*',
+        element: <Navigate to='/' replace />,
+      },
+    ],
+  },
+]);
+
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <NotificationProvider>
-            <ImpersonationBanner />
-            <PWAPrompt />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path='/login' element={<Login />} />
-                <Route path='/signup' element={<SignUp />} />
-                <Route path='/sso-callback' element={<SSOCallback />} />
-                {/* Rest of the routes */}
-                <Route
-                  path='/'
-                  element={
-                    <ProtectedRoute allowedRole='owner'>
-                      <Layout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path='properties' element={<Properties />} />
-                  <Route path='tenants' element={<Tenants />} />
-                  <Route path='messages' element={<OwnerMessages />} />
-                  <Route path='profile' element={<OwnerProfile />} />
-                  <Route path='contracts' element={<Contracts />} />
-                  <Route path='financials' element={<Financials />} />
-                  <Route path='settings' element={<Settings />} />
-                </Route>
-                {/* Tenant Routes */}
-                <Route
-                  path='/tenant'
-                  element={
-                    <ProtectedRoute allowedRole='tenant'>
-                      <TenantLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<TenantDashboard />} />
-                  <Route path='payments' element={<TenantPayments />} />
-                  <Route path='maintenance' element={<TenantMaintenance />} />
-                  <Route path='profile' element={<TenantProfile />} />
-                </Route>
-                {/* Admin Routes */}
-                <Route
-                  path='/admin'
-                  element={
-                    <ProtectedRoute allowedRole='admin'>
-                      <AdminLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<AdminDashboard />} />
-                  <Route path='users' element={<UserManagement />} />
-                  <Route path='subscriptions' element={<SubscriptionManagement />} />
-                  <Route path='support' element={<SupportCenter />} />
-                  <Route path='announcements' element={<Announcements />} />
-                  <Route path='conversion' element={<ConversionReport />} />
-                  <Route path='team' element={<AdminManager />} />
-                  <Route path='settings' element={<SystemSettings />} />
-                </Route>
-
-                <Route path='*' element={<Navigate to='/' replace />} />
-              </Routes>
-            </Suspense>
-          </NotificationProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 };
 
 export default App;
+

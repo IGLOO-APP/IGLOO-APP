@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserButton } from '@clerk/clerk-react';
+import { useTheme } from '../hooks/useTheme';
 
 const navItems = [
   { path: '/', label: 'Início', icon: LayoutDashboard },
@@ -36,37 +37,7 @@ const adminItems = [
 const Layout: React.FC = () => {
   const location = useLocation();
   const { logout, impersonatingFrom, user, stopImpersonation } = useAuth();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-
-    checkTheme();
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          checkTheme();
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, { attributes: true });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.theme = 'dark';
-    }
-  };
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark transition-colors duration-300'>
