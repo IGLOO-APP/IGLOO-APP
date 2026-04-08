@@ -54,6 +54,10 @@ const Login: React.FC = () => {
               identityPreviewText: 'text-white font-bold',
               identityPreviewEditButtonIcon: 'text-primary',
               otpCodeFieldInput: 'bg-surface-dark-hover border-white/10 text-primary font-bold text-xl',
+              // Ocultar branding do Clerk
+              badge: 'hidden',
+              footer: '!bg-transparent border-0 pt-0',
+              footerPages: 'hidden',
             }
           }}
         />

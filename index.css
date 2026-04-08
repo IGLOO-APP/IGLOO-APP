@@ -117,3 +117,27 @@
     animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1);
   }
 }
+
+/* ─── Ocultar branding do Clerk ─── */
+/* Badge "Development mode" e "Secured by Clerk" */
+.cl-badge,
+.cl-badge--shadow,
+[data-localization-key="badge__devMode"],
+.cl-internal-b3fm6y,
+.cl-internal-1dauvpw,
+.cl-footer,
+.cl-footerPages {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Remove padding extra no rodapé do card sem o branding */
+.cl-card {
+  padding-bottom: 0 !important;
+}
+.cl-footer ~ * {
+  display: none !important;
+}
