@@ -92,6 +92,33 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     }
   };
 
+  const formatCEP = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{5})(\d)/, '$1-$2')
+      .slice(0, 9);
+  };
+
+  const formatCurrency = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+    const numberValue = Number(cleanValue) / 100;
+    return numberValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  };
+
+  const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCEP(e.target.value);
+    setValue('cep', formatted);
+  };
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'rentValue' | 'condoValue' | 'iptuValue') => {
+    const value = e.target.value;
+    const formatted = formatCurrency(value);
+    setValue(field, formatted);
+  };
+
   const fetchCep = async () => {
     const cep = getValues('cep');
     const cleanCep = cep.replace(/\D/g, '');
@@ -115,7 +142,20 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
   };
 
   const onSubmit = (data: PropertyFormData) => {
-    onSave({ ...data, coverImage });
+    // Convert formatted currency back to numbers for the API
+    const parseCurrency = (val?: string) => {
+      if (!val) return 0;
+      return Number(val.replace(/\D/g, '')) / 100;
+    };
+
+    const payload = {
+      ...data,
+      rentValue: parseCurrency(data.rentValue).toString(),
+      condoValue: data.condoValue ? parseCurrency(data.condoValue).toString() : undefined,
+      iptuValue: data.iptuValue ? parseCurrency(data.iptuValue).toString() : undefined,
+      coverImage
+    };
+    onSave(payload as any);
   };
 
   return (
@@ -237,6 +277,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     <div className='relative'>
                       <input
                         {...register('cep')}
+                        onChange={handleCEPChange}
                         onBlur={fetchCep}
                         maxLength={9}
                         className={`w-full pl-4 pr-9 py-3 rounded-xl bg-white dark:bg-surface-dark border ${errors.cep ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:text-white`}
@@ -380,7 +421,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     </span>
                     <input
                       {...register('rentValue')}
-                      type='number'
+                      onChange={(e) => handleCurrencyChange(e, 'rentValue')}
                       className={`w-full pl-9 pr-3 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border ${errors.rentValue ? 'border-red-500' : 'border-emerald-100 dark:border-emerald-900/30'} outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold text-emerald-900 dark:text-emerald-100`}
                       placeholder='0,00'
                     />
@@ -399,7 +440,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     </span>
                     <input
                       {...register('condoValue')}
-                      type='number'
+                      onChange={(e) => handleCurrencyChange(e, 'condoValue')}
                       className='w-full pl-9 pr-3 py-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary/50 transition-all dark:text-white'
                       placeholder='0,00'
                     />
@@ -415,7 +456,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     </span>
                     <input
                       {...register('iptuValue')}
-                      type='number'
+                      onChange={(e) => handleCurrencyChange(e, 'iptuValue')}
                       className='w-full pl-9 pr-3 py-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary/50 transition-all dark:text-white'
                       placeholder='0,00'
                     />

@@ -84,6 +84,8 @@ const ProtectedRoute: React.FC<{
   return children;
 };
 
+import GlobalErrorElement from './components/GlobalErrorElement';
+
 // Root componente que envolve a aplicação com os provedores necessários
 // Isso é necessário porque o AuthProvider usa useNavigate, que requer o contexto do Router
 const Root = () => (
@@ -101,6 +103,7 @@ const Root = () => (
 const router = createBrowserRouter([
   {
     element: <Root />,
+    errorElement: <GlobalErrorElement />,
     children: [
       {
         path: '/login',

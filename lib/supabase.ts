@@ -1,56 +1,49 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
-// NOTE: Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in .env
-// For demo purposes, we will default to placeholders if not found,
-// to prevent runtime crash during initial render, but functionality will require valid keys.
+// Global variable to store the Clerk JWT
+let supabaseToken: string | null = null;
 
-// Safely access environment variables using Vite's import.meta.env
+/**
+ * Injects the Clerk JWT into the Supabase client.
+ * This should be called whenever the Clerk session changes.
+ */
+export const setSupabaseToken = (token: string | null) => {
+  supabaseToken = token;
+};
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
-  console.error(
-    'ERRO: Variáveis de ambiente do Supabase não encontradas. Verifique seu arquivo .env'
-  );
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('ERRO: Variáveis de ambiente do Supabase não encontradas.');
 }
 
+// Create a single Supabase client with a custom fetch that injects the token
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder',
   {
+    global: {
+      fetch: async (url, options = {}) => {
+        const headers = new Headers(options.headers);
+        
+        // If we have a token, inject it into the Authorization header
+        if (supabaseToken) {
+          headers.set('Authorization', `Bearer ${supabaseToken}`);
+        }
+
+        return fetch(url, {
+          ...options,
+          headers,
+        });
+      },
+    },
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
+      persistSession: false, // Clerk handles persistence
     },
   }
 );
 
-export const isAuthenticated = async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return !!session;
-};
-
-export const getCurrentUser = async () => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
-};
-
-export const getCurrentProfile = async () => {
-  const user = await getCurrentUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-
-  if (error) {
-    console.error('Error fetching profile:', error);
-    return null;
-  }
-
-  return data;
-};
+// Helper for quick checks (optional, but kept for compatibility)
+export const isAuthenticated = () => !!supabaseToken;

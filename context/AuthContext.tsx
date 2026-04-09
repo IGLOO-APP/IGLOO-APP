@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { useUser, useAuth as useClerkAuth, useSession } from '@clerk/clerk-react';
 import { profileService } from '../services/profileService';
+import { setSupabaseToken } from '../lib/supabase';
 import { User, UserRole } from '../types';
 
 interface AuthContextType {
@@ -21,10 +22,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user: clerkUser, isLoaded } = useUser();
   const { signOut } = useClerkAuth();
+  const { session } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [impersonatingFrom, setImpersonatingFrom] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Ponte de Segurança Clerk -> Supabase
+  useEffect(() => {
+    const updateSupabaseToken = async () => {
+      if (session) {
+        try {
+          const token = await session.getToken({ template: 'supabase' });
+          setSupabaseToken(token);
+        } catch (error) {
+          console.error('Erro ao obter token do Supabase via Clerk:', error);
+          setSupabaseToken(null);
+        }
+      } else {
+        setSupabaseToken(null);
+      }
+    };
+
+    if (isLoaded) {
+      updateSupabaseToken();
+    }
+  }, [session, isLoaded]);
 
   // Inicializa o estado de impersonação a partir do sessionStorage
   useEffect(() => {
