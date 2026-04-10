@@ -35,10 +35,14 @@ const GlobalErrorElement: React.FC = () => {
           </h1>
           
           <p className='text-slate-500 dark:text-slate-400 mb-10 text-sm leading-relaxed font-medium'>
-            {errorMessage}
+            {typeof errorMessage === 'string' || typeof errorMessage === 'number' 
+              ? errorMessage 
+              : 'Ocorreu um erro inesperado no processamento dos dados.'}
             <br />
             <span className='text-[10px] opacity-50 uppercase mt-2 block tracking-widest'>Código do erro: {errorStatus}</span>
           </p>
+
+
 
           <div className='space-y-3'>
             <button

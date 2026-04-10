@@ -116,6 +116,41 @@
   .animate-slideUp {
     animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1);
   }
+
+  /* Auth Specific Shimmer Button */
+  .auth-button-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-button-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.5s;
+    pointer-events: none;
+  }
+  .auth-button-shimmer:hover::after {
+    left: 120%;
+    top: 120%;
+  }
+
+  /* Neo-brutalist Input Focus */
+  .auth-input-focus {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .auth-input-focus:focus {
+    box-shadow: 0 0 0 4px rgba(19, 200, 236, 0.15), 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
 }
 
 /* ─── Ocultar branding do Clerk ─── */
@@ -126,7 +161,8 @@
 .cl-internal-b3fm6y,
 .cl-internal-1dauvpw,
 .cl-footer,
-.cl-footerPages {
+.cl-footerPages,
+.cl-internal-1hp5nno {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -141,3 +177,4 @@
 .cl-footer ~ * {
   display: none !important;
 }
+

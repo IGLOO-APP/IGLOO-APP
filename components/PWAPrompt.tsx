@@ -38,56 +38,51 @@ const PWAPrompt: React.FC = () => {
   if (!offlineReady && !needRefresh && !deferredPrompt) return null;
 
   return (
-    <div className='fixed bottom-4 left-4 right-4 z-[9999] md:left-auto md:right-8 md:bottom-8 md:w-96 animate-slideUp'>
-      <div className='bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl shadow-xl dark:shadow-none p-6 relative overflow-hidden backdrop-blur-xl'>
-        {/* Progress bar background */}
-        {(needRefresh || deferredPrompt) && (
-          <div className='absolute top-0 left-0 h-1 bg-primary w-full shadow-sm' />
+    <div className='fixed bottom-6 left-6 z-[9999] animate-slideUp'>
+      <div className="relative group">
+        {(needRefresh || (!!deferredPrompt && !offlineReady)) && (
+
+          <button
+            onClick={needRefresh ? () => updateServiceWorker(true) : handleInstall}
+            className="flex items-center gap-3 h-12 px-4 rounded-full bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 border border-white/10 dark:border-black/5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:pr-6 group-hover:shadow-primary/20"
+          >
+            <div className="relative">
+              {needRefresh ? (
+                <RefreshCw size={20} className="animate-spin" />
+              ) : (
+                <Download size={20} />
+              )}
+              {needRefresh && (
+                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-slate-900 animate-pulse" />
+              )}
+            </div>
+            
+            <span className="text-xs font-black uppercase tracking-widest whitespace-nowrap overflow-hidden max-w-0 group-hover:max-w-[200px] transition-all duration-500">
+              {needRefresh ? 'Atualizar Igloo' : 'Instalar no Dispositivo'}
+            </span>
+          </button>
         )}
 
-        <button
-          onClick={close}
-          className='absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-colors'
-        >
-          <X size={18} />
-        </button>
+        {offlineReady && !needRefresh && !deferredPrompt && (
+          <div className="flex items-center gap-2 h-10 px-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest backdrop-blur-md animate-fadeOut">
+            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+            Pronto Offline
+          </div>
+        )}
 
-        <div className='flex gap-5 items-start'>
-          <div className='w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-inner'>
-            {needRefresh ? (
-              <RefreshCw size={28} className='animate-spin' />
-            ) : deferredPrompt ? (
-              <Download size={28} />
-            ) : (
-              <RefreshCw size={28} />
-            )}
-          </div>
-          
-          <div className='flex-1 pr-6'>
-            <h3 className='font-bold text-slate-900 dark:text-white text-base mb-1 tracking-tight'>
-              {needRefresh ? 'Nova Versão' : deferredPrompt ? 'Instalar no Dispositivo' : 'Pronto Offline'}
-            </h3>
-            <p className='text-sm text-slate-500 dark:text-slate-400 leading-snug font-medium'>
-              {needRefresh 
-                ? 'Atualizamos o sistema com melhorias importantes.' 
-                : deferredPrompt 
-                  ? 'Você pode instalar o Igloo como um aplicativo para acesso rápido e seguro.'
-                  : 'O Igloo agora está carregado e pronto para uso offline.'}
-            </p>
-            
-            {(needRefresh || deferredPrompt) && (
-              <button
-                onClick={needRefresh ? () => updateServiceWorker(true) : handleInstall}
-                className='mt-5 w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/10'
-              >
-                {needRefresh ? 'Atualizar agora' : 'Instalar Agora'}
-              </button>
-            )}
-          </div>
-        </div>
+        {/* Close Button (Optional, maybe not needed for a discrete FAB) */}
+        {(needRefresh || deferredPrompt) && (
+          <button
+            onClick={close}
+            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg"
+          >
+            <X size={10} strokeWidth={4} />
+          </button>
+        )}
       </div>
     </div>
   );
 };
+
 
 export default PWAPrompt;
