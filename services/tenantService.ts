@@ -64,7 +64,7 @@ export const tenantService = {
 
     if (error) {
       console.error('Error fetching tenants:', error);
-      throw error;
+      return [];
     }
 
     return data.map((t: any) => ({

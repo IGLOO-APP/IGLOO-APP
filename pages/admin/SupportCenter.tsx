@@ -16,6 +16,8 @@ import {
   History,
   UserPlus,
   X,
+  Lock,
+  Unlock,
   LayoutDashboard,
   FileText,
   CheckCheck,
@@ -58,6 +60,7 @@ const SupportCenter: React.FC = () => {
   const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'owner'>('ticket');
   const [inputText, setInputText] = useState('');
+  const [isActionsLocked, setIsActionsLocked] = useState(true);
 
   useEffect(() => {
     if (showFAQManager) {
@@ -398,8 +401,8 @@ const SupportCenter: React.FC = () => {
                   <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => {
                   setPriorityFilter('Todos');
                   setAssigneeFilter('Todos');
@@ -418,13 +421,12 @@ const SupportCenter: React.FC = () => {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
-                  statusFilter === status || (status === 'Urgentes' && priorityFilter === 'Alta')
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${statusFilter === status || (status === 'Urgentes' && priorityFilter === 'Alta')
                     ? status === 'Urgentes'
                       ? 'bg-rose-500 text-white border-transparent'
                       : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
                     : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/10 hover:bg-slate-50'
-                }`}
+                  }`}
                 onClickCapture={() => {
                   if (status === 'Urgentes') {
                     setPriorityFilter('Alta');
@@ -448,11 +450,10 @@ const SupportCenter: React.FC = () => {
               <div
                 key={t.id}
                 onClick={() => setSelectedTicketId(t.id)}
-                className={`group p-3 rounded-xl flex items-start gap-3 cursor-pointer transition-all border border-transparent ${
-                  selectedTicketId === t.id
+                className={`group p-3 rounded-xl flex items-start gap-3 cursor-pointer transition-all border border-transparent ${selectedTicketId === t.id
                     ? 'bg-primary/10 dark:bg-primary/20 border-primary/20'
                     : 'hover:bg-gray-100 dark:hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <div className='relative shrink-0 mt-1'>
                   {t.ownerAvatar ? (
@@ -520,13 +521,12 @@ const SupportCenter: React.FC = () => {
                       Ticket #{selectedTicket.id}
                     </h2>
                     <span
-                      className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap ${
-                        selectedTicket.status === 'Resolvido'
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap ${selectedTicket.status === 'Resolvido'
                           ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
                           : selectedTicket.status === 'Em Andamento'
                             ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                             : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
-                      }`}
+                        }`}
                     >
                       {selectedTicket.status}
                     </span>
@@ -588,11 +588,10 @@ const SupportCenter: React.FC = () => {
                           className={`max-w-[80%] flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}
                         >
                           <div
-                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${
-                              msg.sender === 'me'
+                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${msg.sender === 'me'
                                 ? 'bg-primary text-white rounded-tr-sm'
                                 : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
-                            }`}
+                              }`}
                           >
                             {msg.text}
                           </div>
@@ -663,193 +662,212 @@ const SupportCenter: React.FC = () => {
               {/* 3. Right Info Panel */}
               <div className={`w-[260px] shrink-0 bg-white dark:bg-surface-dark border-l border-gray-200 dark:border-white/5 flex-col h-full animate-slideLeft ${showDetailsPanel ? 'flex' : 'hidden'} min-[860px]:flex`}>
                 <div className='flex border-b border-gray-200 dark:border-white/5 p-2 gap-1.5'>
-                    <button
-                      onClick={() => setActiveRightTab('ticket')}
-                      className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-                    >
-                      Chamado
-                    </button>
-                    <button
-                      onClick={() => setActiveRightTab('owner')}
-                      className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'owner' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-                    >
-                      Proprietário
-                    </button>
-                    <button
-                      onClick={() => setShowDetailsPanel(false)}
-                      className='p-1.5 text-slate-400 hover:text-slate-600 min-[860px]:hidden'
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setActiveRightTab('ticket')}
+                    className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                  >
+                    Chamado
+                  </button>
+                  <button
+                    onClick={() => setActiveRightTab('owner')}
+                    className={`flex-1 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${activeRightTab === 'owner' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+                  >
+                    Proprietário
+                  </button>
+                  <button
+                    onClick={() => setShowDetailsPanel(false)}
+                    className='p-1.5 text-slate-400 hover:text-slate-600 min-[860px]:hidden'
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
 
-                  <div className='flex-1 overflow-y-auto'>
-                    {activeRightTab === 'ticket' ? (
-                      <div className='p-4 space-y-5'>
-                        <div>
-                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
-                            ID do Ticket
-                          </span>
-                          <p className='text-sm font-bold text-slate-900 dark:text-white'>#{selectedTicket.id}</p>
-                          <span className='text-[11px] text-slate-500'>{selectedTicket.category}</span>
-                        </div>
+                <div className='flex-1 overflow-y-auto'>
+                  {activeRightTab === 'ticket' ? (
+                    <div className='p-4 space-y-5'>
+                      <div>
+                        <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
+                          ID do Ticket
+                        </span>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>#{selectedTicket.id}</p>
+                        <span className='text-[11px] text-slate-500'>{selectedTicket.category}</span>
+                      </div>
 
-                        <div>
-                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
+                      <div>
+                        <div className='flex items-center justify-between mb-2 group/title'>
+                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block'>
                             Ações Rápidas
                           </span>
-                          <div className='flex flex-col gap-2'>
-                            <button
-                              onClick={() => handleStatusChange('Em Andamento')}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold border transition-all ${
-                                selectedTicket.status === 'Em Andamento'
-                                  ? 'bg-blue-500 text-white border-transparent shadow-lg shadow-blue-500/20'
-                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
-                              }`}
-                            >
-                              <Wrench size={14} /> Em Andamento
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange('Resolvido')}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-bold border transition-all ${
-                                selectedTicket.status === 'Resolvido'
-                                  ? 'bg-emerald-500 text-white border-transparent shadow-lg shadow-emerald-500/20'
-                                  : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'
-                              }`}
-                            >
-                              <CheckCircle2 size={14} /> Resolvido
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => setIsActionsLocked(!isActionsLocked)}
+                            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-300 ${isActionsLocked ? 'bg-slate-100 dark:bg-white/5 text-slate-400 opacity-60 hover:opacity-100' : 'bg-primary/20 text-primary border border-primary/30 animate-pulse'}`}
+                            title={isActionsLocked ? 'Clique para liberar ações' : 'Ações liberadas'}
+                          >
+                            {isActionsLocked ? <Lock size={10} /> : <Unlock size={10} />}
+                            {isActionsLocked ? 'Bloqueado' : 'Liberado'}
+                          </button>
                         </div>
 
-                        <div className='space-y-3'>
-                          <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
-                            Responsável
-                          </h4>
-                          <div className='relative'>
-                            <select
-                              value={selectedTicket.assignee?.id || ''}
-                              onChange={(e) => {
-                                const agent = agents.find((a) => a.id.toString() === e.target.value);
-                                setTickets((prev) =>
-                                  prev.map((t) =>
-                                    t.id === selectedTicket.id ? { ...t, assignee: agent || null } : t
-                                  )
-                                );
-                              }}
-                              className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
-                              style={{ colorScheme: 'dark' }}
-                            >
-                              <option value='' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não atribuído</option>
-                              {agents.map((a) => (
-                                <option key={a.id} value={a.id} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>
-                                  {a.name}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronDown className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
-                          </div>
-                        </div>
+                        <div className='flex flex-col gap-2'>
+                          {[
+                            { label: 'Em Andamento', value: 'Em Andamento', icon: Wrench, color: 'blue' },
+                            { label: 'Resolvido', value: 'Resolvido', icon: CheckCircle2, color: 'emerald' }
+                          ].map((action) => {
+                            const isActive = selectedTicket.status === action.value;
 
-                        <div className='space-y-3 pt-4 border-t border-gray-100 dark:border-white/5'>
-                          <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
-                            SLA e Tempos
-                          </h4>
-                          <div className='flex items-start gap-3'>
-                            <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
-                              <Calendar size={14} />
-                            </div>
-                            <div>
-                              <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
-                              <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
-                                {selectedTicket.createdAt.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            </div>
-                          </div>
-                          <div className='flex items-start gap-3'>
-                            <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
-                              <History size={14} />
-                            </div>
-                            <div>
-                              <p className='text-[9px] font-bold text-slate-400 uppercase'>Status SLA</p>
-                              <p className={`text-[11px] font-bold ${getSLAStatus(selectedTicket).color}`}>
-                                {getSLAStatus(selectedTicket).label}
-                              </p>
-                            </div>
-                          </div>
+                            return (
+                              <button
+                                key={action.value}
+                                disabled={isActionsLocked || isActive}
+                                onClick={() => handleStatusChange(action.value)}
+                                className={`group relative flex items-center justify-between px-4 py-2.5 rounded-xl text-[11px] font-bold border transition-all duration-300 ${isActive
+                                    ? `bg-${action.color}-500 text-white border-transparent shadow-lg shadow-${action.color}-500/20`
+                                    : isActionsLocked
+                                      ? 'bg-gray-50/50 dark:bg-white/2 text-slate-300 dark:text-slate-600 border-gray-100 dark:border-white/5 cursor-not-allowed grayscale'
+                                      : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95'
+                                  }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <action.icon size={14} />
+                                  <span>{action.label}</span>
+                                </div>
+                                {!isActionsLocked && !isActive && (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                    ) : (
-                      <div className='p-4 space-y-5'>
-                        <div className='flex flex-col items-center text-center pb-4 border-b border-gray-200 dark:border-white/5'>
-                          <div className='w-16 h-16 rounded-full bg-slate-200 dark:bg-white/10 mb-2 overflow-hidden border-2 border-primary/20'>
-                            {selectedTicket.ownerAvatar ? (
-                              <img src={selectedTicket.ownerAvatar} alt='' className='w-full h-full object-cover' />
-                            ) : (
-                              <div className='w-full h-full flex items-center justify-center text-slate-400'>
-                                <User size={32} />
-                              </div>
-                            )}
-                          </div>
-                          <h4 className='text-sm font-bold text-slate-900 dark:text-white'>{selectedTicket.owner}</h4>
-                          <p className='text-[11px] text-slate-500'>Membro desde Jan 2023</p>
-                        </div>
 
-                        <div className='space-y-3'>
-                          <div className='grid grid-cols-2 gap-2'>
-                            <div className='p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30'>
-                              <span className='text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-0.5'>Imóveis</span>
-                              <p className='text-xs font-black text-emerald-700 dark:text-emerald-300'>12 Ativos</p>
-                            </div>
-                            <div className='p-2 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30'>
-                              <span className='text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase block mb-0.5'>Plano</span>
-                              <p className='text-xs font-black text-blue-700 dark:text-blue-300'>PRO</p>
-                            </div>
-                          </div>
-
-                          <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 space-y-2'>
-                            <div className='flex justify-between items-center'>
-                              <span className='text-[10px] font-bold text-slate-500'>MRR Contribuído</span>
-                              <span className='text-xs font-black dark:text-white'>R$ 1.450</span>
-                            </div>
-                            <div className='w-full h-1 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
-                              <div className='h-full bg-primary w-[85%]' />
-                            </div>
-                          </div>
-
-                          <div className='space-y-1.5'>
-                            <h5 className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Histórico Recente</h5>
-                            {[
-                              { label: 'Plano renovado', date: '01 Mar 2024', icon: FileCheck },
-                              { label: 'Novo imóvel cadastrado', date: '15 Fev 2024', icon: History },
-                            ].map((act, i) => (
-                              <div key={i} className='flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer'>
-                                <div className='size-7 rounded-lg bg-white dark:bg-black/20 flex items-center justify-center text-slate-400 shrink-0'>
-                                  <act.icon size={14} />
-                                </div>
-                                <div className='min-w-0'>
-                                  <p className='text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate'>{act.label}</p>
-                                  <p className='text-[9px] text-slate-500'>{act.date}</p>
-                                </div>
-                              </div>
+                      <div className='space-y-3'>
+                        <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                          Responsável
+                        </h4>
+                        <div className='relative'>
+                          <select
+                            value={selectedTicket.assignee?.id || ''}
+                            onChange={(e) => {
+                              const agent = agents.find((a) => a.id.toString() === e.target.value);
+                              setTickets((prev) =>
+                                prev.map((t) =>
+                                  t.id === selectedTicket.id ? { ...t, assignee: agent || null } : t
+                                )
+                              );
+                            }}
+                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
+                            style={{ colorScheme: 'dark' }}
+                          >
+                            <option value='' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não atribuído</option>
+                            {agents.map((a) => (
+                              <option key={a.id} value={a.id} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>
+                                {a.name}
+                              </option>
                             ))}
+                          </select>
+                          <ChevronDown className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+                        </div>
+                      </div>
+
+                      <div className='space-y-3 pt-4 border-t border-gray-100 dark:border-white/5'>
+                        <h4 className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                          SLA e Tempos
+                        </h4>
+                        <div className='flex items-start gap-3'>
+                          <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                            <Calendar size={14} />
+                          </div>
+                          <div>
+                            <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
+                            <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
+                              {selectedTicket.createdAt.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className='flex items-start gap-3'>
+                          <div className='w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                            <History size={14} />
+                          </div>
+                          <div>
+                            <p className='text-[9px] font-bold text-slate-400 uppercase'>Status SLA</p>
+                            <p className={`text-[11px] font-bold ${getSLAStatus(selectedTicket).color}`}>
+                              {getSLAStatus(selectedTicket).label}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='p-4 space-y-5'>
+                      <div className='flex flex-col items-center text-center pb-4 border-b border-gray-200 dark:border-white/5'>
+                        <div className='w-16 h-16 rounded-full bg-slate-200 dark:bg-white/10 mb-2 overflow-hidden border-2 border-primary/20'>
+                          {selectedTicket.ownerAvatar ? (
+                            <img src={selectedTicket.ownerAvatar} alt='' className='w-full h-full object-cover' />
+                          ) : (
+                            <div className='w-full h-full flex items-center justify-center text-slate-400'>
+                              <User size={32} />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className='text-sm font-bold text-slate-900 dark:text-white'>{selectedTicket.owner}</h4>
+                        <p className='text-[11px] text-slate-500'>Membro desde Jan 2023</p>
+                      </div>
+
+                      <div className='space-y-3'>
+                        <div className='grid grid-cols-2 gap-2'>
+                          <div className='p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30'>
+                            <span className='text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-0.5'>Imóveis</span>
+                            <p className='text-xs font-black text-emerald-700 dark:text-emerald-300'>12 Ativos</p>
+                          </div>
+                          <div className='p-2 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30'>
+                            <span className='text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase block mb-0.5'>Plano</span>
+                            <p className='text-xs font-black text-blue-700 dark:text-blue-300'>PRO</p>
                           </div>
                         </div>
 
-                        <div className='pt-3 border-t border-gray-200 dark:border-white/5 space-y-2'>
-                          <button className='w-full py-2.5 rounded-xl bg-primary text-white text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
-                            <ExternalLink size={14} /> Ver Perfil Admin
-                          </button>
-                          <button className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>
-                            <Phone size={14} /> WhatsApp
-                          </button>
+                        <div className='p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 space-y-2'>
+                          <div className='flex justify-between items-center'>
+                            <span className='text-[10px] font-bold text-slate-500'>MRR Contribuído</span>
+                            <span className='text-xs font-black dark:text-white'>R$ 1.450</span>
+                          </div>
+                          <div className='w-full h-1 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
+                            <div className='h-full bg-primary w-[85%]' />
+                          </div>
+                        </div>
+
+                        <div className='space-y-1.5'>
+                          <h5 className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Histórico Recente</h5>
+                          {[
+                            { label: 'Plano renovado', date: '01 Mar 2024', icon: FileCheck },
+                            { label: 'Novo imóvel cadastrado', date: '15 Fev 2024', icon: History },
+                          ].map((act, i) => (
+                            <div key={i} className='flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-all cursor-pointer'>
+                              <div className='size-7 rounded-lg bg-white dark:bg-black/20 flex items-center justify-center text-slate-400 shrink-0'>
+                                <act.icon size={14} />
+                              </div>
+                              <div className='min-w-0'>
+                                <p className='text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate'>{act.label}</p>
+                                <p className='text-[9px] text-slate-500'>{act.date}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    )}
-                  </div>
+
+                      <div className='pt-3 border-t border-gray-200 dark:border-white/5 space-y-2'>
+                        <button className='w-full py-2.5 rounded-xl bg-primary text-white text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
+                          <ExternalLink size={14} /> Ver Perfil Admin
+                        </button>
+                        <button className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>
+                          <Phone size={14} /> WhatsApp
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </>
+            </div>
+          </>
         ) : (
           <div className='hidden md:flex flex-1 flex-col items-center justify-center text-center p-6 text-slate-400'>
             <div className='w-20 h-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-4'>
@@ -879,7 +897,7 @@ const SupportCenter: React.FC = () => {
                 {editingFaq ? <Edit size={16} /> : <Plus size={16} />}
                 {editingFaq ? 'Editar Pergunta' : 'Nova Pergunta'}
               </h3>
-              
+
               <div className='space-y-4'>
                 <div>
                   <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
@@ -888,19 +906,19 @@ const SupportCenter: React.FC = () => {
                   <input
                     type='text'
                     value={editingFaq ? editingFaq.question : newFaq.question}
-                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, question: e.target.value}) : setNewFaq({...newFaq, question: e.target.value})}
+                    onChange={(e) => editingFaq ? setEditingFaq({ ...editingFaq, question: e.target.value }) : setNewFaq({ ...newFaq, question: e.target.value })}
                     placeholder='Ex: Como funciona o aluguel?'
                     className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-bold text-slate-900 dark:text-white'
                   />
                 </div>
-                
+
                 <div>
                   <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1'>
                     Resposta
                   </label>
                   <textarea
                     value={editingFaq ? editingFaq.answer : newFaq.answer}
-                    onChange={(e) => editingFaq ? setEditingFaq({...editingFaq, answer: e.target.value}) : setNewFaq({...newFaq, answer: e.target.value})}
+                    onChange={(e) => editingFaq ? setEditingFaq({ ...editingFaq, answer: e.target.value }) : setNewFaq({ ...newFaq, answer: e.target.value })}
                     placeholder='Descreva a resposta detalhadamente...'
                     className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-medium text-slate-600 dark:text-slate-300 h-24 resize-none'
                   />
@@ -908,8 +926,8 @@ const SupportCenter: React.FC = () => {
 
                 <div className='flex items-center justify-between pt-2'>
                   <label className='flex items-center gap-2 cursor-pointer group'>
-                    <div 
-                      onClick={() => editingFaq ? setEditingFaq({...editingFaq, is_active: !editingFaq.is_active}) : setNewFaq({...newFaq, is_active: !newFaq.is_active})}
+                    <div
+                      onClick={() => editingFaq ? setEditingFaq({ ...editingFaq, is_active: !editingFaq.is_active }) : setNewFaq({ ...newFaq, is_active: !newFaq.is_active })}
                       className={`w-10 h-5 rounded-full relative transition-all ${((editingFaq ? editingFaq.is_active : newFaq.is_active)) ? 'bg-primary' : 'bg-slate-200 dark:bg-white/10'}`}
                     >
                       <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${((editingFaq ? editingFaq.is_active : newFaq.is_active)) ? 'left-6' : 'left-1'}`} />
@@ -944,7 +962,7 @@ const SupportCenter: React.FC = () => {
               <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                 Perguntas Existentes ({faqs.length})
               </h3>
-              
+
               {faqs.length === 0 ? (
                 <div className='py-12 flex flex-col items-center justify-center text-slate-400 opacity-50 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl'>
                   <HelpCircle size={40} className='mb-2' />
@@ -952,8 +970,8 @@ const SupportCenter: React.FC = () => {
                 </div>
               ) : (
                 <div className='space-y-3'>
-                  {[...faqs].sort((a,b) => a.order - b.order).map((faq) => (
-                    <div 
+                  {[...faqs].sort((a, b) => a.order - b.order).map((faq) => (
+                    <div
                       key={faq.id}
                       className={`p-4 rounded-2xl border transition-all ${editingFaq?.id === faq.id ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white dark:bg-surface-dark border-gray-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 shadow-sm'}`}
                     >

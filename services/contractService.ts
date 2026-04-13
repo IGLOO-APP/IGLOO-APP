@@ -64,7 +64,7 @@ export const contractService = {
 
     if (error) {
       console.error('Error fetching contracts:', error);
-      throw error;
+      return [];
     }
 
     return data.map(mapContract);

@@ -17,6 +17,7 @@ import {
   ShieldAlert,
   CheckCircle,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -48,6 +49,7 @@ const AdminDashboard: React.FC = () => {
   const location = useLocation();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('Últimos 6 meses');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -229,11 +231,10 @@ const AdminDashboard: React.FC = () => {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-[60] px-6 py-4 rounded-2xl text-white font-bold shadow-2xl animate-slideDown flex items-center gap-3 ${
-            toast.type === 'success'
+          className={`fixed top-4 right-4 z-[60] px-6 py-4 rounded-2xl text-white font-bold shadow-2xl animate-slideDown flex items-center gap-3 ${toast.type === 'success'
               ? 'bg-emerald-500 shadow-emerald-500/20'
               : 'bg-red-500 shadow-red-500/20'
-          }`}
+            }`}
         >
           {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
           <div>
@@ -313,16 +314,40 @@ const AdminDashboard: React.FC = () => {
               </h3>
               <p className='text-sm text-slate-500'>Crescimento de MRR nos últimos 6 meses</p>
             </div>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className='bg-slate-50 dark:bg-white/5 border-none rounded-xl text-sm font-bold text-slate-600 px-4 py-2 focus:ring-2 focus:ring-primary cursor-pointer'
-            >
-              <option>Últimos 3 meses</option>
-              <option>Últimos 6 meses</option>
-              <option>Último ano</option>
-              <option>Todo o período</option>
-            </select>
+            <div className='relative'>
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'period' ? null : 'period')}
+                className='flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition-all min-w-[150px] justify-between shadow-sm'
+              >
+                <span className='truncate'>
+                  {selectedPeriod}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform text-slate-400 ${activeDropdown === 'period' ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {activeDropdown === 'period' && (
+                <>
+                  <div className='fixed inset-0 z-[60]' onClick={() => setActiveDropdown(null)}></div>
+                  <div className='absolute top-full right-0 mt-2 w-48 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 py-2 z-[70] animate-scaleUp origin-top-right'>
+                    {['Últimos 3 meses', 'Últimos 6 meses', 'Último ano', 'Todo o período'].map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => {
+                          setSelectedPeriod(opt);
+                          setActiveDropdown(null);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${selectedPeriod === opt ? 'text-amber-500 bg-amber-500/5' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           <div className='h-[300px] w-full'>
             <ResponsiveContainer width='100%' height='100%'>
@@ -447,13 +472,12 @@ const AdminDashboard: React.FC = () => {
                   className='flex gap-3 items-start pb-4 border-b border-gray-50 dark:border-white/5 last:border-0 last:pb-0'
                 >
                   <div
-                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
-                      activity.type === 'error'
+                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${activity.type === 'error'
                         ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
                         : activity.type === 'money'
                           ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
                           : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
-                    }`}
+                      }`}
                   ></div>
                   <div className='flex-1'>
                     <div className='flex items-center justify-between gap-2'>

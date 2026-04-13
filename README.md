@@ -49,6 +49,7 @@ Para testar os perfis principais no Supabase Authentication:
 - **Proprietário**
   - Email: `proprietario@teste.com`
   - Senha: `teste123`
+  - Email 2: `arthur.alencar@colegiosaojudas.com.br` (Teste Adicional)
 - **Inquilino**
   - Email: `inquilino@teste.com`
   - Senha: `teste123`
@@ -65,12 +66,14 @@ select
   u.email,
   case
     when u.email = 'proprietario@teste.com' then 'Carlos Proprietário'
+    when u.email = 'arthur.alencar@colegiosaojudas.com.br' then 'Arthur Alencar'
     when u.email = 'inquilino@teste.com' then 'João Inquilino'
     when u.email = 'admin@teste.com' then 'Admin Master'
     else split_part(u.email, '@', 1)
   end,
   case
     when u.email = 'proprietario@teste.com' then 'owner'
+    when u.email = 'arthur.alencar@colegiosaojudas.com.br' then 'owner'
     when u.email = 'inquilino@teste.com' then 'tenant'
     when u.email = 'admin@teste.com' then 'admin'
     else 'owner'
@@ -87,7 +90,8 @@ from auth.users u
 where u.email in (
   'proprietario@teste.com',
   'inquilino@teste.com',
-  'admin@teste.com'
+  'admin@teste.com',
+  'arthur.alencar@colegiosaojudas.com.br'
 )
 on conflict (id) do update set
   email = excluded.email,
