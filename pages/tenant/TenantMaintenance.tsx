@@ -21,9 +21,12 @@ import {
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { faqService } from '../../services/faqService';
 import { FAQ } from '../../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminService } from '../../services/adminService';
+import { useAuth } from '../../context/AuthContext';
 
 interface MaintenanceMessage {
-  id: number;
+  id: string;
   text: string;
   sender: 'me' | 'owner' | 'system';
   time: string;
@@ -31,7 +34,7 @@ interface MaintenanceMessage {
 }
 
 interface TimelineEvent {
-  id: number;
+  id: string;
   title: string;
   date: string;
   icon?: any;
@@ -39,12 +42,12 @@ interface TimelineEvent {
 }
 
 interface MaintenanceRequest {
-  id: number;
+  id: string;
   title: string;
   category: string;
   type: 'repair' | 'general' | 'financial';
   date: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed' | 'open' | 'resolved';
   description: string;
   messages: MaintenanceMessage[];
   timeline: TimelineEvent[];
@@ -69,7 +72,7 @@ const TenantMaintenance: React.FC = () => {
   const [newDescription, setNewDescription] = useState('');
   const [urgency, setUrgency] = useState('Normal');
 
-  // Maintenance Settings (Mocked - in real app would come from a service/context)
+  // Maintenance Settings
   const maintenanceSettings = {
     categories: [
       { id: 'Hidráulico', label: 'Hidráulico', enabled: true, icon: Wrench },
@@ -78,7 +81,6 @@ const TenantMaintenance: React.FC = () => {
       { id: 'Infiltração', label: 'Infiltração', enabled: true, icon: LifeBuoy },
       { id: 'Fechadura / Segurança', label: 'Segurança', enabled: true, icon: CheckCircle },
       { id: 'Eletrodoméstico', label: 'Eletrodoméstico', enabled: true, icon: Plus },
-      { id: 'Internet / TV', label: 'Internet / TV', enabled: false, icon: LifeBuoy }, // Mocked disabled
       { id: 'Limpeza / Área Comum', label: 'Limpeza', enabled: true, icon: CheckCircle },
       { id: 'Outros', label: 'Outros', enabled: true, icon: MessageSquare },
     ],
@@ -89,44 +91,53 @@ const TenantMaintenance: React.FC = () => {
     ],
   };
 
-  const [requests, setRequests] = useState<MaintenanceRequest[]>([
-    {
-      id: 1,
-      title: 'Torneira Pingando',
-      category: 'Hidráulica',
-      type: 'repair',
-      date: '10 Mar 2024',
-      status: 'pending',
-      description:
-        'A torneira da cozinha não fecha completamente, está pingando muito durante a noite. O registro geral não fecha.',
-      timeline: [
-        { id: 1, title: 'Você abriu a solicitação', date: '10 Mar 09:00' },
-        { id: 2, title: 'Visto pelo proprietário', date: '10 Mar 09:30' },
-      ],
-      messages: [
-        { id: 1, text: 'Solicitação aberta automaticamente.', sender: 'system', time: '09:00' },
-        {
-          id: 2,
-          text: 'Olá João, vi seu chamado sobre a torneira. É na cozinha ou banheiro?',
-          sender: 'owner',
-          time: '09:30',
-        },
-        { id: 3, text: 'Na cozinha. Está pingando bastante.', sender: 'me', time: '09:32' },
-        { id: 4, text: 'Vou agendar um encanador para avaliar.', sender: 'owner', time: '09:35' },
-        { id: 5, text: 'Aguardando o técnico.', sender: 'me', time: '10:30' },
-      ],
-    },
-  ]);
+  const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
 
-  const filteredRequests = requests.filter((r) => {
+  const { data: requests = [], isLoading: loadingRequests } = useQuery({
+    queryKey: ['tenant_maintenance_tickets', currentUser?.id],
+    queryFn: () => adminService.getTickets().then(tickets => tickets.filter((t: any) => t.owner_id === currentUser?.id)),
+    enabled: !!currentUser?.id,
+  });
+
+  const { data: messages = [], isLoading: loadingMessages } = useQuery({
+    queryKey: ['ticket_messages', selectedRequest?.id],
+    queryFn: () => adminService.getTicketMessages(selectedRequest!.id.toString()),
+    enabled: !!selectedRequest?.id,
+  });
+
+  const createTicketMutation = useMutation({
+    mutationFn: (newTicket: any) => adminService.createTicket({
+      owner_id: currentUser!.id,
+      subject: newTicket.subject,
+      description: newTicket.description,
+      category: newTicket.category,
+      priority: newTicket.priority
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant_maintenance_tickets'] });
+      setShowNewRequest(false);
+      resetForm();
+    }
+  });
+
+  const sendMessageMutation = useMutation({
+    mutationFn: (content: string) => adminService.sendTicketMessage(selectedRequest!.id.toString(), currentUser!.id, 'me', content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket_messages', selectedRequest?.id] });
+      setNewMessage('');
+    }
+  });
+
+  const filteredRequests = requests.filter((r: any) => {
     const matchesTab =
       activeTab === 'open'
-        ? r.status === 'pending' || r.status === 'in_progress'
-        : r.status === 'completed';
+        ? r.status === 'open' || r.status === 'in_progress' || r.status === 'pending'
+        : r.status === 'completed' || r.status === 'resolved';
     const matchesSearch =
-      r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.category.toLowerCase().includes(searchTerm.toLowerCase());
+      r.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.category?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
@@ -143,22 +154,7 @@ const TenantMaintenance: React.FC = () => {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedRequest) return;
-
-    const msg: MaintenanceMessage = {
-      id: Date.now(),
-      text: newMessage,
-      sender: 'me',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    const updatedRequest = {
-      ...selectedRequest,
-      messages: [...selectedRequest.messages, msg],
-    };
-
-    setSelectedRequest(updatedRequest);
-    setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
-    setNewMessage('');
+    sendMessageMutation.mutate(newMessage);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,38 +183,12 @@ const TenantMaintenance: React.FC = () => {
   };
 
   const handleCreateRequest = () => {
-    const isRepair = [
-      'Hidráulico',
-      'Elétrico',
-      'Estrutural',
-      'Infiltração',
-      'Fechadura / Segurança',
-      'Eletrodoméstico',
-      'Internet / TV',
-      'Limpeza / Área Comum',
-    ].includes(newCategory);
-
-    const newReq: MaintenanceRequest = {
-      id: Date.now(),
-      title: newTitle || 'Nova Solicitação',
-      category: newCategory,
-      type: isRepair ? 'repair' : newCategory === 'Financeiro' ? 'financial' : 'general',
-      date: new Date().toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }),
-      status: 'pending',
+    createTicketMutation.mutate({
+      subject: newTitle || 'Nova Solicitação',
       description: newDescription,
-      timeline: [{ id: 1, title: 'Você abriu a solicitação', date: 'Agora' }],
-      messages: [
-        { id: 1, text: 'Solicitação criada com sucesso.', sender: 'system', time: 'Agora' },
-      ],
-    };
-
-    setRequests([newReq, ...requests]);
-    setShowNewRequest(false);
-    resetForm();
+      category: newCategory,
+      priority: urgency === 'Emergência' ? 'urgent' : urgency === 'Alta' ? 'high' : 'medium'
+    });
   };
 
   const resetForm = () => {
@@ -283,13 +253,13 @@ const TenantMaintenance: React.FC = () => {
       messages: [...selectedRequest.messages, systemMsg],
       timeline: resolved
         ? [
-            ...selectedRequest.timeline,
-            { id: Date.now(), title: 'Encerrado definitivamente', date: 'Agora' },
-          ]
+          ...selectedRequest.timeline,
+          { id: Date.now(), title: 'Encerrado definitivamente', date: 'Agora' },
+        ]
         : [
-            ...selectedRequest.timeline,
-            { id: Date.now(), title: 'Reaberto pelo inquilino', date: 'Agora' },
-          ],
+          ...selectedRequest.timeline,
+          { id: Date.now(), title: 'Reaberto pelo inquilino', date: 'Agora' },
+        ],
     };
 
     setSelectedRequest(updatedRequest);
@@ -412,25 +382,24 @@ const TenantMaintenance: React.FC = () => {
                     </div>
                     <div>
                       <h3 className='font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
-                        {req.title}
+                        {req.subject}
                       </h3>
                       <div className='flex items-center gap-2'>
                         <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>{req.category}</span>
                         <span className='w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700' />
-                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>#{req.id}</span>
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>#{req.id.slice(0, 8)}</span>
                       </div>
                     </div>
                   </div>
                   <div
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      req.status === 'pending'
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${req.status === 'open' || req.status === 'pending'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
                         : req.status === 'in_progress'
                           ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                           : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    }`}
+                      }`}
                   >
-                    {req.status === 'pending'
+                    {req.status === 'open' || req.status === 'pending'
                       ? 'Pendente'
                       : req.status === 'in_progress'
                         ? 'Em Andamento'
@@ -445,7 +414,7 @@ const TenantMaintenance: React.FC = () => {
                 <div className='flex items-center justify-between pt-4 border-t border-gray-50 dark:border-white/5'>
                   <div className='flex items-center gap-4'>
                     <div className='flex items-center gap-1.5 text-[11px] font-bold text-slate-400'>
-                      <Clock size={14} /> {req.date}
+                      <Clock size={14} /> {new Date(req.created_at).toLocaleDateString()}
                     </div>
                     {req.status !== 'completed' && (
                       <div className='flex items-center gap-1.5 text-[11px] font-black italic'>
@@ -514,11 +483,10 @@ const TenantMaintenance: React.FC = () => {
                         <button
                           key={cat.id}
                           onClick={() => setNewCategory(cat.id)}
-                          className={`p-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
-                            newCategory === cat.id
+                          className={`p-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${newCategory === cat.id
                               ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10'
                               : 'border-gray-100 dark:border-white/5 hover:border-primary/20 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400'
-                          }`}
+                            }`}
                         >
                           <div className={`p-3 rounded-xl transition-colors ${newCategory === cat.id ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
                             <cat.icon size={22} />
@@ -568,11 +536,10 @@ const TenantMaintenance: React.FC = () => {
                           <button
                             key={level.id}
                             onClick={() => setUrgency(level.id)}
-                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                              urgency === level.id
+                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${urgency === level.id
                                 ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                            }`}
+                              }`}
                           >
                             {level.id}
                           </button>
@@ -644,18 +611,17 @@ const TenantMaintenance: React.FC = () => {
               <div className='flex justify-between items-start'>
                 <div>
                   <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
-                    {selectedRequest.title}
+                    {selectedRequest.subject}
                   </h3>
                   <span
-                    className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      selectedRequest.status === 'pending'
+                    className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedRequest.status === 'open' || selectedRequest.status === 'pending'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
                         : selectedRequest.status === 'in_progress'
                           ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                           : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    }`}
+                      }`}
                   >
-                    {selectedRequest.status === 'pending'
+                    {selectedRequest.status === 'open' || selectedRequest.status === 'pending'
                       ? 'Pendente'
                       : selectedRequest.status === 'in_progress'
                         ? 'Em Andamento'
@@ -692,37 +658,36 @@ const TenantMaintenance: React.FC = () => {
                 <div className='h-px bg-slate-300 dark:bg-slate-700 w-12'></div>
               </div>
 
-              {selectedRequest.messages.map((msg) => (
+              {messages.map((msg: any) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.sender === 'me' ? 'justify-end' : msg.sender === 'system' ? 'justify-center' : 'justify-start'}`}
+                  className={`flex ${msg.sender_role === 'me' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
                 >
-                  {msg.sender === 'system' ? (
+                  {msg.sender_role === 'system' ? (
                     <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
-                      {msg.text}
+                      {msg.content}
                     </div>
                   ) : (
                     <div
-                      className={`max-w-[85%] flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}
+                      className={`max-w-[85%] flex flex-col ${msg.sender_role === 'me' ? 'items-end' : 'items-start'}`}
                     >
                       <div className='flex items-end gap-2'>
-                        {msg.sender === 'owner' && (
+                        {(msg.sender_role === 'owner' || msg.sender_role === 'admin') && (
                           <div className='w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 text-[10px] overflow-hidden shrink-0'>
                             <User size={12} />
                           </div>
                         )}
                         <div
-                          className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
-                            msg.sender === 'me'
+                          className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm ${msg.sender_role === 'me'
                               ? 'bg-primary text-white rounded-tr-sm'
                               : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
-                          }`}
+                            }`}
                         >
-                          {msg.text}
+                          {msg.content}
                         </div>
                       </div>
                       <span className='text-[10px] text-slate-400 font-medium mt-1 px-1 mx-8'>
-                        {msg.time}
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   )}

@@ -169,7 +169,7 @@ export const adminService = {
         .from('contracts')
         .select('monthly_value')
         .eq('status', 'active');
-      
+
       const mrr = contracts?.reduce((acc, curr) => acc + (Number(curr.monthly_value) || 0), 0) || 0;
 
       // 4. Active Trials (Users in Trial plan or recently converted)
@@ -242,11 +242,11 @@ export const adminService = {
       .from('profiles')
       .select('created_at')
       .order('created_at', { ascending: true });
-    
+
     if (error) return [];
-    
+
     // Simple grouping by month logic...
-    return data; 
+    return data;
   },
 
   async createAdmin(email: string, name: string, adminType: string, permissions: string[]) {
@@ -304,15 +304,15 @@ export const adminService = {
           const end = new Date(u.converted_at).getTime();
           return (end - start) / (1000 * 60 * 60 * 24); // days
         });
-      
-      const avgTime = conversionTimes.length > 0 
-        ? Math.round(conversionTimes.reduce((acc, curr) => acc + curr, 0) / conversionTimes.length) 
+
+      const avgTime = conversionTimes.length > 0
+        ? Math.round(conversionTimes.reduce((acc, curr) => acc + curr, 0) / conversionTimes.length)
         : 0;
 
       // Weekly History (Last 4 weeks)
       const history = [];
       const now = new Date();
-      
+
       for (let i = 3; i >= 0; i--) {
         const weekEnd = new Date(now);
         weekEnd.setDate(now.getDate() - (i * 7));
@@ -352,7 +352,7 @@ export const adminService = {
         total_converted: 0,
         conversion_rate: 0,
         time_to_convert_avg: 0,
-        history: Array(4).fill(0).map((_, i) => ({ name: `Sem -${3-i}`, trials: 0, conversions: 0 })),
+        history: Array(4).fill(0).map((_, i) => ({ name: `Sem -${3 - i}`, trials: 0, conversions: 0 })),
       };
     }
   },
@@ -362,7 +362,7 @@ export const adminService = {
       const { data: profiles, error: pError } = await supabase
         .from('profiles')
         .select('plan, role');
-      
+
       const { data: contracts, error: cError } = await supabase
         .from('contracts')
         .select('monthly_value, status');
@@ -373,33 +373,33 @@ export const adminService = {
       const getCount = (plan: string) => profiles.filter(p => p.plan === plan).length;
 
       const planDistribution = [
-        { 
-          name: 'Professional', 
-          count: getCount('Pro'), 
-          percentage: (getCount('Pro') / totalProfiles) * 100, 
-          mrr: (getCount('Pro') * 79.90).toFixed(2), 
-          color: 'primary' 
+        {
+          name: 'Professional',
+          count: getCount('Pro'),
+          percentage: (getCount('Pro') / totalProfiles) * 100,
+          mrr: (getCount('Pro') * 79.90).toFixed(2),
+          color: 'primary'
         },
-        { 
-          name: 'Elite', 
-          count: getCount('Elite'), 
-          percentage: (getCount('Elite') / totalProfiles) * 100, 
-          mrr: (getCount('Elite') * 149.90).toFixed(2), 
-          color: 'amber' 
+        {
+          name: 'Elite',
+          count: getCount('Elite'),
+          percentage: (getCount('Elite') / totalProfiles) * 100,
+          mrr: (getCount('Elite') * 149.90).toFixed(2),
+          color: 'amber'
         },
-        { 
-          name: 'Free', 
-          count: getCount('Free'), 
-          percentage: (getCount('Free') / totalProfiles) * 100, 
-          mrr: '0', 
-          isFree: true, 
-          color: 'slate' 
+        {
+          name: 'Free',
+          count: getCount('Free'),
+          percentage: (getCount('Free') / totalProfiles) * 100,
+          mrr: '0',
+          isFree: true,
+          color: 'slate'
         },
       ];
 
       const activeContracts = contracts.filter(c => c.status === 'active');
       const mrr = activeContracts.reduce((acc, curr) => acc + (Number(curr.monthly_value) || 0), 0);
-      
+
       return {
         mrr,
         arr: mrr * 12,
@@ -421,7 +421,7 @@ export const adminService = {
       const { data: profiles, error: pError } = await supabase
         .from('profiles')
         .select('created_at');
-      
+
       const { data: payments, error: payError } = await supabase
         .from('payments')
         .select('amount, created_at');
@@ -430,7 +430,7 @@ export const adminService = {
 
       const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       const currentMonth = new Date().getMonth();
-      
+
       const lastSixMonths = [];
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
@@ -473,7 +473,7 @@ export const adminService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       const totalViews = data?.reduce((acc, curr) => acc + (curr.views || 0), 0) || 0;
       const totalClicks = data?.reduce((acc, curr) => acc + (curr.clicks || 0), 0) || 0;
       const ctr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
@@ -570,5 +570,16 @@ export const adminService = {
       .eq('id', ticketId);
 
     if (error) throw error;
+  },
+
+  async createTicket(ticket: { owner_id: string; subject: string; description: string; category: string; priority: string }) {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .insert([ticket])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 };

@@ -127,7 +127,7 @@ const AdminLayout: React.FC = () => {
             <p className='text-xs text-slate-500'>Bem-vindo, {user?.name}</p>
           </div>
 
-          <div className='flex items-center gap-4'>
+          <Link to="/admin/settings" className='flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer group'>
             <div className='flex flex-col items-end'>
               <span className='text-xs font-bold text-amber-500 uppercase tracking-tighter'>
                 {user?.admin_type === 'super' ? 'Super Admin' : 'Admin'}
@@ -136,10 +136,14 @@ const AdminLayout: React.FC = () => {
                 {user?.admin_type === 'super' ? 'Acesso Total' : 'Acesso Restrito'}
               </span>
             </div>
-            <div className='w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10 ring-2 ring-amber-500 font-bold flex items-center justify-center text-slate-600 dark:text-white'>
-              {user?.name?.charAt(0)}
+            <div className='w-10 h-10 rounded-full bg-slate-200 dark:bg-white/10 ring-2 ring-amber-500 font-bold flex items-center justify-center text-slate-600 dark:text-white overflow-hidden'>
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.charAt(0)
+              )}
             </div>
-          </div>
+          </Link>
         </header>
 
         <div className='flex-1 overflow-y-auto pb-24 md:pb-0 w-full scroll-smooth'>

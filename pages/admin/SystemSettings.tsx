@@ -22,9 +22,10 @@ import {
 } from 'lucide-react';
 import FeatureFlagManager from '../../components/admin/FeatureFlagManager';
 import PlanManager from '../../components/admin/PlanManager';
+import AdminProfile from '../../components/admin/AdminProfile';
 
 const SystemSettings: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('Geral');
+  const [activeTab, setActiveTab] = useState('Perfil');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [integrations, setIntegrations] = useState({
@@ -69,7 +70,7 @@ const SystemSettings: React.FC = () => {
     );
   };
 
-  const tabs = ['Geral', 'Planos', 'Segurança', 'Integrações', 'Notificações', 'Feature Flags'];
+  const tabs = ['Perfil', 'Geral', 'Planos', 'Segurança', 'Integrações', 'Notificações', 'Feature Flags'];
 
   return (
     <div className='p-8 space-y-8 animate-fadeIn relative'>
@@ -119,10 +120,12 @@ const SystemSettings: React.FC = () => {
           ))}
         </aside>
 
-        {/* Settings Content */}
-        <div className='flex-1 space-y-6'>
-          <div className='bg-white dark:bg-surface-dark p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm space-y-8'>
-            {activeTab === 'Geral' && (
+          <div className='flex-1 space-y-6'>
+            {activeTab === 'Perfil' ? (
+              <AdminProfile />
+            ) : (
+              <div className='bg-white dark:bg-surface-dark p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm space-y-8'>
+                {activeTab === 'Geral' && (
               <>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                   <div className='space-y-2'>
@@ -616,6 +619,7 @@ const SystemSettings: React.FC = () => {
               </div>
             )}
           </div>
+            )}
         </div>
       </div>
     </div>
