@@ -506,4 +506,69 @@ export const adminService = {
     if (error) throw error;
     return data;
   },
+
+  // --- Support Tickets ---
+
+  async getTickets() {
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select(`
+        *,
+        user:profiles!support_tickets_user_id_fkey(id, name, email, avatar_url),
+        assignee:profiles!support_tickets_assigned_to_fkey(id, name)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async getTicketMessages(ticketId: string) {
+    const { data, error } = await supabase
+      .from('support_messages')
+      .select(`
+        *,
+        sender:profiles(id, name, avatar_url)
+      `)
+      .eq('ticket_id', ticketId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  async sendTicketMessage(ticketId: string, senderId: string, role: string, content: string) {
+    const { data, error } = await supabase
+      .from('support_messages')
+      .insert({
+        ticket_id: ticketId,
+        sender_id: senderId,
+        sender_role: role,
+        content,
+        is_read: false
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTicketStatus(ticketId: string, status: string) {
+    const { error } = await supabase
+      .from('support_tickets')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', ticketId);
+
+    if (error) throw error;
+  },
+
+  async assignTicket(ticketId: string, adminId: string | null) {
+    const { error } = await supabase
+      .from('support_tickets')
+      .update({ assigned_to: adminId, updated_at: new Date().toISOString() })
+      .eq('id', ticketId);
+
+    if (error) throw error;
+  },
 };

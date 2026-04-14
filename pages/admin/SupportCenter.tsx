@@ -36,18 +36,29 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { faqService } from '../../services/faqService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminService } from '../../services/adminService';
+import { useAuth } from '../../context/AuthContext';
 import { FAQ } from '../../types';
 
 interface Message {
-  id: number;
-  text: string;
-  sender: 'me' | 'user' | 'system';
-  time: string;
-  isRead: boolean;
+  id: string;
+  ticket_id: string;
+  sender_id: string | null;
+  sender_role: 'me' | 'user' | 'system' | 'admin';
+  content: string;
+  created_at: string;
+  is_read: boolean;
+  sender?: {
+    name: string;
+    avatar_url: string;
+  };
 }
 
 const SupportCenter: React.FC = () => {
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+  const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [priorityFilter, setPriorityFilter] = useState('Todos');
@@ -104,143 +115,60 @@ const SupportCenter: React.FC = () => {
     'Ticket resolvido, obrigado pelo contato.',
   ];
 
-  // Mock data for agents
-  const agents = [
-    { id: 1, name: 'Ana Souza', initial: 'A' },
-    { id: 2, name: 'Ricardo Lima', initial: 'R' },
-  ];
+  // --- Real Data Fetching ---
+  
+  const { data: tickets = [], isLoading: loadingTickets } = useQuery({
+    queryKey: ['support_tickets'],
+    queryFn: () => adminService.getTickets(),
+  });
 
-  const [tickets, setTickets] = useState([
-    {
-      id: 1234,
-      subject: 'Problema com pagamento',
-      owner: 'Maria Silva',
-      ownerAvatar: 'https://i.pravatar.cc/150?u=maria',
-      status: 'Aberto',
-      priority: 'Alta',
-      category: 'Billing',
-      createdAt: new Date(Date.now() - 1000 * 60 * 30),
-      lastResponseAt: null,
-      assignee: null,
-      messages: [
-        {
-          id: 1,
-          text: 'Olá equipe do Igloo, notei que fui cobrada duas vezes este mês. Podem verificar o que aconteceu com minha fatura do plano Professional?',
-          sender: 'user',
-          time: '10:20',
-          isRead: true,
-        },
-      ],
-    },
-    {
-      id: 1235,
-      subject: 'Dificuldade em cadastrar imóvel',
-      owner: 'João Santos',
-      ownerAvatar: 'https://i.pravatar.cc/150?u=joao',
-      status: 'Em Andamento',
-      priority: 'Média',
-      category: 'Technical',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
-      lastResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 4),
-      assignee: { name: 'Ana Souza', initial: 'A' },
-      messages: [
-        {
-          id: 1,
-          text: 'Não consigo subir as fotos do meu novo apartamento.',
-          sender: 'user',
-          time: '08:15',
-          isRead: true,
-        },
-        {
-          id: 2,
-          text: 'Olá João! Qual o formato e tamanho das imagens?',
-          sender: 'me',
-          time: '09:00',
-          isRead: true,
-        },
-      ],
-    },
-    {
-      id: 1236,
-      subject: 'Sugestão de nova feature',
-      owner: 'Pedro Lima',
-      ownerAvatar: 'https://i.pravatar.cc/150?u=pedro',
-      status: 'Resolvido',
-      priority: 'Baixa',
-      category: 'Feedback',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 25),
-      lastResponseAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      assignee: { name: 'Ricardo Lima', initial: 'R' },
-      messages: [
-        {
-          id: 1,
-          text: 'Seria ótimo ter integração com o iFood para inquilinos.',
-          sender: 'user',
-          time: 'Ontem',
-          isRead: true,
-        },
-        {
-          id: 2,
-          text: 'Obrigado pela sugestão! Vamos levar para o time de produto.',
-          sender: 'me',
-          time: 'Ontem',
-          isRead: true,
-        },
-      ],
-    },
-  ]);
+  const { data: messages = [], isLoading: loadingMessages } = useQuery({
+    queryKey: ['support_messages', selectedTicketId],
+    queryFn: () => adminService.getTicketMessages(selectedTicketId!),
+    enabled: !!selectedTicketId,
+  });
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [selectedTicketId, tickets]);
+  const sendMessageMutation = useMutation({
+    mutationFn: (content: string) => 
+      adminService.sendTicketMessage(selectedTicketId!, currentUser!.id, 'admin', content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['support_messages', selectedTicketId] });
+      setInputText('');
+    }
+  });
 
-  const selectedTicket = tickets.find((t) => t.id === selectedTicketId);
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: string) => adminService.updateTicketStatus(selectedTicketId!, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['support_tickets'] });
+      showToast('Status atualizado com sucesso', 'success');
+    }
+  });
+
+  const assignTicketMutation = useMutation({
+    mutationFn: (adminId: string | null) => adminService.assignTicket(selectedTicketId!, adminId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['support_tickets'] });
+      showToast('Responsável alterado com sucesso', 'success');
+    }
+  });
+
+  const selectedTicket = tickets.find((t: any) => t.id === selectedTicketId);
 
   const handleSendMessage = (e?: React.FormEvent, overrideText?: string) => {
     if (e) e.preventDefault();
     const textToSend = overrideText || inputText;
     if (!textToSend.trim() || !selectedTicketId) return;
-
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id === selectedTicketId) {
-          const newMessage: Message = {
-            id: Date.now(),
-            text: textToSend,
-            sender: 'me',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isRead: false,
-          };
-          return { ...t, messages: [...t.messages, newMessage] };
-        }
-        return t;
-      })
-    );
-    setInputText('');
+    sendMessageMutation.mutate(textToSend);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedTicketId) return;
+    
+    // For now, simulate upload with a text message (future: upload to storage)
+    sendMessageMutation.mutate(`📎 Arquivo enviado: ${file.name}`);
 
-    // Simulate file upload with a system message
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id === selectedTicketId) {
-          const newMessage: Message = {
-            id: Date.now(),
-            text: `Arquivo anexado: ${file.name}`,
-            sender: 'system',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isRead: false,
-          };
-          return { ...t, messages: [...t.messages, newMessage] };
-        }
-        return t;
-      })
-    );
-
-    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -248,71 +176,54 @@ const SupportCenter: React.FC = () => {
 
   const handleStatusChange = (newStatus: string) => {
     if (!selectedTicketId) return;
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id === selectedTicketId) {
-          const systemMsg: Message = {
-            id: Date.now(),
-            text: `Status do ticket alterado para: ${newStatus}`,
-            sender: 'system',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isRead: true,
-          };
-          return { ...t, status: newStatus, messages: [...t.messages, systemMsg] };
-        }
-        return t;
-      })
-    );
+    updateStatusMutation.mutate(newStatus);
   };
 
   const getSLAStatus = (ticket: any) => {
     if (ticket.status === 'Resolvido' || ticket.status === 'Fechado') return { label: 'Concluído', color: 'text-emerald-500', type: 'success' };
-    if (ticket.lastResponseAt) {
-      const diff = Math.abs(ticket.lastResponseAt.getTime() - ticket.createdAt.getTime());
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      return { label: `Respondido em ${hours}h ${mins}min`, color: 'text-emerald-500', type: 'success' };
-    }
-
-    const diff = Math.abs(new Date().getTime() - ticket.createdAt.getTime());
+    
+    const createdAt = new Date(ticket.created_at);
+    const diff = Math.abs(new Date().getTime() - createdAt.getTime());
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    const thresholds: any = { Alta: 8, Média: 24, Baixa: 72 };
-    const limit = thresholds[ticket.priority];
+    const thresholds: any = { Alta: 8, Média: 24, Baixa: 72, Urgente: 2 };
+    const limit = thresholds[ticket.priority] || 24;
 
     if (hours >= limit) return { label: `SLA em risco — ${hours}h sem resposta`, color: 'text-rose-500', type: 'danger' };
     if (hours >= 2) return { label: `Sem resposta há ${hours}h`, color: 'text-amber-500', type: 'warning' };
     return { label: `Aberto há ${mins} min`, color: 'text-slate-400', type: 'muted' };
   };
 
-  const filteredTickets = tickets
-    .filter((t) => {
+  const filteredTickets = (tickets || [])
+    .filter((t: any) => {
       const matchesSearch =
-        t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.id.toString().includes(searchTerm);
+        t.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.id?.toString().includes(searchTerm);
       const matchesStatus = statusFilter === 'Todos' || t.status === statusFilter;
       const matchesPriority = priorityFilter === 'Todos' || t.priority === priorityFilter;
       const matchesAssignee =
         assigneeFilter === 'Todos' ||
-        (assigneeFilter === 'Não atribuído' && !t.assignee) ||
-        (assigneeFilter === 'Minha fila' && t.assignee?.name === 'Sua Fila'); // Mocked logic
+        (assigneeFilter === 'Não atribuído' && !t.assigned_to) ||
+        (assigneeFilter === 'Minha fila' && t.assigned_to === currentUser?.id);
       return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
     })
-    .sort((a, b) => {
-      // Prioritize SLA risks (Danger status)
+    .sort((a: any, b: any) => {
       const slaA = getSLAStatus(a);
       const slaB = getSLAStatus(b);
       if (slaA.type === 'danger' && slaB.type !== 'danger') return -1;
       if (slaA.type !== 'danger' && slaB.type === 'danger') return 1;
-      return b.createdAt.getTime() - a.createdAt.getTime();
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-  const handleAssign = (ticketId: number, agent: any) => {
-    setTickets(tickets.map(t => t.id === ticketId ? { ...t, assignee: agent } : t));
-    // In a real app, this would call adminService.logActivity and trigger email
+  const handleAssign = (ticketId: string, adminId: string | null) => {
+    assignTicketMutation.mutate(adminId);
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length]);
 
   return (
     <div className='flex flex-row h-[calc(100vh-80px)] overflow-hidden animate-fadeIn bg-background-light dark:bg-background-dark'>
@@ -394,9 +305,6 @@ const SupportCenter: React.FC = () => {
                     <option value='Todos' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Todos os Atendentes</option>
                     <option value='Minha fila' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Minha Fila</option>
                     <option value='Não atribuído' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não Atribuídos</option>
-                    {agents.map(a => (
-                      <option key={a.id} value={a.name} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>{a.name}</option>
-                    ))}
                   </select>
                   <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
                 </div>
@@ -456,10 +364,10 @@ const SupportCenter: React.FC = () => {
                   }`}
               >
                 <div className='relative shrink-0 mt-1'>
-                  {t.ownerAvatar ? (
+                  {t.user?.avatar_url ? (
                     <div
                       className='w-12 h-12 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700'
-                      style={{ backgroundImage: `url(${t.ownerAvatar})` }}
+                      style={{ backgroundImage: `url(${t.user.avatar_url})` }}
                     ></div>
                   ) : (
                     <div className='w-12 h-12 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400'>
@@ -475,14 +383,14 @@ const SupportCenter: React.FC = () => {
                 <div className='flex-1 min-w-0'>
                   <div className='flex justify-between items-baseline mb-0.5'>
                     <h3 className='text-sm font-bold text-slate-900 dark:text-white truncate pr-2'>
-                      {t.owner}
+                      {t.user?.name || 'Sistema'}
                     </h3>
                     <span className='text-[10px] text-slate-400 shrink-0'>
-                      {t.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <p className='text-[10px] text-primary uppercase font-bold tracking-wider mb-0.5 truncate'>
-                    #{t.id} — {t.subject}
+                    #{t.id.slice(0, 8)} — {t.subject}
                   </p>
                   <div className='flex justify-between items-end'>
                     <p className={`text-xs truncate max-w-[140px] font-medium ${sla.color}`}>
@@ -518,7 +426,7 @@ const SupportCenter: React.FC = () => {
                 <div className='min-w-0'>
                   <div className='flex items-center gap-2'>
                     <h2 className='text-sm font-bold text-slate-900 dark:text-white leading-tight truncate'>
-                      Ticket #{selectedTicket.id}
+                      Ticket #{selectedTicket.id.slice(0, 8)}
                     </h2>
                     <span
                       className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap ${selectedTicket.status === 'Resolvido'
@@ -570,39 +478,39 @@ const SupportCenter: React.FC = () => {
                 <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-4'>
                   <div className='flex justify-center mb-6'>
                     <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full'>
-                      Início do Ticket — {selectedTicket.createdAt.toLocaleDateString()}
+                      Início do Ticket — {new Date(selectedTicket.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
-                  {selectedTicket.messages.map((msg: any) => (
+                  {messages.map((msg: any) => (
                     <div
                       key={msg.id}
-                      className={`flex w-full ${msg.sender === 'me' ? 'justify-end' : msg.sender === 'system' ? 'justify-center' : 'justify-start'}`}
+                      className={`flex w-full ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
                     >
-                      {msg.sender === 'system' ? (
+                      {msg.sender_role === 'system' ? (
                         <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
-                          {msg.text}
+                          {msg.content}
                         </div>
                       ) : (
                         <div
-                          className={`max-w-[80%] flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}
+                          className={`max-w-[80%] flex flex-col ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'items-end' : 'items-start'}`}
                         >
                           <div
-                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${msg.sender === 'me'
+                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${msg.sender_role === 'admin' || msg.sender_role === 'me'
                                 ? 'bg-primary text-white rounded-tr-sm'
                                 : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
                               }`}
                           >
-                            {msg.text}
+                            {msg.content}
                           </div>
                           <div className='flex items-center gap-1 mt-1 px-1'>
                             <span className='text-[10px] text-slate-400 font-medium'>
-                              {msg.time}
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                            {msg.sender === 'me' && (
+                            {(msg.sender_role === 'admin' || msg.sender_role === 'me') && (
                               <CheckCheck
                                 size={12}
-                                className={msg.isRead ? 'text-primary' : 'text-slate-300'}
+                                className={msg.is_read ? 'text-primary' : 'text-slate-300'}
                               />
                             )}
                           </div>
@@ -689,55 +597,8 @@ const SupportCenter: React.FC = () => {
                         <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1'>
                           ID do Ticket
                         </span>
-                        <p className='text-sm font-bold text-slate-900 dark:text-white'>#{selectedTicket.id}</p>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>#{selectedTicket.id.slice(0, 8)}</p>
                         <span className='text-[11px] text-slate-500'>{selectedTicket.category}</span>
-                      </div>
-
-                      <div>
-                        <div className='flex items-center justify-between mb-2 group/title'>
-                          <span className='text-[9px] font-bold text-slate-400 uppercase tracking-wider block'>
-                            Ações Rápidas
-                          </span>
-                          <button
-                            onClick={() => setIsActionsLocked(!isActionsLocked)}
-                            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all duration-300 ${isActionsLocked ? 'bg-slate-100 dark:bg-white/5 text-slate-400 opacity-60 hover:opacity-100' : 'bg-primary/20 text-primary border border-primary/30 animate-pulse'}`}
-                            title={isActionsLocked ? 'Clique para liberar ações' : 'Ações liberadas'}
-                          >
-                            {isActionsLocked ? <Lock size={10} /> : <Unlock size={10} />}
-                            {isActionsLocked ? 'Bloqueado' : 'Liberado'}
-                          </button>
-                        </div>
-
-                        <div className='flex flex-col gap-2'>
-                          {[
-                            { label: 'Em Andamento', value: 'Em Andamento', icon: Wrench, color: 'blue' },
-                            { label: 'Resolvido', value: 'Resolvido', icon: CheckCircle2, color: 'emerald' }
-                          ].map((action) => {
-                            const isActive = selectedTicket.status === action.value;
-
-                            return (
-                              <button
-                                key={action.value}
-                                disabled={isActionsLocked || isActive}
-                                onClick={() => handleStatusChange(action.value)}
-                                className={`group relative flex items-center justify-between px-4 py-2.5 rounded-xl text-[11px] font-bold border transition-all duration-300 ${isActive
-                                    ? `bg-${action.color}-500 text-white border-transparent shadow-lg shadow-${action.color}-500/20`
-                                    : isActionsLocked
-                                      ? 'bg-gray-50/50 dark:bg-white/2 text-slate-300 dark:text-slate-600 border-gray-100 dark:border-white/5 cursor-not-allowed grayscale'
-                                      : 'bg-white dark:bg-black/20 text-slate-600 dark:text-slate-400 border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95'
-                                  }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <action.icon size={14} />
-                                  <span>{action.label}</span>
-                                </div>
-                                {!isActionsLocked && !isActive && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
                       </div>
 
                       <div className='space-y-3'>
@@ -746,24 +607,12 @@ const SupportCenter: React.FC = () => {
                         </h4>
                         <div className='relative'>
                           <select
-                            value={selectedTicket.assignee?.id || ''}
-                            onChange={(e) => {
-                              const agent = agents.find((a) => a.id.toString() === e.target.value);
-                              setTickets((prev) =>
-                                prev.map((t) =>
-                                  t.id === selectedTicket.id ? { ...t, assignee: agent || null } : t
-                                )
-                              );
-                            }}
-                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
-                            style={{ colorScheme: 'dark' }}
+                            value={selectedTicket.assigned_to || ''}
+                            onChange={(e) => handleAssign(selectedTicket.id, e.target.value || null)}
+                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/10 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
                           >
-                            <option value='' className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>Não atribuído</option>
-                            {agents.map((a) => (
-                              <option key={a.id} value={a.id} className='bg-white dark:bg-surface-dark text-slate-700 dark:text-white'>
-                                {a.name}
-                              </option>
-                            ))}
+                            <option value=''>Não atribuído</option>
+                            <option value={currentUser?.id}>Minha Fila</option>
                           </select>
                           <ChevronDown className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
                         </div>
@@ -779,8 +628,8 @@ const SupportCenter: React.FC = () => {
                           </div>
                           <div>
                             <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
-                            <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
-                              {selectedTicket.createdAt.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                             <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
+                              {new Date(selectedTicket.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                         </div>

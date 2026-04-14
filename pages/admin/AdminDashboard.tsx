@@ -212,25 +212,34 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className='flex justify-between items-center bg-slate-900 text-white p-8 rounded-[32px] shadow-2xl relative overflow-hidden'>
-        <div className='relative z-10'>
-          <h1 className='text-3xl font-bold mb-2'>Painel de Controle</h1>
-          <p className='text-slate-400'>Visão geral da performance do Igloo.</p>
+      {/* Header Card */}
+      <div className='bg-white dark:bg-surface-dark p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm'>
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-6'>
+          <div>
+            <h1 className='text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3'>
+              Painel de Controle
+              <span className='px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest'>Admin</span>
+            </h1>
+            <p className='text-sm text-slate-500 font-medium'>Visão geral da performance do Igloo.</p>
+          </div>
+          
+          <div className='flex items-center gap-3'>
+            <button 
+              onClick={() => navigate('/admin/conversion')}
+              className='px-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center gap-2'
+            >
+              <Activity size={16} className='text-primary' />
+              Relatórios
+            </button>
+            <button 
+              onClick={() => navigate('/admin/support')}
+              className='px-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center gap-2'
+            >
+              <Bell size={16} className='text-primary' />
+              Notificações
+            </button>
+          </div>
         </div>
-        <div className='relative z-10 flex gap-3'>
-          <button className='px-6 py-3 bg-white/10 hover:bg-white/20 rounded-2xl font-bold backdrop-blur-md transition-all flex items-center gap-2'>
-            <Activity size={18} />
-            Relatórios
-          </button>
-          <button className='px-6 py-3 bg-white text-slate-900 rounded-2xl font-bold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2'>
-            <Bell size={18} />
-            Notificações
-          </button>
-        </div>
-
-        {/* Decorative Background */}
-        <div className='absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/20 to-purple-600/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2'></div>
       </div>
 
       {/* Stats Grid */}
