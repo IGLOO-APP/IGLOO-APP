@@ -34,21 +34,15 @@ import {
 import { adminService } from '../../services/adminService';
 import { InfoTooltip } from '../../components/ui/InfoTooltip';
 
-const growthData = [
-  { name: 'Jan', users: 400, revenue: 2400 },
-  { name: 'Fev', users: 300, revenue: 1398 },
-  { name: 'Mar', users: 200, revenue: 9800 },
-  { name: 'Abr', users: 278, revenue: 3908 },
-  { name: 'Mai', users: 189, revenue: 4800 },
-  { name: 'Jun', users: 239, revenue: 3800 },
-  { name: 'Jul', users: 349, revenue: 4300 },
-];
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [growthData, setGrowthData] = useState<any[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('Últimos 6 meses');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -80,24 +74,32 @@ const AdminDashboard: React.FC = () => {
   const anomalies = getAnomalyPoints(growthData);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const loadDashboardData = async () => {
       try {
-        const data = await adminService.getStats();
-        setStats(data);
-      } catch (e) {
-        console.error(e);
+        const [statsData, usersData, activityData, growth] = await Promise.all([
+          adminService.getStats(),
+          adminService.getRecentUsers(),
+          adminService.getRecentActivity(),
+          adminService.getGrowthData(),
+        ]);
+        setStats(statsData);
+        setRecentUsers(usersData);
+        setRecentActivity(activityData);
+        setGrowthData(growth);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    loadStats();
+    loadDashboardData();
   }, []);
 
   const dashboardStats = [
     {
       label: 'Proprietários Ativos',
-      value: stats?.active_owners || '1.234',
-      change: '+15%',
+      value: stats?.active_owners !== undefined ? stats.active_owners.toLocaleString() : '...',
+      change: '+0%',
       trend: 'up',
       icon: Users,
       color: 'blue',
@@ -108,8 +110,8 @@ const AdminDashboard: React.FC = () => {
     },
     {
       label: 'Receita Mensal (MRR)',
-      value: stats?.mrr ? `R$ ${stats.mrr.toLocaleString()}` : 'R$ 98.765',
-      change: '+8.2%',
+      value: stats?.mrr !== undefined ? `R$ ${stats.mrr.toLocaleString()}` : '...',
+      change: '+0%',
       trend: 'up',
       icon: TrendingUp,
       color: 'emerald',
@@ -120,20 +122,20 @@ const AdminDashboard: React.FC = () => {
     },
     {
       label: 'Total de Imóveis',
-      value: '3.456',
-      change: '+2.4%',
+      value: stats?.total_properties?.toLocaleString() || '0',
+      change: '+0%',
       trend: 'up',
       icon: Building2,
       color: 'amber',
       type: 'positive',
       tooltipTitle: 'Total de Imóveis',
       tooltipDesc:
-        'Soma de todos os imóveis cadastrados na plataforma por todos os proprietários ativos. Inclui imóveis vagos e alugados. Variação calculada em relação ao mês anterior.',
+        'Soma de todos os imóveis cadastrados na plataforma. Inclui imóveis vagos e alugados.',
     },
     {
       label: 'Churn Rate',
-      value: stats?.churn_rate ? `${stats.churn_rate}%` : '3.2%',
-      change: '-0.5%',
+      value: stats?.churn_rate !== undefined ? `${stats.churn_rate}%` : '...',
+      change: '0%',
       trend: 'down',
       icon: AlertCircle,
       color: 'rose',
@@ -144,20 +146,20 @@ const AdminDashboard: React.FC = () => {
     },
     {
       label: 'Trials Ativos',
-      value: '142',
-      change: '+12',
+      value: stats?.active_trials?.toLocaleString() || '0',
+      change: '+0',
       trend: 'up',
       icon: Cpu,
       color: 'indigo',
-      type: 'neutral', // Growth is informational
+      type: 'neutral',
       tooltipTitle: 'Trials em Andamento',
       tooltipDesc:
-        'Total de proprietários atualmente em período de avaliação gratuita. Variação em relação ao dia anterior. Acompanhe a conversão desses usuários em Assinaturas.',
+        'Total de proprietários atualmente em período de avaliação gratuita (Plano Trial).',
     },
     {
       label: 'Tickets Abertos',
-      value: '24',
-      change: '+3',
+      value: stats?.open_tickets?.toLocaleString() || '0',
+      change: '+0',
       trend: 'up',
       icon: ShieldAlert,
       color: 'rose',
@@ -184,47 +186,8 @@ const AdminDashboard: React.FC = () => {
     return 'text-slate-500 bg-slate-50 dark:bg-slate-500/10';
   };
 
-  const recentUsers = [
-    {
-      id: 1,
-      name: 'João Silva',
-      email: 'joao@email.com',
-      plan: 'Professional',
-      status: 'Ativo',
-      date: 'Hoje, 14:30',
-    },
-    {
-      id: 2,
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-      plan: 'Enterprise',
-      status: 'Trial',
-      date: 'Hoje, 12:15',
-    },
-    {
-      id: 3,
-      name: 'Pedro Oliveira',
-      email: 'pedro@email.com',
-      plan: 'Starter',
-      status: 'Ativo',
-      date: 'Ontem, 18:45',
-    },
-    {
-      id: 4,
-      name: 'Ana Costa',
-      email: 'ana@email.com',
-      plan: 'Free',
-      status: 'Inativo',
-      date: 'Ontem, 16:20',
-    },
-  ];
+  // Mock data removed (now using state)
 
-  const recentActivity = [
-    { id: 1, text: 'Novo usuário registrado: Carlos M.', time: 'há 5 min', type: 'user' },
-    { id: 2, text: 'Pagamento recebido: R$ 79,90', time: 'há 12 min', type: 'money' },
-    { id: 3, text: 'Erro na integração ClickSign', time: 'há 45 min', type: 'error' },
-    { id: 4, text: 'Backup do sistema concluído', time: 'há 2 horas', type: 'system' },
-  ];
 
   return (
     <div className='flex flex-col w-full max-w-[1600px] mx-auto p-8 space-y-8 animate-fadeIn relative'>
@@ -466,15 +429,17 @@ const AdminDashboard: React.FC = () => {
               Atividade Recente
             </h3>
             <div className='space-y-4'>
-              {recentActivity.map((activity, i) => (
+              {recentActivity.length === 0 ? (
+                <p className='text-xs text-slate-500 py-4'>Nenhuma atividade recente encontrada.</p>
+              ) : recentActivity.map((activity, i) => (
                 <div
                   key={i}
                   className='flex gap-3 items-start pb-4 border-b border-gray-50 dark:border-white/5 last:border-0 last:pb-0'
                 >
                   <div
-                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${activity.type === 'error'
+                    className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${activity.action?.includes('error')
                         ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-                        : activity.type === 'money'
+                        : activity.action?.includes('money')
                           ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
                           : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
                       }`}
@@ -482,19 +447,11 @@ const AdminDashboard: React.FC = () => {
                   <div className='flex-1'>
                     <div className='flex items-center justify-between gap-2'>
                       <p className='text-xs font-bold text-slate-700 dark:text-slate-300'>
-                        {activity.text}
+                        {activity.action}: {activity.target_type} {activity.target_id?.substring(0, 8)}
                       </p>
-                      {activity.type === 'error' && (
-                        <button
-                          onClick={() => navigate('/admin/settings?tab=integrations')}
-                          className='text-[10px] font-black text-primary hover:underline uppercase tracking-tighter shrink-0'
-                        >
-                          Ver detalhes
-                        </button>
-                      )}
                     </div>
                     <p className='text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5'>
-                      {activity.time}
+                      {new Date(activity.created_at).toLocaleString('pt-BR')}
                     </p>
                   </div>
                 </div>
@@ -547,37 +504,39 @@ const AdminDashboard: React.FC = () => {
                   <td className='px-8 py-5'>
                     <div className='flex items-center gap-4'>
                       <div className='w-10 h-10 rounded-2xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-600 dark:text-white font-bold shadow-inner'>
-                        {u.name.charAt(0)}
+                        {u.name?.charAt(0) || 'U'}
                       </div>
                       <div>
-                        <p className='text-sm font-bold text-slate-900 dark:text-white'>{u.name}</p>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>{u.name || 'Sem nome'}</p>
                         <p className='text-xs text-slate-500'>{u.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className='px-8 py-5'>
                     <span className='text-[10px] font-bold px-3 py-1.5 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 dark:text-slate-400 uppercase tracking-wider'>
-                      {u.plan}
+                      {u.plan || 'Free'}
                     </span>
                   </td>
                   <td className='px-8 py-5'>
                     <div className='flex items-center gap-2'>
                       <div
-                        className={`w-1.5 h-1.5 rounded-full ${u.status === 'Ativo' ? 'bg-emerald-500' : u.status === 'Trial' ? 'bg-amber-500' : 'bg-slate-400'}`}
+                        className={`w-1.5 h-1.5 rounded-full ${!u.is_suspended ? 'bg-emerald-500' : 'bg-rose-500'}`}
                       ></div>
                       <span className='text-sm font-bold text-slate-700 dark:text-white/80'>
-                        {u.status}
+                        {u.is_suspended ? 'Suspenso' : 'Ativo'}
                       </span>
                     </div>
                   </td>
-                  <td className='px-8 py-5 text-sm font-medium text-slate-500'>{u.date}</td>
+                  <td className='px-8 py-5 text-sm font-medium text-slate-500'>
+                    {new Date(u.created_at).toLocaleDateString('pt-BR')}
+                  </td>
                   <td className='px-8 py-5 text-right'>
                     <div className='flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                      <button className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400 hover:text-primary transition-colors'>
+                      <button 
+                        onClick={() => navigate(`/admin/users?id=${u.id}`)}
+                        className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400 hover:text-primary transition-colors'
+                      >
                         <Eye size={18} />
-                      </button>
-                      <button className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400'>
-                        <MoreVertical size={18} />
                       </button>
                     </div>
                   </td>

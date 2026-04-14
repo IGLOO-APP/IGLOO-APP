@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Megaphone,
   Plus,
@@ -17,6 +17,7 @@ import {
   Target,
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import { InfoTooltip } from '../../components/ui/InfoTooltip';
 
 interface Announcement {
   id: string;
@@ -31,47 +32,33 @@ interface Announcement {
   show_until?: string;
 }
 
-const mockAnnouncements: Announcement[] = [
-  {
-    id: '1',
-    title: 'Nova Funcionalidade: Relatórios de Yield',
-    content: 'Agora você pode acompanhar o rendimento de seus imóveis em tempo real...',
-    type: 'feature',
-    target_audience: 'all',
-    status: 'active',
-    views: 1250,
-    clicks: 450,
-    created_at: '2026-04-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Manutenção Programada - 10/04',
-    content: 'Realizaremos uma atualização nos servidores para melhorar a performance...',
-    type: 'maintenance',
-    target_audience: 'all',
-    status: 'active',
-    views: 890,
-    clicks: 120,
-    created_at: '2026-04-05T14:30:00Z',
-    show_until: '2026-04-10T23:59:59Z',
-  },
-  {
-    id: '3',
-    title: 'Aviso sobre Novos Contratos',
-    content: 'Lembramos que a partir de amanhã o modelo de contrato residencial mudará...',
-    type: 'warning',
-    target_audience: 'all',
-    status: 'draft',
-    views: 0,
-    clicks: 0,
-    created_at: '2026-04-06T09:00:00Z',
-  },
-];
+import { adminService } from '../../services/adminService';
+// Mock announcements removed
+
 
 const Announcements: React.FC = () => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [stats, setStats] = useState({ total_views: 0, total_clicks: 0, ctr: '0.0' });
+  const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'draft' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const loadAnnouncements = async () => {
+    try {
+      const { list, stats: s } = await adminService.getAnnouncements();
+      setAnnouncements(list || []);
+      setStats(s);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, []);
 
   // Form State
   const [newTitle, setNewTitle] = useState('');
@@ -135,20 +122,46 @@ const Announcements: React.FC = () => {
       {/* Stats Quick Overview */}
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
         {[
-          { label: 'Visu. Totais', value: '12.450', change: '+12%', icon: Eye, color: 'primary' },
-          { label: 'Alcance Global', value: '94.5%', change: 'Base total', icon: Users, color: 'amber' },
-          { label: 'CTR Médio', value: '8.2%', change: 'Alta interação', icon: Target, color: 'emerald' },
+          { 
+            label: 'Visu. Totais', 
+            value: stats.total_views.toLocaleString(), 
+            change: '+0', 
+            icon: Eye, 
+            color: 'primary',
+            tooltipTitle: 'Visualizações Totais',
+            tooltipDesc: 'Número total de vezes que seus comunicados foram exibidos nos dashboards dos proprietários.'
+          },
+          { 
+            label: 'Cliques Totais', 
+            value: stats.total_clicks.toLocaleString(), 
+            change: 'Total', 
+            icon: Users, 
+            color: 'amber',
+            tooltipTitle: 'Engajamento Direto',
+            tooltipDesc: 'Total de cliques em links ou botões de "Ver Mais" dentro dos comunicados ativos.'
+          },
+          { 
+            label: 'CTR Médio', 
+            value: `${stats.ctr}%`, 
+            change: 'Interação real', 
+            icon: Target, 
+            color: 'emerald',
+            tooltipTitle: 'Taxa de Clique (CTR)',
+            tooltipDesc: 'A porcentagem de usuários que clicaram em um comunicado após visualizá-lo. Mede a eficácia da sua mensagem.'
+          },
         ].map((stat) => (
-          <div key={stat.label} className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-            <div className='flex items-center justify-between mb-4'>
-              <div className={`p-3 rounded-xl bg-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}`}>
-                <stat.icon size={20} />
+          <InfoTooltip key={stat.label} title={stat.tooltipTitle} description={stat.tooltipDesc}>
+            <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+              <div className='flex items-center justify-between mb-4'>
+                <div className={`p-3 rounded-xl bg-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}`}>
+                  <stat.icon size={20} />
+                </div>
+                <span className='text-[10px] font-bold text-emerald-500 uppercase'>{stat.change}</span>
               </div>
-              <span className='text-[10px] font-bold text-emerald-500 uppercase'>{stat.change}</span>
+              <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>{stat.label}</p>
+              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stat.value}</h3>
             </div>
-            <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>{stat.label}</p>
-            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stat.value}</h3>
-          </div>
+          </InfoTooltip>
         ))}
       </div>
 
@@ -186,7 +199,11 @@ const Announcements: React.FC = () => {
 
         {/* List */}
         <div className='divide-y divide-gray-50 dark:divide-white/5'>
-          {mockAnnouncements.map((ann) => (
+          {loading ? (
+            <div className='p-20 text-center text-slate-400 font-bold'>Carregando comunicados...</div>
+          ) : announcements.length === 0 ? (
+            <div className='p-20 text-center text-slate-400 font-bold'>Nenhum comunicado encontrado.</div>
+          ) : announcements.map((ann) => (
             <div key={ann.id} className='p-6 hover:bg-slate-50 dark:hover:bg-white/5 transition-all group flex items-start gap-4'>
               <div className={`p-3 rounded-2xl border ${getTypeStyles(ann.type)} shrink-0`}>
                 <Megaphone size={24} />
@@ -349,9 +366,22 @@ const Announcements: React.FC = () => {
                 Cancelar
               </button>
               <button
-                onClick={() => {
-                  alert('Comunicado salvo!');
-                  setShowNewModal(false);
+                onClick={async () => {
+                  try {
+                    await adminService.createAnnouncement({
+                      title: newTitle,
+                      content: newContent,
+                      type: newType,
+                      target_audience: newTarget,
+                      status: 'active'
+                    });
+                    setShowNewModal(false);
+                    loadAnnouncements();
+                    setNewTitle('');
+                    setNewContent('');
+                  } catch (err) {
+                    alert('Erro ao publicar: ' + (err as Error).message);
+                  }
                 }}
                 disabled={!newTitle || !newContent}
                 className='flex-[2] py-3 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50'

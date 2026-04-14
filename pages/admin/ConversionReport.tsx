@@ -27,6 +27,7 @@ import {
   Cell
 } from 'recharts';
 import { adminService } from '../../services/adminService';
+import { InfoTooltip } from '../../components/ui/InfoTooltip';
 
 const ConversionReport: React.FC = () => {
   const [period, setPeriod] = useState('30_days');
@@ -80,54 +81,74 @@ const ConversionReport: React.FC = () => {
 
       {/* Main Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-        <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-          <div className='flex justify-between items-start mb-4'>
-            <div className='p-3 bg-indigo-500/10 text-indigo-500 rounded-xl'>
-              <Users size={20} />
+        <InfoTooltip 
+          title='Novos Trials' 
+          description='Total de proprietários que iniciaram o período de teste gratuito no intervalo selecionado.'
+        >
+          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+            <div className='flex justify-between items-start mb-4'>
+              <div className='p-3 bg-indigo-500/10 text-indigo-500 rounded-xl'>
+                <Users size={20} />
+              </div>
+              <span className='flex items-center text-xs font-bold text-slate-400'>
+                +0%
+              </span>
             </div>
-            <span className='flex items-center text-xs font-bold text-emerald-500'>
-              <ArrowUpRight size={14} /> +12%
-            </span>
+            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Novos Trials</p>
+            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats?.total_trials || 0}</h3>
           </div>
-          <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Novos Trials</p>
-          <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats.total_trials}</h3>
-        </div>
+        </InfoTooltip>
 
-        <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-          <div className='flex justify-between items-start mb-4'>
-            <div className='p-3 bg-emerald-500/10 text-emerald-500 rounded-xl'>
-              <CreditCard size={20} />
+        <InfoTooltip 
+          title='Conversões' 
+          description='Número de usuários Trial que realizaram o pagamento da primeira mensalidade e tornaram-se assinantes pagos.'
+        >
+          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+            <div className='flex justify-between items-start mb-4'>
+              <div className='p-3 bg-emerald-500/10 text-emerald-500 rounded-xl'>
+                <CreditCard size={20} />
+              </div>
+              <span className='flex items-center text-xs font-bold text-slate-400'>
+                +0%
+              </span>
             </div>
-            <span className='flex items-center text-xs font-bold text-emerald-500'>
-              <ArrowUpRight size={14} /> +5%
-            </span>
+            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Conversões</p>
+            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats?.total_converted || 0}</h3>
           </div>
-          <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Conversões</p>
-          <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats.total_converted}</h3>
-        </div>
+        </InfoTooltip>
 
-        <div className='bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden'>
-          <div className='flex justify-between items-start mb-4 relative z-10'>
-            <div className='p-3 bg-primary text-white rounded-xl'>
-              <TrendingUp size={20} />
+        <InfoTooltip 
+          title='Taxa de Conversão' 
+          description='A porcentagem de Trials que converteram para planos pagos. É o principal indicador de eficiência do produto.'
+        >
+          <div className='bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden h-full'>
+            <div className='flex justify-between items-start mb-4 relative z-10'>
+              <div className='p-3 bg-primary text-white rounded-xl'>
+                <TrendingUp size={20} />
+              </div>
+            </div>
+            <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-1 relative z-10'>Taxa de Conversão</p>
+            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white relative z-10'>{stats?.conversion_rate || 0}%</h3>
+            <div className='absolute -bottom-2 -right-2 opacity-5 pointer-events-none'>
+              <TrendingUp size={100} />
             </div>
           </div>
-          <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-1 relative z-10'>Taxa de Conversão</p>
-          <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white relative z-10'>{stats.conversion_rate}%</h3>
-          <div className='absolute -bottom-2 -right-2 opacity-5 pointer-events-none'>
-            <TrendingUp size={100} />
-          </div>
-        </div>
+        </InfoTooltip>
 
-        <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-          <div className='flex justify-between items-start mb-4'>
-            <div className='p-3 bg-amber-500/10 text-amber-500 rounded-xl'>
-              <Clock size={20} />
+        <InfoTooltip 
+          title='Tempo de Decisão' 
+          description='Tempo médio (em dias) que os usuários levam desde o cadastro inicial até o pagamento da assinatura.'
+        >
+          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+            <div className='flex justify-between items-start mb-4'>
+              <div className='p-3 bg-amber-500/10 text-amber-500 rounded-xl'>
+                <Clock size={20} />
+              </div>
             </div>
+            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Tempo Médio p/ Converter</p>
+            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats.time_to_convert_avg} dias</h3>
           </div>
-          <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>Tempo Médio p/ Converter</p>
-          <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>{stats.time_to_convert_avg} dias</h3>
-        </div>
+        </InfoTooltip>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>

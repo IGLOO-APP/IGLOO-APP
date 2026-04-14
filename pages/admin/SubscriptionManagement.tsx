@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { adminService } from '../../services/adminService';
 import { useNavigate } from 'react-router-dom';
 import {
   CreditCard,
@@ -35,6 +36,26 @@ const SubscriptionManagement: React.FC = () => {
   const navigate = useNavigate();
   const [revenuePeriod, setRevenuePeriod] = useState('Últimos 6 meses');
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [statsData, growth] = await Promise.all([
+          adminService.getSubscriptionStats(),
+          adminService.getGrowthData(),
+        ]);
+        setStats(statsData);
+        setRevenueData(growth.map(g => ({ name: g.name, value: g.revenue })));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
+  }, []);
 
   // New Plan form state
   const [newPlanName, setNewPlanName] = useState('');
@@ -47,40 +68,27 @@ const SubscriptionManagement: React.FC = () => {
   const [newFeature, setNewFeature] = useState('');
   const [featuresList, setFeaturesList] = useState<string[]>([]);
 
-  const revenueData = [
-    { name: 'Jan', value: 30000 },
-    { name: 'Fev', value: 45000 },
-    { name: 'Mar', value: 40000 },
-    { name: 'Abr', value: 60000 },
-    { name: 'Mai', value: 55000 },
-    { name: 'Jun', value: 75000 },
-    { name: 'Jul', value: 70000 },
-    { name: 'Ago', value: 90000 },
-    { name: 'Set', value: 85000 },
-    { name: 'Out', value: 100000 },
-    { name: 'Nov', value: 95000 },
-    { name: 'Dez', value: 110000 },
-  ];
+  const [revenueData, setRevenueData] = useState<any[]>([]);
 
   const movementMetrics = [
     {
       label: 'Upgrades',
-      value: '24',
-      badge: '▲ 12 upgrades',
+      value: stats?.recentMovements?.upgrades?.toString() || '0',
+      badge: '▲ 0 upgrades',
       badgeColor: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
       filter: 'upgrades',
     },
     {
       label: 'Downgrades',
-      value: '8',
-      badge: '▼ 4 downgrades',
+      value: stats?.recentMovements?.downgrades?.toString() || '0',
+      badge: '▼ 0 downgrades',
       badgeColor: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
       filter: 'downgrades',
     },
     {
       label: 'Cancelamentos',
-      value: '12',
-      badge: '12 cancelamentos',
+      value: stats?.recentMovements?.cancelamentos?.toString() || '0',
+      badge: '0 cancelamentos',
       badgeColor: 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-400',
       filter: 'canceled',
     },
@@ -89,51 +97,51 @@ const SubscriptionManagement: React.FC = () => {
   const metrics = [
     {
       label: 'MRR Global',
-      value: 'R$ 98.765',
-      change: '+12%',
+      value: stats?.mrr !== undefined ? `R$ ${stats.mrr.toLocaleString()}` : '...',
+      change: '+0%',
       trend: 'up',
       icon: DollarSign,
       color: 'emerald',
       type: 'positive',
       tooltipTitle: 'Receita Recorrente Mensal',
       tooltipDesc:
-        'Soma de todas as assinaturas ativas no mês atual. Não inclui planos Free nem pagamentos únicos. Variação calculada em relação ao mês anterior.',
+        'Soma de todas as assinaturas ativas no mês atual. Não inclui planos Free nem pagamentos únicos.',
     },
     {
       label: 'ARR Estimado',
-      value: 'R$ 1.185.180',
-      change: '+8%',
+      value: stats?.arr !== undefined ? `R$ ${stats.arr.toLocaleString()}` : '...',
+      change: '+0%',
       trend: 'up',
       icon: TrendingUp,
       color: 'blue',
       type: 'positive',
       tooltipTitle: 'ARR Estimado',
       tooltipDesc:
-        'Receita Recorrente Anual estimada com base no MRR atual. Uma métrica-chave para avaliar o tamanho do negócio no longo prazo.',
+        'Receita Recorrente Anual estimada com base no MRR atual.',
     },
     {
       label: 'Churn Rate',
-      value: '3.2%',
-      change: '-0.4%',
+      value: '0%',
+      change: '0%',
       trend: 'down',
       icon: Users,
       color: 'rose',
       type: 'negative',
       tooltipTitle: 'Taxa de Cancelamento (Churn)',
       tooltipDesc:
-        'Percentual de proprietários que cancelaram ou deixaram de renovar o plano no mês atual em relação à base total. Queda no churn é positiva para o negócio.',
+        'Percentual de proprietários que cancelaram no mês atual.',
     },
     {
       label: 'Ticket Médio',
-      value: 'R$ 79,90',
-      change: '+2%',
+      value: 'R$ 0,00',
+      change: '0%',
       trend: 'up',
       icon: CreditCard,
       color: 'amber',
       type: 'positive',
       tooltipTitle: 'Ticket Médio',
       tooltipDesc:
-        'Valor médio pago por assinatura na plataforma. Ajuda a entender o perfil de faturamento por cliente.',
+        'Valor médio pago por assinatura na plataforma.',
     },
   ];
 
@@ -206,12 +214,12 @@ const SubscriptionManagement: React.FC = () => {
             Distribuição por Plano
           </h3>
           <div className='space-y-6'>
-            {[
-              { name: 'Professional', count: 650, percentage: 52, mrr: '51.935', color: 'primary' },
-              { name: 'Starter', count: 420, percentage: 34, mrr: '33.558', color: 'emerald' },
-              { name: 'Enterprise', count: 85, percentage: 7, mrr: '13.272', color: 'amber' },
-              { name: 'Free', count: 1234, percentage: 7, mrr: '0', color: 'slate', isFree: true },
-            ].map((p) => (
+            {(stats?.planDistribution || [
+                { name: 'Elite', count: 0, percentage: 0, mrr: '0', color: 'primary' },
+                { name: 'Pro', count: 0, percentage: 0, mrr: '0', color: 'emerald' },
+                { name: 'Trial', count: 0, percentage: 0, mrr: '0', color: 'amber' },
+                { name: 'Free', count: 0, percentage: 0, mrr: '0', color: 'slate', isFree: true },
+              ]).map((p: any) => (
               <div
                 key={p.name}
                 onClick={() => navigate(`/admin/users?plan=${p.name}`)}
