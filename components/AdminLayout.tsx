@@ -70,10 +70,9 @@ const AdminLayout: React.FC = () => {
               to={item.path}
               end={item.path === '/admin'}
               className={({ isActive }) =>
-                `group relative flex items-center gap-3.5 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 ease-out ${
-                  isActive
-                    ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                `group relative flex items-center gap-3.5 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 ease-out ${isActive
+                  ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -159,9 +158,8 @@ const AdminLayout: React.FC = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${
-                    isActive ? 'text-amber-500 scale-105' : 'text-slate-500'
-                  }`}
+                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${isActive ? 'text-amber-500 scale-105' : 'text-slate-500'
+                    }`}
                 >
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                   <span className='text-[10px] font-bold truncate w-full text-center'>

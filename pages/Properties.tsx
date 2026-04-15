@@ -21,7 +21,7 @@ const Properties: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
+
   // Advanced Filters State
   const [filterBedrooms, setFilterBedrooms] = useState<number | null>(null);
   const [filterBathrooms, setFilterBathrooms] = useState<number | null>(null);
@@ -90,11 +90,11 @@ const Properties: React.FC = () => {
 
     const matchesBedrooms = filterBedrooms === null || (prop.bedrooms && prop.bedrooms >= filterBedrooms);
     const matchesBathrooms = filterBathrooms === null || (prop.bathrooms && prop.bathrooms >= filterBathrooms);
-    
+
     const priceNum = parseFloat(prop.price?.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
     const matchesMinPrice = !minPrice || priceNum >= parseFloat(minPrice);
     const matchesMaxPrice = !maxPrice || priceNum <= parseFloat(maxPrice);
-    
+
     const areaNum = parseFloat(prop.area?.replace(/\D/g, '') || '0');
     const matchesMinArea = !minArea || areaNum >= parseFloat(minArea);
 
@@ -193,11 +193,10 @@ const Properties: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors ${
-                  showAdvancedFilters
+                className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors ${showAdvancedFilters
                     ? 'bg-primary/10 border-primary text-primary'
                     : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'
-                }`}
+                  }`}
               >
                 <Filter size={20} />
               </button>
@@ -210,14 +209,14 @@ const Properties: React.FC = () => {
                   <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>Filtros Avançados</h4>
                   <button onClick={clearFilters} className='text-xs font-bold text-primary hover:underline'>Limpar Tudo</button>
                 </div>
-                
+
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
                   <div className='space-y-3'>
                     <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Dormitórios & Banheiros</label>
                     <div className='flex flex-col gap-2'>
                       <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
                         {[1, 2, 3, 4].map((n) => (
-                          <button 
+                          <button
                             key={n}
                             onClick={() => setFilterBedrooms(n)}
                             className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBedrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
@@ -228,7 +227,7 @@ const Properties: React.FC = () => {
                       </div>
                       <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
                         {[1, 2, 3].map((n) => (
-                          <button 
+                          <button
                             key={n}
                             onClick={() => setFilterBathrooms(n)}
                             className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBathrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
@@ -243,17 +242,17 @@ const Properties: React.FC = () => {
                   <div className='space-y-3'>
                     <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Faixa de Aluguel (R$)</label>
                     <div className='flex items-center gap-2'>
-                      <input 
-                        type='number' 
-                        placeholder='Min' 
+                      <input
+                        type='number'
+                        placeholder='Min'
                         value={minPrice}
                         onChange={(e) => setMinPrice(e.target.value)}
                         className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
                       />
                       <span className='text-slate-300'>-</span>
-                      <input 
-                        type='number' 
-                        placeholder='Max' 
+                      <input
+                        type='number'
+                        placeholder='Max'
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                         className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
@@ -263,9 +262,9 @@ const Properties: React.FC = () => {
 
                   <div className='space-y-3'>
                     <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Área Mínima (m²)</label>
-                    <input 
-                      type='number' 
-                      placeholder='Ex: 50' 
+                    <input
+                      type='number'
+                      placeholder='Ex: 50'
                       value={minArea}
                       onChange={(e) => setMinArea(e.target.value)}
                       className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
@@ -280,11 +279,10 @@ const Properties: React.FC = () => {
                 <button
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
-                  className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold ${
-                    activeFilter === filter
+                  className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold ${activeFilter === filter
                       ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                       : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   {filter}
                 </button>

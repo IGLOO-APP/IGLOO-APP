@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Check } from 'lucide-react';
+import { Home, UserPlus, FileText, CreditCard, Check, LucideIcon } from 'lucide-react';
 
 interface OnboardingProps {
   onboarding: {
@@ -13,8 +13,18 @@ interface OnboardingProps {
 
 export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) => {
   const navigate = useNavigate();
-  
-  const steps = [
+
+  const steps: {
+    id: number;
+    title: string;
+    completed: boolean;
+    actionLabel: string;
+    onClick: () => void;
+    disabled: boolean;
+    tooltip?: string;
+    icon: LucideIcon;
+    color: string;
+  }[] = [
     {
       id: 1,
       title: 'Cadastre seu primeiro imóvel',
@@ -22,6 +32,8 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
       actionLabel: 'Adicionar Imóvel',
       onClick: () => navigate('/properties', { state: { openAdd: true } }),
       disabled: false,
+      icon: Home,
+      color: 'text-indigo-500',
     },
     {
       id: 2,
@@ -31,6 +43,8 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
       onClick: () => navigate('/tenants', { state: { openAdd: true } }),
       disabled: !onboarding.step1,
       tooltip: 'Cadastre um imóvel primeiro',
+      icon: UserPlus,
+      color: 'text-violet-500',
     },
     {
       id: 3,
@@ -40,6 +54,8 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
       onClick: () => navigate('/contracts', { state: { openWizard: true } }),
       disabled: !onboarding.step1 || !onboarding.step2,
       tooltip: 'Cadastre um imóvel e um inquilino primeiro',
+      icon: FileText,
+      color: 'text-amber-500',
     },
     {
       id: 4,
@@ -48,85 +64,119 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
       actionLabel: 'Configurar',
       onClick: () => navigate('/settings', { state: { activeTab: 'financial' } }),
       disabled: false,
+      icon: CreditCard,
+      color: 'text-emerald-500',
     },
   ];
 
   const completedCount = steps.filter(s => s.completed).length;
-  const progressPercent = (completedCount / steps.length) * 100;
 
   return (
-    <div className='bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 shadow-xl text-white relative overflow-hidden animate-fadeIn'>
-      <div className='absolute top-0 right-0 p-4 opacity-10'>
-        <Zap size={100} />
-      </div>
-      
-      <div className='relative z-10'>
-        <div className='flex items-center gap-2 mb-1'>
-          <h2 className='text-xl font-bold'>Configure sua conta</h2>
-        </div>
-        <p className='text-sm text-indigo-100 opacity-90 mb-6'>Complete os passos abaixo para começar a usar o Igloo</p>
+    <section className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 animate-fadeIn'>
+      {steps.map((step, index) => {
+        const isNext =
+          !step.completed &&
+          !step.disabled &&
+          !steps.slice(0, index).some(s => !s.completed && !s.disabled);
 
-        <div className='space-y-4'>
-          <div className='space-y-2'>
-            <div className='flex justify-between text-xs font-bold uppercase tracking-wider'>
-              <span>Progresso</span>
-              <span>{completedCount} de {steps.length} concluídos</span>
+        return (
+          <button
+            key={step.id}
+            disabled={step.disabled && !step.completed}
+            onClick={step.onClick}
+            className={`group relative overflow-hidden text-left bg-white dark:bg-surface-dark p-3 md:p-5 rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] ${
+              step.completed
+                ? 'border-emerald-200 dark:border-emerald-500/20'
+                : isNext
+                  ? 'border-primary/20 dark:border-primary/25 hover:border-primary/40'
+                  : step.disabled
+                    ? 'border-gray-100 dark:border-white/5 opacity-50 cursor-not-allowed'
+                    : 'border-gray-100 dark:border-white/5 hover:border-primary/20'
+            }`}
+          >
+            {/* Ghost icon — same as HeroCard */}
+            <div
+              className={`absolute top-0 right-0 p-2 md:p-4 transition-opacity opacity-5 group-hover:opacity-10 ${
+                step.completed ? 'text-emerald-500' : step.color
+              }`}
+            >
+              {step.completed ? (
+                <Check size={80} className='hidden md:block' />
+              ) : (
+                <step.icon size={80} className='hidden md:block' />
+              )}
             </div>
-            <div className='w-full h-2 bg-white/20 rounded-full overflow-hidden'>
-              <div 
-                className='h-full bg-white rounded-full transition-all duration-1000' 
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pt-2'>
-            {steps.map((step) => (
-              <div 
-                key={step.id}
-                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                  step.completed 
-                    ? 'bg-white/10 border-white/10 opacity-60' 
-                    : 'bg-white/5 border-white/5 hover:bg-white/10'
+            {/* Top row: icon badge + counter pill */}
+            <div className='flex justify-between items-start mb-2 md:mb-4'>
+              <div
+                className={`p-2 md:p-3 rounded-xl ${
+                  step.completed
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10'
+                    : step.disabled
+                      ? 'bg-slate-100 dark:bg-white/5'
+                      : step.color.replace('text-', 'bg-').replace('500', '50') + ' dark:bg-white/5'
                 }`}
               >
-                <div className='flex items-center gap-3'>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                    step.completed ? 'bg-emerald-400 text-indigo-900' : 'border-2 border-white/30'
-                  }`}>
-                    {step.completed && <Check size={14} strokeWidth={4} />}
-                  </div>
-                  <span className={`text-sm font-bold ${step.completed ? 'line-through opacity-80' : ''}`}>
-                    {step.title}
-                  </span>
-                </div>
-
-                {!step.completed && (
-                  <div className='relative group/tooltip'>
-                    <button
-                      disabled={step.disabled}
-                      onClick={step.onClick}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${
-                        step.disabled
-                          ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                          : 'bg-white text-indigo-700 hover:scale-105 active:scale-95 shadow-lg'
-                      }`}
-                    >
-                      {step.actionLabel}
-                    </button>
-                    {step.disabled && step.tooltip && (
-                      <div className='absolute bottom-full right-0 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl border border-white/10'>
-                        {step.tooltip}
-                        <div className='absolute top-full right-4 border-4 border-transparent border-t-slate-900'></div>
-                      </div>
-                    )}
-                  </div>
+                {step.completed ? (
+                  <Check size={20} className='text-emerald-500' />
+                ) : (
+                  <step.icon
+                    size={20}
+                    className={step.disabled ? 'text-slate-400 dark:text-slate-500' : step.color}
+                  />
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+
+              <span
+                className={`text-[9px] md:text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                  step.completed
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    : isNext
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500'
+                }`}
+              >
+                {step.completed ? 'Feito' : `${completedCount}/${steps.length}`}
+              </span>
+            </div>
+
+            {/* Body — mirrors HeroCard */}
+            <div>
+              <p className='text-slate-500 dark:text-slate-400 text-[9px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1'>
+                Passo {step.id}
+              </p>
+              <h3 className='text-sm md:text-base font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight'>
+                {step.title}
+              </h3>
+              <div className='flex items-center gap-1.5 md:gap-2 mt-1 md:mt-2'>
+                <span
+                  className={`flex items-center text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded ${
+                    step.completed
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                      : isNext
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
+                  }`}
+                >
+                  {step.completed ? '✓' : '→'}
+                </span>
+                <span className='text-[9px] md:text-xs text-slate-400 font-medium line-clamp-1'>
+                  {step.completed ? 'Etapa concluída' : step.actionLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Tooltip for disabled */}
+            {step.disabled && !step.completed && step.tooltip && (
+              <div className='absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl border border-white/10'>
+                {step.tooltip}
+                <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900' />
+              </div>
+            )}
+          </button>
+        );
+      })}
+    </section>
   );
 };

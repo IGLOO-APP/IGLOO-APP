@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -29,7 +29,7 @@ import { PropertyPerformance } from './dashboard/components/PropertyPerformance'
 import { ActivityTimeline } from './dashboard/components/ActivityTimeline';
 import { DashboardAIInsights } from './dashboard/components/DashboardAIInsights';
 
-const AnnouncementBanner = lazy(() => import('../components/AnnouncementBanner'));
+import AnnouncementTicker from '../components/AnnouncementTicker';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -96,6 +96,9 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* ── TICKER: announcements between greeting and actions ── */}
+        <AnnouncementTicker />
 
         <div className='flex items-center gap-3'>
           <button
@@ -237,10 +240,7 @@ const Dashboard: React.FC = () => {
           <OnboardingChecklist onboarding={onboarding} />
         )}
 
-        {/* --- 0. ANNOUNCEMENTS --- */}
-        <Suspense fallback={<div className='h-40 bg-slate-100 dark:bg-white/5 rounded-[32px] animate-pulse'></div>}>
-          <AnnouncementBanner />
-        </Suspense>
+
 
         {/* --- 1. HERO METRICS --- */}
         <HeroMetrics metrics={metrics} />
@@ -296,8 +296,8 @@ const Dashboard: React.FC = () => {
 
           {/* RIGHT COLUMN (1/3) */}
           <div className='space-y-6'>
-             <DashboardAIInsights occupancyRate={metrics.occupancyRate} />
-             <ActivityTimeline activities={activities} />
+            <DashboardAIInsights occupancyRate={metrics.occupancyRate} />
+            <ActivityTimeline activities={activities} />
           </div>
         </div>
       </div>

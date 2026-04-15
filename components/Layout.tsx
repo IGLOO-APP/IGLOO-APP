@@ -66,10 +66,9 @@ const Layout: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${
-                    isActive
-                      ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-white/5'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                  `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${isActive
+                    ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-white/5'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                   }`
                 }
               >
@@ -95,10 +94,9 @@ const Layout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${
-                      isActive
-                        ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-200 dark:ring-amber-500/20'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                    `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${isActive
+                      ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-200 dark:ring-amber-500/20'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                     }`
                   }
                 >
@@ -129,7 +127,7 @@ const Layout: React.FC = () => {
           </button>
 
           <div className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'>
-            <UserButton 
+            <UserButton
               afterSignOutUrl='/login'
               appearance={{
                 elements: {
@@ -166,7 +164,7 @@ const Layout: React.FC = () => {
             </button>
           </div>
         )}
-        
+
         <div className='flex-1 overflow-y-auto pb-24 md:pb-0 w-full scroll-smooth'>
           <Outlet />
         </div>
@@ -180,11 +178,10 @@ const Layout: React.FC = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${
-                    isActive
+                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${isActive
                       ? 'text-primary scale-105'
                       : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                  }`}
+                    }`}
                 >
                   <div
                     className={`p-1 rounded-xl transition-all ${isActive ? 'bg-primary/10' : ''}`}
