@@ -25,6 +25,13 @@ import {
   Bath,
   Maximize,
   Eye,
+  TrendingUp,
+  Info,
+  RotateCcw,
+  ShieldCheck,
+  History,
+  Infinity,
+  ArrowDownToDot,
 } from 'lucide-react';
 import { ContractUploader } from './ContractUploader';
 import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
@@ -280,6 +287,19 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   const [showNewTenantForm, setShowNewTenantForm] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
 
+  const getEndDate = () => {
+    const start = new Date(formData.startDate);
+    const months = parseInt(formData.duration);
+    const end = new Date(start.setMonth(start.getMonth() + months));
+    return end.toLocaleDateString('pt-BR');
+  };
+
+  const getAdjustmentDate = () => {
+    const start = new Date(formData.startDate);
+    const adj = new Date(start.setFullYear(start.getFullYear() + 1));
+    return adj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  };
+
   // Step 5 State: Document
   const [docMode, setDocMode] = useState<'template' | 'upload'>('template');
   const [contractPages, setContractPages] = useState<string[]>(['']);
@@ -477,7 +497,18 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                 {mockProperties.map((prop) => (
                   <button
                     key={prop.id}
-                    onClick={() => setFormData({ ...formData, property: prop.name })}
+                    onClick={() => {
+                      const cleanPrice = prop.price.replace(/\./g, '').replace(',', '.');
+                      const rentVal = parseFloat(cleanPrice);
+                      const depositVal = rentVal * 3;
+
+                      setFormData({ 
+                        ...formData, 
+                        property: prop.name,
+                        rentValue: rentVal.toString(),
+                        depositValue: depositVal.toString()
+                      });
+                    }}
                     className={`group relative overflow-hidden rounded-3xl border-2 text-left transition-all duration-300 flex flex-col bg-white dark:bg-surface-dark ${
                       formData.property === prop.name
                         ? 'border-primary ring-4 ring-primary/10 shadow-2xl'
@@ -721,121 +752,287 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
           )}
 
           {currentStep === 3 && (
-            <div className='space-y-8 animate-fadeIn max-w-2xl mx-auto w-full'>
+            <div className='space-y-8 animate-fadeIn max-w-4xl mx-auto w-full'>
               <div className='text-center'>
                 <h3 className='text-2xl font-bold text-slate-900 dark:text-white mb-2'>
                   Valores do Contrato
                 </h3>
-                <p className='text-slate-500'>Defina o aluguel mensal e o valor da garantia.</p>
+                <p className='text-slate-500'>Valores sugeridos com base no perfil do imóvel selecionado.</p>
               </div>
-              <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-6'>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                    Aluguel Mensal
-                  </label>
-                  <div className='relative'>
-                    <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
-                      R$
-                    </span>
-                    <input
-                      type='number'
-                      value={formData.rentValue}
-                      onChange={(e) => setFormData({ ...formData, rentValue: e.target.value })}
-                      className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none font-bold text-2xl text-slate-900 dark:text-white transition-all'
-                      placeholder='0,00'
-                      autoFocus
-                    />
+
+              <div className='grid grid-cols-1 md:grid-cols-5 gap-8'>
+                {/* Left: Financial Summary Card */}
+                <div className='md:col-span-2 space-y-6'>
+                  <div className='bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 rounded-3xl p-6 relative overflow-hidden'>
+                    <div className='absolute -right-4 -top-4 text-primary/10 rotate-12'>
+                      <TrendingUp size={120} />
+                    </div>
+                    
+                    <div className='relative z-10'>
+                      <div className='flex items-center gap-2 mb-4'>
+                        <div className='w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center'>
+                          <DollarSign size={18} />
+                        </div>
+                        <h4 className='font-black text-primary uppercase tracking-widest text-[10px]'>Perfil do Imóvel</h4>
+                      </div>
+
+                      <div className='space-y-4'>
+                        <div>
+                          <p className='text-[10px] font-bold text-slate-400 uppercase'>Aluguel Base</p>
+                          <p className='text-2xl font-black text-slate-900 dark:text-white'>
+                            R$ {mockProperties.find(p => p.name === formData.property)?.price || '0,00'}
+                          </p>
+                        </div>
+                        
+                        <div className='grid grid-cols-2 gap-4'>
+                          <div>
+                            <p className='text-[10px] font-bold text-slate-400 uppercase'>Condomínio</p>
+                            <p className='text-sm font-black text-emerald-500'>Incluso</p>
+                          </div>
+                          <div>
+                            <p className='text-[10px] font-bold text-slate-400 uppercase'>IPTU</p>
+                            <p className='text-sm font-black text-emerald-500'>Incluso</p>
+                          </div>
+                        </div>
+
+                        <div className='pt-4 border-t border-primary/10'>
+                          <p className='text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1'>
+                            <Info size={10} /> Sugestão de Garantia
+                          </p>
+                          <p className='text-sm font-bold text-slate-600 dark:text-slate-300'>
+                            3x o valor do aluguel
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='p-4 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 flex items-center gap-3'>
+                    <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+                      <Building2 size={20} />
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <p className='text-[10px] font-bold text-slate-400 uppercase'>Imóvel Selecionado</p>
+                      <p className='text-sm font-bold text-slate-900 dark:text-white truncate'>{formData.property}</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                    Caução (Garantia)
-                  </label>
-                  <div className='relative'>
-                    <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
-                      R$
-                    </span>
-                    <input
-                      type='number'
-                      value={formData.depositValue}
-                      onChange={(e) => setFormData({ ...formData, depositValue: e.target.value })}
-                      className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none font-bold text-2xl text-slate-900 dark:text-white transition-all'
-                      placeholder='0,00'
-                    />
+
+                {/* Right: Adjustment Fields */}
+                <div className='md:col-span-3 space-y-6'>
+                  <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-8'>
+                    <div>
+                      <div className='flex items-center justify-between mb-2 ml-1'>
+                        <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black'>
+                          Aluguel Negociado
+                        </label>
+                        {formData.rentValue !== mockProperties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') && (
+                          <button 
+                            onClick={() => {
+                              const base = mockProperties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') || '0';
+                              setFormData({...formData, rentValue: base});
+                            }}
+                            className='text-[10px] font-black text-primary flex items-center gap-1 hover:underline'
+                          >
+                            <RotateCcw size={10} /> Restaurar Base
+                          </button>
+                        )}
+                      </div>
+                      <div className='relative'>
+                        <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
+                          R$
+                        </span>
+                        <input
+                          type='number'
+                          value={formData.rentValue}
+                          onChange={(e) => setFormData({ ...formData, rentValue: e.target.value })}
+                          className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                          placeholder='0,00'
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className='flex items-center justify-between mb-2 ml-1'>
+                        <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black'>
+                          Caução (Garantia)
+                        </label>
+                        {formData.depositValue !== (parseFloat(formData.rentValue || '0') * 3).toString() && (
+                          <button 
+                            onClick={() => {
+                              const suggested = (parseFloat(formData.rentValue || '0') * 3).toString();
+                              setFormData({...formData, depositValue: suggested});
+                            }}
+                            className='text-[10px] font-black text-primary flex items-center gap-1 hover:underline'
+                          >
+                            <RotateCcw size={10} /> Sugerir 3x
+                          </button>
+                        )}
+                      </div>
+                      <div className='relative'>
+                        <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
+                          R$
+                        </span>
+                        <input
+                          type='number'
+                          value={formData.depositValue}
+                          onChange={(e) => setFormData({ ...formData, depositValue: e.target.value })}
+                          className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                          placeholder='0,00'
+                        />
+                      </div>
+                      <div className='mt-4 p-4 bg-slate-50 dark:bg-black/30 rounded-2xl border border-slate-100 dark:border-white/5'>
+                        <p className='text-xs text-slate-500 leading-relaxed font-medium'>
+                          O valor da garantia é retido para cobrir eventuais danos ou inadimplência ao final do contrato. O padrão de mercado é de até 3 vezes o valor do aluguel.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className='text-xs text-slate-400 mt-2 flex items-center gap-1'>
-                    <CheckCircle size={12} /> Recomendado: 3x o valor do aluguel.
-                  </p>
                 </div>
               </div>
             </div>
           )}
 
           {currentStep === 4 && (
-            <div className='space-y-8 animate-fadeIn max-w-2xl mx-auto w-full'>
+            <div className='space-y-8 animate-fadeIn max-w-4xl mx-auto w-full'>
               <div className='text-center'>
                 <h3 className='text-2xl font-bold text-slate-900 dark:text-white mb-2'>Vigência</h3>
-                <p className='text-slate-500'>Datas e duração do contrato.</p>
+                <p className='text-slate-500'>Defina o período de validade e regras de renovação.</p>
               </div>
-              <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-6'>
-                <div className='grid grid-cols-2 gap-6'>
-                  <div>
-                    <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                      Data de Início
-                    </label>
-                    <div className='relative'>
-                      <Calendar
-                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                        size={20}
-                      />
-                      <input
-                        type='date'
-                        value={formData.startDate}
-                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none font-medium text-slate-900 dark:text-white transition-all'
-                      />
+
+              <div className='grid grid-cols-1 md:grid-cols-5 gap-8'>
+                {/* Left: Timeline Display */}
+                <div className='md:col-span-2 space-y-6'>
+                  <div className='bg-white dark:bg-surface-dark p-6 rounded-3xl border border-slate-100 dark:border-white/5 relative'>
+                    <div className='absolute left-10 top-16 bottom-16 w-0.5 bg-dashed border-l-2 border-dashed border-slate-200 dark:border-white/10'></div>
+                    
+                    <div className='space-y-12 relative z-10'>
+                      <div className='flex items-start gap-4'>
+                        <div className='w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20'>
+                          <ArrowRight size={14} />
+                        </div>
+                        <div>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Início do Contrato</p>
+                          <p className='text-lg font-black text-slate-900 dark:text-white'>
+                            {new Date(formData.startDate).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className='flex items-start gap-4'>
+                        <div className='w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 text-slate-400 flex items-center justify-center'>
+                          <ArrowDownToDot size={14} />
+                        </div>
+                        <div>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Duração Total</p>
+                          <div className='flex items-center gap-2'>
+                            <span className='px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-sm font-black'>
+                              {formData.duration} Meses
+                            </span>
+                            <span className='text-xs text-slate-400 font-medium'>Periodo padrão</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className='flex items-start gap-4'>
+                        <div className='w-8 h-8 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-lg'>
+                          <ShieldCheck size={14} />
+                        </div>
+                        <div>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Término Estimado</p>
+                          <p className='text-lg font-black text-slate-900 dark:text-white'>
+                            {getEndDate()}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                      Duração
-                    </label>
-                    <div className='relative'>
-                      <Clock
-                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                        size={20}
-                      />
-                      <select
-                        value={formData.duration}
-                        onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                        className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none font-medium text-slate-900 dark:text-white appearance-none transition-all'
-                      >
-                        <option value='12'>12 Meses</option>
-                        <option value='24'>24 Meses</option>
-                        <option value='30'>30 Meses</option>
-                        <option value='36'>36 Meses</option>
-                      </select>
+
+                  <div className='bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/20 flex items-center gap-3'>
+                    <History size={20} className='text-indigo-500' />
+                    <div className='flex-1'>
+                      <p className='text-[10px] font-bold text-indigo-400 uppercase leading-none mb-1'>Primeiro Reajuste</p>
+                      <p className='text-xs font-bold text-indigo-900 dark:text-indigo-200'>Aniversário em {getAdjustmentDate()}</p>
                     </div>
                   </div>
                 </div>
-                <div
-                  onClick={() => setFormData({ ...formData, autoRenew: !formData.autoRenew })}
-                  className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${formData.autoRenew ? 'bg-primary/5 border-primary/30' : 'bg-slate-50 dark:bg-black/20 border-transparent'}`}
-                >
-                  <div
-                    className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${formData.autoRenew ? 'bg-primary border-primary text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-transparent'}`}
-                  >
-                    {formData.autoRenew && <CheckCircle size={16} />}
-                  </div>
-                  <div>
-                    <p
-                      className={`text-sm font-bold ${formData.autoRenew ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}
+
+                {/* Right: Controls */}
+                <div className='md:col-span-3 space-y-6'>
+                  <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-8'>
+                    <div>
+                      <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 ml-1'>
+                        Quanto tempo durará o contrato?
+                      </label>
+                      <div className='grid grid-cols-3 gap-3'>
+                        {[12, 30, 36].map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => setFormData({ ...formData, duration: m.toString() })}
+                            className={`py-4 rounded-2xl border-2 font-black transition-all ${
+                              formData.duration === m.toString()
+                                ? 'border-primary bg-primary/5 text-primary scale-[1.02] shadow-md'
+                                : 'border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 text-slate-400 hover:border-slate-200'
+                            }`}
+                          >
+                            {m} Meses
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
+                        Data de Início
+                      </label>
+                      <div className='relative'>
+                        <Calendar
+                          className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                          size={20}
+                        />
+                        <input
+                          type='date'
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          className='w-full pl-12 pr-4 py-4 rounded-xl border-2 border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-bold text-slate-900 dark:text-white transition-all'
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => setFormData({ ...formData, autoRenew: !formData.autoRenew })}
+                      className={`relative group flex items-center gap-4 p-6 rounded-3xl border-2 cursor-pointer transition-all overflow-hidden ${
+                        formData.autoRenew 
+                          ? 'bg-emerald-500/5 border-emerald-500/30' 
+                          : 'bg-slate-50 dark:bg-black/20 border-transparent hover:border-slate-200'
+                      }`}
                     >
-                      Renovação Automática
-                    </p>
-                    <p className='text-xs text-slate-500'>
-                      Prorrogar por igual período automaticamente.
-                    </p>
+                      {formData.autoRenew && (
+                        <div className='absolute -right-4 -bottom-4 text-emerald-500/10 rotate-12'>
+                          <Infinity size={100} />
+                        </div>
+                      )}
+                      
+                      <div
+                        className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all ${
+                          formData.autoRenew 
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110' 
+                            : 'border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-300'
+                        }`}
+                      >
+                        {formData.autoRenew ? <Infinity size={24} /> : <RotateCcw size={20} />}
+                      </div>
+                      
+                      <div className='relative z-10'>
+                        <p className={`text-lg font-black ${formData.autoRenew ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                          Renovação Automática
+                        </p>
+                        <p className='text-sm text-slate-500 font-medium'>
+                          Deseja prorrogar o contrato por tempo indeterminado após o término?
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
