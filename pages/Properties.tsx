@@ -52,6 +52,7 @@ const Properties: React.FC = () => {
               'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400',
             tenant: null,
             contract: null,
+            galleryImages: []
           },
           {
             id: 2,
@@ -68,6 +69,7 @@ const Properties: React.FC = () => {
               'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=400',
             tenant: { name: 'João Silva' },
             contract: { status: 'active', value: 'R$ 4.500,00' },
+            galleryImages: []
           },
           {
             id: 3,
@@ -84,6 +86,7 @@ const Properties: React.FC = () => {
               'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
             tenant: { name: 'Maria Oliveira' },
             contract: { status: 'expiring_soon', value: 'R$ 3.200,00', days_remaining: 15 },
+            galleryImages: []
           },
           {
             id: 4,
@@ -100,6 +103,7 @@ const Properties: React.FC = () => {
               'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=400',
             tenant: { name: 'Ricardo Santos' },
             contract: { status: 'expired', value: 'R$ 6.800,00' },
+            galleryImages: []
           },
         ] as Property[];
       
@@ -134,6 +138,7 @@ const Properties: React.FC = () => {
       bedrooms: data.bedrooms,
       bathrooms: data.bathrooms,
       image: data.coverImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
+      galleryImages: data.galleryImages || [],
       tenant: null,
       contract: null
     };
@@ -155,7 +160,8 @@ const Properties: React.FC = () => {
           area: `${data.area}m²`,
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
-          image: data.coverImage || p.image
+          image: data.coverImage || p.image,
+          galleryImages: data.galleryImages || p.galleryImages || []
         };
       }
       return p;
@@ -460,6 +466,7 @@ const Properties: React.FC = () => {
           property={selectedProperty} 
           onClose={() => setSelectedProperty(null)} 
           onEdit={handleEditProperty}
+          onDelete={handleDeleteProperty}
         />
       )}
 
@@ -478,6 +485,7 @@ const Properties: React.FC = () => {
             bedrooms: editingProperty.bedrooms,
             bathrooms: editingProperty.bathrooms,
             coverImage: editingProperty.image,
+            galleryImages: editingProperty.galleryImages || [],
             // street, number etc simplified for mock
             street: editingProperty.address.split(',')[0],
             number: editingProperty.address.split(',')[1]?.split('-')[0]?.trim() || '',

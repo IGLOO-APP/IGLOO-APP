@@ -186,22 +186,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
           {/* Right column: price + actions */}
           <div className='flex flex-col items-end justify-between shrink-0'>
-            {/* Edit/Delete icons top-right */}
-            <div className='flex gap-1'>
-              <button
-                onClick={(e) => { e.stopPropagation(); onEdit?.(property.id); }}
-                aria-label='Editar'
-                className='flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-slate-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
-              >
-                <Edit2 size={15} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete?.(property.id); }}
-                aria-label='Excluir'
-                className='flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors'
-              >
-                <Trash2 size={15} />
-              </button>
+            <div className='flex gap-1 h-6'>
             </div>
 
             {/* Price */}

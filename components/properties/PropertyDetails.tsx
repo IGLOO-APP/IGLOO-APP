@@ -18,6 +18,7 @@ import {
   Clock,
   Eye,
   Edit2,
+  Trash2,
 } from 'lucide-react';
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
@@ -29,19 +30,22 @@ interface PropertyDetailsProps {
   property: Property;
   onClose: () => void;
   onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
-export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, onEdit }) => {
+export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, onEdit, onDelete }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'inspections' | 'docs' | 'tenantConfig'>('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Mock multiple images for the carousel
-  const images = [
-    property.image,
-    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000',
-    'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=1000',
-    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=1000',
-  ];
+  // Use real gallery images if available, fallback to mock for demo if empty
+  const images = property.galleryImages && property.galleryImages.length > 0 
+    ? [property.image, ...property.galleryImages]
+    : [
+        property.image,
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000',
+        'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=1000',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=1000',
+      ];
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -169,12 +173,20 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
             <div className='space-y-6 animate-fadeIn'>
               <div className='flex items-center justify-between'>
                 <h3 className='text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest'>Informações Básicas</h3>
-                <button 
-                  onClick={() => onEdit?.(property.id)}
-                  className='flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
-                >
-                  <Edit2 size={14} /> Editar Imóvel
-                </button>
+                <div className='flex items-center gap-2'>
+                  <button 
+                    onClick={() => onEdit?.(property.id)}
+                    className='flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
+                  >
+                    <Edit2 size={14} /> Editar
+                  </button>
+                  <button 
+                    onClick={() => onDelete?.(property.id)}
+                    className='flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
+                  >
+                    <Trash2 size={14} /> Excluir
+                  </button>
+                </div>
               </div>
               
               {/* Key Stats Grid */}

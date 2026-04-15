@@ -17,6 +17,7 @@ import {
   X,
   Image as ImageIcon,
   Search,
+  Plus,
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 
@@ -39,6 +40,7 @@ const propertySchema = z.object({
   iptuValue: z.string().optional(),
   description: z.string().optional(),
   coverImage: z.string().nullable().optional(),
+  galleryImages: z.array(z.string()).optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -52,6 +54,9 @@ interface AddPropertyFormProps {
 export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSave, initialData }) => {
   const [loadingCep, setLoadingCep] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(initialData?.coverImage || null);
+  const [galleryImages, setGalleryImages] = useState<string[]>(initialData?.galleryImages || []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -71,8 +76,6 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     },
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const bedrooms = watch('bedrooms');
   const bathrooms = watch('bathrooms');
   const parking = watch('parking');
@@ -84,15 +87,29 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    const file = e.target.files?.[0];
+    if (file) {
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setCoverImage(ev.target.result as string);
-        }
+      reader.onloadend = () => {
+        setCoverImage(reader.result as string);
       };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setGalleryImages(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const formatCEP = (value: string) => {
@@ -156,7 +173,8 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
       rentValue: parseCurrency(data.rentValue).toString(),
       condoValue: data.condoValue ? parseCurrency(data.condoValue).toString() : undefined,
       iptuValue: data.iptuValue ? parseCurrency(data.iptuValue).toString() : undefined,
-      coverImage
+      coverImage,
+      galleryImages
     };
     onSave(payload as any);
   };
@@ -174,43 +192,81 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
       >
         <div className='flex-1 overflow-y-auto'>
           {/* 1. Mídia / Capa */}
-          <div className='p-6 pb-2'>
-            <label className='text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 block'>
-              Foto de Capa
-            </label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`relative w-full h-48 rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
-                coverImage
-                  ? 'border-transparent'
-                  : 'border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-white/5 hover:border-primary hover:bg-primary/5'
-              }`}
-            >
-              {coverImage ? (
-                <>
-                  <img src={coverImage} alt='Preview' className='w-full h-full object-cover' />
-                  <div className='absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
-                    <span className='text-white font-bold flex items-center gap-2'>
-                      <UploadCloud size={20} /> Trocar Foto
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className='flex flex-col items-center justify-center h-full text-slate-400 group-hover:text-primary transition-colors'>
-                  <div className='p-3 bg-white dark:bg-white/10 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform'>
+          <div className='p-6 pb-2 grid grid-cols-1 md:grid-cols-3 gap-6'>
+            <div className='md:col-span-1'>
+              <label className='text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 block'>
+                Foto de Capa
+              </label>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className={`relative w-full aspect-square md:aspect-auto md:h-40 rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
+                  coverImage
+                    ? 'border-transparent'
+                    : 'border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-white/5 hover:border-primary hover:bg-primary/5'
+                }`}
+              >
+                {coverImage ? (
+                  <>
+                    <img src={coverImage} alt='Preview' className='w-full h-full object-cover' />
+                    <div className='absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
+                      <span className='text-white font-bold flex items-center gap-2'>
+                        <UploadCloud size={20} />
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className='flex flex-col items-center justify-center h-full text-slate-400 group-hover:text-primary transition-colors p-4'>
                     <ImageIcon size={24} />
+                    <span className='text-[10px] font-bold mt-2 text-center'>Clique para adicionar capa</span>
                   </div>
-                  <span className='text-sm font-bold'>Clique para adicionar uma foto</span>
-                  <span className='text-xs'>JPG ou PNG (Max 5MB)</span>
-                </div>
-              )}
-              <input
-                type='file'
-                ref={fileInputRef}
-                className='hidden'
-                accept='image/*'
-                onChange={handleImageUpload}
-              />
+                )}
+                <input
+                  type='file'
+                  ref={fileInputRef}
+                  className='hidden'
+                  accept='image/*'
+                  onChange={handleImageUpload}
+                />
+              </div>
+            </div>
+
+            <div className='md:col-span-2'>
+              <label className='text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 block'>
+                Fotos dos Ambientes
+              </label>
+              <div className='grid grid-cols-3 sm:grid-cols-4 gap-2'>
+                {galleryImages.map((img, idx) => (
+                  <div key={idx} className='relative aspect-square rounded-xl overflow-hidden group border border-slate-200 dark:border-white/10'>
+                    <img src={img} alt={`Environment ${idx}`} className='w-full h-full object-cover' />
+                    <button
+                      type='button'
+                      onClick={(e) => { e.stopPropagation(); removeGalleryImage(idx); }}
+                      className='absolute top-1 right-1 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity'
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                
+                {galleryImages.length < 8 && (
+                  <button
+                    type='button'
+                    onClick={() => galleryInputRef.current?.click()}
+                    className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-gray-800 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all bg-slate-50/50 dark:bg-white/5'
+                  >
+                    <Plus size={20} />
+                    <span className='text-[8px] font-bold mt-1 uppercase'>Ambientes</span>
+                    <input
+                      type='file'
+                      ref={galleryInputRef}
+                      className='hidden'
+                      accept='image/*'
+                      multiple
+                      onChange={handleGalleryUpload}
+                    />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

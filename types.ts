@@ -113,6 +113,7 @@ export interface Property {
   status_color?: string;
   tenant?: Tenant | null;
   contract?: Contract | null;
+  galleryImages?: string[];
 }
 
 // --- SUBSCRIPTION TYPES ---
