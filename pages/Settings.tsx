@@ -50,7 +50,7 @@ const Settings: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<
     'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription' | 'tenantProfile'
-  >('financial');
+  >('general');
 
   useEffect(() => {
     if (location.state && (location.state as any).activeTab) {
@@ -395,39 +395,47 @@ const Settings: React.FC = () => {
           >
             <User size={20} /> Perfil e Empresa
           </button>
-          <button
-            onClick={() => setActiveTab('financial')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'financial' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <CreditCard size={20} /> Financeiro
-            <span className='ml-auto bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full hidden md:block'>
-              Admin
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab('subscription')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'subscription' ? 'bg-white dark:bg-surface-dark shadow-sm text-indigo-500 font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <Crown size={20} /> Plano e Assinatura
-          </button>
-          <button
-            onClick={() => setActiveTab('maintenance')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'maintenance' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <SettingsIcon size={20} /> Manutenção
-          </button>
+          {(user?.role === 'owner' || user?.role === 'admin') && (
+            <>
+              <button
+                onClick={() => setActiveTab('financial')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'financial' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+              >
+                <CreditCard size={20} /> Financeiro
+                <span className='ml-auto bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full hidden md:block'>
+                  Admin
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('subscription')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'subscription' ? 'bg-white dark:bg-surface-dark shadow-sm text-indigo-500 font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+              >
+                <Crown size={20} /> Plano e Assinatura
+              </button>
+              <button
+                onClick={() => setActiveTab('maintenance')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'maintenance' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+              >
+                <SettingsIcon size={20} /> Manutenção
+              </button>
+            </>
+          )}
+
           <button
             onClick={() => setActiveTab('notifications')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'notifications' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
           >
             <Bell size={20} /> Notificações
           </button>
-          <button
-            onClick={() => setActiveTab('tenantProfile')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'tenantProfile' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <User size={20} /> Perfil Inquilino
-          </button>
+
+          {(user?.role === 'owner' || user?.role === 'admin') && (
+            <button
+              onClick={() => setActiveTab('tenantProfile')}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'tenantProfile' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+            >
+              <User size={20} /> Perfil Inquilino
+            </button>
+          )}
         </nav>
 
         {/* Content Area */}

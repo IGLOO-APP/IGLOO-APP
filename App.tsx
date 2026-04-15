@@ -171,6 +171,7 @@ const router = createBrowserRouter([
           { path: 'payments', element: <TenantPayments /> },
           { path: 'maintenance', element: <TenantMaintenance /> },
           { path: 'profile', element: <TenantProfile /> },
+          { path: 'settings', element: <Settings /> },
         ],
       },
       // Admin Routes

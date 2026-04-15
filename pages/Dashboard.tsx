@@ -69,32 +69,7 @@ const Dashboard: React.FC = () => {
       {/* --- HEADER --- */}
       <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 flex justify-between items-center'>
         <div className='flex items-center gap-4'>
-          <div
-            className='relative group cursor-pointer'
-            onClick={() => setShowUserMenu(!showUserMenu)}
-          >
-            <div className='w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-blue-600 p-[2px]'>
-              <div className='w-full h-full rounded-[14px] bg-surface-light dark:bg-surface-dark flex items-center justify-center overflow-hidden'>
-                <img
-                  src={
-                    user?.avatar ||
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuDwRIAHlgLaW6OqzLEr6KH9kj4TGcypVin8vG0nCnlg_EiRsv3e561_S0pU6gWh-_QTbZSo1wTTeTa1eUzsn3qDoV7F2ZkeYhUXC1qQ693w1T_qhEMSRNparuohwnqCxmtjp1WP7yfrOyV41z5DUDYQWtT2DN2BOuEvt-l4Zme5iHAST-ZPnDLEWyZDtU3KB7inrHYdgFQW0i41SlR9Gu26TEHY7zIfA7Yz2Y6_85c20Atg3MSIoA-q5EdHHyFckC73eced5eTGvEg3'
-                  }
-                  alt='User'
-                  className='w-full h-full object-cover'
-                />
-              </div>
-            </div>
-            <div className='absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background-light dark:border-background-dark'></div>
-          </div>
-          <div>
-            <h1 className='text-xl font-bold text-slate-900 dark:text-white leading-tight'>
-              Olá, Investidor
-            </h1>
-            <p className='text-xs font-medium text-slate-500 dark:text-slate-400'>
-              Visão geral do seu portfólio
-            </p>
-          </div>
+          {/* Menu moved to sidebar */}
         </div>
 
         {/* ── TICKER: announcements between greeting and actions ── */}
@@ -204,25 +179,6 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {showUserMenu && (
-          <>
-            <div className='fixed inset-0 z-30' onClick={() => setShowUserMenu(false)}></div>
-            <div className='absolute top-20 left-6 w-64 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/5 py-2 z-40 animate-scaleUp origin-top-left'>
-              <button
-                onClick={() => navigate('/profile')}
-                className='w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200'
-              >
-                <User size={18} /> Meu Perfil
-              </button>
-              <button
-                onClick={() => navigate('/settings')}
-                className='w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 flex items-center gap-3 text-sm font-bold text-slate-700 dark:text-slate-200'
-              >
-                <Settings size={18} /> Configurações
-              </button>
-            </div>
-          </>
-        )}
       </header>
 
       <div className='p-6 space-y-8 pb-24'>

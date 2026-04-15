@@ -126,18 +126,29 @@ const Layout: React.FC = () => {
             <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
           </button>
 
-          <div className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'>
-            <UserButton
-              afterSignOutUrl='/login'
-              appearance={{
-                elements: {
-                  userButtonBox: 'scale-110',
-                  userButtonOuterIdentifier: 'font-bold text-slate-900 dark:text-white ml-2'
-                }
-              }}
-              showName={true}
-            />
-          </div>
+          <Link 
+            to='/settings'
+            className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'
+          >
+            <div className='pointer-events-none'>
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: 'w-10 h-10 rounded-xl',
+                    userButtonTrigger: 'pointer-events-none'
+                  },
+                }}
+              />
+            </div>
+            <div className='flex flex-col min-w-0'>
+              <span className='text-sm font-bold text-slate-700 dark:text-slate-200 truncate'>
+                {user?.name || 'Carregando...'}
+              </span>
+              <span className='text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize'>
+                {user?.role === 'owner' ? 'Proprietário' : user?.role === 'admin' ? 'Administrador' : 'Inquilino'}
+              </span>
+            </div>
+          </Link>
 
           <button
             onClick={logout}

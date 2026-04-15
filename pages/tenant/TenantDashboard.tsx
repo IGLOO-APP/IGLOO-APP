@@ -246,40 +246,8 @@ const TenantDashboard: React.FC = () => {
   return (
     <div className='flex flex-col w-full max-w-md mx-auto md:max-w-4xl md:px-6'>
       <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
-        <div className='relative z-30'>
-          <div
-            onClick={handleUserMenuClick}
-            className='flex items-center gap-3 cursor-pointer p-1 -ml-1 rounded-xl hover:bg-white/50 dark:hover:bg-white/5 transition-colors select-none group'
-          >
-            <div className='relative'>
-              <div
-                className='bg-center bg-no-repeat bg-cover rounded-full w-12 h-12 border-2 border-primary shadow-sm group-hover:border-primary-dark transition-colors'
-                style={{
-                  backgroundImage: `url("${user?.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf'}")`,
-                }}
-              ></div>
-              <div className='absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background-light dark:border-background-dark'></div>
-            </div>
-            <div>
-              <p className='text-slate-500 dark:text-slate-400 text-sm font-medium leading-tight group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors'>
-                Olá,
-              </p>
-              <h2 className='text-slate-900 dark:text-white text-xl font-bold leading-tight'>
-                {user?.name || 'Inquilino'}
-              </h2>
-            </div>
-          </div>
-
-          {showUserMenu && (
-            <>
-              <div
-                className='fixed inset-0 z-20 cursor-default'
-                onClick={() => setShowUserMenu(false)}
-              ></div>
-              <div className='absolute top-full left-0 mt-2 w-64 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-scaleUp origin-top-left z-30'>
-              </div>
-            </>
-          )}
+        <div className='flex items-center gap-4'>
+          {/* Menu moved to sidebar */}
         </div>
 
         <div className='flex items-center gap-3 relative z-30'>
