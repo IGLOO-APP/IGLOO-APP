@@ -14,6 +14,7 @@ import {
   Megaphone,
   BarChart3,
 } from 'lucide-react';
+import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 
@@ -96,6 +97,30 @@ const AdminLayout: React.FC = () => {
         </nav>
 
         <div className='p-4 mx-4 mb-4 border-t border-white/5 space-y-1'>
+          <Link 
+            to='/admin/settings'
+            className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-white/5 transition-all group'
+          >
+            <div className='pointer-events-none'>
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: 'w-10 h-10 rounded-xl',
+                    userButtonTrigger: 'pointer-events-none'
+                  },
+                }}
+              />
+            </div>
+            <div className='flex flex-col min-w-0'>
+              <span className='text-sm font-bold text-white truncate'>
+                {user?.name || 'Administrador'}
+              </span>
+              <span className='text-[10px] font-medium text-slate-500 capitalize'>
+                Administrador {user?.admin_type === 'super' ? 'Master' : ''}
+              </span>
+            </div>
+          </Link>
+
           <button
             onClick={toggleTheme}
             className='group flex items-center gap-3.5 w-full px-4 py-3.5 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white cursor-pointer transition-all duration-200'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Map, List, Eye, Clock, ChevronDown, Filter, Loader2, Bed, Bath, Square, TrendingUp, X } from 'lucide-react';
+import { Search, Plus, Map, List, Grid, Filter, Loader2, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { PropertyCard } from '../components/properties/PropertyCard';
@@ -10,7 +10,7 @@ import { PropertyMapView } from '../components/properties/PropertyMapView';
 import { propertyService } from '../services/propertyService';
 
 const Properties: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const location = useLocation();
@@ -112,9 +112,9 @@ const Properties: React.FC = () => {
 
   return (
     <div
-      className={`h-full flex flex-col w-full relative ${viewMode === 'list' ? 'max-w-md mx-auto md:max-w-4xl' : ''}`}
+      className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-md mx-auto md:max-w-4xl' : ''}`}
     >
-      {viewMode === 'list' && (
+      {viewMode !== 'map' && (
         <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center transition-colors'>
           <div>
             <h1 className='text-xl font-bold tracking-tight text-slate-900 dark:text-white'>
@@ -126,29 +126,39 @@ const Properties: React.FC = () => {
             <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700'>
               <button
                 onClick={() => setViewMode('list')}
-                className='p-1.5 rounded-md transition-all bg-white dark:bg-slate-600 shadow-sm text-primary'
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                title='Lista'
               >
                 <List size={20} />
               </button>
               <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                title='Grade'
+              >
+                <Grid size={20} />
+              </button>
+              <button
                 onClick={() => setViewMode('map')}
-                className='p-1.5 rounded-md transition-all text-slate-400'
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                title='Mapa'
               >
                 <Map size={20} />
               </button>
             </div>
-            <div className='w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border border-gray-300 dark:border-gray-600'>
-              <img
-                src='https://lh3.googleusercontent.com/aida-public/AB6AXuCM3l8xEYNsxJIcCiKMyztOxjq0R735KO6nx0tiUO_nwa_Q9RXgh7E9ZDrJXmh3qFi1m6T1DejpJublRcE7Nwz58caOv3330jKyAjMpCp0rkro7Gb1vce2gTS-3TcRgGd4_wk-daMwo67k7hPLxrPCWPA0rdwZCIdA73paClNANN8LpF2qywdFk3DLLd28FBpEBtH_v0qMa1uIweblTtxVKrIhFCNaETzJD6K7efIeSwZEbcHtSLCyWsX9vhWqQn4yXpbUMR2J8Tx87'
-                alt='Profile'
-                className='w-full h-full object-cover'
-              />
-            </div>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className='flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95'
+            >
+              <Plus size={18} />
+              <span className='hidden sm:inline'>Novo Imóvel</span>
+              <span className='sm:hidden'>Novo</span>
+            </button>
           </div>
         </header>
       )}
 
-      {viewMode === 'list' ? (
+      {viewMode !== 'map' ? (
         <>
           <div className='px-6 py-4'>
             <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
@@ -290,55 +300,33 @@ const Properties: React.FC = () => {
             </div>
           </div>
 
-          <div className='flex-1 overflow-y-auto px-6 pb-24 space-y-4'>
+          <div className='flex-1 overflow-y-auto px-6 pb-24'>
             {loading ? (
               <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
                 <Loader2 className='animate-spin mb-2' size={32} />
                 <p>Carregando imóveis...</p>
               </div>
             ) : filteredProperties.length > 0 ? (
-              filteredProperties.map((prop) => (
-                <div key={prop.id} className='relative group'>
+              <div
+                className={viewMode === 'grid'
+                  ? 'grid grid-cols-2 md:grid-cols-3 gap-4 pt-4'
+                  : 'space-y-4 pt-4'
+                }
+              >
+                {filteredProperties.map((prop) => (
                   <PropertyCard
+                    key={prop.id}
                     property={prop}
                     onClick={setSelectedProperty}
                     onEdit={(id) => console.log('Edit', id)}
                     onDelete={(id) => console.log('Delete', id)}
                     onCreateContract={handleCreateContract}
+                    viewMode={viewMode === 'grid' ? 'grid' : 'list'}
                   />
-                  {/* Quick Metrics Overlay in List View */}
-                  <div className='absolute top-3 right-3 flex flex-col items-end gap-2 pointer-events-none'>
-                    {prop.status === 'DISPONÍVEL' && (
-                      <div className='flex items-center gap-1 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
-                        <Clock size={10} /> 12 d.
-                      </div>
-                    )}
-                    {prop.status === 'ALUGADO' && (
-                      <div className='flex items-center gap-1 bg-emerald-500/90 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-black text-white shadow-lg'>
-                        <TrendingUp size={10} /> {prop.yield || '0.82'}% Yield
-                      </div>
-                    )}
-                    <div className='flex items-center gap-1 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-1.5 md:px-2 py-0.5 md:py-1 rounded-md text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-sm'>
-                      <Eye size={10} /> 24
-                    </div>
-                  </div>
-
-                  {/* Feature Quick View Overlay - Visible on Mobile, Hover on Desktop */}
-                  <div className='absolute bottom-[104px] left-3 right-3 flex justify-center gap-2 md:gap-3 md:opacity-0 md:group-hover:opacity-100 transition-all md:translate-y-2 md:group-hover:translate-y-0 pointer-events-none'>
-                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
-                      <Bed size={12} className='text-primary' /> {prop.bedrooms || 0}
-                    </div>
-                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
-                      <Bath size={12} className='text-primary' /> {prop.bathrooms || 0}
-                    </div>
-                    <div className='flex items-center gap-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-white/10 shadow-xl'>
-                      <Square size={12} className='text-primary' /> {prop.area}
-                    </div>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <div className='flex flex-col items-center justify-center py-10 text-center'>
+              <div className='flex flex-col items-center justify-center py-10 text-center pt-4'>
                 <div className='bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3'>
                   <Search className='text-gray-400' size={32} />
                 </div>

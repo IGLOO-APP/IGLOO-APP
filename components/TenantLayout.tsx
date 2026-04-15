@@ -56,16 +56,6 @@ const TenantLayout: React.FC = () => {
         </nav>
 
         <div className='p-4 border-t border-gray-200 dark:border-gray-800 space-y-1 bg-surface-light/50 dark:bg-surface-dark/50'>
-          <button
-            onClick={toggleTheme}
-            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-200'
-          >
-            <div className='group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors'>
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </div>
-            <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
-          </button>
-
           <Link 
             to='/tenant/settings'
             className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'
@@ -89,6 +79,16 @@ const TenantLayout: React.FC = () => {
               </span>
             </div>
           </Link>
+
+          <button
+            onClick={toggleTheme}
+            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-200'
+          >
+            <div className='group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors'>
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </div>
+            <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
+          </button>
 
           <button
             onClick={logout}
