@@ -29,32 +29,88 @@ const Properties: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [minArea, setMinArea] = useState<string>('');
 
+  const [localProperties, setLocalProperties] = useState<Property[]>([]);
+
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['properties'],
     queryFn: async () => {
       const data = await propertyService.getAll();
-      if (data.length === 0) {
-        // Fallback for demo
-        return [
+      const demoData = [
           {
             id: 1,
-            name: 'Studio Centro 01 (Demo)',
+            name: 'Studio Centro 01',
             address: 'Rua Augusta, 150 - Consolação',
             status: 'DISPONÍVEL',
             status_color:
               'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
             price: 'R$ 1.800,00',
             area: '32m²',
+            bedrooms: 1,
+            bathrooms: 1,
             image:
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
+              'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400',
             tenant: null,
             contract: null,
           },
+          {
+            id: 2,
+            name: 'Apartamento Jardins',
+            address: 'Alameda Campinas, 980',
+            status: 'ALUGADO',
+            status_color:
+              'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 ring-blue-600/20',
+            price: 'R$ 4.500,00',
+            area: '85m²',
+            bedrooms: 2,
+            bathrooms: 2,
+            image:
+              'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=400',
+            tenant: { name: 'João Silva' },
+            contract: { status: 'active', value: 'R$ 4.500,00' },
+          },
+          {
+            id: 3,
+            name: 'Loft Vila Madalena',
+            address: 'Rua Aspicuelta, 440',
+            status: 'ALUGADO',
+            status_color:
+              'text-amber-700 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 ring-amber-600/20',
+            price: 'R$ 3.200,00',
+            area: '45m²',
+            bedrooms: 1,
+            bathrooms: 1,
+            image:
+              'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
+            tenant: { name: 'Maria Oliveira' },
+            contract: { status: 'expiring_soon', value: 'R$ 3.200,00', days_remaining: 15 },
+          },
+          {
+            id: 4,
+            name: 'Casa Brooklin',
+            address: 'Rua das Camélias, 120',
+            status: 'ALUGADO',
+            status_color:
+              'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 ring-red-600/20',
+            price: 'R$ 6.800,00',
+            area: '150m²',
+            bedrooms: 3,
+            bathrooms: 2,
+            image:
+              'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=400',
+            tenant: { name: 'Ricardo Santos' },
+            contract: { status: 'expired', value: 'R$ 6.800,00' },
+          },
         ] as Property[];
-      }
-      return data;
+      
+      return data.length > 0 ? [...data, ...demoData] : demoData;
     },
   });
+
+  useEffect(() => {
+    if (properties.length > 0) {
+      setLocalProperties(properties);
+    }
+  }, [properties]);
 
   // Check for navigation state to open Add Form
   useEffect(() => {
@@ -66,17 +122,30 @@ const Properties: React.FC = () => {
   }, [location]);
 
   const handleSaveProperty = async (data: any) => {
-    // In a real app, we would call propertyService.create(data)
-    console.log('Saving property', data);
+    const newProperty: Property = {
+      id: Date.now(),
+      name: data.nickname,
+      address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+      status: 'DISPONÍVEL',
+      status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
+      price: data.rentValue,
+      area: `${data.area}m²`,
+      bedrooms: data.bedrooms,
+      bathrooms: data.bathrooms,
+      image: data.coverImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
+      tenant: null,
+      contract: null
+    };
+
+    setLocalProperties([newProperty, ...localProperties]);
     setShowAddForm(false);
-    queryClient.invalidateQueries({ queryKey: ['properties'] });
   };
 
   const handleCreateContract = (property: Property) => {
     navigate('/contracts', { state: { preSelectedProperty: property.name } });
   };
 
-  const filteredProperties = properties.filter((prop) => {
+  const filteredProperties = localProperties.filter((prop) => {
     const matchesSearch =
       prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       prop.address.toLowerCase().includes(searchTerm.toLowerCase());
@@ -165,7 +234,7 @@ const Properties: React.FC = () => {
               <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
                 <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Total</p>
                 <p className='text-3xl font-bold text-slate-900 dark:text-white'>
-                  {properties.length}
+                  {localProperties.length}
                 </p>
               </div>
               <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
@@ -173,7 +242,7 @@ const Properties: React.FC = () => {
                   Alugados
                 </p>
                 <p className='text-3xl font-bold text-slate-900 dark:text-white'>
-                  {properties.filter((p) => p.status === 'ALUGADO').length}
+                  {localProperties.filter((p) => p.status === 'ALUGADO').length}
                 </p>
               </div>
               <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
@@ -181,7 +250,7 @@ const Properties: React.FC = () => {
                   Livres
                 </p>
                 <p className='text-3xl font-bold text-slate-900 dark:text-white'>
-                  {properties.filter((p) => p.status === 'DISPONÍVEL').length}
+                  {localProperties.filter((p) => p.status === 'DISPONÍVEL').length}
                 </p>
               </div>
             </div>
@@ -340,7 +409,7 @@ const Properties: React.FC = () => {
 
         </>
       ) : (
-        <PropertyMapView properties={properties} onBack={() => setViewMode('list')} />
+        <PropertyMapView properties={localProperties} onBack={() => setViewMode('list')} />
       )}
 
       {selectedProperty && viewMode === 'list' && (

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, FilePlus2, Bed, Bath, Square, Clock, Eye, User } from 'lucide-react';
 import { Property } from '../../types';
 
@@ -47,6 +48,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onCreateContract,
   viewMode = 'list',
 }) => {
+  const navigate = useNavigate();
   const borderClass = getStatusBorder(property);
   const timeInfo = getTimeLabel(property);
   const isAvailable = property.status === 'DISPONÍVEL';
@@ -134,10 +136,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 <FilePlus2 size={14} /> Criar Contrato
               </button>
             ) : tenantName ? (
-              <div className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 text-xs font-medium text-slate-500 dark:text-slate-400'>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/tenants');
+                }}
+                className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors'
+              >
                 <User size={13} className='text-slate-400' />
                 <span className='truncate'>{tenantName}</span>
-              </div>
+              </button>
             ) : null}
           </div>
         </div>
@@ -155,7 +163,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       <div className='flex items-stretch'>
         {/* Photo — fixed 120px wide, full-height of zone, rounded left corners only */}
         <div
-          className='w-[120px] shrink-0 bg-cover bg-center rounded-tl-2xl'
+          className='w-[120px] shrink-0 bg-cover bg-center rounded-tl-2xl rounded-bl-2xl'
           style={{ backgroundImage: `url(${property.image})` }}
         />
 
@@ -279,10 +287,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
               <FilePlus2 size={14} /> Criar Contrato
             </button>
           ) : tenantName ? (
-            <div className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap max-w-[140px]'>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/tenants');
+              }}
+              className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap max-w-[140px] hover:bg-slate-100 dark:hover:bg-white/10 transition-colors'
+            >
               <User size={13} className='text-slate-400 shrink-0' />
               <span className='truncate'>{tenantName}</span>
-            </div>
+            </button>
           ) : null}
         </div>
       </div>
