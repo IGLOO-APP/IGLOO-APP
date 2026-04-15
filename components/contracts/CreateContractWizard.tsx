@@ -341,6 +341,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   // Maps page index to signature image URL
   const [signatures, setSignatures] = useState<Record<number, string>>({});
+  const [signaturePositions, setSignaturePositions] = useState<Record<number, { x: number; y: number }>>({});
   const [pageToDelete, setPageToDelete] = useState<number | null>(null);
   const [isReadingMode, setIsReadingMode] = useState(false);
 
@@ -393,7 +394,15 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
     }
   }, [contractPages, currentStep]);
 
+  const canAdvance = () => {
+    if (currentStep === 1) return !!formData.property;
+    if (currentStep === 2) return !!formData.tenantName;
+    return true;
+  };
+
   const handleNext = () => {
+    if (!canAdvance()) return;
+
     if (currentStep < 6) setCurrentStep(currentStep + 1);
     else
       onComplete({ ...formData, contractText: contractPages.join('\n\n'), uploadedFile, docMode });
@@ -430,6 +439,11 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
     setSignatures((prev) => ({
       ...prev,
       [lastPageIndex]: dataUrl,
+    }));
+    // Start with a reasonable default position (near bottom right)
+    setSignaturePositions((prev) => ({
+        ...prev,
+        [lastPageIndex]: { x: 450, y: 750 }
     }));
     setShowSignatureModal(false);
   };
@@ -494,13 +508,25 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
             >
                 <ArrowLeft size={14} /> Voltar
             </button>
-            <button
-                onClick={handleNext}
-                className='px-5 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase tracking-widest text-[10px] shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2'
-            >
-                {currentStep === 6 ? 'Finalizar' : 'Próxima'}
-                <ArrowRight size={14} />
-            </button>
+            <div className='relative group'>
+                {!canAdvance() && (
+                    <div className='absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl border border-white/10 z-50'>
+                        {currentStep === 1 ? 'Selecione um imóvel' : 'Preencha o inquilino'}
+                    </div>
+                )}
+                <button
+                    onClick={handleNext}
+                    disabled={!canAdvance()}
+                    className={`px-5 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all flex items-center gap-2 ${
+                        !canAdvance() 
+                            ? 'bg-slate-200 dark:bg-white/5 text-slate-400 cursor-not-allowed' 
+                            : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 active:scale-95'
+                    }`}
+                >
+                    {currentStep === 6 ? 'Finalizar' : 'Próxima'}
+                    <ArrowRight size={14} />
+                </button>
+            </div>
           </div>
         </div>
       </div>
@@ -516,8 +542,8 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
       {/* Main Content - Dynamic Width based on Step */}
       <div className='flex-1 overflow-y-auto bg-slate-50 dark:bg-black/20'>
         <div
-          className={`mx-auto p-6 md:p-10 min-h-full flex flex-col transition-all duration-300 ${
-            currentStep === 5 ? 'max-w-[1600px] w-full' : 'max-w-4xl'
+          className={`mx-auto min-h-full flex flex-col transition-all duration-300 ${
+            currentStep === 5 ? 'max-w-[1600px] w-full p-0' : 'max-w-4xl p-6 md:p-10'
           }`}
         >
           {currentStep === 1 && (
@@ -1079,58 +1105,79 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
           {/* Step 5: Document Generation/Upload */}
           {currentStep === 5 && (
             <div className='flex flex-col h-full animate-fadeIn'>
-              {/* Professional Legal Toolbar - Slimmer & Better Integrated */}
-              <div className='flex-none bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-white/5 px-6 py-2 flex items-center justify-between shadow-sm z-30'>
+              {/* Reimagined Legal Workspace Toolbar - Premium Glassmorphism */}
+              <div className='flex-none h-14 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-6 z-30'>
                 <div className='flex items-center gap-6'>
-                  <div className='flex items-center gap-3'>
-                    <div className='w-8 h-8 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-md'>
+                  <div className='flex items-center gap-3 pr-6 border-r border-slate-100 dark:border-white/5'>
+                    <div className='w-8 h-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-lg transform -rotate-3 transition-transform hover:rotate-0'>
                       <Briefcase size={16} />
                     </div>
                     <div>
-                      <h4 className='text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider'>Legal Workspace</h4>
-                      <p className='text-[8px] font-bold text-emerald-500 uppercase flex items-center gap-1'>
-                        <span className='w-1 h-1 rounded-full bg-emerald-500 animate-pulse'></span> Editor Ativo
-                      </p>
+                      <h4 className='text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider leading-tight'>Legal Workspace</h4>
+                      <div className='flex items-center gap-1.5'>
+                        <div className='w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse'></div>
+                        <span className='text-[8px] font-bold text-slate-400 uppercase tracking-widest'>Editor Ativo</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className='h-6 w-px bg-slate-100 dark:bg-white/5'></div>
-
-                  <div className='flex gap-1 bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg'>
-                    <button
-                      onClick={() => setDocMode('template')}
-                      className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                        docMode === 'template' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
-                      }`}
-                    >
-                      <BookOpen size={12} /> Editor
-                    </button>
-                    <button
-                      onClick={() => setDocMode('upload')}
-                      className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                        docMode === 'upload' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
-                      }`}
-                    >
-                      <Upload size={12} /> Próprio
-                    </button>
+                  {/* Drafting Tools - Elegant & Minimal */}
+                  <div className='flex items-center gap-4'>
+                    <div className='flex gap-0.5 p-1 bg-slate-50 dark:bg-black/20 rounded-xl'>
+                        {[
+                            { i: 'B', l: 'Negrito' }, { i: 'I', l: 'Itálico' }, { i: 'U', l: 'Sublinhado' }
+                        ].map(tool => (
+                            <button key={tool.l} className='w-8 h-8 flex items-center justify-center rounded-lg text-xs font-serif font-black text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-primary transition-all active:scale-95' title={tool.l}>
+                                {tool.i}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className='flex gap-1 p-1 bg-slate-50 dark:bg-black/20 rounded-xl'>
+                      <button
+                        onClick={() => setDocMode('template')}
+                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                          docMode === 'template' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
+                        }`}
+                      >
+                        <BookOpen size={12} /> Editor
+                      </button>
+                      <button
+                        onClick={() => setDocMode('upload')}
+                        className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                          docMode === 'upload' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
+                        }`}
+                      >
+                        <Upload size={12} /> Próprio
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-3'>
+                  {/* Premium Sync Badge */}
+                  <div className='hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/10 rounded-xl transition-all hover:bg-emerald-500/10' title='Trabalho protegido na nuvem Igloo'>
+                    <ShieldCheck size={12} className='text-emerald-500' />
+                    <span className='text-[8px] font-black text-emerald-600 uppercase tracking-widest'>Protocolo Seguro</span>
+                  </div>
+
+                  <div className='h-4 w-px bg-slate-100 dark:border-white/5'></div>
+
                   <button
                     onClick={() => setIsReadingMode(!isReadingMode)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
-                        isReadingMode ? 'bg-primary text-white shadow-lg' : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                        isReadingMode 
+                          ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105' 
+                          : 'bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-slate-900 border border-slate-100 dark:border-white/5'
                     }`}
                   >
-                    <Eye size={12} /> {isReadingMode ? 'Sair do Foco' : 'Modo Leitura'}
+                    {isReadingMode ? <Maximize size={12} /> : <Eye size={12} />} 
+                    {isReadingMode ? 'Sair do Foco' : 'Leitura'}
                   </button>
-                  <div className='h-6 w-px bg-slate-100 dark:bg-white/5'></div>
-                  <div className='text-right'>
-                    <p className='text-[8px] font-black text-slate-400 uppercase tracking-tighter'>Palavras</p>
-                    <p className='text-xs font-black text-slate-900 dark:text-white'>
-                      {contractPages.join(' ').split(/\s+/).length}
-                    </p>
+
+                  <div className='flex flex-col items-end px-3'>
+                    <span className='text-[7px] font-black text-slate-400 uppercase tracking-tighter leading-none mb-1'>Monitoramento</span>
+                    <span className='text-[10px] font-black text-slate-900 dark:text-white leading-none'>{contractPages.join(' ').split(/\s+/).length} <span className='text-[8px] opacity-40 uppercase'>Palavras</span></span>
                   </div>
                 </div>
               </div>
@@ -1195,19 +1242,58 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                         </button>
                       ))}
                       
-                      <div className='mt-8 pt-4 border-t border-slate-100 dark:border-white/5 mx-2'>
-                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-3'>Variáveis Injetadas</p>
-                          <div className='space-y-2 px-2'>
-                              {[
-                                  {k: 'Inquilino', v: formData.tenantName},
-                                  {k: 'Imóvel', v: formData.property},
-                                  {k: 'Mensalidade', v: `R$ ${formData.rentValue}`}
-                              ].map((v, i) => (
-                                  <div key={i} className='p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex flex-col'>
-                                      <span className='text-[8px] font-black text-emerald-600 uppercase'>{v.k}</span>
-                                      <span className='text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate'>{v.v}</span>
+                      <div className='mt-8 pt-6 border-t border-slate-100 dark:border-white/5 mx-2'>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-4'>Inteligência do Contrato</p>
+                          <div className='space-y-4 px-2'>
+                              {/* Integrated Property View */}
+                              {(() => {
+                                  const prop = mockProperties.find(p => p.name === formData.property);
+                                  return (
+                                      <div className='p-3 rounded-2xl bg-white dark:bg-black/20 border border-slate-100 dark:border-white/5 shadow-sm group/prop transition-all hover:border-primary/20'>
+                                          <div className='flex items-center gap-3'>
+                                              <div className='w-12 h-12 rounded-xl overflow-hidden shadow-md shrink-0 border-2 border-white dark:border-slate-800'>
+                                                  <img src={prop?.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=400&fit=crop'} className='w-full h-full object-cover' alt="" />
+                                              </div>
+                                              <div className='min-w-0'>
+                                                  <span className='text-[8px] font-black text-emerald-500 uppercase tracking-tighter'>Imóvel Selecionado</span>
+                                                  <h5 className='text-[10px] font-black text-slate-900 dark:text-white truncate leading-tight'>{formData.property || 'Não definido'}</h5>
+                                                  <p className='text-[8px] font-bold text-slate-400 truncate uppercase mt-0.5'>{prop?.address || 'Endereço pendente'}</p>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  );
+                              })()}
+
+                              {/* Integrated Tenant View */}
+                              <div className='p-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl shadow-slate-900/10 transition-all'>
+                                  <div className='flex items-center gap-3'>
+                                      <div className='w-10 h-10 rounded-xl bg-white/10 dark:bg-slate-900/5 flex items-center justify-center border border-white/20 dark:border-slate-900/10'>
+                                          <User size={18} />
+                                      </div>
+                                      <div className='min-w-0'>
+                                          <span className='text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter'>Locatário / Inquilino</span>
+                                          <h5 className='text-[11px] font-black truncate leading-tight'>{formData.tenantName || 'Nome do Inquilino'}</h5>
+                                          <p className='text-[8px] font-bold opacity-60 truncate uppercase'>Doc: {formData.tenantDoc || '000.000.000-00'}</p>
+                                      </div>
                                   </div>
-                              ))}
+                              </div>
+
+                              {/* Financial Quick Card */}
+                              <div className='p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-between'>
+                                  <div className='flex items-center gap-2'>
+                                      <div className='w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20'>
+                                          <CircleDollarSign size={14} />
+                                      </div>
+                                      <div>
+                                          <span className='text-[8px] font-black text-emerald-600 uppercase tracking-tighter block leading-none'>Mensalidade</span>
+                                          <span className='text-xs font-black text-slate-900 dark:text-white'>R$ {formData.rentValue || '0,00'}</span>
+                                      </div>
+                                  </div>
+                                  <div className='text-right'>
+                                      <span className='text-[8px] font-black text-slate-400 uppercase tracking-tighter block leading-none'>Garantia</span>
+                                      <span className='text-[10px] font-bold text-slate-600 dark:text-slate-400'>3 meses</span>
+                                  </div>
+                              </div>
                           </div>
                       </div>
                     </div>
@@ -1217,18 +1303,58 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                 {/* Center: Document Editor */}
                 <div className='flex-1 flex flex-col relative'>
                   {docMode === 'template' ? (
-                    <div className='flex flex-col h-full overflow-y-auto p-4 md:p-12 items-center bg-slate-200/50 dark:bg-black/60 custom-scrollbar'>
+                    <div className='flex flex-col h-full overflow-y-auto p-4 md:p-20 items-center bg-slate-50 dark:bg-black/40 custom-scrollbar relative scroll-smooth'>
+                      {/* Vertical Ruler - Architectural Precision */}
+                      <div className='absolute left-2 top-0 bottom-0 w-8 hidden xl:flex flex-col items-center pointer-events-none opacity-40 z-10'>
+                        {Array.from({ length: 50 }).map((_, i) => (
+                          <div key={i} className='w-full border-t border-slate-300 dark:border-white/10 h-10 flex items-start justify-end pr-1.5 pt-0.5'>
+                            <span className='text-[5px] font-mono text-slate-400'>{(i + 1)}</span>
+                          </div>
+                        ))}
+                      </div>
+
                       {contractPages.map((pageContent, index) => (
                         <div
                           key={index}
-                          className='relative group/page w-full max-w-[210mm] min-h-[297mm] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] mb-12 flex flex-col transform transition-transform hover:scale-[1.005]'
+                          onClick={(e) => {
+                              if (signatures[index]) {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const x = e.clientX - rect.left;
+                                  const y = e.clientY - rect.top;
+                                  setSignaturePositions(prev => ({
+                                      ...prev,
+                                      [index]: { x, y }
+                                  }));
+                              }
+                          }}
+                          className={`relative group/page w-full max-w-[210mm] min-h-[297mm] bg-white shadow-[0_50px_100px_rgba(0,0,0,0.15)] dark:shadow-[0_50px_100px_rgba(0,0,0,0.3)] mb-20 flex flex-col transition-all duration-500 scale-100 ring-1 ring-slate-100 dark:ring-white/5 ${signatures[index] ? 'cursor-crosshair' : ''}`}
                         >
-                          {/* Signature Layer */}
-                          {signatures[index] && (
-                            <div className='absolute right-[25mm] bottom-[40mm] pointer-events-none'>
-                              <img src={signatures[index]} className='h-20 mix-blend-multiply transition-opacity opacity-90' alt="" />
-                              <div className='border-t border-black w-48 mt-1'>
-                                <p className='text-[10px] font-serif text-black uppercase'>Assinado Digitalmente</p>
+                          {/* Horizontal Ruler Overlay - Minimal Ticks */}
+                          <div className='absolute -top-8 left-0 right-0 h-4 flex items-end pointer-events-none opacity-40 px-[20mm]'>
+                              {Array.from({ length: 21 }).map((_, i) => (
+                                  <div key={i} className={`flex-1 border-l ${i % 5 === 0 ? 'h-3 border-slate-400' : 'h-1.5 border-slate-300 dark:border-white/10'}`}></div>
+                              ))}
+                          </div>
+
+                          {/* Signature Layer - Dynamic Positioning */}
+                          {signatures[index] && signaturePositions[index] && (
+                            <div 
+                                className='absolute pointer-events-none group/sig animate-in zoom-in-50 duration-300'
+                                style={{ 
+                                    left: `${signaturePositions[index].x}px`, 
+                                    top: `${signaturePositions[index].y}px`,
+                                    transform: 'translate(-50%, -50%)' 
+                                }}
+                            >
+                              <div className='relative'>
+                                <img src={signatures[index]} className='h-24 mix-blend-multiply transition-all opacity-90 group-hover/sig:opacity-100' alt="" />
+                                <div className='absolute -bottom-4 left-0 right-0 border-t border-slate-400 pt-1 whitespace-nowrap'>
+                                  <p className='text-[8px] font-serif text-slate-500 uppercase tracking-tighter'>Autenticação Digital Igloo</p>
+                                  <p className='text-[6px] font-serif text-slate-400 leading-none'>ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                                </div>
+                                <div className='absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-bold px-2 py-1 rounded opacity-0 group-hover/page:opacity-60 transition-opacity whitespace-nowrap'>
+                                    Clique para posicionar
+                                </div>
                               </div>
                             </div>
                           )}
@@ -1327,61 +1453,119 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
           )}
 
           {currentStep === 6 && (
-            <div className='space-y-8 animate-fadeIn h-full flex flex-col justify-center items-center'>
-              <div className='text-center'>
-                <div className='w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600 dark:text-emerald-400 shadow-xl shadow-emerald-500/20 ring-4 ring-white dark:ring-surface-dark'>
-                  <FileCheck size={40} />
+            <div className='animate-fadeIn space-y-10 py-10'>
+              {/* Review Header */}
+              <div className='text-center space-y-4'>
+                <div className='relative inline-block'>
+                    <div className='w-24 h-24 bg-emerald-500 rounded-[32px] flex items-center justify-center mx-auto text-white shadow-2xl shadow-emerald-500/20 rotate-3'>
+                        <ShieldCheck size={48} />
+                    </div>
+                    <div className='absolute -right-2 -top-2 w-10 h-10 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg text-emerald-500 animate-bounce'>
+                        <CheckCircle2 size={24} />
+                    </div>
                 </div>
-                <h3 className='text-3xl font-extrabold text-slate-900 dark:text-white mb-2'>
-                  Tudo Pronto!
-                </h3>
-                <p className='text-lg text-slate-500 max-w-md mx-auto'>
-                  Revise os detalhes abaixo antes de gerar o contrato final.
-                </p>
+                <div>
+                    <h3 className='text-4xl font-black text-slate-900 dark:text-white tracking-tighter'>Auditório de Conformidade</h3>
+                    <p className='text-slate-500 font-medium'>Validamos todos os pontos críticos. O contrato está pronto para emissão.</p>
+                </div>
               </div>
 
-              <div className='w-full max-w-lg bg-white dark:bg-surface-dark rounded-3xl shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden'>
-                <div className='bg-slate-50 dark:bg-white/5 p-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center'>
-                  <span className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
-                    Resumo do Contrato
-                  </span>
-                  <span className='bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded'>
-                    Rascunho
-                  </span>
-                </div>
-                <div className='p-6 space-y-4'>
-                  <div className='flex justify-between items-center border-b border-dashed border-slate-200 dark:border-white/10 pb-4'>
-                    <span className='text-slate-500 font-medium text-sm'>Imóvel</span>
-                    <div className='text-right'>
-                      <span className='block font-bold text-slate-900 dark:text-white'>
-                        {formData.property}
-                      </span>
-                      <span className='text-xs text-slate-400'>Residencial</span>
+              {/* Advanced Review Dashboard */}
+              <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1200px] mx-auto'>
+                
+                {/* Left: Summary Assets */}
+                <div className='lg:col-span-2 space-y-6'>
+                    {/* Main Details Grid */}
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        {/* Property Snapshot */}
+                        <div className='bg-white dark:bg-surface-dark p-6 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm'>
+                            <div className='flex items-start gap-4'>
+                                <div className='w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-slate-800 shrink-0'>
+                                    <img 
+                                        src={mockProperties.find(p => p.name === formData.property)?.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400'} 
+                                        className='w-full h-full object-cover' 
+                                        alt="" 
+                                    />
+                                </div>
+                                <div className='flex-1 min-w-0'>
+                                    <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>O Imóvel</span>
+                                    <h4 className='text-lg font-black text-slate-900 dark:text-white leading-tight truncate'>{formData.property || 'Studio Centro 01'}</h4>
+                                    <p className='text-xs text-slate-500 font-medium truncate mt-1'>Rua Augusta, 1200 - São Paulo</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tenant Snapshot */}
+                        <div className='bg-slate-900 dark:bg-white p-6 rounded-[32px] shadow-2xl shadow-slate-900/10 text-white dark:text-slate-900'>
+                            <div className='flex items-start gap-4'>
+                                <div className='w-16 h-16 rounded-2xl bg-white/10 dark:bg-slate-900/5 flex items-center justify-center border border-white/20 dark:border-slate-800/10 shrink-0'>
+                                    <User size={32} />
+                                </div>
+                                <div className='flex-1 min-w-0'>
+                                    <span className='text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest'>Locatário Principal</span>
+                                    <h4 className='text-lg font-black leading-tight truncate'>{formData.tenantName || 'João Silva'}</h4>
+                                    <p className='text-xs opacity-60 font-bold mt-1 uppercase'>CPF: {formData.tenantDoc || '000.000.000-00'}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                  <div className='flex justify-between items-center border-b border-dashed border-slate-200 dark:border-white/10 pb-4'>
-                    <span className='text-slate-500 font-medium text-sm'>Inquilino</span>
-                    <span className='block font-bold text-slate-900 dark:text-white'>
-                      {formData.tenantName}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center border-b border-dashed border-slate-200 dark:border-white/10 pb-4'>
-                    <span className='text-slate-500 font-medium text-sm'>Valor Mensal</span>
-                    <span className='font-bold text-emerald-600 text-xl'>
-                      R$ {formData.rentValue}
-                    </span>
-                  </div>
-                  <div className='flex justify-between items-center pt-2'>
-                    <span className='text-slate-500 font-medium text-sm'>Documento</span>
-                    <span className='font-bold text-slate-700 dark:text-slate-300 text-right flex items-center gap-2'>
-                      {docMode === 'upload' ? <Upload size={14} /> : <FileText size={14} />}
-                      {docMode === 'upload'
-                        ? uploadedFile
-                          ? uploadedFile.name
-                          : 'Pendente'
-                        : `Minuta Automática (${contractPages.length} pgs)`}
-                    </span>
-                  </div>
+
+                    {/* Financials & Term Section */}
+                    <div className='bg-white dark:bg-surface-dark p-8 rounded-[40px] border border-slate-100 dark:border-white/5 shadow-2xl'>
+                        <div className='grid grid-cols-2 md:grid-cols-4 gap-8'>
+                            <div className='space-y-1'>
+                                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Mensalidade</span>
+                                <p className='text-xl font-black text-emerald-500 leading-none'>R$ {formData.rentValue || '1.800'}</p>
+                                <span className='text-[10px] font-bold text-slate-400'>Venc. todo dia 10</span>
+                            </div>
+                            <div className='space-y-1'>
+                                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Garantia</span>
+                                <p className='text-xl font-black text-slate-900 dark:text-white leading-none'>R$ {(parseFloat(formData.rentValue || '0') * 3).toLocaleString()}</p>
+                                <span className='text-[10px] font-bold text-slate-400'>3x Caução</span>
+                            </div>
+                            <div className='space-y-1'>
+                                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Início</span>
+                                <p className='text-xl font-black text-slate-900 dark:text-white leading-none'>{formData.startDate ? new Date(formData.startDate).toLocaleDateString('pt-BR') : '15/05/2026'}</p>
+                                <span className='text-[10px] font-bold text-slate-400'>Adesão Imediata</span>
+                            </div>
+                            <div className='space-y-1'>
+                                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Documento</span>
+                                <p className='text-xl font-black text-slate-900 dark:text-white leading-none truncate'>{docMode === 'upload' ? 'Upload' : `${contractPages.length} Pgs`}</p>
+                                <span className='text-[10px] font-bold text-slate-400 uppercase'>{docMode === 'upload' ? 'Assinatura Externa' : 'Minuta Igloo'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Legal Checklist */}
+                <div className='space-y-6'>
+                    <div className='bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[40px]'>
+                        <h5 className='text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-6 flex items-center gap-2'>
+                            <ShieldCheck size={16} /> Checklist Legal
+                        </h5>
+                        <div className='space-y-4'>
+                            {[
+                                'Análise de Crédito Aprovada',
+                                'Conformidade Lei 8.245/91',
+                                'Cláusula de Reajuste (IGPM)',
+                                'Assinatura Digital Ativada',
+                                'Vigência Validada'
+                            ].map((item, i) => (
+                                <div key={i} className='flex items-center gap-3'>
+                                    <div className='w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20'>
+                                        <CheckCircle size={12} />
+                                    </div>
+                                    <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/20 rounded-[32px] border border-dashed border-slate-200 dark:border-white/10'>
+                        <p className='text-[10px] font-bold text-slate-500 text-center leading-relaxed'>
+                            Ao clicar em finalizar, o contrato será emitido e enviado para as partes coletarem as assinaturas digitais finais.
+                        </p>
+                    </div>
                 </div>
               </div>
             </div>
