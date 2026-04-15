@@ -12,6 +12,7 @@ import { propertyService } from '../services/propertyService';
 const Properties: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -139,6 +140,48 @@ const Properties: React.FC = () => {
 
     setLocalProperties([newProperty, ...localProperties]);
     setShowAddForm(false);
+  };
+
+  const handleUpdateProperty = async (data: any) => {
+    if (!editingProperty) return;
+
+    const updatedProperties = localProperties.map(p => {
+      if (p.id === editingProperty.id) {
+        return {
+          ...p,
+          name: data.nickname,
+          address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+          price: data.rentValue,
+          area: `${data.area}m²`,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          image: data.coverImage || p.image
+        };
+      }
+      return p;
+    });
+
+    setLocalProperties(updatedProperties);
+    setEditingProperty(null);
+    if (selectedProperty?.id === editingProperty.id) {
+      setSelectedProperty(updatedProperties.find(p => p.id === editingProperty.id) || null);
+    }
+  };
+
+  const handleEditProperty = (id: number) => {
+    const property = localProperties.find(p => p.id === id);
+    if (property) {
+      setEditingProperty(property);
+    }
+  };
+
+  const handleDeleteProperty = (id: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este imóvel?')) {
+      setLocalProperties(localProperties.filter(p => p.id !== id));
+      if (selectedProperty?.id === id) {
+        setSelectedProperty(null);
+      }
+    }
   };
 
   const handleCreateContract = (property: Property) => {
@@ -387,8 +430,8 @@ const Properties: React.FC = () => {
                     key={prop.id}
                     property={prop}
                     onClick={setSelectedProperty}
-                    onEdit={(id) => console.log('Edit', id)}
-                    onDelete={(id) => console.log('Delete', id)}
+                    onEdit={handleEditProperty}
+                    onDelete={handleDeleteProperty}
                     onCreateContract={handleCreateContract}
                     viewMode={viewMode === 'grid' ? 'grid' : 'list'}
                   />
@@ -413,11 +456,34 @@ const Properties: React.FC = () => {
       )}
 
       {selectedProperty && viewMode === 'list' && (
-        <PropertyDetails property={selectedProperty} onClose={() => setSelectedProperty(null)} />
+        <PropertyDetails 
+          property={selectedProperty} 
+          onClose={() => setSelectedProperty(null)} 
+          onEdit={handleEditProperty}
+        />
       )}
 
       {showAddForm && (
         <AddPropertyForm onClose={() => setShowAddForm(false)} onSave={handleSaveProperty} />
+      )}
+
+      {editingProperty && (
+        <AddPropertyForm 
+          onClose={() => setEditingProperty(null)} 
+          onSave={handleUpdateProperty} 
+          initialData={{
+            nickname: editingProperty.name,
+            rentValue: editingProperty.price,
+            area: editingProperty.area?.replace(/\D/g, ''),
+            bedrooms: editingProperty.bedrooms,
+            bathrooms: editingProperty.bathrooms,
+            coverImage: editingProperty.image,
+            // street, number etc simplified for mock
+            street: editingProperty.address.split(',')[0],
+            number: editingProperty.address.split(',')[1]?.split('-')[0]?.trim() || '',
+            neighborhood: editingProperty.address.split('-')[1]?.trim() || '',
+          }}
+        />
       )}
     </div>
   );

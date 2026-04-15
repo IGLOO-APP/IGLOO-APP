@@ -46,11 +46,12 @@ type PropertyFormData = z.infer<typeof propertySchema>;
 interface AddPropertyFormProps {
   onClose: () => void;
   onSave: (data: PropertyFormData) => void;
+  initialData?: any;
 }
 
-export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSave }) => {
+export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSave, initialData }) => {
   const [loadingCep, setLoadingCep] = useState(false);
-  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(initialData?.coverImage || null);
 
   const {
     register,
@@ -61,7 +62,9 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      ...initialData
+    } : {
       bedrooms: 1,
       bathrooms: 1,
       parking: 0,
@@ -162,7 +165,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     <ModalWrapper
       onClose={onClose}
       className='md:max-w-2xl'
-      title='Novo Imóvel'
+      title={initialData ? 'Editar Imóvel' : 'Novo Imóvel'}
       showCloseButton={true}
     >
       <form
@@ -486,7 +489,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               <Loader2 size={20} className='animate-spin' />
             ) : (
               <>
-                Salvar Imóvel
+                {initialData ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
                 <ArrowRight
                   className='ml-2 group-hover:translate-x-1 transition-transform'
                   size={18}
