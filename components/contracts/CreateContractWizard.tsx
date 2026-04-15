@@ -21,6 +21,10 @@ import {
   Eraser,
   Download,
   Save,
+  Bed,
+  Bath,
+  Maximize,
+  Eye,
 } from 'lucide-react';
 import { ContractUploader } from './ContractUploader';
 import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
@@ -207,6 +211,52 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   initialProperty,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  
+  const mockProperties = [
+    {
+      id: 1,
+      name: 'Studio Centro 01',
+      address: 'Rua Augusta, 150 - Consolação',
+      price: '1.800,00',
+      type: 'Residencial',
+      status: 'Disponível',
+      beds: 1,
+      baths: 1,
+      area: '32m²',
+      vacantDays: '12 d.',
+      visits: 24,
+      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400',
+    },
+    {
+      id: 2,
+      name: 'Garden Loft Jardins',
+      address: 'Al. Campinas, 980 - Jardins',
+      price: '4.500,00',
+      type: 'Residencial',
+      status: 'Disponível',
+      beds: 2,
+      baths: 2,
+      area: '85m²',
+      vacantDays: '5 d.',
+      visits: 42,
+      image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=400',
+    },
+    {
+      id: 3,
+      name: 'Kitnet Vila Olímpia',
+      address: 'Rua das Olimpíadas, 45 - V. Olímpia',
+      price: '2.200,00',
+      type: 'Residencial',
+      status: 'Disponível',
+      beds: 1,
+      baths: 1,
+      area: '28m²',
+      vacantDays: '2 d.',
+      visits: 12,
+      image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
+    }
+  ];
+
   const [formData, setFormData] = useState({
     property: initialProperty || '',
     tenantName: '',
@@ -411,45 +461,103 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                   Para qual propriedade você deseja criar este contrato?
                 </p>
               </div>
-              <div className='grid grid-cols-1 gap-4'>
-                {['Apt 101 - Centro', 'Kitnet 05 - Jardins', 'Studio 22 - Vila Madalena'].map(
-                  (prop) => (
-                    <button
-                      key={prop}
-                      onClick={() => setFormData({ ...formData, property: prop })}
-                      className={`group relative p-5 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-4 ${
-                        formData.property === prop
-                          ? 'border-primary bg-white dark:bg-surface-dark shadow-lg shadow-primary/10'
-                          : 'border-white dark:border-white/5 bg-white dark:bg-surface-dark hover:border-slate-200 dark:hover:border-white/20'
-                      }`}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                          formData.property === prop
-                            ? 'bg-primary text-white'
-                            : 'bg-slate-100 dark:bg-white/5 text-slate-400'
-                        }`}
-                      >
-                        <Building2 size={24} />
+              <div className='flex flex-col gap-4'>
+                {mockProperties.map((prop) => (
+                  <button
+                    key={prop.id}
+                    onClick={() => setFormData({ ...formData, property: prop.name })}
+                    className={`group relative overflow-hidden rounded-3xl border-2 text-left transition-all duration-300 flex flex-col bg-white dark:bg-surface-dark ${
+                      formData.property === prop.name
+                        ? 'border-primary ring-4 ring-primary/10 shadow-2xl'
+                        : 'border-white dark:border-white/5 hover:border-slate-200 dark:hover:border-white/20 shadow-sm hover:shadow-lg'
+                    }`}
+                  >
+                    {/* Top Section */}
+                    <div className='flex items-stretch'>
+                      {/* Image */}
+                      <div className='w-32 md:w-48 h-32 md:h-36 overflow-hidden shrink-0'>
+                        <img 
+                          src={prop.image} 
+                          alt={prop.name} 
+                          className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
+                        />
                       </div>
-                      <div className='flex-1'>
-                        <h4
-                          className={`font-bold text-lg ${formData.property === prop ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
-                        >
-                          {prop}
-                        </h4>
-                        <p className='text-sm text-slate-500'>Residencial • Disponível</p>
+                      
+                      {/* Info */}
+                      <div className='flex-1 p-4 md:p-6 flex flex-col justify-between'>
+                        <div>
+                          <div className='flex items-center justify-between mb-1'>
+                            <span className='px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-widest'>
+                              {prop.status}
+                            </span>
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${formData.property === prop.name ? 'border-primary bg-primary text-white scale-110' : 'border-slate-200 dark:border-white/5'}`}>
+                              {formData.property === prop.name && <div className='w-2 h-2 bg-white rounded-full' />}
+                            </div>
+                          </div>
+                          <h4 className={`text-lg md:text-xl font-black tracking-tight leading-tight ${formData.property === prop.name ? 'text-primary' : 'text-slate-900 dark:text-white'}`}>
+                            {prop.name}
+                          </h4>
+                          <p className='text-xs md:text-sm text-slate-500 font-medium truncate opacity-80'>
+                            {prop.address}
+                          </p>
+                        </div>
+                        
+                        <div className='flex items-baseline gap-1 mt-auto'>
+                          <span className='text-xs font-bold text-slate-400'>R$</span>
+                          <span className='text-xl md:text-2xl font-black text-slate-900 dark:text-white'>{prop.price}</span>
+                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-tighter'>por mês</span>
+                        </div>
                       </div>
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.property === prop ? 'border-primary' : 'border-slate-200 dark:border-slate-700'}`}
-                      >
-                        {formData.property === prop && (
-                          <div className='w-3 h-3 bg-primary rounded-full'></div>
-                        )}
+                    </div>
+
+                    {/* Footer Metrics */}
+                    <div className='bg-slate-50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 p-3 px-4 md:px-6 flex items-center justify-between'>
+                      <div className='flex items-center gap-4 md:gap-6'>
+                        <div className='flex items-center gap-1.5'>
+                          <Bed size={14} className='text-slate-400' />
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-black text-slate-900 dark:text-white leading-none'>{prop.beds}</span>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-tighter'>Quartos</span>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-1.5'>
+                          <Bath size={14} className='text-slate-400' />
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-black text-slate-900 dark:text-white leading-none'>{prop.baths}</span>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-tighter'>Banh.</span>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-1.5'>
+                          <Maximize size={14} className='text-slate-400' />
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-black text-slate-900 dark:text-white leading-none'>{prop.area}</span>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-tighter'>Área</span>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-1.5 hidden md:flex'>
+                          <Clock size={14} className='text-slate-400' />
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-black text-slate-900 dark:text-white leading-none'>{prop.vacantDays}</span>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-tighter'>Vago</span>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-1.5 hidden lg:flex'>
+                          <Eye size={14} className='text-slate-400' />
+                          <div className='flex flex-col'>
+                            <span className='text-xs font-black text-slate-900 dark:text-white leading-none'>{prop.visits}</span>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-tighter'>Visitas</span>
+                          </div>
+                        </div>
                       </div>
-                    </button>
-                  )
-                )}
+
+                      {formData.property === prop.name && (
+                        <div className='flex items-center gap-2 bg-primary text-white px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest animate-slideLeft'>
+                          <ArrowRight size={14} /> Selecionado
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           )}

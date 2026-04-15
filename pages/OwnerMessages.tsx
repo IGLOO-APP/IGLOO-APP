@@ -95,6 +95,7 @@ const OwnerMessages: React.FC = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState('Todos');
   const [propertyFilter, setPropertyFilter] = useState('Todos');
+  const [isStatusLocked, setIsStatusLocked] = useState(true);
 
   useEffect(() => {
     if (showFAQManager) {
@@ -132,6 +133,11 @@ const OwnerMessages: React.FC = () => {
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   // Mock Data Sincronizado com TenantMaintenance
   const [chats, setChats] = useState<Chat[]>([
@@ -296,6 +302,38 @@ const OwnerMessages: React.FC = () => {
     setInputText('');
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && activeChatId) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.id === activeChatId) {
+              const newMessage: Message = {
+                id: Date.now(),
+                text: base64String,
+                sender: 'me',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isRead: false,
+                type: 'image'
+              };
+              return {
+                ...chat,
+                messages: [...chat.messages, newMessage],
+                lastMessage: '📷 Imagem enviada',
+                lastMessageTime: 'Agora',
+              };
+            }
+            return chat;
+          })
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleStatusChange = (newStatus: 'pending' | 'in_progress' | 'completed') => {
     if (!activeChatId) return;
 
@@ -324,6 +362,31 @@ const OwnerMessages: React.FC = () => {
         return chat;
       })
     );
+    setIsStatusLocked(true); // Auto-lock after change
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - (scrollRef.current?.offsetLeft || 0);
+    const walk = (x - startX) * 2; // scroll-fast
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollLeft - walk;
+    }
   };
 
   const activeChat = chats.find((c) => c.id === activeChatId);
@@ -460,7 +523,14 @@ const OwnerMessages: React.FC = () => {
           )}
 
           {/* Filter Tabs */}
-          <div className='flex gap-2 overflow-x-auto hide-scrollbar pb-1'>
+          <div 
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            className={`flex gap-2 overflow-x-auto hide-scrollbar pb-1 cursor-grab active:cursor-grabbing select-none ${isDragging ? 'cursor-grabbing' : ''}`}
+          >
             {[
               { id: 'all', label: 'Tudo' },
               { id: 'urgent', label: 'Urgentes' },
@@ -470,7 +540,7 @@ const OwnerMessages: React.FC = () => {
             ].map((f) => (
               <button
                 key={f.id}
-                onClick={() => setActiveFilter(f.id as any)}
+                onClick={() => !isDragging && setActiveFilter(f.id as any)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${
                   activeFilter === f.id
                     ? f.id === 'urgent' 
@@ -658,7 +728,21 @@ const OwnerMessages: React.FC = () => {
                                 : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
                             }`}
                           >
-                            {msg.text}
+                            {msg.type === 'image' ? (
+                              <div className='relative'>
+                                <img 
+                                  src={msg.text} 
+                                  alt='Anexo' 
+                                  className='max-w-[240px] md:max-w-xs rounded-xl border border-white/10 shadow-sm cursor-pointer hover:scale-[1.02] transition-transform' 
+                                  onClick={() => window.open(msg.text, '_blank')}
+                                />
+                                <div className='absolute bottom-2 right-2 p-1 bg-black/40 backdrop-blur-md rounded-lg'>
+                                  <ImageIcon size={14} className='text-white' />
+                                </div>
+                              </div>
+                            ) : (
+                              msg.text
+                            )}
                           </div>
                           <div className='flex items-center gap-1 mt-1 px-1'>
                             <span className='text-[10px] text-slate-400 font-medium'>
@@ -694,11 +778,19 @@ const OwnerMessages: React.FC = () => {
                   <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
                     <button
                       type='button'
+                      onClick={() => attachmentInputRef.current?.click()}
                       className='p-2 md:p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
                     >
                       <Paperclip size={18} className='md:hidden' />
                       <Paperclip size={20} className='hidden md:block' />
                     </button>
+                    <input 
+                      type="file" 
+                      ref={attachmentInputRef} 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
                     <div className='flex-1 bg-gray-100 dark:bg-black/20 rounded-2xl border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex items-center'>
                       <input
                         value={inputText}
@@ -761,12 +853,26 @@ const OwnerMessages: React.FC = () => {
                         </div>
 
                         <div>
-                          <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2'>
-                            Status Atual
-                          </span>
-                          <div className='flex flex-col gap-2'>
+                          <div className='flex items-center justify-between mb-2'>
+                            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider block'>
+                              Status Atual
+                            </span>
                             <button
-                              onClick={() => handleStatusChange('pending')}
+                              onClick={() => setIsStatusLocked(!isStatusLocked)}
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                !isStatusLocked 
+                                  ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                                  : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                              }`}
+                            >
+                              {isStatusLocked ? <Edit size={12} /> : <Save size={12} />}
+                              {isStatusLocked ? 'Alterar' : 'Pronto'}
+                            </button>
+                          </div>
+                          <div className={`flex flex-col gap-2 transition-all duration-300 ${isStatusLocked ? 'opacity-60 pointer-events-none grayscale-[0.5]' : 'opacity-100'}`}>
+                            <button
+                              onClick={() => !isStatusLocked && handleStatusChange('pending')}
+                              disabled={isStatusLocked}
                               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
                                 activeChat.ticket.status === 'pending'
                                   ? 'bg-orange-500 text-white border-transparent shadow-lg shadow-orange-500/20'
@@ -776,7 +882,8 @@ const OwnerMessages: React.FC = () => {
                               <Clock size={14} /> Pendente
                             </button>
                             <button
-                              onClick={() => handleStatusChange('in_progress')}
+                              onClick={() => !isStatusLocked && handleStatusChange('in_progress')}
+                              disabled={isStatusLocked}
                               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
                                 activeChat.ticket.status === 'in_progress'
                                   ? 'bg-blue-500 text-white border-transparent shadow-lg shadow-blue-500/20'
@@ -786,7 +893,8 @@ const OwnerMessages: React.FC = () => {
                               <Wrench size={14} /> Em Andamento
                             </button>
                             <button
-                              onClick={() => handleStatusChange('completed')}
+                              onClick={() => !isStatusLocked && handleStatusChange('completed')}
+                              disabled={isStatusLocked}
                               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
                                 activeChat.ticket.status === 'completed'
                                   ? 'bg-emerald-500 text-white border-transparent shadow-lg shadow-emerald-500/20'
