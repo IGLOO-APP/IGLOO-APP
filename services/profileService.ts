@@ -51,9 +51,36 @@ export const profileService = {
     phone?: string;
     user_metadata?: Record<string, any>;
   }): Promise<Profile> {
-    const existing = await this.getById(user.id).catch(() => null);
-    if (existing) return existing;
+    // 1. Check if profile exists by authenticated ID
+    const existingById = await this.getById(user.id).catch(() => null);
+    if (existingById) return existingById;
 
+    // 2. Check if a placeholder profile exists with the same email
+    // This happens when an owner pre-registers a tenant
+    if (user.email) {
+      const existingByEmail = await this.getByEmail(user.email);
+      if (existingByEmail) {
+        console.log('Claiming existing profile for email:', user.email);
+        
+        // Update the placeholder profile with the actual authenticated ID
+        const { data: claimed, error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            id: user.id,
+            name: existingByEmail.name || user.user_metadata?.name || user.email.split('@')[0],
+            avatar_url: user.user_metadata?.avatar_url || existingByEmail.avatar_url,
+            phone: user.user_metadata?.phone || user.phone || existingByEmail.phone,
+          })
+          .eq('email', user.email)
+          .select()
+          .single();
+
+        if (!updateError && claimed) return claimed;
+        // If update fails (e.g. constraints), continue to create new
+      }
+    }
+
+    // 3. Create a brand new profile if none found
     const payload: ProfileInsert = {
       id: user.id,
       email: user.email || '',
@@ -62,14 +89,18 @@ export const profileService = {
       phone: user.user_metadata?.phone || user.phone || null,
     };
 
-    const { data, error } = await supabase.from('profiles').upsert(payload).select().single();
+    const { data: created, error: createError } = await supabase
+      .from('profiles')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
 
-    if (error) {
-      console.error('Error ensuring profile:', error);
-      throw error;
+    if (createError) {
+      console.error('Error creating profile:', createError);
+      throw createError;
     }
 
-    return data;
+    return created;
   },
 
   async update(id: string, updates: ProfileUpdate): Promise<Profile> {
