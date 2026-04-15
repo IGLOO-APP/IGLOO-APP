@@ -1,65 +1,55 @@
-export const KITNET_CONTRACT_TEMPLATE = `CONTRATO DE LOCAÇÃO DE IMÓVEL RESIDENCIAL
+export const KITNET_CONTRACT_TEMPLATE = `INSTRUMENTO PARTICULAR DE CONTRATO DE LOCAÇÃO RESIDENCIAL
 
-IDENTIFICAÇÃO DAS PARTES CONTRATANTES
+Pelo presente instrumento particular, de um lado:
 
-LOCADOR(A): {{nome_proprietario}}, inscrito(a) no CPF sob o nº {{cpf_proprietario}}, residente e domiciliado(a) em {{endereco_proprietario}}.
+LOCADOR(A): {{nome_proprietario}}, inscrito(a) no CPF sob o nº {{cpf_proprietario}}, residente e domiciliado(a) em {{endereco_proprietario}}, doravante denominado simplesmente LOCADOR.
 
-LOCATÁRIO(A): {{nome_inquilino}}, inscrito(a) no CPF sob o nº {{cpf_inquilino}}, profissão {{profissao_inquilino}}, endereço eletrônico {{email_inquilino}}.
+E de outro lado:
 
-As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Locação Residencial, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.
+LOCATÁRIO(A): {{nome_inquilino}}, inscrito(a) no CPF sob o nº {{cpf_inquilino}}, doravante denominado simplesmente LOCATÁRIO.
 
-CLÁUSULA PRIMEIRA - DO OBJETO DO CONTRATO
-O presente contrato tem como OBJETO a locação do imóvel residencial de propriedade do LOCADOR, situado na {{endereco_imovel}}, unidade nº {{numero_unidade}}, na cidade de {{cidade_contrato}}.
+As partes acima qualificadas têm entre si, justo e contratado, o presente contrato de locação, que se regerá pela Lei nº 8.245/91 (Lei do Inquilinato) e pelas cláusulas e condições seguintes:
 
-Parágrafo Único: O imóvel entregue na data da assinatura deste contrato, pelo LOCADOR ao LOCATÁRIO, possui as características e condições descritas no Laudo de Vistoria de Entrada, anexo a este instrumento, o qual passa a fazer parte integrante do mesmo.
+CLÁUSULA PRIMEIRA - DO OBJETO
+O imóvel objeto desta locação é o imóvel residencial situado na {{endereco_imovel}}, na cidade de {{cidade_contrato}}. O imóvel é entregue em perfeitas condições de uso, conforme Laudo de Vistoria que passa a ser parte integrante deste contrato.
 
-CLÁUSULA SEGUNDA - DA DESTINAÇÃO
-A presente locação destina-se EXCLUSIVAMENTE para fins residenciais do LOCATÁRIO e de seu grupo familiar, sendo expressamente vedada a sua sublocação, cessão, empréstimo ou transferência, total ou parcial, a qualquer título, sem prévia e expressa autorização por escrito do LOCADOR. A ocupação máxima permitida é de {{ocupacao_maxima}} pessoa(s), visando a preservação do imóvel.
+CLÁUSULA SEGUNDA - DA VIGÊNCIA E PRAZO
+A locação terá a duração de {{duracao_meses}} meses, com início em {{data_inicio}} e término previsto para {{data_fim}}.
+Parágrafo Único: Findo o prazo ajustado, se o LOCATÁRIO permanecer no imóvel por mais de trinta dias sem oposição do LOCADOR, presumir-se-á prorrogada a locação por tempo indeterminado, mantidas as demais cláusulas deste contrato.
 
-CLÁUSULA TERCEIRA - DO PRAZO DE VIGÊNCIA
-O prazo de locação é de {{duracao_meses}} meses, iniciando-se em {{data_inicio}} e terminando em {{data_fim}}, data em que o imóvel deverá ser devolvido nas condições estipuladas na vistoria de entrada, independentemente de aviso ou notificação judicial ou extrajudicial.
+CLÁUSULA TERCEIRA - DOS VALORES E REAJUSTE
+O aluguel mensal pactuado é de R$ {{valor_aluguel}}, devendo ser pago até o dia {{dia_vencimento}} de cada mês, via PIX ou boleto bancário conforme orientação do LOCADOR.
+Parágrafo Primeiro: O valor do aluguel será reajustado anualmente pela variação positiva do IGP-M/FGV ou, na sua ausência, pelo IPCA/IBGE.
+Parágrafo Segundo: O atraso no pagamento acarretará multa moratória de 10% (dez por cento) sobre o valor do débito, acrescido de juros de 1% ao mês.
 
-Parágrafo Primeiro: Caso o LOCATÁRIO devolva o imóvel antes do prazo previsto, pagará uma multa contratual proporcional ao tempo restante de contrato, calculada sobre o valor de 03 (três) aluguéis vigentes.
+CLÁUSULA QUARTA - DOS ENCARGOS
+Além do aluguel, o LOCATÁRIO é responsável pelo pagamento de:
+a) Taxas de condomínio e IPTU ({{valor_condominio}} e {{valor_iptu}});
+b) Consumo de energia, água e gás;
+c) Seguro contra incêndio do imóvel.
 
-CLÁUSULA QUARTA - DO VALOR DO ALUGUEL E REAJUSTE
-O valor mensal da locação é de R$ {{valor_aluguel}}, devendo ser pago pontualmente até o dia {{dia_vencimento}} de cada mês subsequente ao vencido, diretamente ao LOCADOR ou a quem este indicar.
+CLÁUSULA QUINTA - DA GARANTIA (CAUÇÃO)
+O LOCATÁRIO deposita, neste ato, a título de caução, a importância de R$ {{valor_caucao}}, equivalente a no máximo 03 (três) meses de aluguel.
+Parágrafo Único: O valor será devolvido ao final da locação, devidamente corrigido pelos índices da caderneta de poupança, após a vistoria de saída e quitação de todos os débitos.
 
-Parágrafo Primeiro: O atraso no pagamento implicará automaticamente na cobrança de multa moratória de 10% (dez por cento) sobre o valor do débito, acrescido de juros de mora de 1% (um por cento) ao mês e correção monetária pelo índice oficial.
-Parágrafo Segundo: O valor do aluguel será reajustado anualmente, ou na menor periodicidade permitida por lei, com base na variação acumulada do índice IGP-M/FGV.
+CLÁUSULA SEXTA - DA MULTA RESCISÓRIA
+A infração de qualquer das cláusulas deste contrato sujeitará a parte infratora ao pagamento de multa equivalente a 03 (três) meses de aluguel vigente à época da infração, paga de forma proporcional ao tempo restante do contrato, conforme previsto no Art. 4º da Lei 8.245/91.
 
-CLÁUSULA QUINTA - DOS ENCARGOS E TRIBUTOS
-Além do aluguel mensal, caberá ao LOCATÁRIO o pagamento pontual de todos os encargos que recaiam sobre o imóvel, notadamente:
-a) Taxa de Condomínio (se houver): {{valor_condominio}}
-b) Imposto Predial e Territorial Urbano (IPTU): {{valor_iptu}}
-c) Consumo de energia elétrica, água, gás, internet e outras taxas de serviços públicos ou privados contratados.
+CLÁUSULA SÉTIMA - DA DESTINAÇÃO E BENFEITORIAS
+O imóvel destina-se exclusivamente para fins residenciais. Qualquer alteração estrutural ou benfeitoria necessita de prévia autorização por escrito do LOCADOR. Benfeitorias úteis ou necessárias não serão indenizáveis, salvo ajuste prévio.
 
-CLÁUSULA SEXTA - DA GARANTIA LOCATÍCIA (CAUÇÃO)
-Para garantia das obrigações assumidas neste contrato, o LOCATÁRIO entrega ao LOCADOR, neste ato, a importância de R$ {{valor_caucao}}, a título de CAUÇÃO.
-Parágrafo Único: Este valor será depositado em conta poupança e devolvida ao final da locação, acrescida da correção da poupança, após a devolução das chaves, vistoria de saída aprovada e comprovação de quitação de todos os débitos de aluguel e encargos.
+CLÁUSULA OITAVA - DO FORO
+As partes elegem o Foro da Comarca de {{cidade_contrato}} para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, renunciando a qualquer outro por mais privilegiado que seja.
 
-CLÁUSULA SÉTIMA - DA CONSERVAÇÃO E BENFEITORIAS
-O LOCATÁRIO obriga-se a manter o imóvel em perfeitas condições de limpeza e conservação. Não poderá realizar obras ou benfeitorias, sejam elas necessárias, úteis ou voluptuárias, sem o consentimento prévio e por escrito do LOCADOR. As benfeitorias autorizadas aderirão ao imóvel, não gerando direito de retenção ou indenização.
-
-CLÁUSULA OITAVA - DA RESCISÃO
-Considerar-se-á rescindido o presente contrato, de pleno direito, independentemente de qualquer notificação judicial ou extrajudicial, nos casos de:
-a) Infração de qualquer cláusula ou condição deste instrumento;
-b) Falta de pagamento do aluguel e encargos;
-c) Incêndio, desapropriação ou qualquer outro fato que impeça o uso do imóvel.
-
-CLÁUSULA NONA - DO FORO
-Para dirimir quaisquer controvérsias oriundas do presente contrato, as partes elegem o foro da comarca de {{cidade_contrato}}, com renúncia expressa a qualquer outro, por mais privilegiado que seja.
-
-E, por estarem assim justos e contratados, firmam o presente instrumento em 02 (duas) vias de igual teor e forma, na presença de duas testemunhas.
+E, por estarem assim justos e contratados, as partes assinam o presente contrato.
 
 {{cidade_contrato}}, {{data_hoje}}.
 
-________________________________________________
-{{nome_proprietario}}
-LOCADOR
+_______________________________________
+{{nome_proprietario}} (LOCADOR)
 
-________________________________________________
-{{nome_inquilino}}
-LOCATÁRIO
+_______________________________________
+{{nome_inquilino}} (LOCATÁRIO)
 `;
 
 export const KITNET_RULES_TEMPLATE = `

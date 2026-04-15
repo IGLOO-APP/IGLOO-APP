@@ -38,6 +38,8 @@ import {
   Layers,
   Settings,
   GripVertical,
+  Files,
+  AlertTriangle,
 } from 'lucide-react';
 import { ContractUploader } from './ContractUploader';
 import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
@@ -306,6 +308,28 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
     return adj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   };
 
+  const scrollToClause = (clauseTitle: string) => {
+    // Search in all pages
+    for (let i = 0; i < contractPages.length; i++) {
+        const text = contractPages[i].toUpperCase();
+        const index = text.indexOf(clauseTitle.toUpperCase());
+        
+        if (index !== -1) {
+            // Found it! Scroll this page into view
+            const el = textareaRefs.current[i];
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.focus();
+                // Select the text
+                setTimeout(() => {
+                    el.setSelectionRange(index, index + clauseTitle.length);
+                }, 300);
+                return;
+            }
+        }
+    }
+  };
+
   // Step 5 State: Document
   const [docMode, setDocMode] = useState<'template' | 'upload'>('template');
   const [contractPages, setContractPages] = useState<string[]>(['']);
@@ -315,12 +339,16 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   // Maps page index to signature image URL
   const [signatures, setSignatures] = useState<Record<number, string>>({});
+  const [pageToDelete, setPageToDelete] = useState<number | null>(null);
+  const [isReadingMode, setIsReadingMode] = useState(false);
 
   const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
 
   // Auto-generate contract text when entering Step 5
   useEffect(() => {
     if (currentStep === 5 && contractPages.length === 1 && contractPages[0] === '') {
+      const selectedProp = mockProperties.find(p => p.name === formData.property);
+      
       const dataMap = {
         nome_proprietario: 'Investidor Exemplo', // Mock owner
         cpf_proprietario: '000.000.000-00',
@@ -329,16 +357,12 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
         cpf_inquilino: formData.tenantCpf || '_______________________',
         profissao_inquilino: '_______________________',
         email_inquilino: 'email@exemplo.com',
-        endereco_imovel: formData.property || '_______________________',
+        endereco_imovel: selectedProp?.address || formData.property || '_______________________',
         numero_unidade: 'N/A',
         ocupacao_maxima: '2',
         data_inicio: new Date(formData.startDate).toLocaleDateString('pt-BR'),
         duracao_meses: formData.duration,
-        data_fim: new Date(
-          new Date(formData.startDate).setMonth(
-            new Date(formData.startDate).getMonth() + parseInt(formData.duration)
-          )
-        ).toLocaleDateString('pt-BR'),
+        data_fim: getEndDate(),
         valor_aluguel: formData.rentValue || '0,00',
         dia_vencimento: '10',
         valor_condominio: 'Incluso',
@@ -1048,107 +1072,140 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
           {/* Step 5: Document Generation/Upload */}
           {currentStep === 5 && (
             <div className='flex flex-col h-full animate-fadeIn'>
-              {/* Professional Legal Toolbar */}
-              <div className='flex-none bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-white/5 p-4 py-3 flex items-center justify-between shadow-sm z-30'>
+              {/* Professional Legal Toolbar - Slimmer & Better Integrated */}
+              <div className='flex-none bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-white/5 px-6 py-2 flex items-center justify-between shadow-sm z-30'>
                 <div className='flex items-center gap-6'>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-10 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-lg'>
-                      <Briefcase size={20} />
+                  <div className='flex items-center gap-3'>
+                    <div className='w-8 h-8 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-md'>
+                      <Briefcase size={16} />
                     </div>
                     <div>
-                      <h4 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>Legal Workspace</h4>
-                      <p className='text-[10px] font-bold text-slate-400 flex items-center gap-1'>
-                        <span className='w-1.5 h-1.5 rounded-full bg-emerald-500'></span> Editando Minuta
+                      <h4 className='text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider'>Legal Workspace</h4>
+                      <p className='text-[8px] font-bold text-emerald-500 uppercase flex items-center gap-1'>
+                        <span className='w-1 h-1 rounded-full bg-emerald-500 animate-pulse'></span> Editor Ativo
                       </p>
                     </div>
                   </div>
 
-                  <div className='h-8 w-px bg-slate-100 dark:bg-white/5'></div>
+                  <div className='h-6 w-px bg-slate-100 dark:bg-white/5'></div>
 
-                  <div className='flex gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl'>
+                  <div className='flex gap-1 bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg'>
                     <button
                       onClick={() => setDocMode('template')}
-                      className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                         docMode === 'template' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
                       }`}
                     >
-                      <BookOpen size={14} /> Editor
+                      <BookOpen size={12} /> Editor
                     </button>
                     <button
                       onClick={() => setDocMode('upload')}
-                      className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      className={`px-3 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                         docMode === 'upload' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
                       }`}
                     >
-                      <Upload size={14} /> Próprio
+                      <Upload size={12} /> Próprio
                     </button>
                   </div>
                 </div>
 
-                <div className='flex items-center gap-3'>
-                  <div className='text-right hidden sm:block'>
-                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-tighter'>Palavras</p>
-                    <p className='text-sm font-black text-slate-900 dark:text-white'>
+                <div className='flex items-center gap-4'>
+                  <button
+                    onClick={() => setIsReadingMode(!isReadingMode)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                        isReadingMode ? 'bg-primary text-white shadow-lg' : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    <Eye size={12} /> {isReadingMode ? 'Sair do Foco' : 'Modo Leitura'}
+                  </button>
+                  <div className='h-6 w-px bg-slate-100 dark:bg-white/5'></div>
+                  <div className='text-right'>
+                    <p className='text-[8px] font-black text-slate-400 uppercase tracking-tighter'>Palavras</p>
+                    <p className='text-xs font-black text-slate-900 dark:text-white'>
                       {contractPages.join(' ').split(/\s+/).length}
                     </p>
                   </div>
-                  <div className='h-8 w-px bg-slate-100 dark:bg-white/5'></div>
-                  <button 
-                    onClick={handleNext}
-                    className='px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95 transition-all'
-                  >
-                    Próximo Passo
-                  </button>
                 </div>
               </div>
 
               {/* Main Workspace Area */}
               <div className='flex-1 flex overflow-hidden bg-slate-100 dark:bg-black/40'>
-                {/* Left Drawer: Clause Navigator */}
-                <div className='w-72 bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-white/5 hidden lg:flex flex-col shrink-0'>
-                  <div className='p-4 border-b border-slate-100 dark:border-white/5'>
-                    <div className='relative'>
-                      <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-300' size={14} />
-                      <input 
-                        type="text" 
-                        placeholder="Buscar cláusula..."
-                        className='w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-black/20 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary'
-                      />
+                {/* Left Drawer: Clause Navigator - Hidden in Reading Mode */}
+                {!isReadingMode && (
+                  <div className='w-72 bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-white/5 hidden lg:flex flex-col shrink-0'>
+                    <div className='p-4 border-b border-slate-100 dark:border-white/5'>
+                      <div className='relative'>
+                        <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-300' size={14} />
+                        <input 
+                          type="text" 
+                          placeholder="Buscar cláusula..."
+                          className='w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-black/20 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary'
+                        />
+                      </div>
+                    </div>
+
+                    {/* Simplified Page Explorer Section */}
+                    <div className='p-4 border-b border-slate-100 dark:border-white/5'>
+                      <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-3 flex items-center gap-2'>
+                          <Files size={12} /> Páginas do Contrato
+                      </p>
+                      <div className='space-y-1'>
+                          {contractPages.map((_, i) => (
+                              <button
+                                  key={i}
+                                  onClick={() => {
+                                      const el = textareaRefs.current[i];
+                                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }}
+                                  className='w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 text-left flex items-center justify-between group transition-all border border-transparent hover:border-slate-100 dark:hover:border-white/5'
+                              >
+                                  <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary'>Página {i + 1}</span>
+                                  <div className='w-5 h-5 rounded-md bg-slate-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-black text-slate-400 opacity-60 group-hover:opacity-100'>
+                                      {i + 1}
+                                  </div>
+                              </button>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className='flex-1 overflow-y-auto p-2 space-y-1'>
+                      <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2 flex items-center gap-2'>
+                          <GripVertical size={12} /> Cláusulas Rápidas
+                      </p>
+                      {[
+                        'DAS PARTES', 'DO OBJETO', 'DO VALOR', 'DA GARANTIA', 
+                        'DAS OBRIGAÇÕES', 'DA RESCISÃO', 'DO FORO'
+                      ].map((clause, i) => (
+                        <button 
+                          key={i}
+                          onClick={() => scrollToClause(clause)}
+                          className='w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 text-left flex items-center justify-between group transition-all'
+                        >
+                          <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary'>{clause}</span>
+                          <div className='w-5 h-5 rounded-md bg-slate-100 dark:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+                            <ArrowRight size={10} className='text-slate-400' />
+                          </div>
+                        </button>
+                      ))}
+                      
+                      <div className='mt-8 pt-4 border-t border-slate-100 dark:border-white/5 mx-2'>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-3'>Variáveis Injetadas</p>
+                          <div className='space-y-2 px-2'>
+                              {[
+                                  {k: 'Inquilino', v: formData.tenantName},
+                                  {k: 'Imóvel', v: formData.property},
+                                  {k: 'Mensalidade', v: `R$ ${formData.rentValue}`}
+                              ].map((v, i) => (
+                                  <div key={i} className='p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex flex-col'>
+                                      <span className='text-[8px] font-black text-emerald-600 uppercase'>{v.k}</span>
+                                      <span className='text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate'>{v.v}</span>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
                     </div>
                   </div>
-                  <div className='flex-1 overflow-y-auto p-2 space-y-1'>
-                    {[
-                      'DAS PARTES', 'DO OBJETO', 'DO VALOR', 'DA GARANTIA', 
-                      'DAS OBRIGAÇÕES', 'DA RESCISÃO', 'DO FORO'
-                    ].map((clause, i) => (
-                      <button 
-                        key={i}
-                        className='w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 text-left flex items-center justify-between group transition-all'
-                      >
-                        <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary'>{clause}</span>
-                        <div className='w-5 h-5 rounded-md bg-slate-100 dark:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100'>
-                          <ArrowRight size={10} className='text-slate-400' />
-                        </div>
-                      </button>
-                    ))}
-                    
-                    <div className='mt-8 pt-4 border-t border-slate-100 dark:border-white/5 mx-2'>
-                        <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-3'>Variáveis Injetadas</p>
-                        <div className='space-y-2 px-2'>
-                            {[
-                                {k: 'Inquilino', v: formData.tenantName},
-                                {k: 'Imóvel', v: formData.property},
-                                {k: 'Mensalidade', v: `R$ ${formData.rentValue}`}
-                            ].map((v, i) => (
-                                <div key={i} className='p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex flex-col'>
-                                    <span className='text-[8px] font-black text-emerald-600 uppercase'>{v.k}</span>
-                                    <span className='text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate'>{v.v}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* Center: Document Editor */}
                 <div className='flex-1 flex flex-col relative'>
@@ -1184,12 +1241,46 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                           
                           {index > 0 && (
                             <button
-                              onClick={() => removePage(index)}
-                              className='absolute -right-12 top-0 p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 shadow-sm opacity-0 group-hover/page:opacity-100 transition-all transform hover:scale-110'
+                              onClick={() => setPageToDelete(index)}
+                              className='absolute -right-12 top-0 p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 shadow-sm opacity-0 group-hover/page:opacity-100 transition-all transform hover:scale-110 z-20'
                               title='Remover Página'
                             >
                                 <X size={20} />
                             </button>
+                          )}
+
+                          {/* Delete Confirmation Overlay */}
+                          {pageToDelete === index && (
+                            <div className='absolute inset-0 z-50 bg-white/95 backdrop-blur-sm flex items-center justify-center p-8 animate-fadeIn'>
+                                <div className='text-center space-y-6 max-w-sm'>
+                                    <div className='w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-red-500/10'>
+                                        <AlertTriangle size={40} />
+                                    </div>
+                                    <div>
+                                        <h4 className='text-xl font-black text-slate-900'>Excluir Página {index + 1}?</h4>
+                                        <p className='text-slate-500 font-medium text-sm mt-2'>
+                                            Esta ação é irreversível e todo o conteúdo digitado nesta página será perdido permanentemente.
+                                        </p>
+                                    </div>
+                                    <div className='flex items-center gap-3'>
+                                        <button 
+                                            onClick={() => setPageToDelete(null)}
+                                            className='flex-1 px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all'
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                removePage(index);
+                                                setPageToDelete(null);
+                                            }}
+                                            className='flex-1 px-6 py-3 rounded-xl bg-red-600 text-white font-bold shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all'
+                                        >
+                                            Sim, Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                           )}
 
                           <div className='absolute bottom-8 right-12 text-[10px] font-black text-slate-300 uppercase tracking-widest'>
@@ -1198,8 +1289,8 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                         </div>
                       ))}
 
-                      {/* Floating Workspace Toolbar */}
-                      <div className='fixed right-10 bottom-10 flex flex-col gap-4 z-40'>
+                      {/* Floating Workspace Toolbar (Moved to Left) */}
+                      <div className='absolute left-10 bottom-10 flex flex-col gap-4 z-40'>
                         <button
                           onClick={() => setShowSignatureModal(true)}
                           className='w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all'
@@ -1291,25 +1382,34 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
         </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className='flex-none p-6 border-t border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark z-20'>
-        <div className='max-w-4xl mx-auto flex justify-between items-center'>
-          <button
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className='px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all flex items-center gap-2'
-          >
-            <ArrowLeft size={18} /> Voltar
-          </button>
-          <button
-            onClick={handleNext}
-            className='px-8 py-3.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white font-bold shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center gap-2 text-base'
-          >
-            {currentStep === 6 ? 'Criar Contrato' : 'Próximo'}
-            {currentStep < 6 && <ArrowRight size={18} />}
-          </button>
+      {/* Footer Actions - Slimmer & Subtle - Hidden in Reading Mode */}
+      {!isReadingMode && (
+        <div className='flex-none p-4 px-6 border-t border-gray-100 dark:border-white/5 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md z-20'>
+          <div className='max-w-5xl mx-auto flex justify-between items-center'>
+            <button
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className='px-4 py-2 rounded-lg font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-20 transition-all flex items-center gap-2 text-sm'
+            >
+              <ArrowLeft size={16} /> Voltar
+            </button>
+            <div className='flex items-center gap-4'>
+              {currentStep === 5 && (
+                  <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:block'>
+                      Passo 5 de 6
+                  </span>
+              )}
+              <button
+                  onClick={handleNext}
+                  className='px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white font-black uppercase tracking-widest text-[11px] shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2'
+              >
+                  {currentStep === 6 ? 'Finalizar Contrato' : 'Próximo Passo'}
+                  <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
