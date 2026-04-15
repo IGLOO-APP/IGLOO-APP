@@ -27,9 +27,9 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
   }[] = [
     {
       id: 1,
-      title: 'Cadastre seu primeiro imóvel',
+      title: onboarding.step1 ? 'Cadastrar mais imóveis' : 'Cadastre seu primeiro imóvel',
       completed: onboarding.step1,
-      actionLabel: 'Adicionar Imóvel',
+      actionLabel: onboarding.step1 ? 'Novo Imóvel' : 'Adicionar Imóvel',
       onClick: () => navigate('/properties', { state: { openAdd: true } }),
       disabled: false,
       icon: Home,
@@ -37,9 +37,9 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
     },
     {
       id: 2,
-      title: 'Cadastre seu primeiro inquilino',
+      title: onboarding.step2 ? 'Gerenciar inquilinos' : 'Cadastre seu primeiro inquilino',
       completed: onboarding.step2,
-      actionLabel: 'Adicionar Inquilino',
+      actionLabel: onboarding.step2 ? 'Ver Inquilinos' : 'Adicionar Inquilino',
       onClick: () => navigate('/tenants', { state: { openAdd: true } }),
       disabled: !onboarding.step1,
       tooltip: 'Cadastre um imóvel primeiro',
@@ -48,9 +48,9 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
     },
     {
       id: 3,
-      title: 'Crie seu primeiro contrato',
+      title: onboarding.step3 ? 'Criar novos contratos' : 'Crie seu primeiro contrato',
       completed: onboarding.step3,
-      actionLabel: 'Criar Contrato',
+      actionLabel: onboarding.step3 ? 'Novo Contrato' : 'Criar Contrato',
       onClick: () => navigate('/contracts', { state: { openWizard: true } }),
       disabled: !onboarding.step1 || !onboarding.step2,
       tooltip: 'Cadastre um imóvel e um inquilino primeiro',
@@ -59,9 +59,9 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
     },
     {
       id: 4,
-      title: 'Configure seu método de recebimento',
+      title: onboarding.step4 ? 'Financeiro configurado' : 'Configure seu método de recebimento',
       completed: onboarding.step4,
-      actionLabel: 'Configurar',
+      actionLabel: onboarding.step4 ? 'Gerenciar Finanças' : 'Configurar',
       onClick: () => navigate('/settings', { state: { activeTab: 'financial' } }),
       disabled: false,
       icon: CreditCard,
@@ -162,7 +162,7 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
                   {step.completed ? '✓' : '→'}
                 </span>
                 <span className='text-[9px] md:text-xs text-slate-400 font-medium line-clamp-1'>
-                  {step.completed ? 'Etapa concluída' : step.actionLabel}
+                  {step.actionLabel}
                 </span>
               </div>
             </div>
