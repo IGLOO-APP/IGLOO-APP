@@ -220,15 +220,6 @@ const Dashboard: React.FC = () => {
               >
                 <Settings size={18} /> Configurações
               </button>
-              <button
-                onClick={async () => {
-                  setShowUserMenu(false);
-                  await logout();
-                }}
-                className='w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-3 text-sm font-bold text-red-500'
-              >
-                <LogOut size={18} /> Sair
-              </button>
             </div>
           </>
         )}

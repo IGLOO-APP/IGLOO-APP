@@ -69,9 +69,11 @@ const TenantLayout: React.FC = () => {
           </button>
           <button
             onClick={async () => await logout()}
-            className='flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all'
+            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 cursor-pointer'
           >
-            <LogOut size={20} />
+            <div className='group-hover:scale-110 transition-transform'>
+              <LogOut size={20} />
+            </div>
             <span className='font-medium text-sm'>Sair</span>
           </button>
         </div>

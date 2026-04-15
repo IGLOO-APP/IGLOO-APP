@@ -277,15 +277,6 @@ const TenantDashboard: React.FC = () => {
                 onClick={() => setShowUserMenu(false)}
               ></div>
               <div className='absolute top-full left-0 mt-2 w-64 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-scaleUp origin-top-left z-30'>
-                <button
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    logout();
-                  }}
-                  className='w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium flex items-center gap-2 transition-colors'
-                >
-                  <LogOut size={16} /> Sair da conta
-                </button>
               </div>
             </>
           )}

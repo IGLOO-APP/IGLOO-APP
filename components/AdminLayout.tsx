@@ -107,9 +107,11 @@ const AdminLayout: React.FC = () => {
           </button>
           <button
             onClick={logout}
-            className='group flex items-center gap-3.5 w-full px-4 py-3.5 rounded-2xl text-slate-400 hover:bg-red-500/10 hover:text-red-500 cursor-pointer transition-all duration-200'
+            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-400 hover:bg-red-500/10 hover:text-red-500 cursor-pointer transition-all duration-200'
           >
-            <LogOut size={20} />
+            <div className='group-hover:scale-110 transition-transform'>
+              <LogOut size={20} />
+            </div>
             <span className='font-medium text-sm'>Sair</span>
           </button>
         </div>
