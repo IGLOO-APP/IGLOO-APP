@@ -254,7 +254,15 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
       vacantDays: '2 d.',
       visits: 12,
       image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
+      image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
     }
+  ];
+
+  const mockTenants = [
+    { id: 1, name: 'João Silva', cpf: '123.456.789-00', email: 'joao@teste.com', avatar: 'https://i.pravatar.cc/150?u=joao' },
+    { id: 2, name: 'Maria Oliveira', cpf: '987.654.321-11', email: 'maria@teste.com', avatar: 'https://i.pravatar.cc/150?u=maria' },
+    { id: 3, name: 'Carlos Pereira', cpf: '456.789.123-22', email: 'carlos@teste.com', avatar: 'https://i.pravatar.cc/150?u=carlos' },
+    { id: 4, name: 'Ana Costa', cpf: '234.567.890-33', email: 'ana@teste.com', avatar: 'https://i.pravatar.cc/150?u=ana' },
   ];
 
   const [formData, setFormData] = useState({
@@ -267,6 +275,10 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
     duration: '30', // months
     autoRenew: false,
   });
+
+  const [tenantSearch, setTenantSearch] = useState('');
+  const [showNewTenantForm, setShowNewTenantForm] = useState(false);
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
 
   // Step 5 State: Document
   const [docMode, setDocMode] = useState<'template' | 'upload'>('template');
@@ -569,46 +581,142 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                   Quem é o Inquilino?
                 </h3>
                 <p className='text-slate-500'>
-                  Informe os dados da pessoa que irá alugar o imóvel.
+                  Busque em sua base de dados ou cadastre um novo.
                 </p>
               </div>
-              <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-6'>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                    Nome Completo
-                  </label>
-                  <div className='relative'>
-                    <User
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
+
+              {!showNewTenantForm ? (
+                <div className='space-y-4'>
+                  {/* Search Box */}
+                  <div className='relative group'>
+                    <User className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={20} />
                     <input
-                      value={formData.tenantName}
-                      onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
-                      className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
-                      placeholder='Ex: João da Silva'
+                      type='text'
+                      value={tenantSearch}
+                      onChange={(e) => setTenantSearch(e.target.value)}
+                      placeholder='Buscar por nome ou CPF...'
+                      className='w-full pl-12 pr-16 py-5 bg-white dark:bg-surface-dark border-2 border-transparent focus:border-primary rounded-3xl shadow-sm outline-none font-bold text-lg text-slate-900 dark:text-white transition-all placeholder-slate-300'
                       autoFocus
                     />
+                    <button
+                      onClick={() => setShowNewTenantForm(true)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-2xl flex items-center justify-center transition-all'
+                      title='Novo Inquilino'
+                    >
+                      <Plus size={24} />
+                    </button>
+                    {tenantSearch && (
+                      <button 
+                        onClick={() => setTenantSearch('')}
+                        className='absolute right-14 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500'
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Results List */}
+                  <div className='space-y-3'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2'>
+                      {tenantSearch ? 'Resultados da busca' : 'Inquilinos Recentes'}
+                    </p>
+                    <div className='grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar'>
+                      {mockTenants
+                        .filter(t => 
+                          t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || 
+                          t.cpf.includes(tenantSearch)
+                        )
+                        .map((tenant) => (
+                          <button
+                            key={tenant.id}
+                            onClick={() => {
+                              setSelectedTenantId(tenant.id);
+                              setFormData({ ...formData, tenantName: tenant.name, tenantCpf: tenant.cpf });
+                            }}
+                            className={`group p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
+                              selectedTenantId === tenant.id
+                                ? 'border-primary bg-primary/5 shadow-md'
+                                : 'border-white dark:border-white/5 bg-white dark:bg-surface-dark hover:border-slate-100 dark:hover:border-white/10'
+                            }`}
+                          >
+                            <img src={tenant.avatar} className='w-12 h-12 rounded-full border border-slate-100 dark:border-white/5' alt="" />
+                            <div className='flex-1'>
+                              <h4 className='font-bold text-slate-900 dark:text-white leading-tight'>{tenant.name}</h4>
+                              <p className='text-xs text-slate-400 font-medium'>{tenant.cpf} • {tenant.email}</p>
+                            </div>
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedTenantId === tenant.id ? 'border-primary bg-primary text-white' : 'border-slate-200 dark:border-white/5'}`}>
+                              {selectedTenantId === tenant.id && <div className='w-1.5 h-1.5 bg-white rounded-full' />}
+                            </div>
+                          </button>
+                        ))
+                      }
+                      
+                      {/* Empty State */}
+                      {mockTenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || t.cpf.includes(tenantSearch)).length === 0 && (
+                        <div className='p-8 text-center bg-slate-50 dark:bg-white/5 rounded-3xl border-2 border-dashed border-slate-200 dark:border-white/10'>
+                          <User size={40} className='mx-auto text-slate-300 mb-3' />
+                          <p className='text-slate-500 font-bold'>Nenhum inquilino encontrado</p>
+                          <button 
+                            onClick={() => setShowNewTenantForm(true)}
+                            className='mt-4 px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all'
+                          >
+                            Cadastrar Novo
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
-                    CPF
-                  </label>
-                  <div className='relative'>
-                    <CreditCard
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
-                    <input
-                      value={formData.tenantCpf}
-                      onChange={(e) => setFormData({ ...formData, tenantCpf: e.target.value })}
-                      className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
-                      placeholder='000.000.000-00'
-                    />
+              ) : (
+                <div className='space-y-6'>
+                  <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-6 animate-slideUp'>
+                    <div className='flex items-center justify-between mb-2'>
+                      <span className='text-[10px] font-black text-primary uppercase tracking-widest'>Novo Inquilino</span>
+                      <button 
+                        onClick={() => setShowNewTenantForm(false)}
+                        className='text-xs font-bold text-slate-400 hover:text-slate-600'
+                      >
+                        Voltar para busca
+                      </button>
+                    </div>
+                    <div>
+                      <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
+                        Nome Completo
+                      </label>
+                      <div className='relative'>
+                        <User
+                          className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                          size={20}
+                        />
+                        <input
+                          value={formData.tenantName}
+                          onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
+                          className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                          placeholder='Ex: João da Silva'
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
+                        CPF
+                      </label>
+                      <div className='relative'>
+                        <CreditCard
+                          className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                          size={20}
+                        />
+                        <input
+                          value={formData.tenantCpf}
+                          onChange={(e) => setFormData({ ...formData, tenantCpf: e.target.value })}
+                          className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                          placeholder='000.000.000-00'
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
