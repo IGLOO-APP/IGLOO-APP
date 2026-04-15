@@ -32,6 +32,12 @@ import {
   History,
   Infinity,
   ArrowDownToDot,
+  Briefcase,
+  BookOpen,
+  Search,
+  Layers,
+  Settings,
+  GripVertical,
 } from 'lucide-react';
 import { ContractUploader } from './ContractUploader';
 import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
@@ -1041,156 +1047,183 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
 
           {/* Step 5: Document Generation/Upload */}
           {currentStep === 5 && (
-            <div className='space-y-6 animate-fadeIn h-full flex flex-col'>
-              {/* Editor Header Toolbar */}
-              <div className='flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl border border-gray-200 dark:border-white/5 shadow-sm'>
-                <div>
-                  <h3 className='text-xl font-bold text-slate-900 dark:text-white'>
-                    Minuta do Contrato
-                  </h3>
-                  <p className='text-slate-500 text-sm'>
-                    Gere o documento automaticamente ou faça upload.
-                  </p>
+            <div className='flex flex-col h-full animate-fadeIn'>
+              {/* Professional Legal Toolbar */}
+              <div className='flex-none bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-white/5 p-4 py-3 flex items-center justify-between shadow-sm z-30'>
+                <div className='flex items-center gap-6'>
+                  <div className='flex items-center gap-2'>
+                    <div className='w-10 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-lg'>
+                      <Briefcase size={20} />
+                    </div>
+                    <div>
+                      <h4 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>Legal Workspace</h4>
+                      <p className='text-[10px] font-bold text-slate-400 flex items-center gap-1'>
+                        <span className='w-1.5 h-1.5 rounded-full bg-emerald-500'></span> Editando Minuta
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className='h-8 w-px bg-slate-100 dark:bg-white/5'></div>
+
+                  <div className='flex gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl'>
+                    <button
+                      onClick={() => setDocMode('template')}
+                      className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                        docMode === 'template' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
+                      }`}
+                    >
+                      <BookOpen size={14} /> Editor
+                    </button>
+                    <button
+                      onClick={() => setDocMode('upload')}
+                      className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                        docMode === 'upload' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-400'
+                      }`}
+                    >
+                      <Upload size={14} /> Próprio
+                    </button>
+                  </div>
                 </div>
-                <div className='flex gap-2'>
-                  <button
-                    onClick={() => setDocMode('template')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-                      docMode === 'template'
-                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                    }`}
+
+                <div className='flex items-center gap-3'>
+                  <div className='text-right hidden sm:block'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-tighter'>Palavras</p>
+                    <p className='text-sm font-black text-slate-900 dark:text-white'>
+                      {contractPages.join(' ').split(/\s+/).length}
+                    </p>
+                  </div>
+                  <div className='h-8 w-px bg-slate-100 dark:bg-white/5'></div>
+                  <button 
+                    onClick={handleNext}
+                    className='px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95 transition-all'
                   >
-                    <PenTool size={16} /> Editor
-                  </button>
-                  <button
-                    onClick={() => setDocMode('upload')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
-                      docMode === 'upload'
-                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
-                    }`}
-                  >
-                    <Upload size={16} /> Upload
+                    Próximo Passo
                   </button>
                 </div>
               </div>
 
-              {/* Full Screen Editor Container */}
-              <div className='flex-1 min-h-[75vh] border border-slate-200 dark:border-white/10 rounded-2xl bg-slate-100 dark:bg-black/20 overflow-hidden shadow-inner flex flex-col relative group'>
-                {docMode === 'template' ? (
-                  <div className='flex flex-col h-full relative'>
-                    {/* Status Bar */}
-                    <div className='bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 p-2 px-6 flex justify-between items-center shrink-0 shadow-sm z-10'>
-                      <span className='text-xs font-bold uppercase tracking-wider text-slate-500'>
-                        Visualização de Impressão (A4)
-                      </span>
-                      <span className='text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded border border-emerald-100 dark:border-emerald-900/30'>
-                        {contractPages.length} Páginas
-                      </span>
+              {/* Main Workspace Area */}
+              <div className='flex-1 flex overflow-hidden bg-slate-100 dark:bg-black/40'>
+                {/* Left Drawer: Clause Navigator */}
+                <div className='w-72 bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-white/5 hidden lg:flex flex-col shrink-0'>
+                  <div className='p-4 border-b border-slate-100 dark:border-white/5'>
+                    <div className='relative'>
+                      <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-300' size={14} />
+                      <input 
+                        type="text" 
+                        placeholder="Buscar cláusula..."
+                        className='w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-black/20 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary'
+                      />
                     </div>
+                  </div>
+                  <div className='flex-1 overflow-y-auto p-2 space-y-1'>
+                    {[
+                      'DAS PARTES', 'DO OBJETO', 'DO VALOR', 'DA GARANTIA', 
+                      'DAS OBRIGAÇÕES', 'DA RESCISÃO', 'DO FORO'
+                    ].map((clause, i) => (
+                      <button 
+                        key={i}
+                        className='w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 text-left flex items-center justify-between group transition-all'
+                      >
+                        <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-primary'>{clause}</span>
+                        <div className='w-5 h-5 rounded-md bg-slate-100 dark:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100'>
+                          <ArrowRight size={10} className='text-slate-400' />
+                        </div>
+                      </button>
+                    ))}
+                    
+                    <div className='mt-8 pt-4 border-t border-slate-100 dark:border-white/5 mx-2'>
+                        <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-3'>Variáveis Injetadas</p>
+                        <div className='space-y-2 px-2'>
+                            {[
+                                {k: 'Inquilino', v: formData.tenantName},
+                                {k: 'Imóvel', v: formData.property},
+                                {k: 'Mensalidade', v: `R$ ${formData.rentValue}`}
+                            ].map((v, i) => (
+                                <div key={i} className='p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10 flex flex-col'>
+                                    <span className='text-[8px] font-black text-emerald-600 uppercase'>{v.k}</span>
+                                    <span className='text-[10px] font-bold text-slate-700 dark:text-slate-200 truncate'>{v.v}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                  </div>
+                </div>
 
-                    {/* Document Scroll Area */}
-                    <div className='flex-1 overflow-y-auto p-4 md:p-10 bg-slate-200/50 dark:bg-black/40 flex flex-col items-center gap-8 scroll-smooth'>
+                {/* Center: Document Editor */}
+                <div className='flex-1 flex flex-col relative'>
+                  {docMode === 'template' ? (
+                    <div className='flex flex-col h-full overflow-y-auto p-4 md:p-12 items-center bg-slate-200/50 dark:bg-black/60 custom-scrollbar'>
                       {contractPages.map((pageContent, index) => (
                         <div
                           key={index}
-                          className='relative group/page w-full max-w-[210mm] min-h-[297mm] bg-white shadow-2xl transition-all hover:shadow-xl flex flex-col'
+                          className='relative group/page w-full max-w-[210mm] min-h-[297mm] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] mb-12 flex flex-col transform transition-transform hover:scale-[1.005]'
                         >
-                          {/* Delete Page Button */}
-                          {index > 0 && (
-                            <button
-                              onClick={() => removePage(index)}
-                              className='absolute -right-12 top-0 p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 shadow-sm opacity-0 group-hover/page:opacity-100 transition-all transform hover:scale-110'
-                              title='Remover Página'
-                            >
-                              <Trash2 size={20} />
-                            </button>
+                          {/* Signature Layer */}
+                          {signatures[index] && (
+                            <div className='absolute right-[25mm] bottom-[40mm] pointer-events-none'>
+                              <img src={signatures[index]} className='h-20 mix-blend-multiply transition-opacity opacity-90' alt="" />
+                              <div className='border-t border-black w-48 mt-1'>
+                                <p className='text-[10px] font-serif text-black uppercase'>Assinado Digitalmente</p>
+                              </div>
+                            </div>
                           )}
 
-                          {/* Page Content - Auto Resizing Textarea */}
                           <textarea
-                            ref={(el) => {
-                              textareaRefs.current[index] = el;
-                            }}
+                            ref={(el) => { textareaRefs.current[index] = el; }}
                             value={pageContent}
                             onChange={(e) => {
                               updatePageContent(index, e.target.value);
                               e.target.style.height = 'auto';
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
-                            className='w-full flex-1 p-[25mm] pb-4 bg-transparent border-none resize-none focus:ring-0 font-serif text-base leading-relaxed text-slate-900 placeholder-slate-300 overflow-hidden'
+                            className='w-full flex-1 p-[25mm] bg-transparent border-none resize-none focus:ring-0 font-serif text-base leading-relaxed text-slate-900 placeholder-slate-300'
                             placeholder={`Conteúdo da Página ${index + 1}...`}
                             spellCheck={false}
                           />
-
-                          {/* Signature Image Layer */}
-                          {signatures[index] && (
-                            <div className='px-[25mm] pb-[25mm]'>
-                              <img
-                                src={signatures[index]}
-                                alt='Assinatura'
-                                className='h-24 mix-blend-multiply opacity-90'
-                              />
-                              <div className='border-t border-black w-64 pt-1'>
-                                <p className='text-xs font-serif text-black'>Assinatura Digital</p>
-                              </div>
-                            </div>
+                          
+                          {index > 0 && (
+                            <button
+                              onClick={() => removePage(index)}
+                              className='absolute -right-12 top-0 p-3 bg-red-50 text-red-500 rounded-full hover:bg-red-100 shadow-sm opacity-0 group-hover/page:opacity-100 transition-all transform hover:scale-110'
+                              title='Remover Página'
+                            >
+                                <X size={20} />
+                            </button>
                           )}
 
-                          {/* Page Number */}
-                          <div className='absolute bottom-8 right-10 text-[10px] text-slate-300 font-sans font-bold uppercase tracking-widest pointer-events-none select-none'>
-                            Página {index + 1}
+                          <div className='absolute bottom-8 right-12 text-[10px] font-black text-slate-300 uppercase tracking-widest'>
+                            Pag. {index + 1}
                           </div>
                         </div>
                       ))}
 
-                      {/* Action Buttons at the bottom of the scroll */}
-                      <div className='pb-10 opacity-50 hover:opacity-100 transition-opacity'>
-                        <p className='text-xs text-slate-500 text-center mb-2'>Fim do documento</p>
-                        <div className='w-2 h-2 bg-slate-300 rounded-full mx-auto'></div>
+                      {/* Floating Workspace Toolbar */}
+                      <div className='fixed right-10 bottom-10 flex flex-col gap-4 z-40'>
+                        <button
+                          onClick={() => setShowSignatureModal(true)}
+                          className='w-14 h-14 rounded-2xl bg-indigo-600 text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all'
+                          title='Coletar Assinatura'
+                        >
+                          <Feather size={24} />
+                        </button>
+                        <button
+                          onClick={addPage}
+                          className='w-14 h-14 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all'
+                          title='Nova Página'
+                        >
+                          <Plus size={28} />
+                        </button>
                       </div>
                     </div>
-
-                    {/* Floating Toolbar inside Editor */}
-                    <div className='absolute right-6 bottom-6 flex flex-col gap-3 z-30'>
-                      <button
-                        onClick={() => setShowSignatureModal(true)}
-                        className='w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-110 tooltip-trigger'
-                        title='Inserir Assinatura'
-                      >
-                        <Feather size={20} />
-                      </button>
-                      <button
-                        onClick={addPage}
-                        className='w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg flex items-center justify-center transition-transform hover:scale-110'
-                        title='Adicionar Nova Página'
-                      >
-                        <Plus size={24} />
-                      </button>
+                  ) : (
+                    <div className='p-12 flex flex-col items-center justify-center h-full'>
+                       <div className='w-full max-w-2xl bg-white dark:bg-surface-dark p-12 rounded-[40px] shadow-2xl border border-slate-100 dark:border-white/5 text-center'>
+                          <ContractUploader onUploadComplete={(file) => setUploadedFile(file)} />
+                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className='p-10 h-full flex flex-col items-center justify-center bg-white dark:bg-surface-dark'>
-                    <ContractUploader onUploadComplete={(file) => setUploadedFile(file)} />
-                    {uploadedFile && (
-                      <div className='mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-4 w-full max-w-md'>
-                        <div className='w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400'>
-                          <FileText size={20} />
-                        </div>
-                        <div className='flex-1 min-w-0'>
-                          <p className='text-sm font-bold text-emerald-900 dark:text-emerald-100 truncate'>
-                            {uploadedFile.name}
-                          </p>
-                          <p className='text-xs text-emerald-700 dark:text-emerald-300'>
-                            Pronto para assinatura
-                          </p>
-                        </div>
-                        <CheckCircle size={20} className='text-emerald-500' />
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
