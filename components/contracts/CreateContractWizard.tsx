@@ -1282,19 +1282,36 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                 )}
 
                 {/* Center: Document Editor */}
-                <div className='flex-1 flex flex-col relative bg-slate-100 dark:bg-black/40'>
+                <div className='flex-1 flex flex-col relative bg-slate-50 dark:bg-surface-dark transition-colors duration-500 overflow-hidden'>
                   {docMode === 'template' ? (
                     <div className='flex flex-col h-full overflow-y-auto p-4 md:py-12 items-center custom-scrollbar relative scroll-smooth'>
                       {contractPages.map((pageContent, index) => (
-                          className={`relative group/page w-[680px] h-[960px] bg-white shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-12 flex flex-col transition-all duration-300 ring-1 ring-slate-200/50 dark:ring-white/5 rounded-sm overflow-hidden ${signatures[index] ? 'cursor-crosshair' : ''}`}
+                        <div
+                          key={index}
+                          onClick={(e) => {
+                              if (signatures[index] || movingSignature === index) {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const x = e.clientX - rect.left;
+                                  const y = e.clientY - rect.top;
+                                  setSignaturePositions(prev => ({
+                                      ...prev,
+                                      [index]: { x, y }
+                                  }));
+                                  if (movingSignature === index) setMovingSignature(null);
+                              }
+                          }}
+                          className={`relative group/page w-full max-w-4xl min-h-[1080px] bg-white shadow-[0_20px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.4)] mb-20 flex flex-col transition-all duration-300 ring-1 ring-slate-200/50 dark:ring-white/5 rounded-[4px] overflow-visible shrink-0 ${signatures[index] ? 'cursor-crosshair' : ''}`}
                         >
                           <textarea
                             ref={(el) => { textareaRefs.current[index] = el; }}
                             value={pageContent}
                             onChange={(e) => {
                                 updatePageContent(index, e.target.value);
+                                // Auto-grow internal textarea
+                                e.target.style.height = 'auto';
+                                e.target.style.height = e.target.scrollHeight + 'px';
                             }}
-                            className='w-full h-full p-[60px] bg-transparent border-none resize-none focus:ring-0 font-serif text-sm leading-relaxed text-slate-900 placeholder-slate-300 outline-none relative z-10 overflow-hidden'
+                            className='w-full flex-1 p-[80px] bg-transparent border-none resize-none focus:ring-0 font-serif text-[15px] leading-relaxed text-slate-900 placeholder-slate-300 outline-none relative z-10 overflow-hidden'
                             placeholder={`Conteúdo da Página ${index + 1}...`}
                             spellCheck={false}
                           />
