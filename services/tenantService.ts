@@ -74,22 +74,44 @@ export const tenantService = {
       phone: t.phone || '',
       cpf: t.cpf,
       image: t.avatar_url,
-      status: 'active', // Logic to determine if late based on payments table needed here
+      status: 'active',
+      is_pending: t.is_pending,
     }));
   },
 
   async create(tenantData: any): Promise<void> {
-    // In Supabase, creating a tenant profile usually happens via Auth SignUp
-    // Or adding a profile row if not using auth for tenants immediately
     const { error } = await supabase.from('profiles').insert({
-      id: crypto.randomUUID(), // Assuming we create a placeholder profile
+      id: crypto.randomUUID(),
       email: tenantData.email,
       name: tenantData.name,
       role: 'tenant',
       phone: tenantData.phone,
       cpf: tenantData.cpf,
+      property_id: tenantData.propertyId,
     } as any);
 
     if (error) throw error;
+  },
+
+  async invite(tenantData: any): Promise<void> {
+    // Em um cenário real, aqui chamaríamos a API do Clerk ou Supabase Auth Admin
+    // para disparar um e-mail oficial de convite.
+    // Por enquanto, registramos o perfil como pendente no banco.
+    const { error } = await supabase.from('profiles').insert({
+      id: `pending_${crypto.randomUUID()}`,
+      email: tenantData.email,
+      name: tenantData.name,
+      role: 'tenant',
+      phone: tenantData.phone,
+      cpf: tenantData.cpf,
+      property_id: tenantData.propertyId,
+      is_pending: true,
+      created_at: new Date().toISOString(),
+    } as any);
+
+    if (error) throw error;
+
+    // Simulação de envio de e-mail (Log no console)
+    console.log(`[IGLOO] Convite enviado para ${tenantData.email}`);
   },
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Search,
@@ -24,7 +24,9 @@ import {
 import { TenantDetails } from '../components/tenants/TenantDetails';
 import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenantService';
+import { propertyService } from '../services/propertyService';
 import { useNotification } from '../context/NotificationContext';
+import { formatCPF, formatPhone } from '../utils/formatters';
 import { Tenant } from '../types';
 
 const Tenants: React.FC = () => {
@@ -38,9 +40,44 @@ const Tenants: React.FC = () => {
   );
   const location = useLocation();
 
+  const queryClient = useQueryClient();
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: ['tenants'],
     queryFn: () => tenantService.getAll(),
+  });
+
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: () => propertyService.getAll(),
+  });
+
+  // Form State
+  const [newTenant, setNewTenant] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    cpf: '',
+    propertyId: '',
+    sendInvite: true,
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: (data: any) => (data.sendInvite ? tenantService.invite(data) : tenantService.create(data)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      addToast(
+        newTenant.sendInvite ? 'Convite Enviado' : 'Inquilino Adicionado',
+        newTenant.sendInvite 
+          ? `O convite foi enviado para ${newTenant.email} com sucesso.`
+          : `O inquilino ${newTenant.name} foi cadastrado com sucesso.`,
+        'success'
+      );
+      setShowAddForm(false);
+      setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
+    },
+    onError: (error: any) => {
+      addToast('Erro', `Ocorreu um erro ao processar: ${error.message}`, 'error');
+    },
   });
 
   useEffect(() => {
@@ -111,6 +148,12 @@ const Tenants: React.FC = () => {
     const status = getPaymentStatus(t);
     return matchesSearch && status.type === statusFilter;
   });
+
+  const handleWhatsAppInvite = (e: React.MouseEvent, tenant: any) => {
+    e.stopPropagation();
+    const message = `Olá ${tenant.name}! Boas-vindas ao IGLOO. 🏠\n\nSou seu proprietário e estou te convidando para gerenciar nosso aluguel pela plataforma. Por lá você acessa boletos, assina contratos e solicita manutenção.\n\nComplete seu cadastro aqui: https://igloo-app.vercel.app/signup?email=${encodeURIComponent(tenant.email)}`;
+    window.open(`https://wa.me/${tenant.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+  };
 
   if (isLoading) {
     return (
@@ -209,32 +252,55 @@ const Tenants: React.FC = () => {
                     />
                   </div>
                   <p className='text-slate-500 dark:text-slate-400 text-xs font-medium mt-1 uppercase tracking-wider'>
-                    {t.property || 'Imóvel não vinculado'}
+                    {t.property || properties.find(p => p.id === (t as any).property_id)?.name || 'Imóvel não vinculado'}
                   </p>
 
                   <div className='flex items-center justify-between mt-4'>
                     {/* Quick Actions */}
                     <div className='flex gap-2'>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setBillingTenant(t);
-                        }}
-                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
-                        title='Gerar Cobrança'
-                      >
-                        <DollarSign size={14} /> <span className='hidden sm:inline'>Cobrar</span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('Msg');
-                        }}
-                        className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
-                        title='Enviar Mensagem'
-                      >
-                        <MessageCircle size={14} /> <span className='hidden sm:inline'>Msg</span>
-                      </button>
+                      {(t as any).is_pending ? (
+                        <>
+                          <button
+                            onClick={(e) => handleWhatsAppInvite(e, t)}
+                            className='px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-[10px] font-bold border border-emerald-100 dark:border-emerald-500/20'
+                          >
+                            <MessageCircle size={14} /> WhatsApp
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(`https://igloo-app.vercel.app/signup?email=${t.email}`);
+                              addToast('Link Copiado', 'O link de convite foi copiado para a área de transferência.', 'success');
+                            }}
+                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-all flex items-center gap-1.5 text-[10px] font-bold'
+                          >
+                            <FileText size={14} /> Link
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setBillingTenant(t);
+                            }}
+                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
+                            title='Gerar Cobrança'
+                          >
+                            <DollarSign size={14} /> <span className='hidden sm:inline'>Cobrar</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log('Msg');
+                            }}
+                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
+                            title='Enviar Mensagem'
+                          >
+                            <MessageCircle size={14} /> <span className='hidden sm:inline'>Msg</span>
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <div className='flex items-center gap-3'>
@@ -251,7 +317,11 @@ const Tenants: React.FC = () => {
                       })()}
 
                       <div className='text-right'>
-                        {t.status === 'late' ? (
+                        {(t as any).is_pending ? (
+                          <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider mb-1 shadow-sm shadow-amber-900/20'>
+                            <Mail size={10} /> Convite Pendente
+                          </span>
+                        ) : t.status === 'late' ? (
                           <span className='inline-block px-2 py-0.5 rounded bg-red-600 text-white text-[9px] font-black uppercase tracking-wider mb-1 shadow-sm shadow-red-900/20'>
                             Atraso Crítico
                           </span>
@@ -292,12 +362,30 @@ const Tenants: React.FC = () => {
                 Cancelar
               </button>
               <h1 className='text-slate-900 dark:text-white text-lg font-bold'>Novo Inquilino</h1>
-              <button className='text-primary font-bold hover:text-primary-dark transition-colors'>
-                Salvar
+              <button 
+                onClick={() => inviteMutation.mutate(newTenant)}
+                disabled={inviteMutation.isPending || !newTenant.name || !newTenant.email}
+                className='text-primary font-bold hover:text-primary-dark transition-colors disabled:opacity-50'
+              >
+                {inviteMutation.isPending ? 'Salvando...' : 'Salvar'}
               </button>
             </header>
 
             <div className='flex-1 overflow-y-auto px-6 py-6 space-y-6'>
+              {/* Invite Toggle */}
+              <div className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                  <h3 className="text-slate-900 dark:text-white text-sm font-bold">Enviar convite por e-mail</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">O inquilino receberá um link para completar o cadastro</p>
+                </div>
+                <button 
+                  onClick={() => setNewTenant(prev => ({ ...prev, sendInvite: !prev.sendInvite }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${newTenant.sendInvite ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${newTenant.sendInvite ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
               <div className='flex flex-col gap-4'>
                 <div className='flex flex-col gap-2'>
                   <label className='text-slate-900 dark:text-white text-sm font-semibold'>
@@ -309,29 +397,59 @@ const Tenants: React.FC = () => {
                       size={20}
                     />
                     <input
+                      value={newTenant.name}
+                      onChange={(e) => setNewTenant(prev => ({ ...prev, name: e.target.value }))}
                       className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
                       placeholder='Ex: João da Silva'
                       type='text'
                     />
                   </div>
                 </div>
+
                 <div className='flex flex-col gap-2'>
-                  <label className='text-slate-900 dark:text-white text-sm font-semibold flex justify-between'>
-                    CPF / CNPJ{' '}
-                    <span className='text-xs font-normal text-slate-400'>Somente números</span>
+                  <label className='text-slate-900 dark:text-white text-sm font-semibold'>
+                    Vincular a Imóvel
                   </label>
                   <div className='relative'>
-                    <FileText
+                    <Briefcase
                       className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
                       size={20}
                     />
-                    <input
-                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
-                      placeholder='000.000.000-00'
-                      type='tel'
-                    />
+                    <select
+                      value={newTenant.propertyId}
+                      onChange={(e) => setNewTenant(prev => ({ ...prev, propertyId: e.target.value }))}
+                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white appearance-none transition-colors'
+                    >
+                      <option value="">Selecione um imóvel (Opcional)</option>
+                      {properties.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+
+                {!newTenant.sendInvite && (
+                  <div className='flex flex-col gap-2 animate-fadeIn'>
+                    <label className='text-slate-900 dark:text-white text-sm font-semibold flex justify-between'>
+                      CPF / CNPJ{' '}
+                      <span className='text-xs font-normal text-slate-400'>Somente números</span>
+                    </label>
+                    <div className='relative'>
+                      <FileText
+                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                        size={20}
+                      />
+                      <input
+                        value={newTenant.cpf}
+                        onChange={(e) => setNewTenant(prev => ({ ...prev, cpf: formatCPF(e.target.value) }))}
+                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
+                        placeholder='000.000.000-00'
+                        type='tel'
+                        maxLength={14}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className='h-px bg-gray-200 dark:bg-white/5'></div>
@@ -350,51 +468,61 @@ const Tenants: React.FC = () => {
                       size={20}
                     />
                     <input
+                      value={newTenant.email}
+                      onChange={(e) => setNewTenant(prev => ({ ...prev, email: e.target.value }))}
                       className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
                       placeholder='email@exemplo.com'
                       type='email'
                     />
                   </div>
                 </div>
-                <div className='flex flex-col gap-2'>
-                  <label className='text-slate-900 dark:text-white text-sm font-semibold'>
-                    Telefone
-                  </label>
-                  <div className='relative'>
-                    <Phone
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
-                    <input
-                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
-                      placeholder='(00) 00000-0000'
-                      type='tel'
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className='h-px bg-gray-200 dark:bg-white/5'></div>
-
-              <div className='flex flex-col gap-4'>
-                <div className='flex justify-between items-end'>
-                  <h2 className='text-slate-900 dark:text-white text-sm font-semibold'>
-                    Documentos Anexos
-                  </h2>
-                  <span className='text-xs text-slate-500 dark:text-slate-400'>Max 5MB</span>
-                </div>
-                <label className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-2xl cursor-pointer bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-primary/50 transition-all'>
-                  <div className='flex flex-col items-center justify-center pt-5 pb-6'>
-                    <div className='bg-primary/10 p-3 rounded-full mb-3'>
-                      <CloudUpload className='text-primary' size={24} />
+                {!newTenant.sendInvite && (
+                  <div className='flex flex-col gap-2 animate-fadeIn'>
+                    <label className='text-slate-900 dark:text-white text-sm font-semibold'>
+                      Telefone
+                    </label>
+                    <div className='relative'>
+                      <Phone
+                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                        size={20}
+                      />
+                      <input
+                        value={newTenant.phone}
+                        onChange={(e) => setNewTenant(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
+                        placeholder='(00) 00000-0000'
+                        type='tel'
+                        maxLength={15}
+                      />
                     </div>
-                    <p className='mb-1 text-sm text-slate-900 dark:text-white font-medium'>
-                      Toque para anexar
-                    </p>
                   </div>
-                  <input type='file' className='hidden' />
-                </label>
+                )}
               </div>
+
+              {!newTenant.sendInvite && (
+                <>
+                  <div className='h-px bg-gray-200 dark:bg-white/5'></div>
+                  <div className='flex flex-col gap-4 animate-fadeIn'>
+                    <div className='flex justify-between items-end'>
+                      <h2 className='text-slate-900 dark:text-white text-sm font-semibold'>
+                        Documentos Anexos
+                      </h2>
+                      <span className='text-xs text-slate-500 dark:text-slate-400'>Max 5MB</span>
+                    </div>
+                    <label className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-2xl cursor-pointer bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-primary/50 transition-all'>
+                      <div className='flex flex-col items-center justify-center pt-5 pb-6'>
+                        <div className='bg-primary/10 p-3 rounded-full mb-3'>
+                          <CloudUpload className='text-primary' size={24} />
+                        </div>
+                        <p className='mb-1 text-sm text-slate-900 dark:text-white font-medium'>
+                          Toque para anexar
+                        </p>
+                      </div>
+                      <input type='file' className='hidden' />
+                    </label>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
