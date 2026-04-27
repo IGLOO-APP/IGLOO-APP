@@ -5,13 +5,15 @@ interface InfoTooltipProps {
   description: string;
   children: React.ReactNode;
   className?: string;
+  forcePlacement?: 'top' | 'bottom';
 }
 
 export const InfoTooltip: React.FC<InfoTooltipProps> = ({ 
   title, 
   description, 
   children, 
-  className = '' 
+  className = '',
+  forcePlacement
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
@@ -20,10 +22,16 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 
   const handleMouseEnter = () => {
     timeoutRef.current = setTimeout(() => {
+      if (forcePlacement) {
+        setPlacement(forcePlacement);
+        setIsVisible(true);
+        return;
+      }
+
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         
-        // Check if there is enough space above (approx 120px)
+        // Check if there is enough space above (approx 150px)
         if (rect.top < 150) {
           setPlacement('bottom');
         } else {
