@@ -30,26 +30,6 @@ const mapContract = (row: any): Contract => ({
 
 export const contractService = {
   async getAll(): Promise<Contract[]> {
-    if (localStorage.getItem('igloo_dev_session')) {
-      return [
-        {
-          id: 'ctr1',
-          contract_number: 'CTR-2024-001',
-          property: 'Studio Centro 01',
-          tenant_name: 'João Silva',
-          owner_name: 'Investidor Exemplo',
-          start_date: '2024-01-01',
-          end_date: '2025-01-01',
-          value: 'R$ 1.800,00',
-          numeric_value: 1800,
-          payment_day: 10,
-          status: 'active',
-          signers: [],
-          history: [],
-        },
-      ];
-    }
-
     const { data, error } = await supabase
       .from('contracts')
       .select(

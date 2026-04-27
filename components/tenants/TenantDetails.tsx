@@ -23,6 +23,10 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { TenantProfileConfigPanel } from '../properties/TenantProfileConfigPanel';
+import { useQuery } from '@tanstack/react-query';
+import { tenantService } from '../../services/tenantService';
+import { Loader2 } from 'lucide-react';
+import { formatPhone } from '../../utils/formatters';
 
 interface TenantDetailsProps {
   id: number | string;
@@ -39,57 +43,66 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     }
   }, [activeTab]);
 
-  // Robust Mock Data for a single tenant
-  const tenant = {
-    name: id === 't3' || id === 3 ? 'Carlos Pereira' : id === 't2' || id === 2 ? 'Maria Oliveira' : 'João Silva',
-    image:
-      id === 't1' || id === 1
-        ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf'
-        : id === 't2' || id === 2
-          ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuD78MRhEj5vokBi3Zr5ORCa84xM4Q0aoHqRqMtmFY5rqqioFglngu_CVvuUlAwFFXylrVwhOX-6rB0xO0RM04aD6spoISdNI-pJR9jsw0SwQsb3-TQPyS3OBbENLbte3Z-Zqv9lEOgt3WuKjxTIrLaStD2Bove6Q5jDIX7PpiUDn1x-gcN2lMoAOEi9fV_nI4dv-32WMg0se3QVylj1o0-E7hPHafz8wUKADMIvPRoIn91W1pDK1-L-SQnqBavDYiPc4Udc_4ypGJ2q'
-          : undefined,
-    status: id === 't3' || id === 3 ? 'late' : 'active',
-    property: {
-      name:
-        id === 't3' || id === 3
-          ? 'Studio 22 - Vila Madalena'
-          : id === 't2' || id === 2
-            ? 'Kitnet 05 - Centro'
-            : 'Apt 101 - Ed. Horizonte',
-      address: 'Rua Augusta, 150 - SP',
-      id: id === 't3' || id === 3 ? 'studio-22' : id === 't2' || id === 2 ? '105' : '101',
-      image:
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=300',
-    },
-    financials: {
-      totalPaid: 'R$ 18.000,00',
-      pending: id === 't3' || id === 3 ? 'R$ 2.400,00' : 'R$ 0,00',
-      performance: '98%',
-      lastPayment: '05/02/2024',
-    },
-    contract: {
-      start: '10/01/2024',
-      end: '10/01/2026',
-      progress: 15, // percentage
-      value: id === 't1' || id === 1 ? 'R$ 1.500,00' : id === 't2' || id === 2 ? 'R$ 850,00' : 'R$ 2.400,00',
-    },
-    paymentHistory: [
-      {
-        id: 1,
-        month: 'Março',
-        status: id === 't3' || id === 3 ? 'late' : 'paid',
-        value: 'R$ 1.500,00',
-        date: '-',
-      },
-      { id: 2, month: 'Fevereiro', status: 'paid', value: 'R$ 1.500,00', date: '05/02/2024' },
-      { id: 3, month: 'Janeiro', status: 'paid', value: 'R$ 1.500,00', date: '04/01/2024' },
-      { id: 4, month: 'Dezembro', status: 'paid', value: 'R$ 1.500,00', date: '05/12/2023' },
-    ],
-  };
+  const { data: tenant, isLoading } = useQuery({
+    queryKey: ['tenant', id],
+    queryFn: () => tenantService.getById(id.toString()),
+    enabled: !!id,
+  });
+
+  const { data: payments = [] } = useQuery({
+    queryKey: ['tenant-payments', tenant?.contract?.id],
+    queryFn: () => tenantService.getPayments(tenant!.contract!.id),
+    enabled: !!tenant?.contract?.id,
+  });
+
+  const { data: docs = [] } = useQuery({
+    queryKey: ['tenant-docs', id],
+    queryFn: () => tenantService.getDocuments(id.toString()),
+    enabled: !!id,
+  });
+
+  const totalPaid = payments
+    .filter((p: any) => p.status === 'paid')
+    .reduce((acc: number, p: any) => acc + Number(p.amount), 0);
+
+  const totalPending = payments
+    .filter((p: any) => p.status === 'pending')
+    .reduce((acc: number, p: any) => acc + Number(p.amount), 0);
 
   const handleWhatsApp = () => {
-    window.open(`https://wa.me/5511999999999`, '_blank');
+    if (tenant?.phone) {
+      window.open(`https://wa.me/55${tenant.phone.replace(/\D/g, '')}`, '_blank');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <ModalWrapper onClose={onClose} className='md:max-w-3xl'>
+        <div className='flex h-96 items-center justify-center'>
+          <Loader2 className='animate-spin text-primary' size={40} />
+        </div>
+      </ModalWrapper>
+    );
+  }
+
+  if (!tenant) {
+    return (
+      <ModalWrapper onClose={onClose} className='md:max-w-3xl'>
+        <div className='p-20 text-center text-slate-500'>
+          Inquilino não encontrado.
+        </div>
+      </ModalWrapper>
+    );
+  }
+
+  // Calculate contract progress
+  let contractProgress = 0;
+  if (tenant.contract) {
+    const start = new Date(tenant.contract.start_date).getTime();
+    const end = new Date(tenant.contract.end_date).getTime();
+    const now = new Date().getTime();
+    contractProgress = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+  }
 
   return (
     <ModalWrapper onClose={onClose} className='md:max-w-3xl' showCloseButton={true}>
@@ -105,7 +118,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                 ></div>
               ) : (
                 <div className='h-24 w-24 rounded-3xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border-4 border-slate-50 dark:border-white/5 shadow-xl text-indigo-600 dark:text-indigo-400 font-bold text-3xl'>
-                  CP
+                  {tenant.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                 </div>
               )}
               <div
@@ -123,10 +136,10 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               </h2>
               <div className='flex flex-wrap justify-center md:justify-start gap-4 mt-2 text-slate-500 dark:text-slate-400'>
                 <span className='flex items-center gap-1.5 text-xs font-medium'>
-                  <Phone size={14} className='text-primary' /> (11) 99999-9999
+                  <Phone size={14} className='text-primary' /> {formatPhone(tenant.phone) || 'Não informado'}
                 </span>
                 <span className='flex items-center gap-1.5 text-xs font-medium'>
-                  <Mail size={14} className='text-primary' /> inquilino@email.com
+                  <Mail size={14} className='text-primary' /> {tenant.email}
                 </span>
               </div>
 
@@ -186,10 +199,9 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               {/* Associated Property Card */}
               <div className='group relative overflow-hidden bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
                 <div className='flex gap-4'>
-                  <div
-                    className='h-20 w-20 rounded-xl bg-cover bg-center shrink-0'
-                    style={{ backgroundImage: `url(${tenant.property.image})` }}
-                  ></div>
+                  <div className='h-20 w-20 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0'>
+                    <MapPin className='text-slate-400' size={32} />
+                  </div>
                   <div className='flex-1'>
                     <div className='flex justify-between items-start'>
                       <div>
@@ -197,16 +209,10 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                           Imóvel Alugado
                         </p>
                         <h3 className='font-bold text-slate-900 dark:text-white'>
-                          {tenant.property.name}
+                          {tenant.property}
                         </h3>
                       </div>
-                      <button className='text-slate-400 hover:text-primary transition-colors'>
-                        <ArrowUpRight size={20} />
-                      </button>
                     </div>
-                    <p className='text-xs text-slate-500 mt-1 flex items-center gap-1'>
-                      <MapPin size={12} /> {tenant.property.address}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -218,26 +224,28 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                     Pontualidade
                   </p>
                   <p className='text-xl font-black text-emerald-500'>
-                    {tenant.financials.performance}
+                    {payments.length > 0 ? `${Math.round((payments.filter((p: any) => p.status === 'paid').length / payments.length) * 100)}%` : '100%'}
                   </p>
                 </div>
                 <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
                   <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>Total Pago</p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white'>R$ 18k</p>
+                  <p className='text-xl font-black text-emerald-500'>
+                    R$ {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
                 <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
                   <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>Em Aberto</p>
-                  <p
-                    className={`text-xl font-black ${tenant.status === 'late' ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}
-                  >
-                    {tenant.financials.pending}
+                  <p className={`text-xl font-black ${totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
+                    R$ {totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
                   <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>
                     Dia Vencimento
                   </p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white'>Todo dia 10</p>
+                  <p className='text-xl font-black text-slate-900 dark:text-white'>
+                    {tenant.contract?.payment_day ? `Dia ${tenant.contract.payment_day}` : 'Não definido'}
+                  </p>
                 </div>
               </div>
 
@@ -249,26 +257,26 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                     Vigência do Contrato
                   </h3>
                   <span className='text-xs font-bold text-slate-500'>
-                    {tenant.contract.progress}% concluído
+                    {contractProgress}% concluído
                   </span>
                 </div>
                 <div className='w-full h-3 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-4'>
                   <div
                     className='h-full bg-primary rounded-full transition-all duration-1000'
-                    style={{ width: `${tenant.contract.progress}%` }}
+                    style={{ width: `${contractProgress}%` }}
                   ></div>
                 </div>
                 <div className='flex justify-between text-xs font-medium text-slate-500'>
                   <div className='flex flex-col'>
                     <span>Início</span>
                     <span className='font-bold text-slate-900 dark:text-white'>
-                      {tenant.contract.start}
+                      {tenant.contract ? new Date(tenant.contract.start_date).toLocaleDateString('pt-BR') : '-'}
                     </span>
                   </div>
                   <div className='flex flex-col text-right'>
                     <span>Fim</span>
                     <span className='font-bold text-slate-900 dark:text-white'>
-                      {tenant.contract.end}
+                      {tenant.contract ? new Date(tenant.contract.end_date).toLocaleDateString('pt-BR') : '-'}
                     </span>
                   </div>
                 </div>
@@ -279,44 +287,8 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                 <h3 className='text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 ml-1'>
                   <History size={16} className='text-primary' /> Atividade Recente
                 </h3>
-                <div className='space-y-2'>
-                  {[
-                    {
-                      icon: DollarSign,
-                      text: 'Aluguel de Fevereiro recebido',
-                      date: '05/02/2024',
-                      color: 'text-emerald-500 bg-emerald-50',
-                    },
-                    {
-                      icon: Clock,
-                      text: 'Vistoria anual agendada',
-                      date: '20/01/2024',
-                      color: 'text-blue-500 bg-blue-50',
-                    },
-                    {
-                      icon: FileText,
-                      text: 'Contrato assinado digitalmente',
-                      date: '10/01/2024',
-                      color: 'text-slate-500 bg-slate-50',
-                    },
-                  ].map((item, idx) => (
-                    <div
-                      key={idx}
-                      className='flex items-center gap-3 p-3 bg-white dark:bg-surface-dark rounded-xl border border-gray-50 dark:border-white/5 shadow-sm'
-                    >
-                      <div
-                        className={`p-2 rounded-lg ${item.color.split(' ')[1]} ${item.color.split(' ')[0]}`}
-                      >
-                        <item.icon size={16} />
-                      </div>
-                      <div className='flex-1'>
-                        <p className='text-sm font-medium text-slate-800 dark:text-slate-200'>
-                          {item.text}
-                        </p>
-                        <p className='text-[10px] text-slate-400 font-bold'>{item.date}</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className='p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-gray-50 dark:border-white/5'>
+                  <p className='text-xs text-slate-400'>Nenhuma atividade recente registrada.</p>
                 </div>
               </div>
             </div>
@@ -332,46 +304,52 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               </div>
 
               <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
-                {tenant.paymentHistory.map((pay, idx) => (
-                  <div
-                    key={pay.id}
-                    className={`p-4 flex items-center justify-between border-b last:border-0 border-gray-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors`}
-                  >
-                    <div className='flex items-center gap-4'>
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          pay.status === 'paid'
-                            ? 'bg-emerald-50 text-emerald-500'
-                            : 'bg-red-50 text-red-500'
-                        }`}
-                      >
-                        {pay.status === 'paid' ? (
-                          <CheckCircle2 size={20} />
-                        ) : (
-                          <AlertCircle size={20} />
-                        )}
+                {payments.length > 0 ? (
+                  payments.map((pay: any) => (
+                    <div
+                      key={pay.id}
+                      className={`p-4 flex items-center justify-between border-b last:border-0 border-gray-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors`}
+                    >
+                      <div className='flex items-center gap-4'>
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            pay.status === 'paid'
+                              ? 'bg-emerald-50 text-emerald-500'
+                              : 'bg-amber-50 text-amber-500'
+                          }`}
+                        >
+                          {pay.status === 'paid' ? (
+                            <CheckCircle2 size={20} />
+                          ) : (
+                            <AlertCircle size={20} />
+                          )}
+                        </div>
+                        <div>
+                          <p className='font-bold text-sm text-slate-900 dark:text-white'>
+                            Aluguel {new Date(pay.due_date).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+                          </p>
+                          <p className='text-xs text-slate-500'>
+                            {pay.status === 'paid' ? `Pago em ${new Date(pay.paid_date).toLocaleDateString('pt-BR')}` : `Vencimento em ${new Date(pay.due_date).toLocaleDateString('pt-BR')}`}
+                          </p>
+                        </div>
                       </div>
-                      <div>
+                      <div className='text-right'>
                         <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                          Aluguel {pay.month}
+                          R$ {Number(pay.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </p>
-                        <p className='text-xs text-slate-500'>
-                          {pay.status === 'paid' ? `Pago em ${pay.date}` : 'Vencido em 10/03'}
+                        <p
+                          className={`text-[10px] font-bold uppercase ${pay.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}
+                        >
+                          {pay.status === 'paid' ? 'Liquidado' : 'Aguardando'}
                         </p>
                       </div>
                     </div>
-                    <div className='text-right'>
-                      <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                        {pay.value}
-                      </p>
-                      <p
-                        className={`text-[10px] font-bold uppercase ${pay.status === 'paid' ? 'text-emerald-500' : 'text-red-500'}`}
-                      >
-                        {pay.status === 'paid' ? 'Liquidado' : 'Cobrar Agora'}
-                      </p>
-                    </div>
+                  ))
+                ) : (
+                  <div className='p-20 text-center'>
+                    <p className='text-slate-400'>Nenhum histórico de pagamentos encontrado.</p>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className='p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex gap-4'>
@@ -394,54 +372,44 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           {activeTab === 'docs' && (
             <div className='animate-fadeIn space-y-4'>
               <h3 className='font-bold text-slate-900 dark:text-white px-1'>Documentos Digitais</h3>
-              {[
-                {
-                  name: 'Contrato de Locação Digital',
-                  size: '2.4 MB',
-                  date: '10/01/2024',
-                  type: 'PDF',
-                },
-                {
-                  name: 'Laudo de Vistoria (Entrada)',
-                  size: '15.8 MB',
-                  date: '08/01/2024',
-                  type: 'ZIP',
-                },
-                { name: 'RG / CPF Inquilino', size: '1.1 MB', date: '05/01/2024', type: 'IMG' },
-                {
-                  name: 'Comprovante de Rendimentos',
-                  size: '0.9 MB',
-                  date: '05/01/2024',
-                  type: 'PDF',
-                },
-              ].map((doc, idx) => (
-                <div
-                  key={idx}
-                  className='group flex items-center gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/50 transition-all cursor-pointer'
-                >
-                  <div className='w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
-                    <FileText size={24} />
+              <div className='space-y-4'>
+                {docs.length > 0 ? (
+                  docs.map((doc: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className='group flex items-center gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/50 transition-all cursor-pointer'
+                    >
+                      <div className='w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                        <FileText size={24} />
+                      </div>
+                      <div className='flex-1 min-w-0'>
+                        <p className='font-bold text-sm text-slate-900 dark:text-white truncate'>
+                          {doc.name}
+                        </p>
+                        <p className='text-xs text-slate-500 uppercase font-bold tracking-tight'>
+                          {doc.type} • {doc.date}
+                        </p>
+                      </div>
+                      <Download
+                        size={18}
+                        className='text-slate-300 group-hover:text-primary transition-colors'
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+                    <p className='text-slate-400'>Nenhum documento anexado.</p>
                   </div>
-                  <div className='flex-1 min-w-0'>
-                    <p className='font-bold text-sm text-slate-900 dark:text-white truncate'>
-                      {doc.name}
-                    </p>
-                    <p className='text-xs text-slate-500 uppercase font-bold tracking-tight'>
-                      {doc.type} • {doc.size} • {doc.date}
-                    </p>
-                  </div>
-                  <Download
-                    size={18}
-                    className='text-slate-300 group-hover:text-primary transition-colors'
-                  />
-                </div>
-              ))}
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === 'tenantConfig' && (
             <div className='animate-fadeIn'>
-              <TenantProfileConfigPanel propertyId={tenant.property.id} />
+              <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+                <p className='text-slate-400'>Nenhuma exigência configurada.</p>
+              </div>
             </div>
           )}
         </div>

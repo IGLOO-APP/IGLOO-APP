@@ -3,80 +3,88 @@ import { Tenant } from '../types';
 
 export const tenantService = {
   async getAll(): Promise<Tenant[]> {
-    if (localStorage.getItem('igloo_dev_session')) {
-      const today = new Date();
-      const currentYear = today.getFullYear();
-      const currentMonth = today.getMonth();
-
-      return [
-        {
-          id: 't1',
-          name: 'João Silva (Demo)',
-          email: 'joao.silva@exemplo.com',
-          phone: '+5511999999999',
-          cpf: '123.456.789-00',
-          image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCjajTkjuEiAjZGgvWpvqoX_CS2JuzKJpLPQGJ7J8xY4UJh4fjwFHdw2m73Ijiwx6Y6mmq04a_GCQDADaO1JShHv72xfvolA170ZWAb0BWs9-CTJ7FHsPNnfmxaBxvHdfHrZUp9qwzpDsIMxmJmZjpyVaz7NGMlFhbVPw8BvgyA-Abb9BUw78bITJXxne_mvd6qyOViOlbSmn8YCpmYsAq9AZPBDQhOyJRCJXC1MXWLNEfkhz9UICWr4N4dc5hQ8WZBp3fIWv95oeLf',
-          status: 'active',
-          property: 'Studio Centro 01',
-          property_id: '101',
-          rent: 'R$ 1.800,00',
-          due: 10,
-          score: 98,
-          last_payment_date: new Date(currentYear, currentMonth, 5).toISOString(), // Liquidado
-        },
-        {
-          id: 't2',
-          name: 'Maria Oliveira (Demo)',
-          email: 'maria.oliveira@exemplo.com',
-          phone: '+5511988888888',
-          cpf: '987.654.321-11',
-          image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuD78MRhEj5vokBi3Zr5ORCa84xM4Q0aoHqRqMtmFY5rqqioFglngu_CVvuUlAwFFXylrVwhOX-6rB0xO0RM04aD6spoISdNI-pJR9jsw0SwQsb3-TQPyS3OBbENLbte3Z-Zqv9lEOgt3WuKjxTIrLaStD2Bove6Q5jDIX7PpiUDn1x-gcN2lMoAOEi9fV_nI4dv-32WMg0se3QVylj1o0-E7hPHafz8wUKADMIvPRoIn91W1pDK1-L-SQnqBavDYiPc4Udc_4ypGJ2q',
-          status: 'active',
-          property: 'Kitnet 05 - Centro',
-          property_id: '105',
-          rent: 'R$ 1.200,00',
-          due: 25,
-          score: 100,
-          last_payment_date: new Date(currentYear, currentMonth - 1, 25).toISOString(), // Vencendo (não pagou esse mês ainda)
-        },
-        {
-          id: 't3',
-          name: 'Carlos Pereira (Demo)',
-          email: 'carlos.pereira@exemplo.com',
-          phone: '+5511977777777',
-          cpf: '456.789.123-22',
-          status: 'late',
-          property: 'Studio 22 - Vila Madalena',
-          property_id: 'studio-22',
-          rent: 'R$ 2.400,00',
-          due: 5,
-          score: 65,
-          last_payment_date: new Date(currentYear, currentMonth - 1, 5).toISOString(), // Atrasado
-        },
-      ];
-    }
-
     // In real DB, we fetch profiles with role 'tenant'
-    // And potentially join with contracts to get property info
-    const { data, error } = await supabase.from('profiles').select('*').eq('role', 'tenant');
+    // Joining with contracts to get property information
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(`
+        *,
+        contracts:contracts!contracts_tenant_id_fkey(
+          status,
+          property:properties(name)
+        )
+      `)
+      .eq('role', 'tenant');
 
     if (error) {
       console.error('Error fetching tenants:', error);
       return [];
     }
 
-    return data.map((t: any) => ({
+    return data.map((t: any) => {
+      // Find active contract to get the property name
+      const activeContract = t.contracts?.find((c: any) => c.status === 'active') || t.contracts?.[0];
+      const propertyName = activeContract?.property?.name || 'Imóvel não vinculado';
+
+      return {
+        id: t.id,
+        name: t.name || 'Sem Nome',
+        email: t.email,
+        phone: t.phone || '',
+        cpf: t.cpf,
+        image: t.avatar_url,
+        status: activeContract?.status || 'active',
+        is_pending: t.is_pending,
+        property: propertyName,
+      };
+    });
+  },
+
+  async getById(id: string): Promise<Tenant | null> {
+    const { data: t, error } = await supabase
+      .from('profiles')
+      .select(`
+        *,
+        contracts:contracts!contracts_tenant_id_fkey(
+          id,
+          contract_number,
+          start_date,
+          end_date,
+          monthly_value,
+          status,
+          property:properties(*)
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching tenant:', error);
+      return null;
+    }
+
+    const activeContract = t.contracts?.find((c: any) => c.status === 'active') || t.contracts?.[0];
+    const property = activeContract?.property;
+
+    return {
       id: t.id,
       name: t.name || 'Sem Nome',
       email: t.email,
       phone: t.phone || '',
       cpf: t.cpf,
       image: t.avatar_url,
-      status: 'active',
+      status: activeContract?.status || 'active',
       is_pending: t.is_pending,
-    }));
+      property: property?.name || 'Imóvel não vinculado',
+      property_id: property?.id,
+      contract: activeContract ? {
+        id: activeContract.id,
+        start_date: activeContract.start_date,
+        end_date: activeContract.end_date,
+        monthly_value: activeContract.monthly_value,
+        status: activeContract.status
+      } : undefined
+    };
   },
 
   async create(tenantData: any): Promise<void> {
@@ -114,4 +122,36 @@ export const tenantService = {
     // Simulação de envio de e-mail (Log no console)
     console.log(`[IGLOO] Convite enviado para ${tenantData.email}`);
   },
+
+  async getPayments(contractId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('contract_id', contractId)
+      .order('due_date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching payments:', error);
+      return [];
+    }
+
+    return data;
+  },
+
+  async getDocuments(tenantId: string): Promise<any[]> {
+    // In a real app, this might come from a 'documents' table or storage
+    // For now, we return empty as there's no table, or we can check the profiles/contracts for files
+    const { data: tenant } = await supabase.from('profiles').select('cpf').eq('id', tenantId).single();
+    const { data: contract } = await supabase.from('contracts').select('pdf_url').eq('tenant_id', tenantId).single();
+
+    const docs = [];
+    if (contract?.pdf_url) {
+      docs.push({ name: 'Contrato de Locação', type: 'PDF', url: contract.pdf_url, date: 'Recente' });
+    }
+    if (tenant?.cpf) {
+      docs.push({ name: 'Documento Identidade (CPF)', type: 'INFO', url: '#', date: 'Cadastrado' });
+    }
+
+    return docs;
+  }
 };

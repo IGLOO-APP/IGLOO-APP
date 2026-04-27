@@ -57,27 +57,6 @@ const mapProperty = (row: any): Property => ({
 
 export const propertyService = {
   async getAll(): Promise<Property[]> {
-    // Immediate fallback for Dev Mode to avoid hanging on connection issues
-    if (localStorage.getItem('igloo_dev_session')) {
-      return [
-        {
-          id: 'p1',
-          name: 'Studio Centro 01 (Demo)',
-          address: 'Rua Augusta, 150 - Consolação',
-          status: 'DISPONÍVEL',
-          price: 'R$ 1.800,00',
-          numeric_price: 1800,
-          area: '32m²',
-          image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
-          status_color:
-            'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-          tenant: null,
-          contract: null,
-        },
-      ] as Property[];
-    }
-
     const { data, error } = await supabase
       .from('properties')
       .select(
@@ -93,27 +72,11 @@ export const propertyService = {
 
     if (error) {
       console.error('Error fetching properties:', error);
-      // Dev Mode Fallback
       return [];
     }
 
     if (!data || data.length === 0) {
-      // Dev Mode Fallback for empty DB
-      return [
-        {
-          id: 'p1',
-          name: 'Studio Centro 01 (Demo)',
-          address: 'Rua Augusta, 150 - Consolação',
-          status: 'DISPONÍVEL',
-          price: 'R$ 1.800,00',
-          numeric_price: 1800,
-          area: '32m²',
-          image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgfR0PLTBL8ZIF2qB0vPybwAfsoDq8YSZzrKO3YvbwHO-Dpx9DUD2lZhqZkykfNGgmlkvRF9VoaOcFSV48Ht6XdzQp1ASbt0CpENqCrjtZ6x_SpyNv4OXSv-OUKF3My_NTXKXoNBwigKtzWOjuevabMquLo_GRZDELE3S0LAzp4Pt566NLfyIwPht6jvwGH-diZQCj-F-TMnZkCJ3Li_A3_jxlfoFWldjBhZH7bF-J3hqcCscwB5q2HZdGT9WVIuT8DAJFDjet9POu',
-          status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-          tenant: null,
-          contract: null,
-        }
-      ] as Property[];
+      return [];
     }
 
     // Filter to get only active contract for the view (mock logic usually implies one active contract)

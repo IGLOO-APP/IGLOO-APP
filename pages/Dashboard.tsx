@@ -44,12 +44,12 @@ const Dashboard: React.FC = () => {
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboardData'],
     queryFn: () => dashboardService.getDashboardData(),
+    staleTime: 1000 * 60, // 1 minute
   });
   const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
-    // Simulate loading for animation
-    setTimeout(() => setIsLoaded(true), 100);
+    setIsLoaded(true);
   }, []);
 
   if (isLoading || !dashboardData) {

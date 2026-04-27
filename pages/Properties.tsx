@@ -34,81 +34,8 @@ const Properties: React.FC = () => {
 
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['properties'],
-    queryFn: async () => {
-      const data = await propertyService.getAll();
-      const demoData = [
-          {
-            id: 1,
-            name: 'Studio Centro 01',
-            address: 'Rua Augusta, 150 - Consolação',
-            status: 'DISPONÍVEL',
-            status_color:
-              'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-            price: 'R$ 1.800,00',
-            area: '32m²',
-            bedrooms: 1,
-            bathrooms: 1,
-            image:
-              'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400',
-            tenant: null,
-            contract: null,
-            galleryImages: []
-          },
-          {
-            id: 2,
-            name: 'Apartamento Jardins',
-            address: 'Alameda Campinas, 980',
-            status: 'ALUGADO',
-            status_color:
-              'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 ring-blue-600/20',
-            price: 'R$ 4.500,00',
-            area: '85m²',
-            bedrooms: 2,
-            bathrooms: 2,
-            image:
-              'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=400',
-            tenant: { name: 'João Silva' },
-            contract: { status: 'active', value: 'R$ 4.500,00' },
-            galleryImages: []
-          },
-          {
-            id: 3,
-            name: 'Loft Vila Madalena',
-            address: 'Rua Aspicuelta, 440',
-            status: 'ALUGADO',
-            status_color:
-              'text-amber-700 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400 ring-amber-600/20',
-            price: 'R$ 3.200,00',
-            area: '45m²',
-            bedrooms: 1,
-            bathrooms: 1,
-            image:
-              'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
-            tenant: { name: 'Maria Oliveira' },
-            contract: { status: 'expiring_soon', value: 'R$ 3.200,00', days_remaining: 15 },
-            galleryImages: []
-          },
-          {
-            id: 4,
-            name: 'Casa Brooklin',
-            address: 'Rua das Camélias, 120',
-            status: 'ALUGADO',
-            status_color:
-              'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 ring-red-600/20',
-            price: 'R$ 6.800,00',
-            area: '150m²',
-            bedrooms: 3,
-            bathrooms: 2,
-            image:
-              'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=400',
-            tenant: { name: 'Ricardo Santos' },
-            contract: { status: 'expired', value: 'R$ 6.800,00' },
-            galleryImages: []
-          },
-        ] as Property[];
-      
-      return data.length > 0 ? [...data, ...demoData] : demoData;
-    },
+    queryFn: () => propertyService.getAll(),
+    staleTime: 1000 * 60 * 5,
   });
 
   useEffect(() => {

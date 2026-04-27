@@ -28,44 +28,48 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
     {
       id: 1,
       title: onboarding.step1 ? 'Cadastrar mais imóveis' : 'Cadastre seu primeiro imóvel',
+      originalTitle: 'Cadastre seu primeiro imóvel',
       completed: onboarding.step1,
       actionLabel: onboarding.step1 ? 'Novo Imóvel' : 'Adicionar Imóvel',
       onClick: () => navigate('/properties', { state: { openAdd: true } }),
       disabled: false,
       icon: Home,
-      color: 'text-indigo-500',
+      color: 'text-primary',
     },
     {
       id: 2,
       title: onboarding.step2 ? 'Gerenciar inquilinos' : 'Cadastre seu primeiro inquilino',
+      originalTitle: 'Cadastre seu primeiro inquilino',
       completed: onboarding.step2,
       actionLabel: onboarding.step2 ? 'Ver Inquilinos' : 'Adicionar Inquilino',
       onClick: () => navigate('/tenants', { state: { openAdd: true } }),
       disabled: !onboarding.step1,
       tooltip: 'Cadastre um imóvel primeiro',
       icon: UserPlus,
-      color: 'text-violet-500',
+      color: 'text-violet-400',
     },
     {
       id: 3,
       title: onboarding.step3 ? 'Criar novos contratos' : 'Crie seu primeiro contrato',
+      originalTitle: 'Crie seu primeiro contrato',
       completed: onboarding.step3,
       actionLabel: onboarding.step3 ? 'Novo Contrato' : 'Criar Contrato',
       onClick: () => navigate('/contracts', { state: { openWizard: true } }),
       disabled: !onboarding.step1 || !onboarding.step2,
       tooltip: 'Cadastre um imóvel e um inquilino primeiro',
       icon: FileText,
-      color: 'text-amber-500',
+      color: 'text-blue-400',
     },
     {
       id: 4,
       title: onboarding.step4 ? 'Financeiro configurado' : 'Configure seu método de recebimento',
+      originalTitle: 'Configure seu método de recebimento',
       completed: onboarding.step4,
       actionLabel: onboarding.step4 ? 'Gerenciar Finanças' : 'Configurar',
       onClick: () => navigate('/settings', { state: { activeTab: 'financial' } }),
       disabled: false,
       icon: CreditCard,
-      color: 'text-emerald-500',
+      color: 'text-emerald-400',
     },
   ];
 
@@ -86,46 +90,46 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
             onClick={step.onClick}
             className={`group relative overflow-hidden text-left bg-white dark:bg-surface-dark p-3 md:p-5 rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] ${
               step.completed
-                ? 'border-emerald-200 dark:border-emerald-500/20'
+                ? 'border-emerald-500/20 dark:border-emerald-500/10'
                 : isNext
-                  ? 'border-primary/20 dark:border-primary/25 hover:border-primary/40'
+                  ? `border-primary/30 dark:border-primary/20 bg-primary/5 dark:bg-primary/5`
                   : step.disabled
-                    ? 'border-gray-100 dark:border-white/5 opacity-50 cursor-not-allowed'
+                    ? 'border-gray-100 dark:border-white/5 opacity-40 cursor-not-allowed'
                     : 'border-gray-100 dark:border-white/5 hover:border-primary/20'
             }`}
           >
             {/* Ghost icon — same as HeroCard */}
             <div
               className={`absolute top-0 right-0 p-2 md:p-4 transition-opacity opacity-5 group-hover:opacity-10 ${
-                step.completed ? 'text-emerald-500' : step.color
+                step.completed ? 'text-emerald-400' : step.color
               }`}
             >
-              {step.completed ? (
-                <Check size={80} className='hidden md:block' />
-              ) : (
-                <step.icon size={80} className='hidden md:block' />
-              )}
+              <step.icon size={80} className='hidden md:block' />
             </div>
 
             {/* Top row: icon badge + counter pill */}
             <div className='flex justify-between items-start mb-2 md:mb-4'>
               <div
-                className={`p-2 md:p-3 rounded-xl ${
+                className={`p-2 md:p-3 rounded-xl transition-colors ${
                   step.completed
-                    ? 'bg-emerald-50 dark:bg-emerald-500/10'
+                    ? 'bg-emerald-500/10'
                     : step.disabled
                       ? 'bg-slate-100 dark:bg-white/5'
-                      : step.color.replace('text-', 'bg-').replace('500', '50') + ' dark:bg-white/5'
+                      : `${step.color.replace('text-', 'bg-')}/10`
                 }`}
               >
-                {step.completed ? (
-                  <Check size={20} className='text-emerald-500' />
-                ) : (
+                {
                   <step.icon
                     size={20}
-                    className={step.disabled ? 'text-slate-400 dark:text-slate-500' : step.color}
+                    className={
+                      step.completed 
+                        ? 'text-emerald-400' 
+                        : step.disabled 
+                          ? 'text-slate-400 dark:text-slate-500' 
+                          : step.color
+                    }
                   />
-                )}
+                }
               </div>
 
               <span
@@ -146,9 +150,20 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
               <p className='text-slate-500 dark:text-slate-400 text-[9px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1'>
                 Passo {step.id}
               </p>
-              <h3 className='text-sm md:text-base font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight'>
-                {step.title}
-              </h3>
+              <div className='flex flex-col gap-0.5'>
+                <h3 className={`text-sm md:text-base font-extrabold tracking-tight leading-tight transition-all duration-300 ${
+                  step.completed 
+                    ? 'text-slate-900 dark:text-white' 
+                    : 'text-slate-900 dark:text-white'
+                }`}>
+                  {step.title}
+                </h3>
+                {step.completed && (
+                  <p className='text-[10px] md:text-xs font-medium text-slate-400 dark:text-slate-500 line-through decoration-emerald-500/30'>
+                    {step.originalTitle}
+                  </p>
+                )}
+              </div>
               <div className='flex items-center gap-1.5 md:gap-2 mt-1 md:mt-2'>
                 <span
                   className={`flex items-center text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded ${

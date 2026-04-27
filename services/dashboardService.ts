@@ -2,70 +2,82 @@ import { propertyService } from './propertyService';
 import { tenantService } from './tenantService';
 import { contractService } from './contractService';
 import { generateCashFlowProjection } from '../utils/financialCalculations';
+import { supabase } from '../lib/supabase';
 
 export const dashboardService = {
   async getDashboardData() {
     // In a real app, this would be a single API call or multiple parallel calls
     // For now, we'll use existing services where possible and mock the rest
-    const [properties, tenants, contracts] = await Promise.all([
+    // Parallelize all data fetching for maximum performance
+    const [properties, tenants, contracts, authRes] = await Promise.all([
       propertyService.getAll(),
       tenantService.getAll(),
       contractService.getAll(),
+      supabase.auth.getUser(),
     ]);
+
+    const userData = authRes.data;
 
     const totalProperties = properties.length;
     const occupiedProperties = properties.filter((p) => p.status === 'ALUGADO').length;
     const occupancyRate =
       totalProperties > 0 ? Math.round((occupiedProperties / totalProperties) * 100) : 0;
 
-    // Onboarding Checks
+    // Onboarding Checks - Initial state
     const onboarding = {
-      step1: totalProperties > 0, // Has property
-      step2: tenants.length > 0, // Has tenant
-      step3: contracts.some(c => c.status === 'active'), // Has active contract
-      step4: true, // Mocked for now, usually would check settings/payment methods
-      allCompleted: false
+      step1: totalProperties > 0,
+      step2: tenants.length > 0,
+      step3: contracts.some((c) => c.status === 'active'),
+      step4: false,
+      allCompleted: false,
     };
-    
-    // In dev mode with demo data, we might want to simulate "not completed" 
-    // but the requirement says "don't show for users who already have all 4"
-    // So we calculate it normally.
-    onboarding.allCompleted = onboarding.step1 && onboarding.step2 && onboarding.step3 && onboarding.step4;
+
+    // Parallel fetch for profile if user exists
+    if (userData?.user) {
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('id', userData.user.id)
+        .single();
+      onboarding.step4 = !!userProfile?.phone;
+    }
+
+    onboarding.allCompleted =
+      onboarding.step1 && onboarding.step2 && onboarding.step3 && onboarding.step4;
 
     // Dynamic Cash Flow Projection
-    const pastData = [
-      { name: 'Set', value: 12500 },
-      { name: 'Out', value: 13200 },
-      { name: 'Nov', value: 14100 },
-      { name: 'Dez', value: 15800 },
-      { name: 'Jan', value: 14500 },
-      { name: 'Fev', value: 16200 },
-    ];
-
-    const projection = generateCashFlowProjection(pastData, contracts);
-
-    // Map projection to expected UI format
-    const financialHistory = projection.map((d) => ({
-      month: d.name,
-      income: d.isProjection ? d.projected : d.actual,
-      expense: d.isProjection ? Math.round(d.projected * 0.25) : Math.round(d.actual * 0.3), // Mock expenses
-      net: d.isProjection ? d.projected - Math.round(d.projected * 0.25) : d.actual - Math.round(d.actual * 0.3),
-      projected: d.isProjection,
+    const financialHistory = contracts.map(c => ({
+      month: new Date(c.start_date).toLocaleString('pt-BR', { month: 'short' }),
+      income: c.numeric_value || 0,
+      expense: 0,
+      net: c.numeric_value || 0,
+      projected: false,
     }));
+
+    // If no history, return empty state
+    if (financialHistory.length === 0) {
+      financialHistory.push({
+        month: new Date().toLocaleString('pt-BR', { month: 'short' }),
+        income: 0,
+        expense: 0,
+        net: 0,
+        projected: false,
+      });
+    }
 
     // Mocking other data for now, but keeping it in the service layer
     return {
       onboarding,
       metrics: {
-        totalWealth: 'R$ 1.5M',
-        mrr: `R$ ${(financialHistory[financialHistory.length - 4]?.income / 1000).toFixed(1)}k`,
+        totalWealth: `R$ ${(properties.reduce((acc, p) => acc + (p.market_value || 0), 0) / 1000).toFixed(0)}k`,
+        mrr: `R$ ${(financialHistory.reduce((acc, h) => acc + h.income, 0) / 1000).toFixed(1)}k`,
         occupancyRate,
-        avgRoi: '7.2%',
+        avgRoi: '0%',
         trends: {
-          wealth: '+2.5%',
-          mrr: '+12%',
-          occupancy: occupancyRate < 80 ? '-15%' : '+2%',
-          roi: '+0.8%',
+          wealth: '+0%',
+          mrr: '+0%',
+          occupancy: occupancyRate < 80 ? '-0%' : '+0%',
+          roi: '+0%',
         },
       },
       financialHistory,
@@ -77,36 +89,7 @@ export const dashboardService = {
         yield: 0.72, // Mock yield
         status: p.status === 'ALUGADO' ? 'occupied' : 'vacant',
       })),
-      activities: [
-        {
-          id: 1,
-          title: 'Vencimento Aluguel - Apt 104',
-          type: 'payment',
-          date: 'Hoje',
-          time: '23:59',
-        },
-        {
-          id: 2,
-          title: 'Vistoria de Saída - Kitnet 05',
-          type: 'visit',
-          date: 'Amanhã',
-          time: '14:00',
-        },
-        {
-          id: 3,
-          title: 'Renovação Contrato - Studio 22',
-          type: 'contract',
-          date: '12 Mar',
-          time: '-',
-        },
-        {
-          id: 4,
-          title: 'Manutenção Elétrica - Loft',
-          type: 'maintenance',
-          date: '15 Mar',
-          time: '09:00',
-        },
-      ],
+      activities: [], // Real activity log would come from a separate 'activities' or 'audit' table
     };
   },
 };
