@@ -1,5 +1,6 @@
 
-import { Transaction } from '../types';
+import { supabase } from '../lib/supabase';
+import { FinancialTransaction } from '../types';
 
 export interface BankTransaction {
   id: string;
@@ -12,13 +13,66 @@ export interface BankTransaction {
 
 export const financeService = {
   /**
+   * Fetches all transactions for the current owner.
+   */
+  async getAll(): Promise<FinancialTransaction[]> {
+    const { data, error } = await supabase
+      .from('financial_transactions')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
+   * Creates a new transaction.
+   */
+  async create(transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>): Promise<FinancialTransaction> {
+    const { data, error } = await supabase
+      .from('financial_transactions')
+      .insert(transaction)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Updates an existing transaction.
+   */
+  async update(id: string, updates: Partial<FinancialTransaction>): Promise<FinancialTransaction> {
+    const { data, error } = await supabase
+      .from('financial_transactions')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Deletes a transaction.
+   */
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('financial_transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  /**
    * Simulates parsing a CSV or OFX file and returning bank transactions.
    */
   async processBankFile(file: File): Promise<BankTransaction[]> {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Simulation of parsing:
-    // In a real app, you'd use a library like `papaparse` for CSV or a custom OFX parser.
     return [
       {
         id: 'bank_1',
@@ -61,7 +115,7 @@ export const financeService = {
   matchTransactions(bankTxs: BankTransaction[], existingTxs: any[]) {
     return bankTxs.map((btx) => {
       const match = existingTxs.find(
-        (etx) =>
+         (etx) =>
           Math.abs(etx.amount) === Math.abs(btx.amount) &&
           // Within 3 days of difference
           Math.abs(new Date(etx.date).getTime() - new Date(btx.date).getTime()) < 3 * 24 * 60 * 60 * 1000
@@ -70,3 +124,4 @@ export const financeService = {
     });
   },
 };
+

@@ -299,3 +299,20 @@ export interface TenantProfileConfig {
     };
   };
 }
+
+export interface FinancialTransaction {
+  id: string;
+  owner_id: string;
+  property_id?: string;
+  title: string;
+  description?: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category?: string;
+  date: string; // ISO format
+  status: 'paid' | 'pending';
+  attachment_url?: string;
+  is_recurring: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

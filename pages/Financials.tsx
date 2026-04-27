@@ -52,54 +52,60 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { contractService } from '../services/contractService';
+import { propertyService } from '../services/propertyService';
 import { formatCurrency } from '../utils/formatters';
+import { useAuth } from '../context/AuthContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
-const mockTrendData = [
-  { name: 'Jan', receita: 4000, despesa: 2400 },
-  { name: 'Fev', receita: 3000, despesa: 1398 },
-  { name: 'Mar', receita: 2000, despesa: 9800 },
-  { name: 'Abr', receita: 2780, despesa: 3908 },
-  { name: 'Mai', receita: 1890, despesa: 4800 },
-  { name: 'Jun', receita: 2390, despesa: 3800 },
-  { name: 'Jul', receita: 3490, despesa: 4300 },
-];
 
-const mockTransactions = [
-  {
-    id: 1,
-    title: 'Aluguel - Kitnet Centro',
-    date: '05 Mar',
-    property: 'Apt 101',
-    amount: 1500.0,
-    type: 'income',
-    status: 'paid',
-    hasAttachment: true,
-    attachmentUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=800',
-  },
-  {
-    id: 2,
-    title: 'Condomínio - Studio 20',
-    date: '10 Mar',
-    property: 'Studio 20',
-    amount: -350.0,
-    type: 'expense',
-    status: 'pending',
-    hasAttachment: false,
-  },
-  {
-    id: 3,
-    title: 'Manutenção Elétrica',
-    date: '12 Mar',
-    property: 'Kitnet 05',
-    amount: -180.0,
-    type: 'expense',
-    status: 'paid',
-    hasAttachment: true,
-    attachmentUrl: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&q=80&w=800',
-  },
-];
+
+
 
 const Financials: React.FC = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [selectedPropertyId, setSelectedPropertyId] = useState('all');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const handlePrevMonth = () => {
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
+  };
+
+  // Queries
+  const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
+    queryKey: ['financial_transactions'],
+    queryFn: () => financeService.getAll(),
+  });
+
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: () => propertyService.getAll(),
+  });
+
+  const { data: contracts = [] } = useQuery({
+    queryKey: ['contracts'],
+    queryFn: () => contractService.getAll(),
+  });
+
+  // Mutations
+  const createTransactionMutation = useMutation({
+    mutationFn: (data: any) => financeService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial_transactions'] });
+      setShowAddForm(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      alert(`Erro ao salvar: ${error.message}`);
+    },
+  });
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLateCalculator, setShowLateCalculator] = useState(false);
   const [showApportionment, setShowApportionment] = useState(false);
@@ -149,11 +155,38 @@ const Financials: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [bankFileInputRef] = [useRef<HTMLInputElement>(null)];
   
-  // Forecast Data
-  const { data: contracts = [] } = useQuery({
-    queryKey: ['contracts'],
-    queryFn: () => contractService.getAll(),
-  });
+
+  const trendData = React.useMemo(() => {
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const now = new Date();
+    const last6Months = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - i, 1);
+      const monthIndex = d.getMonth();
+      const monthYear = `${months[monthIndex]} ${d.getFullYear().toString().slice(2)}`;
+      
+      const monthTransactions = transactions.filter(t => {
+        const txDate = new Date(t.date);
+        return txDate.getMonth() === monthIndex && txDate.getFullYear() === d.getFullYear();
+      });
+      
+      const receita = monthTransactions
+        .filter(t => t.type === 'income' && t.status === 'paid')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+      const despesa = monthTransactions
+        .filter(t => t.type === 'expense' && t.status === 'paid')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+        
+      last6Months.push({
+        name: months[monthIndex],
+        receita,
+        despesa
+      });
+    }
+    return last6Months;
+  }, [transactions, selectedDate]);
 
   const forecastData = React.useMemo(() => {
     const activeValue = contracts
@@ -187,15 +220,22 @@ const Financials: React.FC = () => {
     }
   }, [location]);
 
+  const resetForm = () => {
+    setTxValue('');
+    setTxDescription('');
+    setTxCategory('');
+    setTxProperty('');
+    setIsRecurring(false);
+    setHasAttachment(false);
+    setTransactionType('income');
+    setTxStatus('paid');
+    setTxDate(new Date().toISOString().split('T')[0]);
+  };
+
   // Reset form when modal opens/closes
   useEffect(() => {
     if (!showAddForm) {
-      setTxValue('');
-      setTxDescription('');
-      setTxCategory('');
-      setTxProperty('');
-      setIsRecurring(false);
-      setHasAttachment(false);
+      resetForm();
     }
   }, [showAddForm]);
 
@@ -227,20 +267,16 @@ const Financials: React.FC = () => {
     setApportionResult(result);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setHasAttachment(true);
-    }
-  };
-
   const handleBankFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setIsProcessingFile(true);
       try {
-        const transactions = await financeService.processBankFile(e.target.files[0]);
-        const matched = financeService.matchTransactions(transactions, mockTransactions);
+        const importedTxs = await financeService.processBankFile(e.target.files[0]);
+        // Tenta cruzar com os lançamentos reais do banco
+        const matched = financeService.matchTransactions(importedTxs, transactions);
         setImportResult(matched);
       } catch (error) {
+        console.error('Erro ao processar arquivo bancário:', error);
         alert('Erro ao processar arquivo bancário.');
       } finally {
         setIsProcessingFile(false);
@@ -248,20 +284,118 @@ const Financials: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    setIsExporting(true);
-    setTimeout(() => {
-      setIsExporting(false);
-      // In a real app, this would generate and download a PDF/Excel
-      alert('Relatório Financeiro exportado com sucesso (PDF/Excel)!');
-    }, 1500);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setHasAttachment(true);
+    }
   };
 
-  const filteredTransactions = mockTransactions.filter(
-    (t) =>
-      t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.property.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSaveTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const numericAmount = parseFloat(txValue.replace(',', '.'));
+    if (isNaN(numericAmount)) {
+      alert('Por favor, insira um valor válido.');
+      return;
+    }
+
+    createTransactionMutation.mutate({
+      owner_id: user.id,
+      property_id: txProperty || null,
+      title: txDescription,
+      amount: numericAmount,
+      type: transactionType,
+      category: txCategory,
+      date: txDate,
+      status: txStatus,
+      is_recurring: isRecurring,
+    });
+  };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(18);
+      doc.setTextColor(44, 62, 80);
+      doc.text('Relatório Financeiro - IGLOO', 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(127, 140, 141);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
+      
+      // Summary
+      const summaryData = [
+        ['Total Recebido', formatCurrency(totalReceived)],
+        ['Total Pendente', formatCurrency(totalPending)],
+        ['Saldo Atual', formatCurrency(totalReceived - totalPending)],
+      ];
+      
+      autoTable(doc, {
+        startY: 35,
+        head: [['Resumo Financeiro', 'Valor']],
+        body: summaryData,
+        theme: 'striped',
+        headStyles: { fillColor: [16, 185, 129] },
+      });
+
+      // Transactions Table
+      const tableData = filteredTransactions.map(tx => [
+        tx.date,
+        tx.title,
+        properties.find(p => p.id === tx.property_id)?.name || 'N/A',
+        tx.type === 'income' ? 'Receita' : 'Despesa',
+        tx.status === 'paid' ? 'Pago' : 'Pendente',
+        formatCurrency(tx.amount)
+      ]);
+
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 15,
+        head: [['Data', 'Título', 'Imóvel', 'Tipo', 'Status', 'Valor']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 41, 59] },
+      });
+
+      doc.save(`Relatorio_Financeiro_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      alert('Erro ao gerar relatório.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const filteredTransactions = transactions.filter(
+    (t) => {
+      const txDate = new Date(t.date);
+      const isSameMonth = txDate.getMonth() === selectedDate.getMonth() && 
+                          txDate.getFullYear() === selectedDate.getFullYear();
+      
+      const matchesSearch = (t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             t.category?.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesProperty = (selectedPropertyId === 'all' || t.property_id === selectedPropertyId);
+      
+      return isSameMonth && matchesSearch && matchesProperty;
+    }
   );
+
+  const pendingTransactions = transactions.filter(t => t.status === 'pending');
+  const totalPending = pendingTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
+  const pendingCount = pendingTransactions.length;
+
+  const totalReceived = transactions
+    .filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === selectedDate.getMonth() && 
+             d.getFullYear() === selectedDate.getFullYear() && 
+             t.type === 'income' && t.status === 'paid';
+    })
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   return (
     <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative'>
@@ -274,28 +408,28 @@ const Financials: React.FC = () => {
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 transition-all disabled:opacity-50'
+              className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
               title='Exportar Relatório'
             >
               {isExporting ? (
                 <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
               ) : (
-                <Download size={20} />
+                <Download size={20} className="group-hover:scale-110 transition-transform" />
               )}
             </button>
             <button
               onClick={() => setShowApportImportModal(true)}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all'
+              className='flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
               title='Conciliação Bancária'
             >
-              <FileUp size={20} />
+              <FileUp size={20} className="group-hover:scale-110 transition-transform" />
             </button>
             <button
               onClick={() => setShowApportionment(true)}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-all'
+              className='flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
               title='Rateio de Despesas'
             >
-              <PieChart size={20} />
+              <PieChart size={20} className="group-hover:scale-110 transition-transform" />
             </button>
             <button
               onClick={() => setShowAddForm(true)}
@@ -320,20 +454,41 @@ const Financials: React.FC = () => {
 
           <div className='flex gap-3'>
             <div className='relative flex-1'>
-              <select className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'>
+              <select 
+                value={selectedPropertyId}
+                onChange={(e) => setSelectedPropertyId(e.target.value)}
+                className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'
+              >
                 <option value='all'>Todos os Imóveis</option>
-                <option value='apt101'>Apt 101 - Centro</option>
-                <option value='studio20'>Studio 20 - Norte</option>
+                {properties.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
               </select>
               <ChevronDown
                 className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500'
                 size={20}
               />
             </div>
-            <button className='h-11 px-4 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-2 shadow-sm whitespace-nowrap transition-colors'>
-              <Calendar size={18} className='text-primary' />
-              <span>Mar 24</span>
-            </button>
+            <div className='h-11 px-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
+              <button 
+                onClick={handlePrevMonth}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              >
+                <ArrowLeft size={14} />
+              </button>
+              <div className="flex items-center gap-2 px-1">
+                <Calendar size={16} className='text-primary' />
+                <span className="min-w-[60px] text-center capitalize">
+                  {selectedDate.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '')}
+                </span>
+              </div>
+              <button 
+                onClick={handleNextMonth}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              >
+                <ArrowUp size={14} className="rotate-90" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -352,7 +507,7 @@ const Financials: React.FC = () => {
           </InfoTooltip>
           <div className='h-48 w-full'>
             <ResponsiveContainer width='100%' height='100%'>
-              <AreaChart data={mockTrendData}>
+              <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id='colorReceita' x1='0' y1='0' x2='0' y2='1'>
                     <stop offset='5%' stopColor='#10b981' stopOpacity={0.2} />
@@ -499,11 +654,13 @@ const Financials: React.FC = () => {
                 Total Recebido
               </p>
               <p className='text-slate-900 dark:text-white text-2xl font-bold relative z-10'>
-                R$ 4.500,00
+                {formatCurrency(totalReceived)}
               </p>
               <div className='mt-4 flex items-center gap-1 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 w-fit px-2 py-1 rounded-md'>
                 <ArrowUp size={16} />
-                <span className='text-xs font-bold'>+12% vs mês anterior</span>
+                <span className='text-xs font-bold'>
+                  {totalReceived > 0 ? `${formatCurrency(totalReceived)} neste período` : 'Nenhuma receita no período'}
+                </span>
               </div>
             </div>
             <div
@@ -520,10 +677,10 @@ const Financials: React.FC = () => {
                 Total Pendente
               </p>
               <p className='text-slate-900 dark:text-white text-2xl font-bold relative z-10'>
-                R$ 1.200,00
+                {formatCurrency(totalPending)}
               </p>
               <div className='mt-4 flex items-center gap-1 text-orange-500 text-xs font-bold relative z-10 bg-orange-50 dark:bg-orange-900/20 w-fit px-2 py-1 rounded-md'>
-                <span className='group-hover:hidden'>3 Faturas</span>
+                <span className='group-hover:hidden'>{pendingCount} {pendingCount === 1 ? 'Fatura' : 'Faturas'}</span>
                 <span className='hidden group-hover:inline'>Simular Juros</span>
               </div>
             </div>
@@ -558,12 +715,12 @@ const Financials: React.FC = () => {
                   <p
                     className={`text-base font-bold whitespace-nowrap ${tx.type === 'income' ? 'text-primary' : 'text-slate-900 dark:text-white'}`}
                   >
-                    {tx.type === 'income' ? '+' : '-'} R$ {Math.abs(tx.amount).toFixed(2)}
+                    {tx.type === 'income' ? '+' : '-'} {formatCurrency(tx.amount)}
                   </p>
                 </div>
                 <div className='flex justify-between items-center mt-1'>
                   <p className='text-slate-400 text-sm font-medium truncate'>
-                    {tx.date} • {tx.property}
+                    {new Date(tx.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {properties.find(p => p.id === tx.property_id)?.name || 'Sem Imóvel'}
                   </p>
                   <div className='flex items-center gap-2'>
                     {tx.hasAttachment && (
@@ -1006,9 +1163,9 @@ const Financials: React.FC = () => {
                       className='w-full pl-10 pr-8 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
                     >
                       <option value=''>Geral (Sem vínculo)</option>
-                      <option value='1'>Kitnet 01 - Centro</option>
-                      <option value='2'>Apt 104 - Jardins</option>
-                      <option value='3'>Studio 22 - Vila Madalena</option>
+                      {properties.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
                     </select>
                     <ChevronDown
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
@@ -1106,17 +1263,21 @@ const Financials: React.FC = () => {
               </div>
             </div>
 
-            <div className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20'>
+            <form onSubmit={handleSaveTransaction} className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20'>
               <button
+                type="submit"
+                disabled={createTransactionMutation.isPending}
                 className={`w-full h-14 flex items-center justify-center rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all duration-200 ${
+                  createTransactionMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   transactionType === 'income'
                     ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25'
                     : 'bg-red-500 hover:bg-red-600 shadow-red-500/25'
                 }`}
               >
-                Confirmar Lançamento
+                {createTransactionMutation.isPending ? 'Salvando...' : 'Confirmar Lançamento'}
               </button>
-            </div>
+            </form>
           </div>
         </ModalWrapper>
       )}
