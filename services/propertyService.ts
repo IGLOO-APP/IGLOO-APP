@@ -19,6 +19,9 @@ const mapProperty = (row: any): Property => ({
   image:
     row.image_url ||
     'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300', // Fallback image
+  bedrooms: row.bedrooms,
+  bathrooms: row.bathrooms,
+  parking: row.parking,
   status_color:
     row.status === 'ALUGADO'
       ? 'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'

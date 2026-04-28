@@ -67,12 +67,11 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
-    defaultValues: initialData ? {
+    defaultValues: {
+      bedrooms: initialData?.bedrooms ?? 1,
+      bathrooms: initialData?.bathrooms ?? 1,
+      parking: initialData?.parking ?? 0,
       ...initialData
-    } : {
-      bedrooms: 1,
-      bathrooms: 1,
-      parking: 0,
     },
   });
 
@@ -81,9 +80,9 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
   const parking = watch('parking');
 
   const handleCounter = (field: 'bedrooms' | 'bathrooms' | 'parking', operation: 'inc' | 'dec') => {
-    const currentValue = getValues(field);
+    const currentValue = Number(getValues(field)) || 0;
     const newValue = operation === 'inc' ? currentValue + 1 : Math.max(0, currentValue - 1);
-    setValue(field, newValue);
+    setValue(field, newValue, { shouldValidate: true, shouldDirty: true });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,6 +234,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                 Fotos dos Ambientes
               </label>
               <div className='grid grid-cols-3 sm:grid-cols-4 gap-2'>
+                {/* Existing Gallery Images */}
                 {galleryImages.map((img, idx) => (
                   <div key={idx} className='relative aspect-square rounded-xl overflow-hidden group border border-slate-200 dark:border-white/10'>
                     <img src={img} alt={`Environment ${idx}`} className='w-full h-full object-cover' />
@@ -248,24 +248,49 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                   </div>
                 ))}
                 
-                {galleryImages.length < 8 && (
+                {/* Dynamic Upload Slots based on Counters */}
+                {Array.from({ length: bedrooms }).map((_, i) => (
                   <button
+                    key={`bed-slot-${i}`}
                     type='button'
                     onClick={() => galleryInputRef.current?.click()}
-                    className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-gray-800 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all bg-slate-50/50 dark:bg-white/5'
+                    className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-gray-800 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all bg-slate-50/50 dark:bg-white/5 group'
                   >
-                    <Plus size={20} />
-                    <span className='text-[8px] font-bold mt-1 uppercase'>Ambientes</span>
-                    <input
-                      type='file'
-                      ref={galleryInputRef}
-                      className='hidden'
-                      accept='image/*'
-                      multiple
-                      onChange={handleGalleryUpload}
-                    />
+                    <BedDouble size={18} className='group-hover:scale-110 transition-transform' />
+                    <span className='text-[7px] font-black mt-1 uppercase tracking-tighter'>Quarto {i + 1}</span>
                   </button>
-                )}
+                ))}
+
+                {Array.from({ length: bathrooms }).map((_, i) => (
+                  <button
+                    key={`bath-slot-${i}`}
+                    type='button'
+                    onClick={() => galleryInputRef.current?.click()}
+                    className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-gray-800 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all bg-slate-50/50 dark:bg-white/5 group'
+                  >
+                    <Bath size={18} className='group-hover:scale-110 transition-transform' />
+                    <span className='text-[7px] font-black mt-1 uppercase tracking-tighter'>Banheiro {i + 1}</span>
+                  </button>
+                ))}
+
+                {/* Common Area Slots */}
+                <button
+                  type='button'
+                  onClick={() => galleryInputRef.current?.click()}
+                  className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-gray-800 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all bg-slate-50/50 dark:bg-white/5 group'
+                >
+                  <Plus size={18} className='group-hover:rotate-90 transition-transform' />
+                  <span className='text-[7px] font-black mt-1 uppercase tracking-tighter'>Sala/Outros</span>
+                </button>
+
+                <input
+                  type='file'
+                  ref={galleryInputRef}
+                  className='hidden'
+                  accept='image/*'
+                  multiple
+                  onChange={handleGalleryUpload}
+                />
               </div>
             </div>
           </div>

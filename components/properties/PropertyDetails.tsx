@@ -19,6 +19,9 @@ import {
   Eye,
   Edit2,
   Trash2,
+  Car,
+  Maximize2,
+  X,
 } from 'lucide-react';
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
@@ -36,6 +39,7 @@ interface PropertyDetailsProps {
 export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, onEdit, onDelete }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'inspections' | 'docs' | 'tenantConfig'>('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFullscreenImage, setShowFullscreenImage] = useState(false);
 
   // Use real gallery images if available, fallback to mock for demo if empty
   const images = property.galleryImages && property.galleryImages.length > 0 
@@ -89,55 +93,70 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
           <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent'></div>
           <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent'></div>
 
-          {/* Navigation Arrows */}
-          <div className='absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between z-10 opacity-0 group-hover:opacity-100 transition-opacity'>
+          {/* Modern Unified Navigation Bar */}
+          <div className='absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-3 py-2 bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 z-20 shadow-2xl'>
             <button 
               onClick={prevImage}
-              className='p-2 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white transition-all transform hover:scale-110'
+              className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
+            
+            <div className='flex gap-1.5 px-1'>
+              {images.map((_, i) => (
+                <div 
+                  key={i}
+                  className={`h-1 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'w-4 bg-primary' : 'w-1 bg-white/30'}`}
+                />
+              ))}
+            </div>
+
             <button 
               onClick={nextImage}
-              className='p-2 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white transition-all transform hover:scale-110'
+              className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={18} />
             </button>
-          </div>
-
-          {/* Dots Pagination */}
-          <div className='absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-1.5 z-10'>
-            {images.map((_, i) => (
-              <div 
-                key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'w-4 bg-primary' : 'w-1.5 bg-white/50'}`}
-              />
-            ))}
           </div>
 
           {/* Content Overlay */}
-          <div className='absolute bottom-0 left-0 p-6 w-full z-10'>
+          <div className='absolute bottom-0 left-0 p-6 w-full z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent pt-20'>
             <span
-              className={`inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-black ring-1 ring-inset uppercase tracking-widest mb-2 bg-white/90 backdrop-blur-sm ${property.status_color?.replace('bg-', 'text-').replace('/10', '')}`}
+              className={`inline-flex items-center rounded-lg px-3 py-1 text-[10px] font-black backdrop-blur-md border border-white/20 uppercase tracking-widest mb-3 shadow-lg shadow-black/20 ${
+                property.status === 'ALUGADO' 
+                  ? 'bg-blue-500/80 text-white' 
+                  : property.status === 'MANUTENÇÃO'
+                    ? 'bg-orange-500/80 text-white'
+                    : 'bg-emerald-500/80 text-white'
+              }`}
             >
               {property.status}
             </span>
-            <div className='flex items-end justify-between'>
-              <div>
-                <h2 className='text-2xl font-black text-white leading-tight shadow-sm'>
+            <div className='flex items-end justify-between gap-4'>
+              <div className='flex-1'>
+                <h2 className='text-3xl font-black text-white leading-tight drop-shadow-lg'>
                   {property.name}
                 </h2>
-                <p className='text-gray-200 text-xs flex items-center gap-1 mt-1 font-bold uppercase tracking-wider'>
-                  <MapPin size={14} /> {property.address}
+                <p className='text-white/80 text-[10px] flex items-center gap-1.5 mt-2 font-black uppercase tracking-[0.1em]'>
+                  <MapPin size={14} className='text-primary' /> {property.address}
                 </p>
               </div>
-              <button 
-                onClick={openGoogleMaps}
-                className='p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all'
-                title='Ver no Google Maps'
-              >
-                <ExternalLink size={18} />
-              </button>
+              <div className='flex items-center gap-2'>
+                <button 
+                  onClick={() => setShowFullscreenImage(true)}
+                  className='shrink-0 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl transition-all border border-white/10 hover:scale-105 active:scale-95 group shadow-lg'
+                  title='Ampliar Foto'
+                >
+                  <Maximize2 size={16} />
+                </button>
+                <button 
+                  onClick={openGoogleMaps}
+                  className='shrink-0 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl transition-all border border-white/10 hover:scale-105 active:scale-95 group shadow-lg'
+                  title='Ver no Google Maps'
+                >
+                  <ExternalLink size={16} className='group-hover:rotate-12 transition-transform' />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -236,6 +255,18 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
                   </div>
                   <p className='text-slate-900 dark:text-white text-lg font-black'>
                     {property.bathrooms ?? 0}
+                  </p>
+                </div>
+
+                <div className='bg-white dark:bg-surface-dark p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <Car size={14} className='text-primary' />
+                    <p className='text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest'>
+                      Vagas
+                    </p>
+                  </div>
+                  <p className='text-slate-900 dark:text-white text-lg font-black'>
+                    {property.parking ?? 0}
                   </p>
                 </div>
 
@@ -372,6 +403,45 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
           )}
         </div>
       </ModalWrapper>
+
+      {/* Fullscreen Image Overlay */}
+      {showFullscreenImage && (
+        <div 
+          className='fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn'
+          onClick={() => setShowFullscreenImage(false)}
+        >
+          <button 
+            className='absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[110]'
+            onClick={() => setShowFullscreenImage(false)}
+          >
+            <X size={24} />
+          </button>
+
+          <div className='relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl'>
+            <img 
+              src={images[currentImageIndex]} 
+              alt='Property Fullscreen' 
+              className='w-full h-full object-contain'
+            />
+          </div>
+
+          {/* Navigation in Fullscreen */}
+          <div className='absolute inset-x-8 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none'>
+            <button 
+              onClick={(e) => { e.stopPropagation(); prevImage(e); }}
+              className='pointer-events-auto p-4 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all transform hover:scale-110'
+            >
+              <ChevronLeft size={32} />
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); nextImage(e); }}
+              className='pointer-events-auto p-4 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all transform hover:scale-110'
+            >
+              <ChevronRight size={32} />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

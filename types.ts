@@ -109,6 +109,7 @@ export interface Property {
   image: string;
   bedrooms?: number;
   bathrooms?: number;
+  parking?: number;
   yield?: string | number;
   status_color?: string;
   tenant?: Tenant | null;
