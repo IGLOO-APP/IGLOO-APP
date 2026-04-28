@@ -7,6 +7,7 @@ interface ModalWrapperProps {
   title?: string;
   className?: string;
   showCloseButton?: boolean;
+  variant?: 'modal' | 'sidepanel';
 }
 
 export const ModalWrapper: React.FC<ModalWrapperProps> = ({
@@ -15,11 +16,24 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   title,
   className = '',
   showCloseButton = true,
+  variant = 'modal',
 }) => {
+  const isSidePanel = variant === 'sidepanel';
+
   return (
-    <div className='fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4 animate-fadeIn'>
+    <div 
+      className={`fixed inset-0 z-50 flex items-end animate-fadeIn ${
+        isSidePanel 
+          ? 'md:left-64 md:items-stretch md:justify-stretch bg-black/20 md:bg-black/40' 
+          : 'md:items-center md:justify-center bg-black/50 p-0 md:p-4'
+      } backdrop-blur-sm transition-all`}
+    >
       <div
-        className={`w-full h-[95vh] md:h-auto md:max-h-[90vh] bg-background-light dark:bg-background-dark rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slideUp relative ${className}`}
+        className={`w-full bg-background-light dark:bg-background-dark shadow-2xl flex flex-col overflow-hidden animate-slideUp relative ${
+          isSidePanel
+            ? 'h-[95vh] md:h-full rounded-t-3xl md:rounded-none'
+            : 'h-[95vh] md:h-auto md:max-h-[90vh] rounded-t-3xl md:rounded-3xl'
+        } ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle */}
@@ -32,7 +46,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
 
         {/* Header Logic: Flex (Push Content) vs Absolute (Float Over) */}
         {title ? (
-          <div className='flex-none px-6 py-4 flex items-center justify-between bg-background-light dark:bg-background-dark z-20'>
+          <div className='flex-none px-6 py-4 flex items-center justify-between bg-background-light dark:bg-background-dark z-20 border-b border-gray-100 dark:border-white/5'>
             <h2 className='text-xl font-bold text-slate-900 dark:text-white leading-tight pr-4'>
               {title}
             </h2>
@@ -47,7 +61,7 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
           </div>
         ) : (
           showCloseButton && (
-            <div className='absolute top-4 right-4 z-20'>
+            <div className={`absolute top-4 right-4 z-20 ${isSidePanel ? 'md:top-6 md:right-6' : ''}`}>
               <button
                 onClick={onClose}
                 className='bg-black/20 hover:bg-black/30 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-md text-white p-2 rounded-full transition-colors shadow-sm border border-white/10'

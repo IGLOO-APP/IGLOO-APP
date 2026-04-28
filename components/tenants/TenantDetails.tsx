@@ -32,6 +32,7 @@ import {
   MoreHorizontal,
   Settings2,
   Sparkles,
+  Wrench,
   Image as ImageIcon
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
@@ -50,7 +51,8 @@ interface TenantDetailsProps {
 }
 
 export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs' | 'tenantConfig'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs' | 'tenantConfig' | 'history'>('overview');
+  const [timelineFilter, setTimelineFilter] = useState<'all' | 'payments' | 'maintenance' | 'contracts'>('all');
   const [payments, setPayments] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -277,6 +279,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               { id: 'payments', label: 'Financeiro', icon: DollarSign },
               { id: 'docs', label: 'Contrato & Docs', icon: FileText },
               { id: 'tenantConfig', label: 'Exigências', icon: ShieldCheck },
+              { id: 'history', label: 'Histórico', icon: Clock },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -300,219 +303,119 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'
         >
           {activeTab === 'overview' && (
-            <div className='animate-fadeIn'>
-              <div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
-                
-                {/* LEFT COLUMN (58%) - The Strategy Cockpit */}
-                <div className='lg:col-span-7 space-y-6'>
-                  {/* AI Insights Card - Showroom Exclusive */}
-                  <div className='relative overflow-hidden bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent dark:from-indigo-500/5 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm'>
-                    <div className='flex items-start gap-4'>
-                      <div className='w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/20'>
-                        <Sparkles size={20} />
+            <div className="animate-fadeIn space-y-6">
+              {/* AI Insights Card */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent dark:from-indigo-500/5 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/20">
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">IGLOO Insight AI</h4>
+                      <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase">Beta</span>
+                    </div>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                      Inquilino com <span className="text-indigo-600 dark:text-indigo-400 font-black">Score A+</span>. Demonstra alto índice de conservação do patrimônio e pontualidade exemplar nos últimos ciclos. Recomendação: Perfil de baixa manutenção.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Associated Property Card */}
+              <div
+                onClick={navigateToProperty}
+                className="group relative overflow-hidden bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer"
+              >
+                <div className="flex flex-col md:flex-row">
+                  <div className="h-40 md:h-auto md:w-56 relative overflow-hidden shrink-0">
+                    {tenant.property_image ? (
+                      <img src={tenant.property_image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={tenant.property} />
+                    ) : (
+                      <div className="w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                        <Home size={32} className="text-slate-300" />
                       </div>
+                    )}
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white uppercase tracking-widest">Alugado</div>
+                  </div>
+                  <div className="flex-1 p-5">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <div className='flex items-center gap-2 mb-1'>
-                          <h4 className='text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest'>IGLOO Insight AI</h4>
-                          <span className='px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase'>Beta</span>
-                        </div>
-                        <p className='text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium'>
-                          Inquilino com <span className='text-indigo-600 dark:text-indigo-400 font-black'>Score A+</span>. Demonstra alto índice de conservação do patrimônio e pontualidade exemplar nos últimos ciclos. Recomendação: Perfil de baixa manutenção.
+                        <h3 className="font-black text-slate-900 dark:text-white text-lg">{tenant.property || tenant.contract?.property_name || 'Imóvel vinculado'}</h3>
+                        <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium">
+                          <MapPin size={12} className="text-primary" />
+                          {tenant.property_address || 'Endereço não disponível'}
                         </p>
                       </div>
+                      <ArrowUpRight size={18} className="text-slate-300 group-hover:text-primary transition-colors" />
                     </div>
-                  </div>
-
-                  {/* Associated Property Card */}
-                  <div 
-                    onClick={navigateToProperty}
-                    className='group relative overflow-hidden bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer'
-                  >
-                    <div className='flex flex-col md:flex-row'>
-                      <div className='h-32 md:h-auto md:w-48 relative overflow-hidden shrink-0'>
-                        {tenant.property_image ? (
-                          <img 
-                            src={tenant.property_image} 
-                            className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
-                            alt={tenant.property}
-                          />
-                        ) : (
-                          <div className='w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center'>
-                            <Home size={32} className='text-slate-300' />
-                          </div>
-                        )}
-                        <div className='absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white uppercase tracking-widest'>
-                          Alugado
-                        </div>
+                    <div className="flex items-center gap-6 mt-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Mensalidade</span>
+                        <span className="font-black text-slate-900 dark:text-white">R$ {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                       </div>
-                      <div className='flex-1 p-5'>
-                        <div className='flex justify-between items-start'>
-                          <div>
-                            <h3 className='font-black text-slate-900 dark:text-white text-lg'>
-                              {tenant.property || tenant.contract?.property_name || 'Imóvel vinculado'}
-                            </h3>
-                            <p className='flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium'>
-                              <MapPin size={12} className='text-primary' />
-                              {tenant.property_address || 'Endereço não disponível'}
-                            </p>
-                          </div>
-                          <ArrowUpRight size={18} className='text-slate-300 group-hover:text-primary transition-colors' />
-                        </div>
-                        
-                        <div className='flex items-center gap-4 mt-4'>
-                          <div className='flex flex-col'>
-                            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-tight'>Mensalidade</span>
-                            <span className='font-black text-slate-900 dark:text-white'>
-                              R$ {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                            </span>
-                          </div>
-                          <div className='w-px h-6 bg-slate-100 dark:bg-white/10' />
-                          <div className='flex flex-col'>
-                            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-tight'>Vencimento</span>
-                            <span className='font-bold text-slate-900 dark:text-white text-sm'>
-                              Todo dia {tenant.contract?.payment_day || '10'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Metrics Grid */}
-                  <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-                    <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-colors cursor-default group'>
-                      <div className='flex justify-between items-start mb-2'>
-                        <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Pontualidade</p>
-                        <Star size={14} className='text-amber-500 group-hover:animate-pulse' />
-                      </div>
-                      <p className='text-2xl font-black text-emerald-500'>{financialSummary.punctualityRate}%</p>
-                    </div>
-                    
-                    <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                      <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2'>Total Pago</p>
-                      <p className='text-2xl font-black text-slate-900 dark:text-white'>
-                        <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
-                        {financialSummary.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                      </p>
-                    </div>
-
-                    <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                      <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2'>Em Aberto</p>
-                      <p className={`text-2xl font-black ${financialSummary.totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
-                        <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
-                        {financialSummary.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                      </p>
-                    </div>
-
-                    <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                      <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2'>Mensalidade</p>
-                      <p className='text-2xl font-black text-indigo-500'>
-                        <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
-                        {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Contract Progress Card */}
-                  <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                    <div className='flex justify-between items-center mb-4'>
-                      <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-                        <ShieldCheck size={18} className='text-primary' />
-                        Vigência do Contrato
-                      </h3>
-                      <span className='text-xs font-bold text-slate-500'>{contractProgress}% concluído</span>
-                    </div>
-                    <div className='w-full h-3 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-4'>
-                      <div className='h-full bg-primary rounded-full transition-all duration-1000' style={{ width: `${contractProgress}%` }}></div>
-                    </div>
-                    <div className='flex justify-between text-xs font-medium text-slate-500'>
-                      <div className='flex flex-col'>
-                        <span>Início</span>
-                        <span className='font-bold text-slate-900 dark:text-white'>{tenant.contract ? new Date(tenant.contract.start_date).toLocaleDateString('pt-BR') : '-'}</span>
-                      </div>
-                      <div className='flex flex-col text-right'>
-                        <span>Fim</span>
-                        <span className='font-bold text-slate-900 dark:text-white'>{tenant.contract ? new Date(tenant.contract.end_date).toLocaleDateString('pt-BR') : '-'}</span>
+                      <div className="w-px h-6 bg-slate-100 dark:bg-white/10" />
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Vencimento</span>
+                        <span className="font-bold text-slate-900 dark:text-white text-sm">Todo dia {tenant.contract?.payment_day || '10'}</span>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* RIGHT COLUMN (42%) - The Live Activity Feed */}
-                <div className='lg:col-span-5 space-y-8'>
-                  <div className='flex items-center justify-between mb-4'>
-                    <h3 className='text-[11px] font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-widest'>
-                      <History size={16} className='text-primary' /> Histórico Live
-                    </h3>
-                    <span className='px-2.5 py-1 rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500 uppercase flex items-center gap-1.5 animate-pulse'>
-                      <span className='w-1.5 h-1.5 rounded-full bg-emerald-500'></span>
-                      Real-time
-                    </span>
+              {/* Quick Metrics Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-colors cursor-default group">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pontualidade</p>
+                    <Star size={14} className="text-amber-500 group-hover:animate-pulse" />
                   </div>
+                  <p className="text-2xl font-black text-emerald-500">{financialSummary.punctualityRate}%</p>
+                </div>
+                <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Pago</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white">
+                    <span className="text-xs font-bold mr-1 text-slate-400">R$</span>
+                    {financialSummary.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Em Aberto</p>
+                  <p className={`text-2xl font-black ${financialSummary.totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
+                    <span className="text-xs font-bold mr-1 text-slate-400">R$</span>
+                    {financialSummary.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Mensalidade</p>
+                  <p className="text-2xl font-black text-indigo-500">
+                    <span className="text-xs font-bold mr-1 text-slate-400">R$</span>
+                    {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+              </div>
 
-                  <div className='relative space-y-12 before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
-                    {(() => {
-                      const timelineEvents = [
-                        ...(tenant.contract ? [{
-                          id: 'contract-start',
-                          type: 'contract',
-                          date: tenant.contract.start_date,
-                          title: 'Contrato Assinado',
-                          description: `Locação iniciada no ${tenant.property}`,
-                          icon: FileText,
-                          color: 'bg-primary text-white'
-                        }] : []),
-                        ...payments.map(p => ({
-                          id: p.id,
-                          type: 'payment',
-                          date: p.paid_date || p.due_date,
-                          title: p.status === 'paid' ? 'Pagamento' : 'Fatura Aberta',
-                          description: `Ref. ${new Date(p.due_date).toLocaleString('pt-BR', { month: 'short' })} • R$ ${Number(p.amount).toLocaleString('pt-BR')}`,
-                          status: p.status,
-                          icon: p.status === 'paid' ? CheckCircle2 : Clock,
-                          color: p.status === 'paid' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
-                        })),
-                        ...maintenance.map(m => ({
-                          id: m.id,
-                          type: 'maintenance',
-                          date: m.created_at,
-                          title: `Chamado: ${m.title}`,
-                          description: `${m.status === 'completed' ? 'Finalizado' : 'Em atendimento'}`,
-                          status: m.status,
-                          icon: m.status === 'completed' ? CheckCircle2 : Settings2,
-                          color: m.status === 'completed' ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-white',
-                          image: m.images?.[0]
-                        }))
-                      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-                      if (timelineEvents.length === 0) {
-                        return <p className='text-xs text-slate-400 ml-10'>Sem histórico.</p>;
-                      }
-
-                      return timelineEvents.slice(0, 10).map((event) => (
-                        <div key={event.id} className='relative flex gap-5 items-start pl-0.5 group'>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 shrink-0 shadow-md ${event.color} transition-all group-hover:scale-110 border-4 border-white dark:border-background-dark`}>
-                            <event.icon size={16} />
-                          </div>
-                          <div className='flex-1 pt-0.5'>
-                            <div className='flex justify-between items-start gap-2'>
-                              <p className='text-sm font-bold text-slate-900 dark:text-white leading-tight'>{event.title}</p>
-                              <span className='text-[10px] font-black text-slate-400 uppercase whitespace-nowrap pt-0.5'>
-                                {new Date(event.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                              </span>
-                            </div>
-                            <p className='text-[13px] text-slate-500 mt-0.5 leading-relaxed'>
-                              {event.description}
-                            </p>
-                            {event.image && (
-                              <div className='mt-3 w-20 h-20 rounded-xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm'>
-                                <img src={event.image} className='w-full h-full object-cover' />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ));
-                    })()}
+              {/* Contract Progress Card */}
+              <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <ShieldCheck size={18} className="text-primary" />
+                    Vigência do Contrato
+                  </h3>
+                  <span className="text-xs font-bold text-slate-500">{contractProgress}% concluído</span>
+                </div>
+                <div className="w-full h-3 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-4">
+                  <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${contractProgress}%` }}></div>
+                </div>
+                <div className="flex justify-between text-xs font-medium text-slate-500">
+                  <div className="flex flex-col">
+                    <span>Início</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{tenant.contract ? new Date(tenant.contract.start_date).toLocaleDateString('pt-BR') : '-'}</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span>Fim</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{tenant.contract ? new Date(tenant.contract.end_date).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
                 </div>
               </div>
@@ -762,6 +665,173 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   <p className='text-xs text-slate-400 mt-2'>Configure o perfil esperado nos detalhes do imóvel.</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'history' && (
+            <div className="animate-fadeIn space-y-6">
+              {/* Header bar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-[11px] font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-widest">
+                    <Clock size={14} className="text-primary" /> Linha do Tempo
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-tighter">Eventos cronológicos do perfil</p>
+                </div>
+                {/* Filter pills */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {([['all', 'Todos'], ['payments', 'Pagamentos'], ['maintenance', 'Chamados'], ['contracts', 'Contratos']] as const).map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => setTimelineFilter(val)}
+                      className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                        timelineFilter === val
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-[10px] font-black text-emerald-500 uppercase flex items-center gap-1.5 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Real-time
+                </span>
+              </div>
+
+              {/* Timeline content */}
+              {(() => {
+                const allEvents = [
+                  ...(tenant.contract
+                    ? [
+                        {
+                          id: 'contract-start',
+                          type: 'contracts' as const,
+                          date: tenant.contract.start_date,
+                          title: 'Contrato Assinado',
+                          description: `Locação iniciada em ${tenant.property}`,
+                          icon: FileText,
+                          color: 'bg-primary text-white',
+                          contractNumber: tenant.contract.contract_number || `CTR-${String(tenant.contract.id).substring(0, 6).toUpperCase()}`,
+                          contractId: tenant.contract.id,
+                        },
+                      ]
+                    : []),
+                  ...payments.map((p) => ({
+                    id: String(p.id),
+                    type: 'payments' as const,
+                    date: p.paid_date || p.due_date,
+                    title: p.status === 'paid' ? 'Pagamento Recebido' : 'Fatura em Aberto',
+                    description: `Ref. ${new Date(p.due_date).toLocaleString('pt-BR', { month: 'short', year: 'numeric' })} • R$ ${Number(p.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                    status: p.status,
+                    paymentMethod: p.payment_method,
+                    icon: p.status === 'paid' ? CheckCircle2 : Clock,
+                    color: p.status === 'paid' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white',
+                  })),
+                  ...maintenance.map((m) => ({
+                    id: String(m.id),
+                    type: 'maintenance' as const,
+                    date: m.created_at,
+                    title: m.title,
+                    description: m.status === 'completed' ? 'Chamado finalizado' : 'Em atendimento',
+                    status: m.status,
+                    category: m.category,
+                    icon: m.status === 'completed' ? CheckCircle2 : Wrench,
+                    color: m.status === 'completed' ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-white',
+                    image: m.images?.[0],
+                  })),
+                ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                const filtered = timelineFilter === 'all' ? allEvents : allEvents.filter((e) => e.type === timelineFilter);
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="py-20 text-center">
+                      <Clock size={40} className="text-slate-200 dark:text-white/10 mx-auto mb-3" />
+                      <p className="text-slate-400 font-bold text-sm">Nenhum evento encontrado.</p>
+                    </div>
+                  );
+                }
+
+                // Group by month
+                const grouped: Record<string, typeof filtered> = {};
+                filtered.forEach((ev) => {
+                  const key = new Date(ev.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                  if (!grouped[key]) grouped[key] = [];
+                  grouped[key].push(ev);
+                });
+
+                return (
+                  <div className="space-y-8">
+                    {Object.entries(grouped).map(([monthLabel, events]) => (
+                      <div key={monthLabel}>
+                        {/* Month separator */}
+                        <div className="flex items-center gap-3 mb-6">
+                          <span className="h-px flex-1 bg-slate-100 dark:bg-white/5"></span>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">{monthLabel}</span>
+                          <span className="h-px flex-1 bg-slate-100 dark:bg-white/5"></span>
+                        </div>
+                        {/* Events in this month */}
+                        <div className="relative space-y-8 before:absolute before:left-[19px] before:top-1 before:bottom-1 before:w-0.5 before:bg-gradient-to-b before:from-primary/40 before:via-slate-200 dark:before:via-white/10 before:to-transparent">
+                          {events.map((event) => (
+                            <div key={event.id} className="relative flex gap-5 items-start group">
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center z-10 shrink-0 shadow-md ${event.color} border-4 border-background-light dark:border-background-dark transition-transform group-hover:scale-110`}
+                              >
+                                <event.icon size={15} />
+                              </div>
+                              <div className="flex-1 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 p-4 shadow-sm group-hover:border-primary/30 transition-all">
+                                <div className="flex justify-between items-start gap-2 mb-1">
+                                  <p className="text-sm font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors">{event.title}</p>
+                                  <span className="text-[10px] font-black text-slate-400 uppercase whitespace-nowrap">
+                                    {new Date(event.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 font-medium leading-relaxed">{event.description}</p>
+                                {/* Payment extras */}
+                                {'paymentMethod' in event && event.paymentMethod && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <span className="text-[10px] font-bold text-slate-400">
+                                      via {event.paymentMethod === 'pix' ? 'Pix' : event.paymentMethod === 'boleto' ? 'Boleto' : 'Cartão'}
+                                    </span>
+                                    {'status' in event && event.status === 'paid' && (
+                                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-[9px] font-black text-emerald-600 uppercase tracking-wider">Liquidado</span>
+                                    )}
+                                    {'status' in event && event.status !== 'paid' && (
+                                      <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-[9px] font-black text-amber-600 uppercase tracking-wider">Pendente</span>
+                                    )}
+                                  </div>
+                                )}
+                                {/* Contract badge */}
+                                {'contractNumber' in event && (
+                                  <button
+                                    onClick={() => setActiveTab('docs')}
+                                    className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/5 hover:bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wide transition-colors"
+                                  >
+                                    <Hash size={10} />
+                                    {event.contractNumber}
+                                  </button>
+                                )}
+                                {/* Maintenance category + image */}
+                                {'category' in event && event.category && (
+                                  <span className="mt-2 inline-flex px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 text-[9px] font-black text-slate-500 uppercase tracking-wider">
+                                    {event.category}
+                                  </span>
+                                )}
+                                {'image' in event && event.image && (
+                                  <div className="mt-3 w-20 h-20 rounded-xl overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm">
+                                    <img src={event.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>

@@ -14,18 +14,8 @@ const mapContract = (row: any): Contract => ({
   payment_day: row.payment_day,
   status: row.status,
   pdf_url: row.pdf_url,
-  // Mocking signers/history for now as they require separate tables not in basic schema
-  signers: [
-    { id: '1', role: 'owner', name: 'Você', email: '', status: 'signed' },
-    {
-      id: '2',
-      role: 'tenant',
-      name: row.profiles_tenant?.name,
-      email: row.profiles_tenant?.email,
-      status: row.status === 'active' ? 'signed' : 'pending',
-    },
-  ],
-  history: [],
+  signers: row.signers || [],
+  history: row.history || [],
 });
 
 export const contractService = {
