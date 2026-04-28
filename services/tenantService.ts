@@ -10,8 +10,11 @@ export const tenantService = {
       .select(`
         *,
         contracts:contracts!contracts_tenant_id_fkey(
+          id,
           status,
-          property:properties(name)
+          monthly_value,
+          payment_day,
+          property:properties(id, name)
         )
       `)
       .eq('role', 'tenant');
@@ -22,9 +25,14 @@ export const tenantService = {
     }
 
     return data.map((t: any) => {
-      // Find active contract to get the property name
-      const activeContract = t.contracts?.find((c: any) => c.status === 'active') || t.contracts?.[0];
-      const propertyName = activeContract?.property?.name || 'Imóvel não vinculado';
+      // Find active contract
+      const activeContract = Array.isArray(t.contracts) 
+        ? (t.contracts.find((c: any) => c.status === 'active') || t.contracts[0])
+        : t.contracts;
+
+      // Handle property which might come as an array or object
+      const propertyData = activeContract?.property;
+      const property = Array.isArray(propertyData) ? propertyData[0] : propertyData;
 
       return {
         id: t.id,
@@ -35,7 +43,14 @@ export const tenantService = {
         image: t.avatar_url,
         status: activeContract?.status || 'active',
         is_pending: t.is_pending,
-        property: propertyName,
+        property: property?.name || 'NÃO VINCULADO',
+        property_id: property?.id,
+        contract: activeContract ? {
+          id: activeContract.id,
+          monthly_value: activeContract.monthly_value,
+          status: activeContract.status,
+          payment_day: activeContract.payment_day
+        } : undefined
       };
     });
   },
@@ -148,56 +163,51 @@ export const tenantService = {
   },
 
   async getDocuments(tenantId: string): Promise<any[]> {
-    // 1. Get tenant info to find property_id
-    const { data: tenant } = await supabase
-      .from('profiles')
-      .select('property_id, cpf')
-      .eq('id', tenantId)
-      .single();
-
-    if (!tenant) return [];
-
-    // 2. Get contract for PDF link
-    const { data: contract } = await supabase
+    // 1. Get contract to find property_id and pdf_url
+    const { data: contract, error: contractError } = await supabase
       .from('contracts')
-      .select('pdf_url')
+      .select('property_id, pdf_url')
       .eq('tenant_id', tenantId)
+      .eq('status', 'active')
       .maybeSingle();
 
-    const docs = [];
+    if (contractError) {
+      console.error('[tenantService] Error fetching contract for docs:', contractError);
+    }
+
+    const docs: any[] = [];
     
-    // Add contract if exists
+    // Add contract PDF if it exists
     if (contract?.pdf_url) {
       docs.push({ 
         id: 'contract-pdf',
         name: 'Contrato de Locação', 
         type: 'PDF', 
         url: contract.pdf_url, 
-        uploadDate: 'Assinado',
+        date: 'Vigente',
         category: 'Jurídico',
         status: 'Validado'
       });
     }
 
-    // 3. Fetch documents from property_documents table
-    if (tenant.property_id) {
-      const { data: propertyDocs, error } = await supabase
+    // 2. Fetch documents from property_documents table using the property_id from contract
+    const propertyId = contract?.property_id;
+    if (propertyId) {
+      const { data: propertyDocs, error: docsError } = await supabase
         .from('property_documents')
         .select('*')
-        .eq('property_id', tenant.property_id)
+        .eq('property_id', propertyId)
         .order('created_at', { ascending: false });
 
-      if (!error && propertyDocs) {
+      if (!docsError && propertyDocs) {
         propertyDocs.forEach(doc => {
-          // For security/privacy, we could filter categories here if needed
-          // For now, tenants see everything associated with the property
           docs.push({
             id: doc.id,
             name: doc.name,
             category: doc.category,
             type: doc.type,
             size: doc.size || '0 KB',
-            uploadDate: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            date: new Date(doc.created_at).toLocaleDateString('pt-BR'),
             status: doc.status,
             url: doc.url
           });
@@ -206,5 +216,20 @@ export const tenantService = {
     }
 
     return docs;
+  },
+
+  async getMaintenanceRequests(tenantId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('maintenance_requests')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[tenantService] Error fetching maintenance requests:', error);
+      return [];
+    }
+
+    return data;
   },
 };

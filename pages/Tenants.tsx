@@ -106,6 +106,24 @@ const Tenants: React.FC = () => {
   };
 
   const getPaymentStatus = (tenant: Tenant) => {
+    // 1. Onboarding & Setup States (Prevent false alerts)
+    if ((tenant as any).is_pending) {
+      return {
+        type: 'Pendente',
+        label: 'Convite Pendente',
+        color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      };
+    }
+
+    if (!(tenant as any).property_id && !tenant.property) {
+      return {
+        type: 'Incompleto',
+        label: 'Sem Imóvel',
+        color: 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400',
+      };
+    }
+
+    // 2. Payment Logic
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const currentMonth = today.getMonth();
@@ -164,7 +182,8 @@ const Tenants: React.FC = () => {
 
   const handleWhatsAppInvite = (e: React.MouseEvent, tenant: any) => {
     e.stopPropagation();
-    const message = `Olá ${tenant.name}! Boas-vindas ao IGLOO. 🏠\n\nSou seu proprietário e estou te convidando para gerenciar nosso aluguel pela plataforma. Por lá você acessa boletos, assina contratos e solicita manutenção.\n\nComplete seu cadastro aqui: https://igloo-app.vercel.app/signup?email=${encodeURIComponent(tenant.email)}`;
+    const baseUrl = window.location.origin;
+    const message = `Olá ${tenant.name}! Boas-vindas ao IGLOO. 🏠\n\nSou seu proprietário e estou te convidando para gerenciar nosso aluguel pela plataforma. Por lá você acessa boletos, assina contratos e solicita manutenção.\n\nComplete seu cadastro aqui: ${baseUrl}/signup?email=${encodeURIComponent(tenant.email)}`;
     window.open(`https://wa.me/${tenant.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -238,120 +257,117 @@ const Tenants: React.FC = () => {
             <div
               key={t.id}
               onClick={() => setSelectedTenantId(t.id.toString())}
-              className='group flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-transparent dark:border-white/5 hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative select-none overflow-hidden'
+              className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 hover:border-primary/50 transition-colors duration-200 cursor-pointer overflow-hidden'
             >
-              <div className='p-4 flex items-start gap-4'>
+              <div className='p-5 flex items-center gap-5'>
+                {/* Minimalist Avatar */}
                 <div className='relative shrink-0'>
                   {t.image ? (
                     <div
-                      className='h-14 w-14 rounded-2xl bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-sm'
+                      className='h-12 w-12 rounded-xl bg-cover bg-center grayscale-[0.5] group-hover:grayscale-0 transition-all'
                       style={{ backgroundImage: `url(${t.image})` }}
                     ></div>
                   ) : (
-                    <div className='h-14 w-14 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border-2 border-white dark:border-surface-dark shadow-sm text-indigo-600 dark:text-indigo-400 font-bold text-xl'>
+                    <div className='h-12 w-12 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-lg'>
                       {t.name[0]}
                     </div>
                   )}
                 </div>
 
-                <div className='flex flex-1 flex-col justify-center min-w-0'>
-                  <div className='flex justify-between items-start'>
-                    <h3 className='text-slate-900 dark:text-white text-base font-bold truncate pr-2 leading-tight group-hover:text-primary transition-colors'>
+                {/* Info Section */}
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-center justify-between mb-1'>
+                    <h3 className='text-slate-900 dark:text-white text-base font-bold truncate tracking-tight'>
                       {t.name}
                     </h3>
-                    <ChevronRight
-                      className='text-gray-300 dark:text-gray-600 group-hover:text-primary transition-colors'
-                      size={20}
-                    />
-                  </div>
-                  <p className='text-slate-500 dark:text-slate-400 text-xs font-medium mt-1 uppercase tracking-wider'>
-                    {t.property || properties.find(p => p.id === (t as any).property_id)?.name || 'Imóvel não vinculado'}
-                  </p>
-
-                  <div className='flex items-center justify-between mt-4'>
-                    {/* Quick Actions */}
-                    <div className='flex gap-2'>
-                      {(t as any).is_pending ? (
-                        <>
-                          <button
-                            onClick={(e) => handleWhatsAppInvite(e, t)}
-                            className='px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-[10px] font-bold border border-emerald-100 dark:border-emerald-500/20'
-                          >
-                            <MessageCircle size={14} /> WhatsApp
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigator.clipboard.writeText(`https://igloo-app.vercel.app/signup?email=${t.email}`);
-                              addToast('Link Copiado', 'O link de convite foi copiado para a área de transferência.', 'success');
-                            }}
-                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-all flex items-center gap-1.5 text-[10px] font-bold'
-                          >
-                            <FileText size={14} /> Link
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setBillingTenant(t);
-                            }}
-                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
-                            title='Gerar Cobrança'
-                          >
-                            <DollarSign size={14} /> <span className='hidden sm:inline'>Cobrar</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              console.log('Msg');
-                            }}
-                            className='px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold'
-                            title='Enviar Mensagem'
-                          >
-                            <MessageCircle size={14} /> <span className='hidden sm:inline'>Msg</span>
-                          </button>
-                        </>
-                      )}
-                    </div>
-
-                    <div className='flex items-center gap-3'>
-                      {/* Monthly Payment Status Badge */}
-                      {(() => {
-                        const status = getPaymentStatus(t);
-                        return (
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border border-transparent shadow-sm ${status.color}`}
-                          >
+                    
+                    {(() => {
+                      const status = getPaymentStatus(t);
+                      return (
+                        <div className='flex items-center gap-1.5'>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
+                            status.type === 'Atrasado' 
+                              ? 'bg-red-500 text-white' 
+                              : status.type === 'Pendente'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-emerald-500 text-white'
+                          }`}>
                             {status.label}
                           </span>
-                        );
-                      })()}
+                          {status.type === 'Pendente' && (
+                            <span 
+                              className='cursor-help flex items-center justify-center w-3 h-3 rounded-full border border-slate-300 dark:border-white/20 text-[8px] font-bold text-slate-400 dark:text-slate-500 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors'
+                              title="Este inquilino já foi convidado, mas ainda não completou o cadastro e a criação de senha no aplicativo."
+                            >
+                              ?
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
 
-                      <div className='text-right'>
-                        {(t as any).is_pending ? (
-                          <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider mb-1 shadow-sm shadow-amber-900/20'>
-                            <Mail size={10} /> Convite Pendente
-                          </span>
-                        ) : t.status === 'late' ? (
-                          <span className='inline-block px-2 py-0.5 rounded bg-red-600 text-white text-[9px] font-black uppercase tracking-wider mb-1 shadow-sm shadow-red-900/20'>
-                            Atraso Crítico
-                          </span>
-                        ) : (
-                          <p className='text-[10px] font-bold uppercase tracking-tight text-slate-400 mb-0.5'>
-                            Vence todo dia {t.due || 10}
-                          </p>
-                        )}
-                        <p className='text-sm font-bold text-slate-900 dark:text-white leading-none'>
-                          {t.rent || '-'}
-                        </p>
-                      </div>
-                    </div>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-slate-500 dark:text-slate-400 text-[11px] font-medium flex items-center gap-1'>
+                      <Briefcase size={12} />
+                      {t.property || (t as any).contract?.property?.name || 'NÃO VINCULADO'}
+                    </p>
+                    <span className='text-slate-300 dark:text-slate-700'>•</span>
+                    <p className='text-slate-900 dark:text-slate-200 text-[11px] font-bold'>
+                      R$ {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  {/* Clean Actions Area */}
+                  <div className='flex gap-2 mt-4'>
+                    {(t as any).is_pending ? (
+                      <>
+                        <button
+                          onClick={(e) => handleWhatsAppInvite(e, t)}
+                          className='h-7 px-3 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
+                        >
+                          <MessageCircle size={12} /> WhatsApp
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const baseUrl = window.location.origin;
+                            navigator.clipboard.writeText(`${baseUrl}/signup?email=${t.email}`);
+                            addToast('Link Copiado', 'Link copiado.', 'success');
+                          }}
+                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
+                        >
+                          <FileText size={12} /> Copiar Link
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
+                          className='h-7 px-3 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
+                        >
+                          <DollarSign size={12} /> Cobrar
+                        </button>
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className='h-7 w-7 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center'
+                        >
+                          <Mail size={12} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
+
+                {/* Navigation Indicator */}
+                <div className='shrink-0'>
+                  <ChevronRight className='text-slate-300 dark:text-slate-700 group-hover:text-primary transition-colors' size={20} />
+                </div>
               </div>
-              {t.status === 'late' && <div className='bg-red-500 h-1 w-full'></div>}
+              
+              {(getPaymentStatus(t).type === 'Atrasado' || t.status === 'late') && (
+                <div className='absolute bottom-0 left-0 right-0 h-1 bg-red-500'></div>
+              )}
             </div>
           ))
         ) : (
