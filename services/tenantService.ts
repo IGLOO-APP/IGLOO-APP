@@ -148,19 +148,63 @@ export const tenantService = {
   },
 
   async getDocuments(tenantId: string): Promise<any[]> {
-    // In a real app, this might come from a 'documents' table or storage
-    // For now, we return empty as there's no table, or we can check the profiles/contracts for files
-    const { data: tenant } = await supabase.from('profiles').select('cpf').eq('id', tenantId).single();
-    const { data: contract } = await supabase.from('contracts').select('pdf_url').eq('tenant_id', tenantId).single();
+    // 1. Get tenant info to find property_id
+    const { data: tenant } = await supabase
+      .from('profiles')
+      .select('property_id, cpf')
+      .eq('id', tenantId)
+      .single();
+
+    if (!tenant) return [];
+
+    // 2. Get contract for PDF link
+    const { data: contract } = await supabase
+      .from('contracts')
+      .select('pdf_url')
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
 
     const docs = [];
+    
+    // Add contract if exists
     if (contract?.pdf_url) {
-      docs.push({ name: 'Contrato de Locação', type: 'PDF', url: contract.pdf_url, date: 'Recente' });
+      docs.push({ 
+        id: 'contract-pdf',
+        name: 'Contrato de Locação', 
+        type: 'PDF', 
+        url: contract.pdf_url, 
+        uploadDate: 'Assinado',
+        category: 'Jurídico',
+        status: 'Validado'
+      });
     }
-    if (tenant?.cpf) {
-      docs.push({ name: 'Documento Identidade (CPF)', type: 'INFO', url: '#', date: 'Cadastrado' });
+
+    // 3. Fetch documents from property_documents table
+    if (tenant.property_id) {
+      const { data: propertyDocs, error } = await supabase
+        .from('property_documents')
+        .select('*')
+        .eq('property_id', tenant.property_id)
+        .order('created_at', { ascending: false });
+
+      if (!error && propertyDocs) {
+        propertyDocs.forEach(doc => {
+          // For security/privacy, we could filter categories here if needed
+          // For now, tenants see everything associated with the property
+          docs.push({
+            id: doc.id,
+            name: doc.name,
+            category: doc.category,
+            type: doc.type,
+            size: doc.size || '0 KB',
+            uploadDate: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            status: doc.status,
+            url: doc.url
+          });
+        });
+      }
     }
 
     return docs;
-  }
+  },
 };

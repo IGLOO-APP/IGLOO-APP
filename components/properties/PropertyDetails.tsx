@@ -37,8 +37,10 @@ import { ModalWrapper } from '../ui/ModalWrapper';
 import { PropertyInspection } from './PropertyInspection';
 import { PropertyDocuments } from './PropertyDocuments';
 import { TenantProfileConfigPanel } from './TenantProfileConfigPanel';
-import { tenantService } from '../../services/tenantService';
 import { supabase } from '../../lib/supabase';
+import { useQuery } from '@tanstack/react-query';
+import { calculateTenantFinancials } from '../../utils/financialCalculations';
+import { useNavigate } from 'react-router-dom';
 
 interface PropertyDetailsProps {
   property: Property;
@@ -51,6 +53,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
   const [activeTab, setActiveTab] = useState<'overview' | 'inspections' | 'docs' | 'tenantConfig'>('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullscreenImage, setShowFullscreenImage] = useState(false);
+  const navigate = useNavigate();
 
   // Use real gallery images if available, fallback to mock for demo if empty
   const images = property.galleryImages && property.galleryImages.length > 0 
@@ -409,7 +412,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
 
           {activeTab === 'tenantConfig' && (
             <div className='animate-fadeIn'>
-              <TenantTabContent property={property} />
+              <TenantTabContent property={property} onClose={onClose} />
             </div>
           )}
         </div>
@@ -458,32 +461,29 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
 };
 
 // --- New Sub-Component: Tenant Tab Content ---
-const TenantTabContent: React.FC<{ property: any }> = ({ property }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'config'>(
-    property.status === 'ALUGADO' ? 'profile' : 'config'
-  );
-  const [payments, setPayments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
+const TenantTabContent: React.FC<{ property: Property, onClose: () => void }> = ({ property, onClose }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'config'>('profile');
+  const navigate = useNavigate();
   const tenant = property.tenant;
-  const contract = property.contract;
 
-  React.useEffect(() => {
-    if (contract?.id) {
-      setLoading(true);
-      tenantService.getPayments(contract.id)
-        .then(data => setPayments(data))
-        .finally(() => setLoading(false));
+  const navigateToTenant = () => {
+    if (tenant?.id) {
+      onClose();
+      navigate(`/tenants?id=${tenant.id}`);
     }
-  }, [contract?.id]);
+  };
 
-  // Calculate real metrics
-  const paidPayments = payments.filter(p => p.status === 'paid').length;
-  const totalRelevantPayments = payments.filter(p => p.status !== 'cancelled' && p.status !== 'pending').length;
-  const latePayments = payments.filter(p => p.status === 'late').length;
+  const { data: payments = [], isLoading: loading } = useQuery({
+    queryKey: ['tenant-payments', tenant?.id],
+    queryFn: () => tenantService.getPayments(tenant!.id.toString()),
+    enabled: !!tenant?.id,
+  });
 
-  const paymentScore = totalRelevantPayments === 0 ? 'Sem Histórico' : (paidPayments / totalRelevantPayments > 0.9 ? 'Excelente' : 'Bom');
-  const trustLevel = Math.min(100, 85 + (paidPayments * 2) - (latePayments * 5) + (tenant?.is_verified ? 10 : 0));
+  const financialSummary = calculateTenantFinancials(payments);
+  const trustLevel = financialSummary.punctualityRate;
+  const paymentScore = `${financialSummary.punctualityRate}%`;
+  const paidPayments = financialSummary.paidCount;
+  const contract = property.contract;
 
   const getDaysInProperty = () => {
     if (!contract?.start_date) return 'Data não disponível';
@@ -530,10 +530,13 @@ const TenantTabContent: React.FC<{ property: any }> = ({ property }) => {
         property.status === 'ALUGADO' && tenant ? (
           <div className='space-y-6 animate-fadeIn'>
             {/* 1. Main Tenant Card */}
-            <div className='bg-white dark:bg-surface-dark rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden'>
+            <div 
+              onClick={navigateToTenant}
+              className='bg-white dark:bg-surface-dark rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all group'
+            >
               <div className='flex flex-col md:flex-row'>
                 {/* Photo & Basic Info */}
-                <div className='p-8 md:w-80 bg-slate-50 dark:bg-black/10 border-r border-gray-100 dark:border-white/5 flex flex-col items-center text-center'>
+                <div className='p-8 md:w-80 bg-slate-50 dark:bg-black/10 border-r border-gray-100 dark:border-white/5 flex flex-col items-center text-center group-hover:bg-slate-100 dark:group-hover:bg-black/20 transition-colors'>
                   <div className='relative mb-6'>
                     <div className='w-32 h-32 rounded-full border-4 border-white dark:border-surface-dark shadow-2xl overflow-hidden bg-slate-100 flex items-center justify-center'>
                       {tenant.image ? (
@@ -570,14 +573,20 @@ const TenantTabContent: React.FC<{ property: any }> = ({ property }) => {
                     <div>
                       <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2'>Saúde Financeira</span>
                       <div className='flex items-center gap-4'>
-                        <div className='w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0'>
-                          <TrendingUp size={24} />
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                          financialSummary.isLate 
+                            ? 'bg-red-500/10 text-red-500' 
+                            : 'bg-emerald-500/10 text-emerald-500'
+                        }`}>
+                          {financialSummary.isLate ? <AlertCircle size={24} /> : <TrendingUp size={24} />}
                         </div>
                         <div>
                           <div className='text-lg font-black text-slate-900 dark:text-white leading-none mb-1'>
                             {loading ? <Loader2 size={16} className='animate-spin' /> : paymentScore}
                           </div>
-                          <div className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Score de Pontualidade</div>
+                          <div className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                            {financialSummary.isLate ? 'Status: Inadimplente' : 'Score de Pontualidade'}
+                          </div>
                         </div>
                       </div>
                     </div>

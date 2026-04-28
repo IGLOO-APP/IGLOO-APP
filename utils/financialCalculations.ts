@@ -277,3 +277,76 @@ export const generateCashFlowProjection = (pastData: any[], contracts: Contract[
 
   return [...processedPast, ...futureData];
 };
+// --- 6. TENANT FINANCIAL SUMMARY (Verdade Única) ---
+
+export interface TenantFinancialSummary {
+  totalPaid: number;
+  totalPending: number;
+  punctualityRate: number;
+  paidCount: number;
+  totalCount: number;
+  nextDueDate: string | null;
+  daysLate: number;
+  isLate: boolean;
+}
+
+export const calculateTenantFinancials = (payments: any[]): TenantFinancialSummary => {
+  if (!payments || payments.length === 0) {
+    return {
+      totalPaid: 0,
+      totalPending: 0,
+      punctualityRate: 100,
+      paidCount: 0,
+      totalCount: 0,
+      nextDueDate: null,
+      daysLate: 0,
+      isLate: false,
+    };
+  }
+
+  const totalPaid = payments
+    .filter((p) => p.status === 'paid')
+    .reduce((acc, p) => acc + Number(p.amount || 0), 0);
+
+  const totalPending = payments
+    .filter((p) => p.status === 'pending')
+    .reduce((acc, p) => acc + Number(p.amount || 0), 0);
+
+  const paidCount = payments.filter((p) => p.status === 'paid').length;
+  const totalCount = payments.length;
+  const punctualityRate = Math.round((paidCount / totalCount) * 100);
+
+  // Find the next/closest pending payment
+  const pendingPayments = payments
+    .filter((p) => p.status === 'pending')
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+
+  const nextPayment = pendingPayments[0];
+  const nextDueDate = nextPayment ? nextPayment.due_date : null;
+
+  // Calculate lateness
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const overduePayments = pendingPayments.filter((p) => new Date(p.due_date) < now);
+  const isLate = overduePayments.length > 0;
+
+  let maxDaysLate = 0;
+  if (isLate) {
+    const oldestOverdue = overduePayments[0];
+    const dueDate = new Date(oldestOverdue.due_date);
+    dueDate.setHours(0, 0, 0, 0);
+    maxDaysLate = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  return {
+    totalPaid,
+    totalPending,
+    punctualityRate,
+    paidCount,
+    totalCount,
+    nextDueDate,
+    daysLate: maxDaysLate,
+    isLate,
+  };
+};

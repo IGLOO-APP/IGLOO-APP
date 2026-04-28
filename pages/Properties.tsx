@@ -46,10 +46,19 @@ const Properties: React.FC = () => {
   useEffect(() => {
     if (location.state && (location.state as any).openAdd) {
       setShowAddForm(true);
-      // Clean state to avoid reopening on simple refresh
       window.history.replaceState({}, document.title);
     }
-  }, [location]);
+
+    // Deep linking support: open property details if ID is in URL
+    const params = new URLSearchParams(location.search);
+    const idParam = params.get('id');
+    if (idParam && properties.length > 0) {
+      const prop = properties.find(p => p.id.toString() === idParam);
+      if (prop) {
+        setSelectedProperty(prop);
+      }
+    }
+  }, [location, properties]);
 
   const handleSaveProperty = async (data: any) => {
     const newProperty: Property = {

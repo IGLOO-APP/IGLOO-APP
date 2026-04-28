@@ -88,6 +88,16 @@ const Tenants: React.FC = () => {
       setShowAddForm(true);
       window.history.replaceState({}, document.title);
     }
+
+    // Deep linking support: open tenant profile if ID is in URL
+    const params = new URLSearchParams(location.search);
+    const idParam = params.get('id');
+    if (idParam) {
+      setSelectedTenantId(idParam);
+      // Remove ID from URL to avoid reopening on refresh if not intended
+      // but keep it if we want persistent links. Usually, it's better to keep it
+      // so the user can share the link.
+    }
   }, [location]);
 
   const handleAction = (e: React.MouseEvent, type: 'tel' | 'mailto', value: string) => {

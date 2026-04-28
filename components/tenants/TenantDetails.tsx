@@ -25,13 +25,21 @@ import {
   Hash,
   Star,
   Zap,
+  Barcode,
+  ArrowRight,
+  TrendingDown,
+  Bell,
+  MoreHorizontal,
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { TenantProfileConfigPanel } from '../properties/TenantProfileConfigPanel';
 import { useQuery } from '@tanstack/react-query';
 import { tenantService } from '../../services/tenantService';
-import { Loader2 } from 'lucide-react';
+import { calculateTenantFinancials } from '../../utils/financialCalculations';
+import { Loader2, ShieldAlert, CheckCircle, Info } from 'lucide-react';
 import { formatPhone } from '../../utils/formatters';
+import { useNavigate } from 'react-router-dom';
+import { tenantConfigService } from '../../services/tenantConfigService';
 
 interface TenantDetailsProps {
   id: number | string;
@@ -41,6 +49,7 @@ interface TenantDetailsProps {
 export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'docs' | 'tenantConfig'>('overview');
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (scrollContainerRef.current) {
@@ -57,9 +66,9 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ['tenant-payments', tenant?.contract?.id],
-    queryFn: () => tenantService.getPayments(tenant!.contract!.id),
-    enabled: !!tenant?.contract?.id,
+    queryKey: ['tenant-payments', tenantId],
+    queryFn: () => tenantService.getPayments(tenantId!),
+    enabled: !!tenantId,
   });
 
   const { data: docs = [] } = useQuery({
@@ -68,17 +77,23 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     enabled: !!id,
   });
 
-  const totalPaid = payments
-    .filter((p: any) => p.status === 'paid')
-    .reduce((acc: number, p: any) => acc + Number(p.amount), 0);
+  const financialSummary = calculateTenantFinancials(payments);
 
-  const totalPending = payments
-    .filter((p: any) => p.status === 'pending')
-    .reduce((acc: number, p: any) => acc + Number(p.amount), 0);
+  const tenantRequirements = React.useMemo(() => {
+    if (!tenant?.property_id) return null;
+    return tenantConfigService.getConfigForProperty(tenant.property_id.toString());
+  }, [tenant?.property_id]);
 
   const handleWhatsApp = () => {
     if (tenant?.phone) {
       window.open(`https://wa.me/55${tenant.phone.replace(/\D/g, '')}`, '_blank');
+    }
+  };
+
+  const navigateToProperty = () => {
+    if (tenant?.property_id) {
+      onClose();
+      navigate(`/properties?id=${tenant.property_id}`);
     }
   };
 
@@ -157,21 +172,21 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                       {tenant.name}
                     </h2>
                     {/* Financial status badge */}
-                    <div className='flex items-center gap-2 mt-1.5 flex-wrap'>
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                        tenant.status === 'active'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    <div className='flex items-center gap-4 mt-2'>
+                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        financialSummary.isLate 
+                          ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                          : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                       }`}>
-                        {tenant.status === 'active' ? <BadgeCheck size={11} /> : <AlertCircle size={11} />}
-                        {tenant.status === 'active' ? 'Bom Pagador' : 'Em Atraso'}
-                      </span>
-                      {payments.length > 0 && (
-                        <span className='inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 uppercase tracking-widest'>
-                          <Star size={10} className='text-amber-500' />
-                          {Math.round((payments.filter((p: any) => p.status === 'paid').length / payments.length) * 100)}% pontualidade
-                        </span>
-                      )}
+                        {financialSummary.isLate ? (
+                          <><AlertCircle size={10} /> Inadimplente</>
+                        ) : (
+                          <><BadgeCheck size={10} /> Bom Pagador</>
+                        )}
+                      </div>
+                      <div className='flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-black uppercase tracking-widest'>
+                        <Star size={10} /> {financialSummary.punctualityRate}% Pontualidade
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -279,7 +294,10 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           {activeTab === 'overview' && (
             <div className='space-y-6 animate-fadeIn'>
               {/* Enhanced Associated Property Card */}
-              <div className='group relative overflow-hidden bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
+              <div 
+                onClick={navigateToProperty}
+                className='group relative overflow-hidden bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer'
+              >
                 <div className='flex flex-col md:flex-row'>
                   <div className='h-32 md:h-auto md:w-48 relative overflow-hidden shrink-0'>
                     {tenant.property_image ? (
@@ -342,7 +360,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                     <Star size={14} className='text-amber-500 group-hover:animate-pulse' />
                   </div>
                   <p className='text-2xl font-black text-emerald-500'>
-                    {payments.length > 0 ? `${Math.round((payments.filter((p: any) => p.status === 'paid').length / payments.length) * 100)}%` : '100%'}
+                    {financialSummary.punctualityRate}%
                   </p>
                 </div>
                 
@@ -353,18 +371,18 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   </div>
                   <p className='text-2xl font-black text-slate-900 dark:text-white'>
                     <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
-                    {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    {financialSummary.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
 
                 <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-amber-500/30 transition-colors cursor-default'>
                   <div className='flex justify-between items-start mb-2'>
                     <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Em Aberto</p>
-                    <AlertCircle size={14} className={totalPending > 0 ? 'text-amber-500' : 'text-slate-300'} />
+                    <AlertCircle size={14} className={financialSummary.totalPending > 0 ? 'text-amber-500' : 'text-slate-300'} />
                   </div>
-                  <p className={`text-2xl font-black ${totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
+                  <p className={`text-2xl font-black ${financialSummary.totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
                     <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
-                    {totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    {financialSummary.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
 
@@ -475,75 +493,130 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
 
           {activeTab === 'payments' && (
             <div className='animate-fadeIn space-y-6'>
-              <div className='flex justify-between items-center'>
-                <h3 className='font-bold text-slate-900 dark:text-white'>Fluxo Financeiro</h3>
-                <button className='text-xs font-bold text-primary flex items-center gap-1 hover:underline'>
-                  <Download size={14} /> Baixar Extrato
+              {/* Financial Summary Cards */}
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/20'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <TrendingUp size={14} className='text-emerald-500' />
+                    <p className='text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest'>Total Liquidado</p>
+                  </div>
+                  <p className='text-xl font-black text-emerald-600 dark:text-emerald-400'>
+                    <span className='text-xs mr-1 opacity-70'>R$</span>
+                    {financialSummary.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div className='bg-amber-50/50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/20'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <TrendingDown size={14} className='text-amber-500' />
+                    <p className='text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest'>Total Pendente</p>
+                  </div>
+                  <p className='text-xl font-black text-amber-600 dark:text-amber-400'>
+                    <span className='text-xs mr-1 opacity-70'>R$</span>
+                    {financialSummary.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+
+              <div className='flex justify-between items-center px-1'>
+                <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2'>
+                  <History size={16} className='text-primary' /> Extrato de Mensalidades
+                </h3>
+                <button className='text-xs font-bold text-primary flex items-center gap-1.5 hover:underline bg-primary/5 px-3 py-1.5 rounded-lg transition-colors'>
+                  <Download size={14} /> PDF
                 </button>
               </div>
 
-              <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
+              <div className='space-y-3'>
                 {payments.length > 0 ? (
-                  payments.map((pay: any) => (
-                    <div
-                      key={pay.id}
-                      className={`p-4 flex items-center justify-between border-b last:border-0 border-gray-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors`}
-                    >
-                      <div className='flex items-center gap-4'>
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            pay.status === 'paid'
-                              ? 'bg-emerald-50 text-emerald-500'
-                              : 'bg-amber-50 text-amber-500'
-                          }`}
-                        >
+                  payments.map((pay: any) => {
+                    const isLate = pay.status === 'pending' && new Date(pay.due_date) < new Date();
+                    const daysLate = isLate ? Math.floor((new Date().getTime() - new Date(pay.due_date).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+                    return (
+                      <div
+                        key={pay.id}
+                        className='group flex items-center gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-all'
+                      >
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                          pay.status === 'paid'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500'
+                            : isLate 
+                              ? 'bg-red-50 dark:bg-red-900/20 text-red-500 animate-pulse'
+                              : 'bg-amber-50 dark:bg-amber-900/20 text-amber-500'
+                        }`}>
                           {pay.status === 'paid' ? (
-                            <CheckCircle2 size={20} />
+                            <CheckCircle2 size={24} />
                           ) : (
-                            <AlertCircle size={20} />
+                            <Clock size={24} />
                           )}
                         </div>
-                        <div>
-                          <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                            Aluguel {new Date(pay.due_date).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
-                          </p>
-                          <p className='text-xs text-slate-500'>
-                            {pay.status === 'paid' ? `Pago em ${new Date(pay.paid_date).toLocaleDateString('pt-BR')}` : `Vencimento em ${new Date(pay.due_date).toLocaleDateString('pt-BR')}`}
+
+                        <div className='flex-1 min-w-0'>
+                          <div className='flex items-center gap-2'>
+                            <p className='font-black text-sm text-slate-900 dark:text-white'>
+                              Aluguel {new Date(pay.due_date).toLocaleString('pt-BR', { month: 'long' })}
+                            </p>
+                            {pay.payment_method && (
+                              <span className='px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1'>
+                                {pay.payment_method === 'pix' && <Zap size={8} />}
+                                {pay.payment_method === 'credit_card' && <CreditCard size={8} />}
+                                {pay.payment_method === 'boleto' && <Barcode size={8} />}
+                                {pay.payment_method}
+                              </span>
+                            )}
+                          </div>
+                          <p className='text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 font-medium'>
+                            {pay.status === 'paid' 
+                              ? `Liquidado em ${new Date(pay.paid_date).toLocaleDateString('pt-BR')}` 
+                              : `Vence dia ${new Date(pay.due_date).toLocaleDateString('pt-BR')}`
+                            }
+                            {isLate && (
+                              <span className='text-red-500 font-bold'>• {daysLate} dias de atraso</span>
+                            )}
                           </p>
                         </div>
+
+                        <div className='text-right mr-2'>
+                          <p className='font-black text-sm text-slate-900 dark:text-white'>
+                            R$ {Number(pay.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                          <span className={`text-[9px] font-black uppercase tracking-tighter ${
+                            pay.status === 'paid' ? 'text-emerald-500' : isLate ? 'text-red-500' : 'text-amber-500'
+                          }`}>
+                            {pay.status === 'paid' ? 'CONCLUÍDO' : isLate ? 'EM ATRASO' : 'PENDENTE'}
+                          </span>
+                        </div>
+
+                        <button className='p-2 rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100'>
+                          <MoreHorizontal size={18} />
+                        </button>
                       </div>
-                      <div className='text-right'>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                          R$ {Number(pay.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </p>
-                        <p
-                          className={`text-[10px] font-bold uppercase ${pay.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}
-                        >
-                          {pay.status === 'paid' ? 'Liquidado' : 'Aguardando'}
-                        </p>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
-                  <div className='p-20 text-center'>
-                    <p className='text-slate-400'>Nenhum histórico de pagamentos encontrado.</p>
+                  <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-dashed border-slate-200 dark:border-white/10'>
+                    <p className='text-slate-400 text-sm'>Nenhum histórico de pagamentos encontrado.</p>
                   </div>
                 )}
               </div>
 
-              <div className='p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex gap-4'>
-                <div className='h-12 w-12 rounded-xl bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 shadow-sm shrink-0'>
-                  <CreditCard size={24} />
+              {/* Next Invoice Alert */}
+              <div className='group relative p-5 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/20 flex items-center gap-4 overflow-hidden'>
+                <div className='absolute right-0 top-0 bottom-0 w-32 bg-white/10 -skew-x-12 translate-x-16 pointer-events-none' />
+                <div className='h-12 w-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0'>
+                  <Bell size={24} className='group-hover:animate-bounce' />
                 </div>
-                <div className='flex-1 min-w-0'>
-                  <p className='text-sm font-bold text-indigo-900 dark:text-indigo-200'>
-                    Próxima Fatura
+                <div className='flex-1 min-w-0 z-10'>
+                  <p className='text-xs font-black text-indigo-100 uppercase tracking-widest opacity-80'>
+                    Próximo Recebimento
                   </p>
-                  <p className='text-xs text-indigo-700/70 dark:text-indigo-300/70 mt-0.5'>
-                    Vencimento previsto para Abril (Dia 10).
+                  <p className='text-lg font-black text-white leading-tight'>
+                    Dia {tenant.contract?.payment_day || '10'} do próximo mês
                   </p>
                 </div>
-                <ChevronRight className='text-indigo-400 self-center' />
+                <button className='h-10 w-10 rounded-xl bg-white text-indigo-600 flex items-center justify-center shadow-lg transition-transform active:scale-90 z-10'>
+                  <ArrowRight size={20} />
+                </button>
               </div>
             </div>
           )}
@@ -585,10 +658,83 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           )}
 
           {activeTab === 'tenantConfig' && (
-            <div className='animate-fadeIn'>
-              <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                <p className='text-slate-400'>Nenhuma exigência configurada.</p>
+            <div className='animate-fadeIn space-y-6'>
+              <div className='flex items-center justify-between px-1'>
+                <h3 className='font-bold text-slate-900 dark:text-white'>Checklist de Conformidade</h3>
+                <span className='text-[10px] font-black bg-primary/10 text-primary px-2 py-1 rounded-lg uppercase tracking-widest'>
+                  Perfil Alvo: {tenantRequirements?.propertyId === 'global' ? 'Padrão' : 'Personalizado'}
+                </span>
               </div>
+
+              {tenantRequirements ? (
+                <div className='space-y-6'>
+                  {/* Category: Personal */}
+                  <div className='space-y-3'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 text-xs'>Dados Pessoais</p>
+                    <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 divide-y divide-gray-50 dark:divide-white/5 overflow-hidden'>
+                      <RequirementItem 
+                        label="Nome Completo" 
+                        status="required" 
+                        isFulfilled={!!tenant.name} 
+                      />
+                      <RequirementItem 
+                        label="CPF / Identidade" 
+                        status="required" 
+                        isFulfilled={!!tenant.cpf} 
+                      />
+                      {tenantRequirements.sections.personal.occupation !== 'hidden' && (
+                        <RequirementItem 
+                          label="Profissão / Ocupação" 
+                          status={tenantRequirements.sections.personal.occupation} 
+                          isFulfilled={false} 
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Category: Documents */}
+                  <div className='space-y-3'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 text-xs'>Documentos Obrigatórios</p>
+                    <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 divide-y divide-gray-50 dark:divide-white/5 overflow-hidden'>
+                      {tenantRequirements.sections.requiredDocs.id_card !== 'hidden' && (
+                        <RequirementItem 
+                          label="Cópia do RG ou CNH" 
+                          status={tenantRequirements.sections.requiredDocs.id_card} 
+                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('identidade') || d.name.toLowerCase().includes('cnh') || d.name.toLowerCase().includes('documento'))} 
+                        />
+                      )}
+                      {tenantRequirements.sections.requiredDocs.income !== 'hidden' && (
+                        <RequirementItem 
+                          label="Comprovante de Renda" 
+                          status={tenantRequirements.sections.requiredDocs.income} 
+                          isFulfilled={false} 
+                        />
+                      )}
+                      {tenantRequirements.sections.requiredDocs.guarantee !== 'hidden' && (
+                        <RequirementItem 
+                          label="Apólice de Garantia / Fiança" 
+                          status={tenantRequirements.sections.requiredDocs.guarantee} 
+                          isFulfilled={false} 
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className='p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 flex gap-3'>
+                    <Info size={18} className='text-blue-500 shrink-0 mt-0.5' />
+                    <p className='text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed'>
+                      O inquilino visualiza este checklist em sua área exclusiva. Itens marcados como <strong>Obrigatórios</strong> são necessários para a validação final do perfil.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+                  <ShieldAlert size={48} className='text-slate-200 mx-auto mb-4' />
+                  <p className='text-slate-400 font-bold'>Nenhuma exigência configurada.</p>
+                  <p className='text-xs text-slate-400 mt-2'>Configure o perfil esperado nos detalhes do imóvel.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -605,3 +751,31 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     </ModalWrapper>
   );
 };
+
+// Helper component for requirement items
+const RequirementItem = ({ label, status, isFulfilled }: { label: string, status: 'required' | 'optional' | 'hidden', isFulfilled: boolean }) => (
+  <div className='flex items-center justify-between p-4 group transition-colors hover:bg-slate-50 dark:hover:bg-white/5'>
+    <div className='flex items-center gap-3'>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+        isFulfilled 
+          ? 'bg-emerald-500/10 text-emerald-500' 
+          : 'bg-slate-100 dark:bg-white/5 text-slate-300'
+      }`}>
+        {isFulfilled ? <CheckCircle size={16} /> : <div className='w-2 h-2 rounded-full bg-current' />}
+      </div>
+      <div>
+        <p className={`text-sm font-bold ${isFulfilled ? 'text-slate-500 dark:text-slate-400 line-through' : 'text-slate-900 dark:text-white'}`}>
+          {label}
+        </p>
+      </div>
+    </div>
+    
+    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${
+      status === 'required' 
+        ? 'bg-red-500/10 text-red-500' 
+        : 'bg-slate-100 dark:bg-white/10 text-slate-400'
+    }`}>
+      {status === 'required' ? 'Obrigatório' : 'Opcional'}
+    </span>
+  </div>
+);
