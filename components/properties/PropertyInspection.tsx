@@ -35,6 +35,8 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Property } from '../../types';
+import { inspectionService, Inspection, Room } from '../../services/inspectionService';
+import { supabase } from '../../lib/supabase';
 
 // --- Types ---
 
@@ -107,117 +109,92 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
   const [view, setView] = useState<'list' | 'detail' | 'create'>(
     initialView === 'detail' ? 'detail' : 'list'
   );
-  const [isOwnerMode, setIsOwnerMode] = useState(!isTenant); // Toggle for Demo purposes
+  const [isOwnerMode, setIsOwnerMode] = useState(!isTenant);
+  const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
+  const [inspectionData, setInspectionData] = useState<Room[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock Data: Scenario where Tenant has partially responded
-  const [inspectionData, setInspectionData] = useState<Room[]>([
-    {
-      id: 'r1',
-      name: 'Sala de Estar',
-      items: [
-        {
-          id: 'i1',
-          name: 'Pintura das Paredes',
-          status: 'damaged',
-          notes: 'Manchas escuras e furos de quadros não tapados.',
-          entryPhoto:
-            'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&q=80&w=300',
-          exitPhoto:
-            'https://plus.unsplash.com/premium_photo-1664303847960-586318f59035?auto=format&fit=crop&q=80&w=300',
-          photos: [],
-          tenantFeedback: {
-            status: 'contested',
-            comment:
-              'Essas manchas já existiam na entrada, conforme foto do laudo anterior que tenho aqui. Não fiz furos novos.',
-            timestamp: '10/03/2024 14:30',
-          },
-          ownerResolution: { status: 'pending' },
-        },
-        {
-          id: 'i2',
-          name: 'Piso Laminado',
-          status: 'good',
-          notes: 'Em bom estado, desgaste natural.',
-          entryPhoto:
-            'https://images.unsplash.com/photo-1581858726768-75e0524d940d?auto=format&fit=crop&q=80&w=300',
-          exitPhoto:
-            'https://images.unsplash.com/photo-1581858726768-75e0524d940d?auto=format&fit=crop&q=80&w=300',
-          photos: [],
-          tenantFeedback: { status: 'agreed', timestamp: '10/03/2024 14:32' },
-        },
-      ],
-    },
-    {
-      id: 'r2',
-      name: 'Cozinha',
-      items: [
-        {
-          id: 'i3',
-          name: 'Torneira / Cuba',
-          status: 'damaged',
-          notes: 'Torneira com vazamento na base.',
-          entryPhoto:
-            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=300',
-          exitPhoto:
-            'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&q=80&w=300',
-          photos: [],
-          tenantFeedback: { status: 'pending' },
-        },
-      ],
-    },
-  ]);
+  // Fetch Inspections List
+  const fetchInspections = async () => {
+    setIsLoading(true);
+    const data = await inspectionService.getByProperty(property.id.toString());
+    setInspections(data);
+    setIsLoading(false);
+  };
+
+  // Fetch Inspection Details
+  const fetchDetails = async (inspection: Inspection) => {
+    setIsLoading(true);
+    setSelectedInspection(inspection);
+    const data = await inspectionService.getDetails(inspection.id);
+    setInspectionData(data);
+    setView('detail');
+    setIsLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchInspections();
+  }, [property.id]);
 
   // --- Handlers ---
 
-  const handleTenantAction = (
+  const handleTenantAction = async (
     roomId: string,
     itemId: string,
     action: 'agreed' | 'contested',
     comment?: string
   ) => {
-    setInspectionData((prev) =>
-      prev.map((room) => {
-        if (room.id !== roomId) return room;
-        return {
-          ...room,
-          items: room.items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  tenantFeedback: {
-                    status: action,
-                    comment,
-                    timestamp: new Date().toLocaleString(),
-                  },
-                }
-              : item
-          ),
-        };
-      })
-    );
+    const success = await inspectionService.updateItemFeedback(itemId, { status: action, comment });
+    if (success) {
+      // Refresh local state or just update the item
+      setInspectionData((prev) =>
+        prev.map((room) => {
+          if (room.id !== roomId) return room;
+          return {
+            ...room,
+            items: room.items.map((item) =>
+              item.id === itemId
+                ? {
+                    ...item,
+                    tenantFeedback: {
+                      status: action,
+                      comment,
+                      timestamp: new Date().toLocaleString(),
+                    },
+                  }
+                : item
+            ),
+          };
+        })
+      );
+    }
   };
 
-  const handleOwnerResolution = (
+  const handleOwnerResolution = async (
     roomId: string,
     itemId: string,
     action: 'accepted' | 'rejected'
   ) => {
-    setInspectionData((prev) =>
-      prev.map((room) => {
-        if (room.id !== roomId) return room;
-        return {
-          ...room,
-          items: room.items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  ownerResolution: { status: action },
-                }
-              : item
-          ),
-        };
-      })
-    );
+    const success = await inspectionService.updateItemResolution(itemId, action);
+    if (success) {
+      setInspectionData((prev) =>
+        prev.map((room) => {
+          if (room.id !== roomId) return room;
+          return {
+            ...room,
+            items: room.items.map((item) =>
+              item.id === itemId
+                ? {
+                    ...item,
+                    ownerResolution: { status: action },
+                  }
+                : item
+            ),
+          };
+        })
+      );
+    }
   };
 
   const getProgress = () => {
@@ -261,8 +238,12 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
             <header className='px-8 py-6 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 shrink-0'>
               <div className='flex justify-between items-center'>
                 <div className='flex items-center gap-4'>
-                  <button
-                    onClick={() => setView('list')}
+                   <button
+                    onClick={() => {
+                      setView('list');
+                      setSelectedInspection(null);
+                      setInspectionData([]);
+                    }}
                     className='h-10 w-10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-gray-200 dark:hover:border-white/10'
                   >
                     <ArrowRightLeft size={20} className='text-slate-400' />
@@ -386,22 +367,36 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
                             </span>
                           </div>
                           <div className='flex gap-2 h-32 md:h-40'>
-                            <div className='flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5'>
-                              <img
-                                src={item.entryPhoto}
-                                alt='Entrada'
-                                className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
-                              />
+                            <div className='flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/50 dark:border-white/10'>
+                              {item.entryPhoto ? (
+                                <img
+                                  src={item.entryPhoto}
+                                  alt='Entrada'
+                                  className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
+                                />
+                              ) : (
+                                <div className='w-full h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600'>
+                                  <ImageIcon size={24} />
+                                  <span className='text-[8px] font-black uppercase mt-1'>Sem Foto</span>
+                                </div>
+                              )}
                               <div className='absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded'>
                                 ENTRADA
                               </div>
                             </div>
-                            <div className='flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5'>
-                              <img
-                                src={item.exitPhoto}
-                                alt='Saída'
-                                className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
-                              />
+                            <div className='flex-1 relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/50 dark:border-white/10'>
+                              {item.exitPhoto ? (
+                                <img
+                                  src={item.exitPhoto}
+                                  alt='Saída'
+                                  className='w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity'
+                                />
+                              ) : (
+                                <div className='w-full h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600'>
+                                  <ImageIcon size={24} />
+                                  <span className='text-[8px] font-black uppercase mt-1'>Sem Foto</span>
+                                </div>
+                              )}
                               <div className='absolute top-2 left-2 bg-orange-600/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded'>
                                 SAÍDA
                               </div>
@@ -558,69 +553,78 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
               </div>
             </div>
 
-            {/* List Items with Owner Logic */}
-            <div className='grid gap-4'>
-              {/* Item 1: Output Inspection with Contestations */}
-              <div
-                onClick={() => {
-                  setView('detail');
-                  setIsOwnerMode(!isTenant);
-                }}
-                className='bg-white dark:bg-surface-dark p-6 rounded-3xl border-2 border-red-100 dark:border-red-900/20 shadow-sm flex items-center justify-between group hover:border-red-400 transition-all cursor-pointer relative overflow-hidden'
-              >
-                <div className='absolute left-0 top-0 bottom-0 w-2 bg-red-500'></div>
-                <div className='flex items-center gap-5 pl-2'>
-                  <div className='w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl bg-red-50 text-red-600 dark:bg-red-900/20'>
-                    OUT
-                  </div>
-                  <div>
-                    <div className='flex items-center gap-2 mb-1'>
-                      <h4 className='font-black text-slate-900 dark:text-white text-lg'>
-                        Vistoria de Saída
-                      </h4>
-                      <span className='text-red-600 text-[9px] font-black uppercase tracking-widest bg-red-100 dark:bg-red-900/20 px-2 py-1 rounded-lg'>
-                        Divergência Pendente
-                      </span>
-                    </div>
-                    <div className='flex items-center gap-4 text-[10px] text-slate-400 font-black uppercase tracking-widest'>
-                      <span className='flex items-center gap-1.5'>
-                        <Calendar size={14} className='text-primary' /> 10 Mar 2024
-                      </span>
-                      <span className='flex items-center gap-1.5 text-slate-600 dark:text-slate-300'>
-                        <MessageCircle size={14} className='text-red-500' /> 1 Contestação ativa
-                      </span>
-                    </div>
-                  </div>
+            {/* List Items with Real Data */}
+            <div className='grid gap-6'>
+              {isLoading && inspections.length === 0 ? (
+                <div className='flex flex-col items-center justify-center py-20 gap-4'>
+                  <Loader2 className='text-primary animate-spin' size={32} />
+                  <p className='text-xs font-black text-slate-400 uppercase tracking-widest'>Sincronizando Laudos...</p>
                 </div>
-                <button className='h-10 px-5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all transform group-hover:scale-105'>
-                  {isTenant ? 'Ver Detalhes' : 'Resolver Agora'}
-                </button>
-              </div>
-
-              {/* Item 2: Completed Entry Inspection */}
-              <div className='bg-white dark:bg-surface-dark p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer'>
-                <div className='flex items-center gap-5'>
-                  <div className='w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'>
-                    IN
-                  </div>
-                  <div>
-                    <h4 className='font-black text-slate-900 dark:text-white text-lg mb-1'>
-                      Vistoria de Entrada
-                    </h4>
-                    <div className='flex items-center gap-4 text-[10px] text-slate-400 font-black uppercase tracking-widest'>
-                      <span className='flex items-center gap-1.5'>
-                        <Calendar size={14} className='text-primary' /> 10 Jan 2024
-                      </span>
-                      <span className='px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700'>
-                        Laudo Finalizado
-                      </span>
+              ) : inspections.length > 0 ? (
+                inspections.map((ins) => (
+                  <div
+                    key={ins.id}
+                    onClick={() => fetchDetails(ins)}
+                    className={`bg-white dark:bg-surface-dark py-8 px-8 rounded-[2rem] border-2 shadow-sm flex items-center justify-between group transition-all cursor-pointer relative overflow-hidden ${
+                      ins.status === 'Divergência' 
+                        ? 'border-red-100 dark:border-red-900/20 hover:border-red-400' 
+                        : 'border-gray-100 dark:border-white/5 hover:border-primary/30'
+                    }`}
+                  >
+                    <div className={`absolute left-0 top-0 bottom-0 w-2 ${ins.status === 'Divergência' ? 'bg-red-500' : 'bg-primary'}`}></div>
+                    <div className='flex items-center gap-6 pl-2'>
+                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl ${
+                        ins.type === 'OUT' 
+                          ? 'bg-red-50 text-red-600 dark:bg-red-900/20' 
+                          : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'
+                      }`}>
+                        {ins.type}
+                      </div>
+                      <div>
+                        <div className='flex items-center gap-2 mb-1.5'>
+                          <h4 className='font-black text-slate-900 dark:text-white text-xl tracking-tighter'>
+                            Vistoria de {ins.type === 'IN' ? 'Entrada' : 'Saída'}
+                          </h4>
+                          <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
+                            ins.status === 'Divergência' 
+                              ? 'bg-red-100 text-red-600' 
+                              : 'bg-emerald-100 text-emerald-600'
+                          }`}>
+                            {ins.status}
+                          </span>
+                        </div>
+                        <div className='flex items-center gap-5 text-[10px] text-slate-400 font-black uppercase tracking-widest'>
+                          <span className='flex items-center gap-1.5'>
+                            <Calendar size={14} className='text-primary' /> {new Date(ins.date).toLocaleDateString('pt-BR')}
+                          </span>
+                          <span className='flex items-center gap-1.5'>
+                            <Clock size={14} /> Atualizado recentemente
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`h-12 w-12 flex items-center justify-center rounded-2xl transition-all ${
+                      ins.status === 'Divergência'
+                        ? 'bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white'
+                        : 'bg-slate-50 dark:bg-white/5 text-slate-300 group-hover:text-primary group-hover:bg-primary/5'
+                    }`}>
+                      <ChevronRight size={28} />
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className='flex flex-col items-center justify-center py-24 text-center opacity-40'>
+                  <div className='w-24 h-24 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-6'>
+                    <FileSearch size={40} />
+                  </div>
+                  <h4 className='font-black text-slate-900 dark:text-white text-lg uppercase tracking-tighter'>
+                    Nenhuma Vistoria
+                  </h4>
+                  <p className='text-sm text-slate-500 mt-2 max-w-xs mx-auto font-medium'>
+                    Este imóvel ainda não possui laudos de vistoria técnicos registrados.
+                  </p>
                 </div>
-                <div className='h-10 w-10 flex items-center justify-center bg-slate-50 dark:bg-white/5 rounded-xl text-slate-300 group-hover:text-primary group-hover:bg-primary/5 transition-all'>
-                  <ChevronRight size={24} />
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}

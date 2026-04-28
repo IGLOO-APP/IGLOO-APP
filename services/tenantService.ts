@@ -55,11 +55,16 @@ export const tenantService = {
           property:properties(*)
         )
       `)
-      .eq('id', id)
-      .single();
+      .or(`id.eq.${id},email.eq.${id}`)
+      .maybeSingle();
 
     if (error) {
-      console.error('Error fetching tenant:', error);
+      console.error('[tenantService] Error fetching tenant:', error);
+      return null;
+    }
+
+    if (!t) {
+      console.warn('[tenantService] Tenant not found for ID/Email:', id);
       return null;
     }
 
@@ -77,12 +82,16 @@ export const tenantService = {
       is_pending: t.is_pending,
       property: property?.name || 'Imóvel não vinculado',
       property_id: property?.id,
+      property_address: property?.address,
+      property_image: property?.image_url,
       contract: activeContract ? {
         id: activeContract.id,
+        contract_number: activeContract.contract_number,
         start_date: activeContract.start_date,
         end_date: activeContract.end_date,
         monthly_value: activeContract.monthly_value,
-        status: activeContract.status
+        status: activeContract.status,
+        payment_day: activeContract.payment_day
       } : undefined
     };
   },

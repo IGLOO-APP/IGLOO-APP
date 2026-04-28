@@ -20,6 +20,11 @@ import {
   User,
   MoreVertical,
   CreditCard,
+  Home,
+  BadgeCheck,
+  Hash,
+  Star,
+  Zap,
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { TenantProfileConfigPanel } from '../properties/TenantProfileConfigPanel';
@@ -43,10 +48,12 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     }
   }, [activeTab]);
 
-  const { data: tenant, isLoading } = useQuery({
-    queryKey: ['tenant', id],
-    queryFn: () => tenantService.getById(id.toString()),
-    enabled: !!id,
+  const tenantId = typeof id === 'string' ? id : id?.toString();
+
+  const { data: tenant, isLoading, error } = useQuery({
+    queryKey: ['tenant', tenantId],
+    queryFn: () => tenantService.getById(tenantId!),
+    enabled: !!tenantId,
   });
 
   const { data: payments = [] } = useQuery({
@@ -85,11 +92,25 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     );
   }
 
-  if (!tenant) {
+  if (!tenant && !isLoading) {
     return (
-      <ModalWrapper onClose={onClose} className='md:max-w-3xl'>
-        <div className='p-20 text-center text-slate-500'>
-          Inquilino não encontrado.
+      <ModalWrapper onClose={onClose} className='md:max-w-xl' showCloseButton={true}>
+        <div className='flex flex-col items-center justify-center p-16 text-center space-y-4'>
+          <div className='w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+            <User size={32} />
+          </div>
+          <div>
+            <h3 className='text-lg font-bold text-slate-900 dark:text-white'>Inquilino não encontrado</h3>
+            <p className='text-sm text-slate-500 mt-1 max-w-xs mx-auto'>
+              Não foi possível carregar os detalhes deste perfil. Verifique se os dados ainda existem no banco.
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            className='mt-4 px-6 h-10 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm hover:scale-105 transition-transform'
+          >
+            Voltar para a lista
+          </button>
         </div>
       </ModalWrapper>
     );
@@ -107,59 +128,120 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   return (
     <ModalWrapper onClose={onClose} className='md:max-w-3xl' showCloseButton={true}>
       <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden'>
-        {/* 1. Header Profile Section */}
-        <div className='bg-white dark:bg-surface-dark p-6 border-b border-gray-100 dark:border-white/5 shrink-0'>
-          <div className='flex flex-col md:flex-row items-center md:items-start gap-6'>
-            <div className='relative'>
-              {tenant.image ? (
-                <div
-                  className='h-24 w-24 rounded-3xl bg-cover bg-center border-4 border-slate-50 dark:border-white/5 shadow-xl'
-                  style={{ backgroundImage: `url(${tenant.image})` }}
-                ></div>
-              ) : (
-                <div className='h-24 w-24 rounded-3xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center border-4 border-slate-50 dark:border-white/5 shadow-xl text-indigo-600 dark:text-indigo-400 font-bold text-3xl'>
-                  {tenant.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+        {/* 1. Premium Header Profile Section */}
+        <div className='relative bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 shrink-0 overflow-hidden'>
+          {/* Gradient background */}
+          <div className='absolute inset-0 bg-gradient-to-br from-indigo-50/60 via-white to-primary/5 dark:from-indigo-900/10 dark:via-surface-dark dark:to-primary/5 pointer-events-none' />
+
+          <div className='relative p-6'>
+            <div className='flex items-start gap-5'>
+              {/* Avatar */}
+              <div className='relative shrink-0'>
+                {tenant.image ? (
+                  <div
+                    className='h-20 w-20 rounded-2xl bg-cover bg-center border-2 border-white dark:border-white/10 shadow-xl ring-4 ring-primary/10'
+                    style={{ backgroundImage: `url(${tenant.image})` }}
+                  />
+                ) : (
+                  <div className='h-20 w-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary flex items-center justify-center shadow-xl ring-4 ring-primary/10 text-white font-black text-2xl'>
+                    {tenant.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              {/* Identity Info */}
+              <div className='flex-1 min-w-0'>
+                <div className='flex items-start justify-between gap-2 flex-wrap'>
+                  <div>
+                    <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tight leading-tight'>
+                      {tenant.name}
+                    </h2>
+                    {/* Financial status badge */}
+                    <div className='flex items-center gap-2 mt-1.5 flex-wrap'>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                        tenant.status === 'active'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {tenant.status === 'active' ? <BadgeCheck size={11} /> : <AlertCircle size={11} />}
+                        {tenant.status === 'active' ? 'Bom Pagador' : 'Em Atraso'}
+                      </span>
+                      {payments.length > 0 && (
+                        <span className='inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 uppercase tracking-widest'>
+                          <Star size={10} className='text-amber-500' />
+                          {Math.round((payments.filter((p: any) => p.status === 'paid').length / payments.length) * 100)}% pontualidade
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div
-                className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 border-white dark:border-surface-dark shadow-sm ${
-                  tenant.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                }`}
-              >
-                {tenant.status === 'active' ? 'Bom Pagador' : 'Em Atraso'}
+
+                {/* Contact chips */}
+                <div className='flex flex-wrap items-center gap-3 mt-3'>
+                  <span className='flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400'>
+                    <Phone size={12} className='text-primary shrink-0' />
+                    {formatPhone(tenant.phone) || 'Não informado'}
+                  </span>
+                  <span className='w-px h-3 bg-slate-200 dark:bg-white/10' />
+                  <span className='flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[180px]'>
+                    <Mail size={12} className='text-primary shrink-0' />
+                    {tenant.email}
+                  </span>
+                </div>
+
+                {/* Property + Contract metadata row */}
+                <div className='flex flex-wrap items-center gap-2 mt-3'>
+                  {tenant.property && (
+                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
+                      <Home size={12} className='text-primary shrink-0' />
+                      <span className='text-[11px] font-bold text-slate-700 dark:text-slate-300 max-w-[140px] truncate'>
+                        {tenant.property}
+                      </span>
+                    </div>
+                  )}
+                  {tenant.contract && (
+                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
+                      <Hash size={12} className='text-slate-400 shrink-0' />
+                      <span className='text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400'>
+                        {tenant.contract.contract_number || `CTR-${String(tenant.contract.id).substring(0, 6).toUpperCase()}`}
+                      </span>
+                    </div>
+                  )}
+                  {tenant.contract && (
+                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
+                      <Calendar size={12} className='text-slate-400 shrink-0' />
+                      <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400'>
+                        até {new Date(tenant.contract.end_date).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className='flex-1 text-center md:text-left'>
-              <h2 className='text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
-                {tenant.name}
-              </h2>
-              <div className='flex flex-wrap justify-center md:justify-start gap-4 mt-2 text-slate-500 dark:text-slate-400'>
-                <span className='flex items-center gap-1.5 text-xs font-medium'>
-                  <Phone size={14} className='text-primary' /> {formatPhone(tenant.phone) || 'Não informado'}
-                </span>
-                <span className='flex items-center gap-1.5 text-xs font-medium'>
-                  <Mail size={14} className='text-primary' /> {tenant.email}
-                </span>
-              </div>
-
-              <div className='flex gap-2 mt-5'>
-                <button
-                  onClick={handleWhatsApp}
-                  className='flex-1 md:flex-none h-10 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-500/20'
-                >
-                  <MessageCircle size={16} /> WhatsApp
-                </button>
-                <button 
-                  onClick={() => setActiveTab('tenantConfig')}
-                  className='px-4 h-10 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
-                >
-                  Configurar exigências
-                </button>
-                <button className='flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 transition-colors'>
-                  <MoreVertical size={20} />
-                </button>
-              </div>
+            {/* Action Bar */}
+            <div className='flex gap-2 mt-5 pt-5 border-t border-gray-100 dark:border-white/5'>
+              <button
+                onClick={handleWhatsApp}
+                className='flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all active:scale-95 shadow-lg shadow-emerald-500/20'
+              >
+                <MessageCircle size={15} /> WhatsApp
+              </button>
+              <button
+                onClick={() => setActiveTab('payments')}
+                className='flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-bold text-xs transition-all'
+              >
+                <DollarSign size={14} /> Financeiro
+              </button>
+              <button
+                onClick={() => setActiveTab('tenantConfig')}
+                className='flex items-center justify-center gap-2 h-10 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
+              >
+                <ShieldCheck size={13} /> Exigências
+              </button>
+              <button className='ml-auto flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 transition-colors'>
+                <MoreVertical size={18} />
+              </button>
             </div>
           </div>
         </div>
@@ -196,21 +278,54 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         >
           {activeTab === 'overview' && (
             <div className='space-y-6 animate-fadeIn'>
-              {/* Associated Property Card */}
-              <div className='group relative overflow-hidden bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
-                <div className='flex gap-4'>
-                  <div className='h-20 w-20 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0'>
-                    <MapPin className='text-slate-400' size={32} />
+              {/* Enhanced Associated Property Card */}
+              <div className='group relative overflow-hidden bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
+                <div className='flex flex-col md:flex-row'>
+                  <div className='h-32 md:h-auto md:w-48 relative overflow-hidden shrink-0'>
+                    {tenant.property_image ? (
+                      <img 
+                        src={tenant.property_image} 
+                        className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
+                        alt={tenant.property}
+                      />
+                    ) : (
+                      <div className='w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center'>
+                        <Home size={32} className='text-slate-300' />
+                      </div>
+                    )}
+                    <div className='absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white uppercase tracking-widest'>
+                      Alugado
+                    </div>
                   </div>
-                  <div className='flex-1'>
+                  <div className='flex-1 p-5'>
                     <div className='flex justify-between items-start'>
                       <div>
-                        <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-1'>
-                          Imóvel Alugado
-                        </p>
-                        <h3 className='font-bold text-slate-900 dark:text-white'>
+                        <h3 className='font-black text-slate-900 dark:text-white text-lg'>
                           {tenant.property}
                         </h3>
+                        <p className='flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium'>
+                          <MapPin size={12} className='text-primary' />
+                          {tenant.property_address || 'Endereço não disponível'}
+                        </p>
+                      </div>
+                      <button className='p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'>
+                        <ArrowUpRight size={18} />
+                      </button>
+                    </div>
+                    
+                    <div className='flex items-center gap-4 mt-4'>
+                      <div className='flex flex-col'>
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-tight'>Mensalidade</span>
+                        <span className='font-black text-slate-900 dark:text-white'>
+                          R$ {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className='w-px h-6 bg-slate-100 dark:bg-white/10' />
+                      <div className='flex flex-col'>
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-tight'>Vencimento</span>
+                        <span className='font-bold text-slate-900 dark:text-white text-sm'>
+                          Todo dia {tenant.contract?.payment_day || '10'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -219,32 +334,50 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
 
               {/* Quick Metrics Grid */}
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>
-                    Pontualidade
-                  </p>
-                  <p className='text-xl font-black text-emerald-500'>
+                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-colors cursor-default group'>
+                  <div className='flex justify-between items-start mb-2'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+                      Pontualidade
+                    </p>
+                    <Star size={14} className='text-amber-500 group-hover:animate-pulse' />
+                  </div>
+                  <p className='text-2xl font-black text-emerald-500'>
                     {payments.length > 0 ? `${Math.round((payments.filter((p: any) => p.status === 'paid').length / payments.length) * 100)}%` : '100%'}
                   </p>
                 </div>
-                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>Total Pago</p>
-                  <p className='text-xl font-black text-emerald-500'>
-                    R$ {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                
+                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-emerald-500/30 transition-colors cursor-default'>
+                  <div className='flex justify-between items-start mb-2'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Total Pago</p>
+                    <CheckCircle2 size={14} className='text-emerald-500' />
+                  </div>
+                  <p className='text-2xl font-black text-slate-900 dark:text-white'>
+                    <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
+                    {totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
-                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>Em Aberto</p>
-                  <p className={`text-xl font-black ${totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
-                    R$ {totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-amber-500/30 transition-colors cursor-default'>
+                  <div className='flex justify-between items-start mb-2'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Em Aberto</p>
+                    <AlertCircle size={14} className={totalPending > 0 ? 'text-amber-500' : 'text-slate-300'} />
+                  </div>
+                  <p className={`text-2xl font-black ${totalPending > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>
+                    <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
+                    {totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
-                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>
-                    Dia Vencimento
-                  </p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white'>
-                    {tenant.contract?.payment_day ? `Dia ${tenant.contract.payment_day}` : 'Não definido'}
+
+                <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-indigo-500/30 transition-colors cursor-default'>
+                  <div className='flex justify-between items-start mb-2'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+                      Mensalidade
+                    </p>
+                    <Zap size={14} className='text-indigo-500' />
+                  </div>
+                  <p className='text-2xl font-black text-indigo-500'>
+                    <span className='text-xs font-bold mr-1 text-slate-400'>R$</span>
+                    {Number(tenant.contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
               </div>
@@ -282,13 +415,59 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                 </div>
               </div>
 
-              {/* Timeline / Recent Activity */}
-              <div className='space-y-3'>
-                <h3 className='text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 ml-1'>
-                  <History size={16} className='text-primary' /> Atividade Recente
+              {/* Real Activity Timeline */}
+              <div className='space-y-4'>
+                <h3 className='text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 ml-1 uppercase tracking-widest'>
+                  <History size={16} className='text-primary' /> Linha do Tempo
                 </h3>
-                <div className='p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-gray-50 dark:border-white/5'>
-                  <p className='text-xs text-slate-400'>Nenhuma atividade recente registrada.</p>
+                
+                <div className='relative space-y-4 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
+                  {/* Contract Start Milestone */}
+                  {tenant.contract && (
+                    <div className='relative flex gap-4 items-start pl-1'>
+                      <div className='w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white z-10 shrink-0 shadow-lg shadow-primary/20'>
+                        <FileText size={16} />
+                      </div>
+                      <div className='flex-1 pt-1'>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>Início do Contrato</p>
+                        <p className='text-xs text-slate-500 mt-0.5'>
+                          Assinado e ativo desde {new Date(tenant.contract.start_date).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Payments Milestone */}
+                  {payments.slice(0, 3).map((pay: any, idx: number) => (
+                    <div key={pay.id} className='relative flex gap-4 items-start pl-1'>
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center z-10 shrink-0 shadow-sm ${
+                        pay.status === 'paid' 
+                          ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500' 
+                          : 'bg-amber-50 dark:bg-amber-900/30 text-amber-500'
+                      }`}>
+                        {pay.status === 'paid' ? <CheckCircle2 size={16} /> : <Clock size={16} />}
+                      </div>
+                      <div className='flex-1 pt-1'>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>
+                          {pay.status === 'paid' ? 'Mensalidade Liquidada' : 'Fatura em Aberto'}
+                        </p>
+                        <p className='text-xs text-slate-500 mt-0.5 uppercase font-bold tracking-tight'>
+                          Ref. {new Date(pay.due_date).toLocaleString('pt-BR', { month: 'long' })} • R$ {Number(pay.amount).toLocaleString('pt-BR')}
+                        </p>
+                        {pay.status === 'paid' && pay.paid_date && (
+                          <p className='text-[10px] text-emerald-500 font-bold mt-1'>
+                            Pago em {new Date(pay.paid_date).toLocaleDateString('pt-BR')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {payments.length === 0 && (
+                    <div className='p-8 text-center bg-white dark:bg-surface-dark rounded-xl border border-gray-50 dark:border-white/5 ml-10'>
+                      <p className='text-xs text-slate-400'>Nenhuma movimentação financeira recente.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -44,13 +44,14 @@ const Tenants: React.FC = () => {
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: ['tenants'],
     queryFn: () => tenantService.getAll(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 5,
   });
 
   const { data: properties = [] } = useQuery({
     queryKey: ['properties'],
     queryFn: () => propertyService.getAll(),
+    staleTime: 0,
   });
 
   // Form State

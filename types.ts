@@ -25,10 +25,21 @@ export interface Tenant {
   status: 'active' | 'late' | 'inactive';
   property?: string;
   property_id?: string;
+  property_address?: string;
+  property_image?: string;
   rent?: string;
   due?: number;
   score?: number;
   last_payment_date?: string; // ISO format
+  contract?: {
+    id: string | number;
+    contract_number?: string;
+    start_date: string;
+    end_date: string;
+    monthly_value: number;
+    status: string;
+    payment_day?: number;
+  };
 }
 
 export interface SignatureAudit {

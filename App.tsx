@@ -49,7 +49,16 @@ const Announcements = lazy(() => import('./pages/admin/Announcements'));
 const ConversionReport = lazy(() => import('./pages/admin/ConversionReport'));
 const AdminManager = lazy(() => import('./components/admin/AdminManager'));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0, // Always refetch when navigating
+      gcTime: 1000 * 60 * 5, // Keep in cache 5 min
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className='flex h-screen items-center justify-center bg-background-light dark:bg-background-dark'>
@@ -129,26 +138,10 @@ const router = createBrowserRouter([
           { 
             index: true, 
             element: <Dashboard />,
-            loader: async () => {
-              // Pre-fetch dashboard data
-              await queryClient.prefetchQuery({
-                queryKey: ['dashboardData'],
-                queryFn: () => dashboardService.getDashboardData(),
-              });
-              return null;
-            }
           },
           { 
             path: 'properties', 
             element: <Properties />,
-            loader: async () => {
-              // Pre-fetch properties data
-              await queryClient.prefetchQuery({
-                queryKey: ['properties'],
-                queryFn: () => propertyService.getAll(),
-              });
-              return null;
-            }
           },
           { path: 'tenants', element: <Tenants /> },
           { path: 'messages', element: <OwnerMessages /> },

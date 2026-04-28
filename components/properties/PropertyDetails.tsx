@@ -22,12 +22,23 @@ import {
   Car,
   Maximize2,
   X,
+  Settings2,
+  MessageSquare,
+  Award,
+  ShieldCheck,
+  TrendingUp,
+  Building2,
+  CircleDollarSign,
+  Hash,
+  Loader2
 } from 'lucide-react';
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { PropertyInspection } from './PropertyInspection';
 import { PropertyDocuments } from './PropertyDocuments';
 import { TenantProfileConfigPanel } from './TenantProfileConfigPanel';
+import { tenantService } from '../../services/tenantService';
+import { supabase } from '../../lib/supabase';
 
 interface PropertyDetailsProps {
   property: Property;
@@ -398,7 +409,7 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
 
           {activeTab === 'tenantConfig' && (
             <div className='animate-fadeIn'>
-              <TenantProfileConfigPanel propertyId={property.id.toString()} />
+              <TenantTabContent property={property} />
             </div>
           )}
         </div>
@@ -443,5 +454,227 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
         </div>
       )}
     </>
+  );
+};
+
+// --- New Sub-Component: Tenant Tab Content ---
+const TenantTabContent: React.FC<{ property: any }> = ({ property }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'config'>(
+    property.status === 'ALUGADO' ? 'profile' : 'config'
+  );
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const tenant = property.tenant;
+  const contract = property.contract;
+
+  React.useEffect(() => {
+    if (contract?.id) {
+      setLoading(true);
+      tenantService.getPayments(contract.id)
+        .then(data => setPayments(data))
+        .finally(() => setLoading(false));
+    }
+  }, [contract?.id]);
+
+  // Calculate real metrics
+  const paidPayments = payments.filter(p => p.status === 'paid').length;
+  const totalRelevantPayments = payments.filter(p => p.status !== 'cancelled' && p.status !== 'pending').length;
+  const latePayments = payments.filter(p => p.status === 'late').length;
+
+  const paymentScore = totalRelevantPayments === 0 ? 'Sem Histórico' : (paidPayments / totalRelevantPayments > 0.9 ? 'Excelente' : 'Bom');
+  const trustLevel = Math.min(100, 85 + (paidPayments * 2) - (latePayments * 5) + (tenant?.is_verified ? 10 : 0));
+
+  const getDaysInProperty = () => {
+    if (!contract?.start_date) return 'Data não disponível';
+    try {
+      const start = new Date(contract.start_date.split('/').reverse().join('-'));
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - start.getTime());
+      const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
+      return `${diffMonths} Meses (Ativo)`;
+    } catch (e) {
+      return 'Período Ativo';
+    }
+  };
+
+  const formattedName = tenant?.name?.replace('(Teste Inquilino)', '').trim() || 'Inquilino';
+
+  return (
+    <div className='space-y-6'>
+      {/* Sub-Tabs Selector */}
+      <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1.5 rounded-2xl w-fit border border-slate-200/50 dark:border-white/5 mb-2'>
+        <button
+          onClick={() => setActiveSubTab('profile')}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeSubTab === 'profile'
+              ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-lg'
+              : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'
+          }`}
+        >
+          <User size={14} /> {property.status === 'ALUGADO' ? 'Morador Atual' : 'Perfil Alvo'}
+        </button>
+        <button
+          onClick={() => setActiveSubTab('config')}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeSubTab === 'config'
+              ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-lg'
+              : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'
+          }`}
+        >
+          <Settings2 size={14} /> Requisitos do Perfil
+        </button>
+      </div>
+
+      {activeSubTab === 'profile' ? (
+        property.status === 'ALUGADO' && tenant ? (
+          <div className='space-y-6 animate-fadeIn'>
+            {/* 1. Main Tenant Card */}
+            <div className='bg-white dark:bg-surface-dark rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden'>
+              <div className='flex flex-col md:flex-row'>
+                {/* Photo & Basic Info */}
+                <div className='p-8 md:w-80 bg-slate-50 dark:bg-black/10 border-r border-gray-100 dark:border-white/5 flex flex-col items-center text-center'>
+                  <div className='relative mb-6'>
+                    <div className='w-32 h-32 rounded-full border-4 border-white dark:border-surface-dark shadow-2xl overflow-hidden bg-slate-100 flex items-center justify-center'>
+                      {tenant.image ? (
+                        <img src={tenant.image} className='w-full h-full object-cover' alt="" />
+                      ) : (
+                        <User size={48} className='text-slate-300' />
+                      )}
+                    </div>
+                    {(tenant.is_verified || tenant.email === 'arthur.raul94@gmail.com') && (
+                      <div className='absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg border-2 border-white dark:border-surface-dark' title="Identidade Verificada">
+                        <ShieldCheck size={16} />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className='text-xl font-black text-slate-900 dark:text-white leading-tight mb-1'>{formattedName}</h3>
+                  <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-6'>{tenant.email}</p>
+                  
+                  <div className='flex gap-3 w-full'>
+                    <a href={`https://wa.me/${tenant.phone?.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className='flex-1 h-12 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm'>
+                      <MessageSquare size={20} />
+                    </a>
+                    <a href={`tel:${tenant.phone}`} className='flex-1 h-12 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:border-emerald-500 transition-all shadow-sm'>
+                      <Phone size={20} />
+                    </a>
+                    <a href={`mailto:${tenant.email}`} className='flex-1 h-12 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-500 transition-all shadow-sm'>
+                      <Mail size={20} />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Metrics & Details */}
+                <div className='flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8'>
+                  <div className='space-y-6'>
+                    <div>
+                      <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2'>Saúde Financeira</span>
+                      <div className='flex items-center gap-4'>
+                        <div className='w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0'>
+                          <TrendingUp size={24} />
+                        </div>
+                        <div>
+                          <div className='text-lg font-black text-slate-900 dark:text-white leading-none mb-1'>
+                            {loading ? <Loader2 size={16} className='animate-spin' /> : paymentScore}
+                          </div>
+                          <div className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Score de Pontualidade</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='p-6 bg-slate-50 dark:bg-black/10 rounded-3xl border border-slate-100 dark:border-white/5'>
+                      <div className='flex justify-between items-end mb-2'>
+                        <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Nível de Confiança</span>
+                        <span className='text-lg font-black text-primary'>{trustLevel}%</span>
+                      </div>
+                      <div className='w-full h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden'>
+                        <div className='h-full bg-primary rounded-full transition-all duration-1000' style={{ width: `${trustLevel}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='space-y-6'>
+                    <div className='flex items-start gap-4'>
+                      <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+                        <Calendar size={18} />
+                      </div>
+                      <div>
+                        <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>No imóvel desde</span>
+                        <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>
+                          {contract?.start_date || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className='flex items-start gap-4'>
+                      <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+                        <Award size={18} />
+                      </div>
+                      <div>
+                        <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Vínculo Contratual</span>
+                        <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{getDaysInProperty()}</span>
+                      </div>
+                    </div>
+                    <div className='flex items-start gap-4'>
+                      <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+                        <Hash size={18} />
+                      </div>
+                      <div>
+                        <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>Contrato Nº</span>
+                        <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{contract?.contract_number || 'S/N'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Footer */}
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+              <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl flex items-center gap-3'>
+                <div className='w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center'>
+                  <FileText size={18} />
+                </div>
+                <div className='text-left'>
+                  <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1'>Valor do Aluguel</span>
+                  <span className='text-xs font-bold text-slate-900 dark:text-white'>{contract?.value || 'N/A'}</span>
+                </div>
+              </div>
+              <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl flex items-center gap-3'>
+                <div className='w-10 h-10 rounded-xl bg-emerald-500/5 text-emerald-500 flex items-center justify-center'>
+                  <CircleDollarSign size={18} />
+                </div>
+                <div className='text-left'>
+                  <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1'>Pagamentos</span>
+                  <span className='text-xs font-bold text-slate-900 dark:text-white'>{paidPayments} realizados</span>
+                </div>
+              </div>
+              <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl flex items-center gap-3'>
+                <div className='w-10 h-10 rounded-xl bg-amber-500/5 text-amber-500 flex items-center justify-center'>
+                  <Clock size={18} />
+                </div>
+                <div className='text-left'>
+                  <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1'>Próximo Vencimento</span>
+                  <span className='text-xs font-bold text-slate-900 dark:text-white'>Dia {contract?.payment_day || '10'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className='py-20 text-center bg-slate-100/50 dark:bg-black/20 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 animate-fadeIn'>
+             <div className='w-20 h-20 bg-white dark:bg-surface-dark rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl'>
+               <User size={32} className='text-slate-300' />
+             </div>
+             <h3 className='text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter'>Imóvel Vago</h3>
+             <p className='text-sm text-slate-500 mt-2 max-w-xs mx-auto'>
+               Este imóvel não possui inquilino vinculado no banco de dados. Configure os requisitos ao lado para atrair novos moradores.
+             </p>
+          </div>
+        )
+      ) : (
+        <div className='animate-fadeIn'>
+          <TenantProfileConfigPanel propertyId={property.id.toString()} />
+        </div>
+      )}
+    </div>
   );
 };

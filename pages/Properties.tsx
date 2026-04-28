@@ -35,13 +35,11 @@ const Properties: React.FC = () => {
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['properties'],
     queryFn: () => propertyService.getAll(),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
   });
 
   useEffect(() => {
-    if (properties.length > 0) {
-      setLocalProperties(properties);
-    }
+    setLocalProperties(properties);
   }, [properties]);
 
   // Check for navigation state to open Add Form
