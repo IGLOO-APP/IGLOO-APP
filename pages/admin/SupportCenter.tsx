@@ -74,35 +74,42 @@ const SupportCenter: React.FC = () => {
   const [isActionsLocked, setIsActionsLocked] = useState(true);
 
   useEffect(() => {
-    if (showFAQManager) {
-      setFaqs(faqService.getFAQs());
-    }
+    const fetchFaqs = async () => {
+      if (showFAQManager) {
+        const data = await faqService.getFAQs();
+        setFaqs(data);
+      }
+    };
+    fetchFaqs();
   }, [showFAQManager]);
 
-  const handleSaveFAQ = () => {
+  const handleSaveFAQ = async () => {
     if (editingFaq) {
-      faqService.updateFAQ(editingFaq.id, editingFaq);
+      await faqService.updateFAQ(editingFaq.id, editingFaq);
     } else if (newFaq.question && newFaq.answer) {
-      faqService.addFAQ({
+      await faqService.addFAQ({
         question: newFaq.question,
         answer: newFaq.answer,
         order: faqs.length + 1,
         is_active: newFaq.is_active ?? true,
       });
     }
-    setFaqs(faqService.getFAQs());
+    const updated = await faqService.getFAQs();
+    setFaqs(updated);
     setEditingFaq(null);
     setNewFaq({ question: '', answer: '', is_active: true });
   };
 
-  const handleDeleteFAQ = (id: string) => {
-    faqService.deleteFAQ(id);
-    setFaqs(faqService.getFAQs());
+  const handleDeleteFAQ = async (id: string) => {
+    await faqService.deleteFAQ(id);
+    const updated = await faqService.getFAQs();
+    setFaqs(updated);
   };
 
-  const toggleFAQStatus = (faq: FAQ) => {
-    faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
-    setFaqs(faqService.getFAQs());
+  const toggleFAQStatus = async (faq: FAQ) => {
+    await faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
+    const updated = await faqService.getFAQs();
+    setFaqs(updated);
   };
   const fileInputRef = useRef<HTMLInputElement>(null);
 

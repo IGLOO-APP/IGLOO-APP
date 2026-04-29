@@ -238,30 +238,34 @@ const TenantProfile: React.FC = () => {
       <input type='file' ref={fileInputRef} onChange={onFileSelected} className='hidden' />
       <input type='file' ref={avatarInputRef} onChange={handleAvatarChange} className='hidden' />
 
-      {/* --- COMPACT HORIZONTAL HEADER (Ajuste 1) --- */}
+      {/* --- COMPACT HORIZONTAL HEADER --- */}
       <div className='px-6 py-6 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
-        <div className='flex items-center justify-between mb-4'>
+        <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
             <div className='relative group'>
               <div
-                className={`w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center ${isEditing ? 'cursor-pointer hover:opacity-80' : ''}`}
+                className={`w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center ${isEditing ? 'cursor-pointer hover:opacity-80' : ''} shadow-lg shadow-black/5`}
                 style={{ backgroundImage: `url("${profileData.avatar}")` }}
                 onClick={() => isEditing && avatarInputRef.current?.click()}
               >
                 {isEditing && (
-                  <div className='absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <div className='absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]'>
                     <Camera size={16} className='text-white' />
                   </div>
                 )}
               </div>
             </div>
             <div>
-              <h1 className='text-xl font-black text-slate-900 dark:text-white leading-tight'>
+              <h1 className='text-xl font-black text-slate-900 dark:text-white leading-tight tracking-tight'>
                 {profileData.name}
               </h1>
-              <p className='text-xs font-bold text-slate-500 uppercase tracking-widest'>
-                {profileData.occupation}
-              </p>
+              <div className='flex items-center gap-2 mt-0.5'>
+                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+                  {profileData.occupation}
+                </span>
+                <span className='w-1 h-1 rounded-full bg-slate-300 dark:bg-white/10'></span>
+                <span className='text-[10px] font-black text-emerald-500 uppercase tracking-widest'>Inquilino Nível 5</span>
+              </div>
             </div>
           </div>
 
@@ -277,7 +281,7 @@ const TenantProfile: React.FC = () => {
                 <button
                   onClick={handleSaveProfile}
                   disabled={isSaving}
-                  className='px-6 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all flex items-center gap-2'
+                  className='px-6 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all flex items-center gap-2 active:scale-95'
                 >
                   {isSaving ? <Clock size={14} className='animate-spin' /> : <Save size={14} />}
                   Salvar
@@ -286,7 +290,7 @@ const TenantProfile: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className='px-6 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2'
+                className='px-6 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-black/10 dark:shadow-none'
               >
                 <Edit2 size={14} />
                 Editar
@@ -294,40 +298,10 @@ const TenantProfile: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Completion Progress */}
-        <div className='space-y-2'>
-          <div className='flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]'>
-            <span className='text-slate-400'>Progresso do Perfil</span>
-            <span className='text-primary'>{completionPercent}%</span>
-          </div>
-          <div className='h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden'>
-            <div
-              className='h-full bg-primary transition-all duration-1000'
-              style={{ width: `${completionPercent}%` }}
-            ></div>
-          </div>
-          {pendingItems.length > 0 && (
-            <p className='text-[10px] text-slate-400 font-medium'>
-              Faltam: {pendingItems.map((item, i) => (
-                <button 
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.tab as any);
-                    if (item.tab === 'profile') setIsEditing(true);
-                  }}
-                  className='hover:text-primary hover:underline transition-colors'
-                >
-                  {item.label}{i < pendingItems.length - 1 ? ', ' : ''}
-                </button>
-              ))}
-            </p>
-          )}
-        </div>
       </div>
 
       {/* --- TABS NAVIGATION --- */}
-      <div className='px-6 pt-4 pb-2 sticky top-[154px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md'>
+      <div className='px-6 pt-4 pb-2 sticky top-[105px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md'>
         <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl overflow-x-auto hide-scrollbar'>
           {[
             { id: 'profile', label: 'Meus Dados', icon: User },
@@ -349,6 +323,80 @@ const TenantProfile: React.FC = () => {
         {/* --- PROFILE TAB --- */}
         {activeTab === 'profile' && (
           <div className='animate-fadeIn pb-8 space-y-6'>
+            {/* AI Score Insights Card */}
+            <div className='bg-slate-900 dark:bg-surface-dark rounded-3xl p-6 text-white shadow-xl relative overflow-hidden'>
+              <div className='absolute right-0 top-0 p-6 opacity-10'>
+                <Star size={120} />
+              </div>
+              <div className='relative z-10'>
+                <div className='flex justify-between items-start mb-6'>
+                  <div>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2'>Seu Score IGLOO</p>
+                    <h3 className='text-5xl font-black flex items-center gap-2 tracking-tighter'>
+                      95<span className='text-xl text-slate-500 font-bold'>/100</span>
+                    </h3>
+                  </div>
+                  <div className='text-right'>
+                    <span className='px-3 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest'>Nível Elite</span>
+                  </div>
+                </div>
+                
+                <div className='grid grid-cols-2 gap-4 pt-4 border-t border-white/10'>
+                  <div className='flex flex-col'>
+                    <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>Pontualidade</span>
+                    <span className='text-sm font-bold text-emerald-400'>Exemplar</span>
+                  </div>
+                  <div className='flex flex-col text-right'>
+                    <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>Conservação</span>
+                    <span className='text-sm font-bold text-primary'>Nota 9.5</span>
+                  </div>
+                </div>
+                <p className='text-[10px] text-slate-400 font-medium mt-4 italic'>
+                  * Este score é visível para o proprietário e ajuda em futuras renovações.
+                </p>
+              </div>
+            </div>
+
+            {/* Profile Completion Card */}
+            <div className='bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+              <div className='flex justify-between items-center mb-4'>
+                <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>Status do Perfil</h4>
+                <span className={`text-xs font-bold ${completionPercent === 100 ? 'text-emerald-500' : 'text-primary'}`}>{completionPercent}% Concluído</span>
+              </div>
+              <div className='h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-6'>
+                <div 
+                  className={`h-full transition-all duration-1000 ${completionPercent === 100 ? 'bg-emerald-500' : 'bg-primary'}`}
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+
+              {pendingItems.length > 0 ? (
+                <div className='space-y-3'>
+                  <p className='text-[11px] text-slate-500 font-bold uppercase tracking-tight'>Ações pendentes para 100%:</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {pendingItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.tab as any);
+                          if (item.tab === 'profile') setIsEditing(true);
+                        }}
+                        className='px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary transition-all flex items-center gap-1.5'
+                      >
+                        <AlertCircle size={12} className='text-orange-500' />
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className='flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20'>
+                  <CheckCircle size={20} className='text-emerald-500' />
+                  <p className='text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-tight'>Perfil completo e verificado!</p>
+                </div>
+              )}
+            </div>
+
             {/* Form */}
             <form onSubmit={handleSaveProfile} className='space-y-6'>
               {/* Personal Info */}

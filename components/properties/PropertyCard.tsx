@@ -11,6 +11,7 @@ interface PropertyCardProps {
   onCreateContract?: (property: Property) => void;
   viewMode?: 'list' | 'grid' | 'compact';
   className?: string;
+  isTenant?: boolean;
 }
 
 // Derives the left-border accent color from contract status
@@ -38,6 +39,17 @@ function getTimeLabel(property: Property): { label: string; sub: string } {
   if (property.status === 'DISPONÍVEL') {
     return { label: '12 d.', sub: 'tempo vago' };
   }
+
+  if (property.contract?.start_date) {
+    const start = new Date(property.contract.start_date);
+    const now = new Date();
+    const diffMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+    
+    if (diffMonths === 0) return { label: 'Recente', sub: 'alugado' };
+    if (diffMonths === 1) return { label: '1 mês', sub: 'alugado' };
+    return { label: `${diffMonths} meses`, sub: 'alugado' };
+  }
+
   return { label: '8 meses', sub: 'alugado' };
 }
 
@@ -49,6 +61,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onCreateContract,
   viewMode = 'list',
   className = '',
+  isTenant = false,
 }) => {
   const navigate = useNavigate();
   const borderClass = getStatusBorder(property);
@@ -60,8 +73,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   if (viewMode === 'compact') {
     return (
       <article
-        onClick={() => onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] aspect-[4/5] ${borderClass} ${className}`}
+        onClick={() => !isTenant && onClick(property)}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} aspect-[4/5] ${borderClass} ${className}`}
       >
         {/* Photo - Smaller height for compact */}
         <div
@@ -101,8 +114,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   if (viewMode === 'grid') {
     return (
       <article
-        onClick={() => onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass} ${className}`}
+        onClick={() => !isTenant && onClick(property)}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} ${borderClass} ${className}`}
       >
         {/* Photo */}
         <div
@@ -199,8 +212,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   /* ─── LIST CARD ──────────────────────────────────────────── */
   return (
     <article
-      onClick={() => onClick(property)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass} ${className}`}
+      onClick={() => !isTenant && onClick(property)}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} ${borderClass} ${className}`}
     >
       {/* ── ZONE SUPERIOR ──────────────────────────────────── */}
       <div className='flex items-stretch'>
@@ -293,16 +306,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </div>
           </div>
 
-          <div className='hidden sm:block w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+          {!isTenant && (
+            <>
+              <div className='hidden sm:block w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
 
-          {/* Views */}
-          <div className='hidden sm:flex items-center gap-1.5 pl-3'>
-            <Eye size={14} className='text-slate-400 shrink-0' />
-            <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>24</span>
-              <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>visitas</span>
-            </div>
-          </div>
+              {/* Views */}
+              <div className='hidden sm:flex items-center gap-1.5 pl-3'>
+                <Eye size={14} className='text-slate-400 shrink-0' />
+                <div className='flex flex-col leading-none'>
+                  <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>24</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>visitas</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right action */}

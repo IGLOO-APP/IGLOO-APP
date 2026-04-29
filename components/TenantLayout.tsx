@@ -13,6 +13,7 @@ const TenantLayout: React.FC = () => {
     { path: '/tenant', label: 'Início', icon: Home },
     { path: '/tenant/payments', label: 'Pagamentos', icon: Receipt },
     { path: '/tenant/maintenance', label: 'Ajuda', icon: LifeBuoy },
+    { path: '/tenant/profile', label: 'Meu Perfil', icon: User },
     { path: '/tenant/settings', label: 'Configurações', icon: SettingsIcon },
   ];
 

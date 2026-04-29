@@ -30,6 +30,9 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { stripeService } from '../services/stripeService';
 import { subscriptionService } from '../services/subscriptionService';
+import { profileService } from '../services/profileService';
+import { storageService } from '../services/storageService';
+import { useClerk } from '@clerk/clerk-react';
 import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../types';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { useLocation } from 'react-router-dom';
@@ -47,6 +50,7 @@ interface PaymentMethodConfig {
 
 const Settings: React.FC = () => {
   const { user } = useAuth();
+  const { openUserProfile } = useClerk();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<
     'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription' | 'tenantProfile'
@@ -113,11 +117,47 @@ const Settings: React.FC = () => {
   ]);
 
   const [profileData, setProfileData] = useState({
-    name: user?.name || 'Investidor Exemplo',
-    email: user?.email || 'investidor@igloo.com',
-    phone: '(11) 99999-8888',
-    companyName: 'Igloo Asset Management',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: (user as any)?.phone || '',
+    companyName: (user as any)?.company_name || '',
+    avatarUrl: user?.avatar || '',
   });
+
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: (user as any).phone || '',
+        companyName: (user as any).company_name || '',
+        avatarUrl: user.avatar || '',
+      });
+    }
+  }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const publicUrl = await storageService.uploadFile('avatars', fileName, file);
+
+      if (publicUrl) {
+        await profileService.update(user.id, { avatar_url: publicUrl });
+        setProfileData(prev => ({ ...prev, avatarUrl: publicUrl }));
+      }
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const [maintenanceSettings, setMaintenanceSettings] = useState({
     categories: [
@@ -167,13 +207,25 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const { profileService } = await import('../services/profileService');
+      await profileService.update(user.id, {
+        name: profileData.name,
+        phone: profileData.phone,
+        company_name: profileData.companyName,
+      });
+      
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1500);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('Erro ao salvar as configurações.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const togglePaymentMethod = (id: string) => {
@@ -369,7 +421,9 @@ const Settings: React.FC = () => {
       <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-5 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
         <div>
           <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Configurações</h1>
-          <p className='text-sm text-slate-500 dark:text-slate-400'>Administração do sistema</p>
+          <p className='text-sm text-slate-500 dark:text-slate-400'>
+            {user?.role === 'tenant' ? 'Gerencie seus dados e preferências' : 'Administração do sistema'}
+          </p>
         </div>
         <button
           onClick={handleSave}
@@ -393,7 +447,7 @@ const Settings: React.FC = () => {
             onClick={() => setActiveTab('general')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'general' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
           >
-            <User size={20} /> Perfil e Empresa
+            <User size={20} /> {user?.role === 'tenant' ? 'Meu Perfil' : 'Perfil e Empresa'}
           </button>
           {(user?.role === 'owner' || user?.role === 'admin') && (
             <>
@@ -402,9 +456,11 @@ const Settings: React.FC = () => {
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap ${activeTab === 'financial' ? 'bg-white dark:bg-surface-dark shadow-sm text-primary font-bold' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}
               >
                 <CreditCard size={20} /> Financeiro
-                <span className='ml-auto bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full hidden md:block'>
-                  Admin
-                </span>
+                {user?.role === 'admin' && (
+                  <span className='ml-auto bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full hidden md:block'>
+                    Admin
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('subscription')}
@@ -864,10 +920,47 @@ const Settings: React.FC = () => {
           {activeTab === 'general' && (
             <div className='animate-fadeIn space-y-6 max-w-2xl'>
               <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
-                <h3 className='font-bold text-slate-900 dark:text-white text-lg mb-4'>
-                  Dados do Proprietário
-                </h3>
+                <div className='flex flex-col md:flex-row items-center gap-6 mb-8 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700'>
+                  <div className='relative'>
+                    <div className='w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-surface-dark shadow-xl bg-slate-200'>
+                      {profileData.avatarUrl ? (
+                        <img src={profileData.avatarUrl} alt='Avatar' className='w-full h-full object-cover' />
+                      ) : (
+                        <div className='w-full h-full flex items-center justify-center text-slate-400'>
+                          <User size={40} />
+                        </div>
+                      )}
+                    </div>
+                    <label className='absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full shadow-lg cursor-pointer hover:scale-110 transition-transform'>
+                      {isUploadingAvatar ? <Loader2 size={16} className='animate-spin' /> : <Plus size={16} />}
+                      <input type='file' className='hidden' accept='image/*' onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
+                    </label>
+                  </div>
+                  <div className='text-center md:text-left'>
+                    <h4 className='font-bold text-slate-900 dark:text-white'>Foto de Perfil</h4>
+                    <p className='text-xs text-slate-500 mt-1'>Clique no ícone para alterar sua imagem. Recomendado: 400x400px.</p>
+                  </div>
+                </div>
+
                 <div className='space-y-4'>
+                  <div>
+                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block'>
+                      E-mail Principal
+                    </label>
+                    <div className='flex gap-2'>
+                      <input
+                        value={profileData.email}
+                        disabled
+                        className='flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-gray-200 dark:border-gray-800 text-slate-500 outline-none cursor-not-allowed text-sm'
+                      />
+                      <button 
+                        onClick={() => openUserProfile()}
+                        className='px-4 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 dark:text-white'
+                      >
+                        Alterar e-mail <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
                   <div>
                     <label className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block'>
                       Nome Completo
@@ -878,19 +971,48 @@ const Settings: React.FC = () => {
                       className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
                     />
                   </div>
+                  {(user?.role === 'owner' || user?.role === 'admin') && (
+                    <div>
+                      <label className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block'>
+                        Nome da Empresa / Fantasia
+                      </label>
+                      <input
+                        value={profileData.companyName}
+                        onChange={(e) =>
+                          setProfileData({ ...profileData, companyName: e.target.value })
+                        }
+                        className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block'>
-                      Nome da Empresa / Fantasia
+                      Telefone / WhatsApp
                     </label>
                     <input
-                      value={profileData.companyName}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, companyName: e.target.value })
-                      }
+                      value={profileData.phone}
+                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                       className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
+                      placeholder='(00) 00000-0000'
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+                <h3 className='font-bold text-slate-900 dark:text-white text-lg mb-4'>Segurança</h3>
+                <p className='text-sm text-slate-500 mb-6'>Gerencie sua senha, autenticação de dois fatores e sessões ativas.</p>
+                <button
+                  onClick={() => openUserProfile()}
+                  className='flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]'
+                >
+                  <ShieldCheck size={24} />
+                  <div className='text-left'>
+                    <p className='text-sm'>Gerenciar Segurança e Senha</p>
+                    <p className='text-[10px] opacity-70 font-medium'>Proteja sua conta Igloo</p>
+                  </div>
+                  <ArrowRight size={18} className='ml-4' />
+                </button>
               </div>
             </div>
           )}

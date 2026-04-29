@@ -64,46 +64,35 @@ export const profileService = {
       if (existingByEmail && existingByEmail.id !== user.id) {
         console.log('Claiming existing profile for email:', user.email, '| Old ID:', existingByEmail.id, '| New ID:', user.id);
         
-        // Strategy: Create new profile with the auth ID, copying role & data 
-        // from the placeholder. We cannot UPDATE a primary key in Supabase,
-        // so we insert a new row and delete the old one.
-        const claimedPayload: ProfileInsert = {
-          id: user.id,
-          email: existingByEmail.email,
-          name: existingByEmail.name || user.user_metadata?.name || user.email.split('@')[0],
-          role: existingByEmail.role, // CRITICAL: Preserve the tenant role!
-          avatar_url: user.user_metadata?.avatar_url || existingByEmail.avatar_url,
-          phone: user.user_metadata?.phone || user.phone || existingByEmail.phone,
-          property_id: (existingByEmail as any).property_id,
-        };
+        // Use the atomic RPC function to handle the profile migration.
+        // This handles FK constraints across all tables (contracts, conversations, etc.)
+        const { data: claimResult, error: claimError } = await supabase
+          .rpc('claim_tenant_profile', {
+            p_old_id: existingByEmail.id,
+            p_new_id: user.id,
+            p_name: user.user_metadata?.name || null,
+            p_avatar_url: user.user_metadata?.avatar_url || null,
+          });
 
-        const { data: claimed, error: claimError } = await supabase
-          .from('profiles')
-          .upsert(claimedPayload, { onConflict: 'id' })
-          .select()
-          .single();
-
-        if (!claimError && claimed) {
-          // Clean up the old placeholder profile
-          await supabase
-            .from('profiles')
-            .delete()
-            .eq('id', existingByEmail.id);
-          
-          console.log('Profile claimed successfully. Role:', claimed.role);
-          return claimed;
+        if (!claimError && claimResult && !claimResult.error) {
+          console.log('Profile claimed successfully via RPC. Role:', claimResult.role);
+          return claimResult as Profile;
         }
 
-        console.warn('Failed to claim profile, will create fresh:', claimError);
+        console.warn('RPC claim failed, will create fresh profile:', claimError || claimResult?.error);
       }
     }
 
     // 3. Create a brand new profile if none found
+    const ADMIN_EMAILS = ['kitnetpro@gmail.com', 'reginaldo.ro@gmail.com', 'admin@teste.com'];
+    const isAdminEmail = user.email && ADMIN_EMAILS.includes(user.email);
+
     const payload: ProfileInsert = {
       id: user.id,
       email: user.email || '',
       name: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
-      role: user.user_metadata?.role || 'owner',
+      role: isAdminEmail ? 'admin' : (user.user_metadata?.role || 'owner'),
+      admin_type: isAdminEmail ? 'super' : null,
       phone: user.user_metadata?.phone || user.phone || null,
     };
 

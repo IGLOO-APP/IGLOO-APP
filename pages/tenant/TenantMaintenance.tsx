@@ -5,7 +5,17 @@ import {
   Clock,
   CheckCircle,
   ChevronRight,
+  Zap,
+  Droplets,
+  Home,
+  CloudRain,
+  Shield,
+  Smartphone,
+  Sparkles,
+  MoreHorizontal,
   Camera,
+  Image as ImageIcon,
+  Trash2,
   Send,
   User,
   MessageSquare,
@@ -19,18 +29,18 @@ import {
   Paperclip,
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
-import { faqService } from '../../services/faqService';
+import { tenantService } from '../../services/tenantService';
 import { FAQ } from '../../types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminService } from '../../services/adminService';
 import { useAuth } from '../../context/AuthContext';
 
 interface MaintenanceMessage {
   id: string;
-  text: string;
-  sender: 'me' | 'owner' | 'system';
-  time: string;
-  isSurvey?: boolean;
+  content: string;
+  sender_role: 'me' | 'tenant' | 'owner' | 'system' | 'admin';
+  created_at: string;
+  type: 'text' | 'image' | 'system' | 'file';
+  url?: string;
 }
 
 interface TimelineEvent {
@@ -71,18 +81,20 @@ const TenantMaintenance: React.FC = () => {
   const [newCategory, setNewCategory] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [urgency, setUrgency] = useState('Normal');
+  const [evidencePhotos, setEvidencePhotos] = useState<string[]>([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Maintenance Settings
   const maintenanceSettings = {
     categories: [
-      { id: 'Hidráulico', label: 'Hidráulico', enabled: true, icon: Wrench },
-      { id: 'Elétrico', label: 'Elétrico', enabled: true, icon: Wrench },
-      { id: 'Estrutural', label: 'Estrutural', enabled: true, icon: Wrench },
-      { id: 'Infiltração', label: 'Infiltração', enabled: true, icon: LifeBuoy },
-      { id: 'Fechadura / Segurança', label: 'Segurança', enabled: true, icon: CheckCircle },
-      { id: 'Eletrodoméstico', label: 'Eletrodoméstico', enabled: true, icon: Plus },
-      { id: 'Limpeza / Área Comum', label: 'Limpeza', enabled: true, icon: CheckCircle },
-      { id: 'Outros', label: 'Outros', enabled: true, icon: MessageSquare },
+      { id: 'Hidráulico', label: 'Hidráulico', enabled: true, icon: Droplets, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+      { id: 'Elétrico', label: 'Elétrico', enabled: true, icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
+      { id: 'Estrutural', label: 'Estrutural', enabled: true, icon: Home, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+      { id: 'Infiltração', label: 'Infiltração', enabled: true, icon: CloudRain, color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
+      { id: 'Fechadura / Segurança', label: 'Segurança', enabled: true, icon: Shield, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
+      { id: 'Eletrodoméstico', label: 'Eletrodoméstico', enabled: true, icon: Smartphone, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+      { id: 'Limpeza / Área Comum', label: 'Limpeza', enabled: true, icon: Sparkles, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+      { id: 'Outros', label: 'Outros', enabled: true, icon: MoreHorizontal, color: 'text-slate-500', bg: 'bg-slate-50 dark:bg-slate-500/10' },
     ],
     urgencies: [
       { id: 'Normal', enabled: true },
@@ -94,22 +106,29 @@ const TenantMaintenance: React.FC = () => {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
 
+  const { data: tenantProfile } = useQuery({
+    queryKey: ['tenant_profile', currentUser?.id],
+    queryFn: () => tenantService.getById(currentUser!.id.toString()),
+    enabled: !!currentUser?.id,
+  });
+
   const { data: requests = [], isLoading: loadingRequests } = useQuery({
     queryKey: ['tenant_maintenance_tickets', currentUser?.id],
-    queryFn: () => adminService.getTickets().then(tickets => tickets.filter((t: any) => t.owner_id === currentUser?.id)),
+    queryFn: () => tenantService.getMaintenanceRequests(currentUser!.id.toString()),
     enabled: !!currentUser?.id,
   });
 
   const { data: messages = [], isLoading: loadingMessages } = useQuery({
     queryKey: ['ticket_messages', selectedRequest?.id],
-    queryFn: () => adminService.getTicketMessages(selectedRequest!.id.toString()),
+    queryFn: () => tenantService.getMaintenanceMessages(selectedRequest!.id.toString()),
     enabled: !!selectedRequest?.id,
   });
 
   const createTicketMutation = useMutation({
-    mutationFn: (newTicket: any) => adminService.createTicket({
-      owner_id: currentUser!.id,
-      subject: newTicket.subject,
+    mutationFn: (newTicket: any) => tenantService.createMaintenanceRequest({
+      tenant_id: currentUser!.id.toString(),
+      property_id: tenantProfile?.property_id || '',
+      title: newTicket.subject,
       description: newTicket.description,
       category: newTicket.category,
       priority: newTicket.priority
@@ -122,7 +141,7 @@ const TenantMaintenance: React.FC = () => {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (content: string) => adminService.sendTicketMessage(selectedRequest!.id.toString(), currentUser!.id, 'me', content),
+    mutationFn: (content: string) => tenantService.sendMaintenanceMessage(selectedRequest!.id.toString(), currentUser!.id.toString(), 'tenant', content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket_messages', selectedRequest?.id] });
       setNewMessage('');
@@ -135,7 +154,7 @@ const TenantMaintenance: React.FC = () => {
         ? r.status === 'open' || r.status === 'in_progress' || r.status === 'pending'
         : r.status === 'completed' || r.status === 'resolved';
     const matchesSearch =
-      r.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.category?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
@@ -157,28 +176,35 @@ const TenantMaintenance: React.FC = () => {
     sendMessageMutation.mutate(newMessage);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !selectedRequest) return;
+    if (!file || !selectedRequest || !currentUser) return;
 
-    const msg: MaintenanceMessage = {
-      id: Date.now(),
-      text: `Arquivo anexado: ${file.name}`,
-      sender: 'system',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    try {
+      const { storageService } = await import('../../services/storageService');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${selectedRequest.id}/${Date.now()}.${fileExt}`;
+      const bucket = 'maintenance';
 
-    const updatedRequest = {
-      ...selectedRequest,
-      messages: [...selectedRequest.messages, msg],
-    };
+      const publicUrl = await storageService.uploadFile(bucket, fileName, file);
 
-    setSelectedRequest(updatedRequest);
-    setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
+      if (publicUrl) {
+        const isImage = file.type.startsWith('image/');
+        await tenantService.sendMaintenanceMessage(
+          selectedRequest.id.toString(),
+          currentUser.id.toString(),
+          'tenant',
+          isImage ? `Enviou uma imagem: ${file.name}` : `Arquivo anexado: ${file.name}`,
+          isImage ? 'image' : 'file',
+          publicUrl
+        );
 
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+        queryClient.invalidateQueries({ queryKey: ['ticket_messages', selectedRequest.id] });
+      }
+    } catch (err) {
+      console.error('Error uploading file:', err);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -187,8 +213,33 @@ const TenantMaintenance: React.FC = () => {
       subject: newTitle || 'Nova Solicitação',
       description: newDescription,
       category: newCategory,
-      priority: urgency === 'Emergência' ? 'urgent' : urgency === 'Alta' ? 'high' : 'medium'
+      priority: urgency === 'Emergência' ? 'urgent' : urgency === 'Alta' ? 'high' : 'medium',
+      images: evidencePhotos
     });
+  };
+
+  const handleWizardPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const { storageService } = await import('../../services/storageService');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `wizard/${currentUser.id}/${Date.now()}.${fileExt}`;
+      const bucket = 'maintenance';
+
+      const publicUrl = await storageService.uploadFile(bucket, fileName, file);
+
+      if (publicUrl) {
+        setEvidencePhotos(prev => [...prev, publicUrl]);
+      }
+    } catch (err) {
+      console.error('Error uploading wizard photo:', err);
+    } finally {
+      setIsUploadingPhoto(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   const resetForm = () => {
@@ -197,6 +248,8 @@ const TenantMaintenance: React.FC = () => {
     setNewCategory('');
     setNewDescription('');
     setUrgency('Normal');
+    setEvidencePhotos([]);
+    setIsUploadingPhoto(false);
   };
 
   const getIconByCategory = (cat: string) => {
@@ -220,51 +273,49 @@ const TenantMaintenance: React.FC = () => {
     }
 
     // Simple day calculation from req.date
+    // Simple day calculation from req.created_at
     const today = new Date();
-    const createdDate = new Date(req.date); // This is simplified for the mock
+    const createdDate = new Date(req.created_at);
     const diffTime = today.getTime() - createdDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays >= 2) {
       return (
-        <span className='text-orange-500 font-bold'>Aguardando resposta há {diffDays} dias</span>
+        <span className='text-orange-500 font-bold text-[10px]'>Aguardando resposta há {diffDays} dias</span>
       );
     }
 
-    return <span className='text-slate-400'>Previsão de retorno: até 24h</span>;
+    return <span className='text-slate-400 text-[10px]'>Previsão de retorno: até 24h</span>;
   };
 
-  const handleSurveyResponse = (resolved: boolean) => {
+  const handleSurveyResponse = async (resolved: boolean) => {
     if (!selectedRequest) return;
 
-    const systemMsg: MaintenanceMessage = {
-      id: Date.now(),
-      text: resolved
-        ? `Avaliação concluída: Resolvido. Comentário: ${surveyComment || 'Nenhum'}`
-        : `Avaliação concluída: Ainda persiste. Comentário: ${surveyComment || 'Nenhum'}`,
-      sender: 'system',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    try {
+      // 1. Update request status
+      await tenantService.updateMaintenanceRequest(selectedRequest.id.toString(), {
+        status: resolved ? 'completed' : 'pending'
+      });
 
-    const updatedRequest: MaintenanceRequest = {
-      ...selectedRequest,
-      status: resolved ? 'completed' : 'pending',
-      surveyCompleted: true,
-      messages: [...selectedRequest.messages, systemMsg],
-      timeline: resolved
-        ? [
-          ...selectedRequest.timeline,
-          { id: Date.now(), title: 'Encerrado definitivamente', date: 'Agora' },
-        ]
-        : [
-          ...selectedRequest.timeline,
-          { id: Date.now(), title: 'Reaberto pelo inquilino', date: 'Agora' },
-        ],
-    };
+      // 2. Add system message
+      await tenantService.sendMaintenanceMessage(
+        selectedRequest.id.toString(),
+        'system',
+        'system',
+        resolved
+          ? `Avaliação concluída: Resolvido. Comentário: ${surveyComment || 'Nenhum'}`
+          : `Avaliação concluída: Ainda persiste. Comentário: ${surveyComment || 'Nenhum'}`
+      );
 
-    setSelectedRequest(updatedRequest);
-    setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
-    setSurveyComment('');
+      // 3. Invalidate queries to refresh UI
+      queryClient.invalidateQueries({ queryKey: ['tenant_maintenance_tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticket_messages', selectedRequest.id] });
+      
+      setSelectedRequest(null);
+      setSurveyComment('');
+    } catch (err) {
+      console.error('Error updating survey response:', err);
+    }
   };
 
   const FAQSection = () => {
@@ -272,7 +323,12 @@ const TenantMaintenance: React.FC = () => {
     const [faqs, setFaqs] = useState<FAQ[]>([]);
 
     useEffect(() => {
-      setFaqs(faqService.getActiveFAQs());
+      const fetchFaqs = async () => {
+        const { faqService } = await import('../../services/faqService');
+        const data = await faqService.getActiveFAQs();
+        setFaqs(data);
+      };
+      fetchFaqs();
     }, []);
 
     if (faqs.length === 0) return null;
@@ -382,7 +438,7 @@ const TenantMaintenance: React.FC = () => {
                     </div>
                     <div>
                       <h3 className='font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
-                        {req.subject}
+                        {req.title}
                       </h3>
                       <div className='flex items-center gap-2'>
                         <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>{req.category}</span>
@@ -391,19 +447,31 @@ const TenantMaintenance: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${req.status === 'open' || req.status === 'pending'
-                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                  <div className='flex items-center gap-2'>
+                    <div
+                      className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${req.priority === 'urgent'
+                          ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                          : req.priority === 'high'
+                            ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}
+                    >
+                      {req.priority === 'urgent' ? 'Urgente' : req.priority === 'high' ? 'Alta' : 'Normal'}
+                    </div>
+                    <div
+                      className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${req.status === 'open' || req.status === 'pending'
+                          ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                          : req.status === 'in_progress'
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        }`}
+                    >
+                      {req.status === 'open' || req.status === 'pending'
+                        ? 'Pendente'
                         : req.status === 'in_progress'
-                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      }`}
-                  >
-                    {req.status === 'open' || req.status === 'pending'
-                      ? 'Pendente'
-                      : req.status === 'in_progress'
-                        ? 'Em Andamento'
-                        : 'Resolvido'}
+                          ? 'Em Andamento'
+                          : 'Resolvido'}
+                    </div>
                   </div>
                 </div>
 
@@ -476,22 +544,28 @@ const TenantMaintenance: React.FC = () => {
                     <h4 className='text-lg font-black text-slate-900 dark:text-white mb-1'>O que aconteceu?</h4>
                     <p className='text-xs text-slate-500'>Selecione a categoria que melhor descreve o seu problema.</p>
                   </div>
-                  <div className='grid grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-2 gap-4'>
                     {maintenanceSettings.categories
                       .filter((c) => c.enabled)
                       .map((cat) => (
                         <button
                           key={cat.id}
                           onClick={() => setNewCategory(cat.id)}
-                          className={`p-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${newCategory === cat.id
-                              ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10'
-                              : 'border-gray-100 dark:border-white/5 hover:border-primary/20 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-400'
+                          className={`p-6 rounded-3xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-500 group relative overflow-hidden ${newCategory === cat.id
+                              ? 'bg-primary/10 border-primary text-primary shadow-2xl shadow-primary/20 scale-[1.02]'
+                              : 'border-slate-100 dark:border-white/5 bg-white dark:bg-surface-dark hover:border-primary/30 hover:scale-[1.01] text-slate-600 dark:text-slate-400'
                             }`}
                         >
-                          <div className={`p-3 rounded-xl transition-colors ${newCategory === cat.id ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
-                            <cat.icon size={22} />
+                          <div className={`p-4 rounded-2xl transition-all duration-500 group-hover:scale-110 ${newCategory === cat.id ? 'bg-primary text-white' : `${cat.bg} ${cat.color}`}`}>
+                            <cat.icon size={28} strokeWidth={1.5} />
                           </div>
-                          <span className='text-xs font-bold text-center uppercase tracking-wider'>{cat.label}</span>
+                          <span className='text-[11px] font-black text-center uppercase tracking-[0.15em]'>{cat.label}</span>
+                          
+                          {newCategory === cat.id && (
+                            <div className='absolute top-2 right-2'>
+                              <CheckCircle size={16} className='text-primary' />
+                            </div>
+                          )}
                         </button>
                       ))}
                   </div>
@@ -526,50 +600,118 @@ const TenantMaintenance: React.FC = () => {
                   </div>
 
                   <div>
+                    <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1'>
+                      Fotos de Evidência (Opcional)
+                    </label>
+                    <div className='grid grid-cols-3 gap-3'>
+                      {evidencePhotos.map((photo, idx) => (
+                        <div key={idx} className='relative aspect-square rounded-xl overflow-hidden group'>
+                          <img src={photo} className='w-full h-full object-cover' />
+                          <button 
+                            onClick={() => setEvidencePhotos(prev => prev.filter((_, i) => i !== idx))}
+                            className='absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity'
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+                      {evidencePhotos.length < 3 && (
+                        <button
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.onchange = (e) => handleWizardPhotoUpload(e as any);
+                            input.click();
+                          }}
+                          disabled={isUploadingPhoto}
+                          className='aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-slate-400'
+                        >
+                          {isUploadingPhoto ? <Loader2 size={20} className='animate-spin' /> : (
+                            <>
+                              <Camera size={20} />
+                              <span className='text-[8px] font-black uppercase'>Adicionar</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
                     <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1'>
                       Nível de Urgência
                     </label>
-                    <div className='flex bg-slate-100 dark:bg-white/5 p-1.5 rounded-[20px] gap-1'>
+                    <div className='flex bg-slate-100 dark:bg-black/20 p-1.5 rounded-[20px] gap-1'>
                       {maintenanceSettings.urgencies
                         .filter((u) => u.enabled)
-                        .map((level) => (
-                          <button
-                            key={level.id}
-                            onClick={() => setUrgency(level.id)}
-                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${urgency === level.id
-                                ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
-                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                              }`}
-                          >
-                            {level.id}
-                          </button>
-                        ))}
+                        .map((level) => {
+                          const isSelected = urgency === level.id;
+                          return (
+                            <button
+                              key={level.id}
+                              onClick={() => setUrgency(level.id)}
+                              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isSelected
+                                  ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-lg'
+                                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                }`}
+                            >
+                              {level.id}
+                            </button>
+                          );
+                        })}
                     </div>
                   </div>
                 </div>
               )}
 
               {step === 3 && (
-                <div className='animate-fadeIn space-y-4'>
-                  <div className='bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-gray-700'>
-                    <h4 className='font-bold text-slate-900 dark:text-white mb-2'>
-                      Resumo da Solicitação
-                    </h4>
-                    <div className='space-y-2 text-sm text-slate-600 dark:text-slate-300'>
-                      <p>
-                        <span className='font-bold'>Categoria:</span> {newCategory}
-                      </p>
-                      <p>
-                        <span className='font-bold'>Assunto:</span> {newTitle}
-                      </p>
-                      <p>
-                        <span className='font-bold'>Urgência:</span> {urgency}
-                      </p>
+                <div className='animate-fadeIn space-y-6'>
+                  <div className='bg-white dark:bg-surface-dark p-6 rounded-3xl border border-slate-100 dark:border-white/5 shadow-xl shadow-black/5'>
+                    <div className='flex items-center gap-4 mb-6 pb-6 border-b border-slate-50 dark:border-white/5'>
+                      <div className='w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center'>
+                        {(() => {
+                          const cat = maintenanceSettings.categories.find(c => c.id === newCategory);
+                          const Icon = cat?.icon || LifeBuoy;
+                          return <Icon size={24} />;
+                        })()}
+                      </div>
+                      <div>
+                        <h4 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider'>{newCategory}</h4>
+                        <p className='text-[10px] text-slate-500 font-bold'>CATEGORIA DA SOLICITAÇÃO</p>
+                      </div>
+                    </div>
+                    
+                    <div className='space-y-4'>
+                      <div>
+                        <p className='text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1'>Assunto</p>
+                        <p className='text-sm font-bold text-slate-900 dark:text-white'>{newTitle}</p>
+                      </div>
+                      <div>
+                        <p className='text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1'>Urgência</p>
+                        <div className='inline-flex px-3 py-1 rounded-full bg-slate-100 dark:bg-black/20 text-[10px] font-black uppercase tracking-tighter text-slate-600 dark:text-slate-400'>
+                          {urgency}
+                        </div>
+                      </div>
+                      {evidencePhotos.length > 0 && (
+                        <div>
+                          <p className='text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2'>Fotos Anexadas</p>
+                          <div className='flex gap-2'>
+                            {evidencePhotos.map((p, i) => (
+                              <div key={i} className='w-12 h-12 rounded-lg overflow-hidden border border-slate-100 dark:border-white/10'>
+                                <img src={p} className='w-full h-full object-cover' />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <p className='text-xs text-slate-500 text-center'>
-                    Ao confirmar, o proprietário será notificado imediatamente.
-                  </p>
+                  <div className='p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20'>
+                    <p className='text-[10px] text-blue-600 dark:text-blue-400 font-bold text-center leading-relaxed'>
+                      Ao confirmar, nossa equipe e o proprietário serão notificados. Você poderá acompanhar o status e conversar via chat em tempo real.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -611,22 +753,34 @@ const TenantMaintenance: React.FC = () => {
               <div className='flex justify-between items-start'>
                 <div>
                   <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
-                    {selectedRequest.subject}
+                    {selectedRequest.title}
                   </h3>
-                  <span
-                    className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedRequest.status === 'open' || selectedRequest.status === 'pending'
-                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                  <div className='flex items-center gap-2 mt-2'>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedRequest.priority === 'urgent'
+                          ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                          : selectedRequest.priority === 'high'
+                            ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}
+                    >
+                      Prioridade {selectedRequest.priority === 'urgent' ? 'Urgente' : selectedRequest.priority === 'high' ? 'Alta' : 'Normal'}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedRequest.status === 'open' || selectedRequest.status === 'pending'
+                          ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                          : selectedRequest.status === 'in_progress'
+                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        }`}
+                    >
+                      {selectedRequest.status === 'open' || selectedRequest.status === 'pending'
+                        ? 'Pendente'
                         : selectedRequest.status === 'in_progress'
-                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      }`}
-                  >
-                    {selectedRequest.status === 'open' || selectedRequest.status === 'pending'
-                      ? 'Pendente'
-                      : selectedRequest.status === 'in_progress'
-                        ? 'Em Andamento'
-                        : 'Resolvido'}
-                  </span>
+                          ? 'Em Andamento'
+                          : 'Resolvido'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className='mt-4 bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/5'>
@@ -636,15 +790,24 @@ const TenantMaintenance: React.FC = () => {
                 <div className='text-sm'>{getSLAInfo(selectedRequest)}</div>
               </div>
               <div className='mt-4 relative pl-4 border-l-2 border-slate-200 dark:border-gray-700 space-y-4'>
-                {selectedRequest.timeline?.map((event, idx) => (
-                  <div key={idx} className='relative'>
-                    <div className='absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-white dark:border-surface-dark'></div>
-                    <p className='text-sm font-bold text-slate-800 dark:text-white'>
-                      {event.title}
-                    </p>
-                    <p className='text-xs text-slate-500'>{event.date}</p>
+                <div className='relative'>
+                  <div className='absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-surface-dark'></div>
+                  <p className='text-sm font-bold text-slate-800 dark:text-white'>Solicitação Criada</p>
+                  <p className='text-xs text-slate-500'>{new Date(selectedRequest.created_at).toLocaleDateString()}</p>
+                </div>
+                {selectedRequest.status !== 'pending' && (
+                  <div className='relative'>
+                    <div className='absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-surface-dark'></div>
+                    <p className='text-sm font-bold text-slate-800 dark:text-white'>Em Atendimento</p>
+                    <p className='text-xs text-slate-500'>O proprietário iniciou a análise</p>
                   </div>
-                ))}
+                )}
+                {selectedRequest.status === 'completed' && (
+                  <div className='relative'>
+                    <div className='absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white dark:border-surface-dark'></div>
+                    <p className='text-sm font-bold text-slate-800 dark:text-white'>Finalizado</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -661,7 +824,7 @@ const TenantMaintenance: React.FC = () => {
               {messages.map((msg: any) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.sender_role === 'me' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
+                  className={`flex ${msg.sender_role === 'tenant' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
                 >
                   {msg.sender_role === 'system' ? (
                     <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
@@ -669,7 +832,7 @@ const TenantMaintenance: React.FC = () => {
                     </div>
                   ) : (
                     <div
-                      className={`max-w-[85%] flex flex-col ${msg.sender_role === 'me' ? 'items-end' : 'items-start'}`}
+                      className={`max-w-[85%] flex flex-col ${msg.sender_role === 'tenant' ? 'items-end' : 'items-start'}`}
                     >
                       <div className='flex items-end gap-2'>
                         {(msg.sender_role === 'owner' || msg.sender_role === 'admin') && (
@@ -678,12 +841,24 @@ const TenantMaintenance: React.FC = () => {
                           </div>
                         )}
                         <div
-                          className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm ${msg.sender_role === 'me'
+                          className={`px-4 py-2.5 rounded-2xl text-sm shadow-sm ${msg.sender_role === 'tenant'
                               ? 'bg-primary text-white rounded-tr-sm'
                               : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
                             }`}
                         >
-                          {msg.content}
+                          {msg.type === 'image' && msg.url ? (
+                            <div className='space-y-2'>
+                              <img 
+                                src={msg.url} 
+                                alt='Anexo' 
+                                className='max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity'
+                                onClick={() => window.open(msg.url, '_blank')}
+                              />
+                              <p className='text-xs opacity-80'>{msg.content}</p>
+                            </div>
+                          ) : (
+                            msg.content
+                          )}
                         </div>
                       </div>
                       <span className='text-[10px] text-slate-400 font-medium mt-1 px-1 mx-8'>

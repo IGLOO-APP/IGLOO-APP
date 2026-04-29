@@ -203,7 +203,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                               className='fixed inset-0 z-10'
                               onClick={() => setActiveDropdown(null)}
                             ></div>
-                            <div className='absolute right-0 top-full mt-1 w-56 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 py-2 z-20 animate-scaleUp origin-top-right'>
+                            <div className={`absolute right-0 ${users.indexOf(u) >= users.length - 2 && users.length > 2 ? 'bottom-full mb-1' : 'top-full mt-1'} w-56 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 py-2 z-20 animate-scaleUp ${users.indexOf(u) >= users.length - 2 && users.length > 2 ? 'origin-bottom-right' : 'origin-top-right'}`}>
                               <button
                                 onClick={() => {
                                   onImpersonate(u);

@@ -25,66 +25,31 @@ import { useAuth } from '../../context/AuthContext';
 import { calculateLateFee } from '../../utils/financialCalculations';
 
 interface Payment {
-  id: number;
-  month: string;
-  dueDate: string;
-  paidDate?: string;
+  id: string;
+  contract_id: string;
+  due_date: string;
+  paid_date?: string;
   amount: number;
-  breakdown: {
+  status: 'paid' | 'pending' | 'late' | 'cancelled';
+  payment_method?: string;
+  notes?: string;
+  // Dynamic field for UI
+  month?: string;
+  breakdown?: {
     rent: number;
     condo: number;
     iptu: number;
-    water?: number;
-    electricity?: number;
     fine?: number;
   };
-  status: 'paid' | 'pending' | 'late';
-  method?: string;
 }
 
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: 1,
-    month: 'Março 2024',
-    dueDate: '10/03/2024',
-    paidDate: '08/03/2024',
-    amount: 1500.0,
-    breakdown: { rent: 1200, condo: 200, iptu: 100 },
-    status: 'paid',
-    method: 'Pix',
-  },
-  {
-    id: 2,
-    month: 'Fevereiro 2024',
-    dueDate: '10/02/2024',
-    paidDate: '12/02/2024',
-    amount: 1515.0,
-    breakdown: { rent: 1200, condo: 200, iptu: 100, fine: 15 },
-    status: 'late',
-    method: 'Boleto',
-  },
-  {
-    id: 3,
-    month: 'Janeiro 2024',
-    dueDate: '10/01/2024',
-    paidDate: '10/01/2024',
-    amount: 1500.0,
-    breakdown: { rent: 1200, condo: 200, iptu: 100 },
-    status: 'paid',
-    method: 'Pix',
-  },
-  {
-    id: 4,
-    month: 'Abril 2024',
-    dueDate: '10/04/2024',
-    amount: 1500.0,
-    breakdown: { rent: 1200, condo: 200, iptu: 100 },
-    status: 'pending',
-  },
-];
+// MOCK_PAYMENTS removed for real data integration
 
 const TenantPayments: React.FC = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [tenantData, setTenantData] = useState<any | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [isPaying, setIsPaying] = useState(false);
@@ -97,8 +62,45 @@ const TenantPayments: React.FC = () => {
   const [showAddNewCard, setShowAddNewCard] = useState(false);
 
   useEffect(() => {
+    loadData();
     loadPaymentMethods();
-  }, []);
+  }, [user]);
+
+  const loadData = async () => {
+    if (!user?.id) return;
+    try {
+      setLoading(true);
+      const { tenantService } = await import('../../services/tenantService');
+      const tData = await tenantService.getById(user.id.toString());
+      setTenantData(tData);
+
+      if (tData?.contract?.id) {
+        const rawPayments = await tenantService.getPayments(tData.contract.id.toString());
+        
+        // Transform real payments for UI
+        const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        const transformed: Payment[] = rawPayments.map(p => {
+          const dDate = new Date(p.due_date);
+          return {
+            ...p,
+            month: `${monthNames[dDate.getMonth()]} ${dDate.getFullYear()}`,
+            breakdown: p.notes?.includes('{') ? JSON.parse(p.notes) : {
+              rent: Number(tData.contract.monthly_value),
+              condo: 0,
+              iptu: 0
+            }
+          };
+        });
+        
+        setPayments(transformed);
+      }
+    } catch (err) {
+      console.error('Error loading payments data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadPaymentMethods = async () => {
     const methods = await stripeService.getPaymentMethods();
@@ -115,20 +117,20 @@ const TenantPayments: React.FC = () => {
       =========================================
       IGLOO PROPERTY MANAGER
       -----------------------------------------
-      Inquilino: ${user?.name || 'Inquilino'}
-      Imóvel: Apt 101 - Ed. Horizonte (Simulado)
+      Inquilino: ${user?.name || tenantData?.name || 'Inquilino'}
+      Imóvel: ${tenantData?.property || 'Imóvel'}
       Mês de Referência: ${payment.month}
-      Data do Pagamento: ${payment.paidDate || '-'}
-      Método: ${payment.method || 'Não especificado'}
-      Contrato: CTR-2024-001 (Simulado)
+      Data do Pagamento: ${payment.paid_date ? new Date(payment.paid_date).toLocaleDateString() : '-'}
+      Método: ${payment.payment_method || 'Não especificado'}
+      Contrato: ${tenantData?.contract?.contract_number || 'CTR-PROD'}
       
       BREAKDOWN:
-      - Aluguel: R$ ${payment.breakdown.rent.toFixed(2)}
-      - Condomínio: R$ ${payment.breakdown.condo.toFixed(2)}
-      - IPTU: R$ ${payment.breakdown.iptu.toFixed(2)}
-      ${payment.breakdown.fine ? `- Multa: R$ ${payment.breakdown.fine.toFixed(2)}` : ''}
+      - Aluguel: R$ ${payment.breakdown?.rent.toFixed(2)}
+      - Condomínio: R$ ${payment.breakdown?.condo.toFixed(2)}
+      - IPTU: R$ ${payment.breakdown?.iptu.toFixed(2)}
+      ${payment.breakdown?.fine ? `- Multa: R$ ${payment.breakdown.fine.toFixed(2)}` : ''}
       
-      VALOR TOTAL: R$ ${payment.amount.toFixed(2)}
+      VALOR TOTAL: R$ ${Number(payment.amount).toFixed(2)}
       -----------------------------------------
       Documento gerado automaticamente pelo Igloo Property Manager
       =========================================
@@ -150,7 +152,7 @@ const TenantPayments: React.FC = () => {
     
     if (payment.status === 'late') {
       // Logic for late fees based on the same pattern as BillingModal
-      const fees = calculateLateFee(payment.amount, payment.dueDate);
+      const fees = calculateLateFee(payment.amount, payment.due_date);
       if (fees.diasAtraso > 0) {
         finalPayment = {
           ...payment,
@@ -179,7 +181,7 @@ const TenantPayments: React.FC = () => {
     try {
       // Simulate Stripe Flow
       await stripeService.createPaymentIntent(selectedPayment!.amount, {
-        property_id: 'prop_123',
+        property_id: tenantData?.property_id || 'prod_property',
         breakdown: selectedPayment!.breakdown,
       });
 
@@ -206,30 +208,28 @@ const TenantPayments: React.FC = () => {
     }
   };
 
-  const filteredPayments = MOCK_PAYMENTS.filter((p) => {
+  const filteredPayments = payments.filter((p) => {
     if (filter === 'all') return true;
     if (filter === 'paid') return p.status === 'paid' || p.status === 'late';
     return p.status === 'pending';
   }).sort((a, b) => {
     // Sort by due date descending (most recent first)
-    const dateA = new Date(a.dueDate.split('/').reverse().join('-')).getTime();
-    const dateB = new Date(b.dueDate.split('/').reverse().join('-')).getTime();
+    const dateA = new Date(a.due_date).getTime();
+    const dateB = new Date(b.due_date).getTime();
     return dateB - dateA;
   });
 
   const formatDate = (dateStr: string | undefined) => {
     if (!dateStr) return '-';
-    const [day, month, year] = dateStr.split('/');
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+    return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  const totalPaid2024 = MOCK_PAYMENTS.filter((p) => p.status !== 'pending').reduce(
-    (acc, curr) => acc + curr.amount,
+  const totalPaidCurrentYear = payments.filter((p) => p.status === 'paid' && new Date(p.due_date).getFullYear() === new Date().getFullYear()).reduce(
+    (acc, curr) => acc + Number(curr.amount),
     0
   );
-  const onTimePayments = MOCK_PAYMENTS.filter((p) => p.status === 'paid').length;
-  const totalPayments = MOCK_PAYMENTS.filter((p) => p.status !== 'pending').length;
+  const onTimePaymentsCount = payments.filter((p) => p.status === 'paid').length;
+  const totalPaidPaymentsCount = payments.filter((p) => p.status === 'paid' || p.status === 'late').length;
 
   return (
     <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
@@ -253,10 +253,10 @@ const TenantPayments: React.FC = () => {
             <div className='flex justify-between items-start mb-4'>
               <div>
                 <p className='text-indigo-100 text-xs font-bold uppercase tracking-wider'>
-                  Total Pago em 2024
+                  Total Pago em {new Date().getFullYear()}
                 </p>
                 <h2 className='text-3xl font-extrabold mt-1'>
-                  R$ {totalPaid2024.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R$ {totalPaidCurrentYear.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </h2>
               </div>
               <div
@@ -277,21 +277,21 @@ const TenantPayments: React.FC = () => {
                   <div className='h-2 flex-1 bg-white/20 rounded-full overflow-hidden'>
                     <div
                       className='h-full bg-emerald-400'
-                      style={{ width: `${(onTimePayments / totalPayments) * 100}%` }}
+                      style={{ width: `${totalPaidPaymentsCount > 0 ? (onTimePaymentsCount / totalPaidPaymentsCount) * 100 : 0}%` }}
                     ></div>
                   </div>
                   <span className='text-xs font-bold'>
-                    {onTimePayments}/{totalPayments}
+                    {onTimePaymentsCount}/{totalPaidPaymentsCount}
                   </span>
                 </div>
                 <p className='text-[10px] text-indigo-200 mt-1'>
-                  {onTimePayments} de {totalPayments} últimos meses pagos em dia
+                  {onTimePaymentsCount} de {totalPaidPaymentsCount} pagamentos realizados em dia
                 </p>
               </div>
               <div className='bg-black/20 rounded-xl p-3 backdrop-blur-sm flex justify-between items-center'>
                 <div>
                   <p className='text-xs text-indigo-100'>Próximo</p>
-                  <p className='font-bold text-sm'>10 Abr</p>
+                  <p className='font-bold text-sm'>{tenantData?.contract?.payment_day || '--'}</p>
                 </div>
                 <ArrowUpRight className='text-indigo-300' size={20} />
               </div>
@@ -344,12 +344,12 @@ const TenantPayments: React.FC = () => {
                     {payment.month}
                   </h3>
                   <p className='text-xs text-slate-500 mt-1 flex items-center gap-1'>
-                    Vencimento: {formatDate(payment.dueDate)}
+                    Vencimento: {formatDate(payment.due_date)}
                   </p>
                 </div>
                 <div className='text-right'>
                   <p className='font-bold text-slate-900 dark:text-white text-lg'>
-                    R$ {payment.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {Number(payment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                   <div
                     className={`text-[10px] font-bold uppercase tracking-wider mt-1 px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
@@ -368,7 +368,7 @@ const TenantPayments: React.FC = () => {
                       <Clock size={10} />
                     )}
                     {payment.status === 'paid'
-                      ? `Pago em ${formatDate(payment.paidDate)}`
+                      ? `Pago em ${formatDate(payment.paid_date)}`
                       : payment.status === 'late'
                         ? 'Atrasado'
                         : 'A Vencer'}
@@ -384,7 +384,7 @@ const TenantPayments: React.FC = () => {
                   </p>
                   <p className='text-xs text-slate-500 flex justify-between w-32'>
                     <span>Condomínio:</span>{' '}
-                    <span className='font-medium'>R$ {payment.breakdown.condo}</span>
+                    <span className='font-medium'>R$ {payment.breakdown?.condo || 0}</span>
                   </p>
                   {payment.breakdown.fine && (
                     <p className='text-xs text-red-500 flex justify-between w-32 font-bold'>
@@ -445,7 +445,7 @@ const TenantPayments: React.FC = () => {
                   </p>
                   <h2 className='text-4xl font-black text-slate-900 dark:text-white mt-1'>
                     R${' '}
-                    {selectedPayment.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {Number(selectedPayment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </h2>
                   <div
                     className={`mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${
@@ -471,19 +471,19 @@ const TenantPayments: React.FC = () => {
                   <div className='flex justify-between text-sm'>
                     <span className='text-slate-600 dark:text-slate-400'>Aluguel</span>
                     <span className='font-bold text-slate-900 dark:text-white'>
-                      R$ {selectedPayment.breakdown.rent.toFixed(2)}
+                      R$ {Number(selectedPayment.breakdown?.rent || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span className='text-slate-600 dark:text-slate-400'>Condomínio</span>
                     <span className='font-bold text-slate-900 dark:text-white'>
-                      R$ {selectedPayment.breakdown.condo.toFixed(2)}
+                      R$ {Number(selectedPayment.breakdown?.condo || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span className='text-slate-600 dark:text-slate-400'>IPTU</span>
                     <span className='font-bold text-slate-900 dark:text-white'>
-                      R$ {selectedPayment.breakdown.iptu.toFixed(2)}
+                      R$ {Number(selectedPayment.breakdown?.iptu || 0).toFixed(2)}
                     </span>
                   </div>
                   {selectedPayment.breakdown.fine && (
@@ -548,7 +548,7 @@ const TenantPayments: React.FC = () => {
                       >
                         {isPaying
                           ? 'Processando...'
-                          : `Pagar R$ ${selectedPayment.amount.toLocaleString()}`}
+                          : `Pagar R$ ${Number(selectedPayment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                       </button>
                       <p className='text-center text-xs text-slate-400 mt-3 flex items-center justify-center gap-1'>
                         <Lock size={12} /> Pagamento seguro via Stripe
@@ -569,7 +569,7 @@ const TenantPayments: React.FC = () => {
                     <PaymentForm
                       onSubmit={processPayment}
                       isLoading={isPaying}
-                      buttonText={`Pagar R$ ${selectedPayment.amount.toLocaleString()}`}
+                      buttonText={`Pagar R$ ${Number(selectedPayment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                     />
                   </>
                 )}

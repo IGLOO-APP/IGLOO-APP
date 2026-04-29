@@ -56,34 +56,34 @@ export const tenantService = {
   },
 
   async getById(id: string): Promise<Tenant | null> {
+    // 1. Fetch Profile
     const { data: t, error } = await supabase
       .from('profiles')
-      .select(`
-        *,
-        contracts:contracts!contracts_tenant_id_fkey(
-          id,
-          contract_number,
-          start_date,
-          end_date,
-          monthly_value,
-          status,
-          property:properties(*)
-        )
-      `)
+      .select('*')
       .or(`id.eq.${id},email.eq.${id}`)
       .maybeSingle();
 
     if (error) {
-      console.error('[tenantService] Error fetching tenant:', error);
+      console.error('[tenantService] Error fetching tenant profile:', error);
       return null;
     }
 
     if (!t) {
-      console.warn('[tenantService] Tenant not found for ID/Email:', id);
+      console.warn('[tenantService] Tenant profile not found for ID/Email:', id);
       return null;
     }
 
-    const activeContract = t.contracts?.find((c: any) => c.status === 'active') || t.contracts?.[0];
+    // 2. Fetch Active Contract & Property explicitly
+    // This is more robust than a join if there are RLS or FK naming complexities
+    const { data: contractData } = await supabase
+      .from('contracts')
+      .select('*, property:properties(*)')
+      .eq('tenant_id', t.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const activeContract = contractData;
     const property = activeContract?.property;
 
     return {
@@ -95,10 +95,17 @@ export const tenantService = {
       image: t.avatar_url,
       status: activeContract?.status || 'active',
       is_pending: t.is_pending,
-      property: property?.name || 'Imóvel não vinculado',
+      property: property?.name || (activeContract ? 'Imóvel sem nome' : 'Imóvel não vinculado'),
       property_id: property?.id,
       property_address: property?.address,
       property_image: property?.image_url,
+      property_details: property ? {
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.area,
+        parking: property.parking_spaces,
+        price: property.price
+      } : undefined,
       contract: activeContract ? {
         id: activeContract.id,
         contract_number: activeContract.contract_number,
@@ -232,4 +239,80 @@ export const tenantService = {
 
     return data;
   },
+
+  async createMaintenanceRequest(requestData: {
+    property_id: string;
+    tenant_id: string;
+    title: string;
+    description: string;
+    category: string;
+    priority: string;
+    images?: string[];
+  }): Promise<any> {
+    const { data, error } = await supabase
+      .from('maintenance_requests')
+      .insert({
+        ...requestData,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateMaintenanceRequest(id: string, updates: any): Promise<void> {
+    const { error } = await supabase
+      .from('maintenance_requests')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  async getMaintenanceMessages(requestId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('maintenance_messages')
+      .select('*')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('[tenantService] Error fetching maintenance messages:', error);
+      return [];
+    }
+
+    return data;
+  },
+
+  async sendMaintenanceMessage(
+    requestId: string, 
+    senderId: string, 
+    role: string, 
+    content: string, 
+    type: 'text' | 'image' | 'system' | 'file' = 'text',
+    url?: string
+  ): Promise<any> {
+    const { data, error } = await supabase
+      .from('maintenance_messages')
+      .insert({
+        request_id: requestId,
+        sender_id: senderId,
+        sender_role: role,
+        content,
+        type,
+        url
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 };
