@@ -321,39 +321,31 @@ const Tenants: React.FC = () => {
 
                   {/* Clean Actions Area */}
                   <div className='flex gap-2 mt-4'>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/messages?tenantId=${t.id}`;
+                      }}
+                      className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
+                    >
+                      <MessageCircle size={12} /> Mensagem
+                    </button>
                     {(t as any).is_pending ? (
                       <>
                         <button
                           onClick={(e) => handleWhatsAppInvite(e, t)}
-                          className='h-7 px-3 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
+                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
                         >
-                          <MessageCircle size={12} /> WhatsApp
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const baseUrl = window.location.origin;
-                            navigator.clipboard.writeText(`${baseUrl}/signup?email=${t.email}`);
-                            addToast('Link Copiado', 'Link copiado.', 'success');
-                          }}
-                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
-                        >
-                          <FileText size={12} /> Copiar Link
+                          <Phone size={12} /> WhatsApp
                         </button>
                       </>
                     ) : (
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
-                          className='h-7 px-3 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors flex items-center gap-2 text-[10px] font-bold uppercase'
+                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
                         >
                           <DollarSign size={12} /> Cobrar
-                        </button>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className='h-7 w-7 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center'
-                        >
-                          <Mail size={12} />
                         </button>
                       </>
                     )}
