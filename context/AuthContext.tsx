@@ -83,15 +83,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const profile = await profileService.ensureProfile({
         id: clerkUser.id,
         email: clerkUser.primaryEmailAddress?.emailAddress || '',
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
-      } as any);
+        user_metadata: {
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+          avatar_url: clerkUser.imageUrl,
+        },
+      });
 
       if (profile) {
         const userData: User = {
           id: profile.id,
           name: profile.name || '',
           email: profile.email,
-          role: (clerkUser.publicMetadata.role as UserRole) || (profile.role as UserRole) || 'owner',
+          // Role priority: Supabase profile (set by owner) > Clerk metadata > fallback
+          role: (profile.role as UserRole) || (clerkUser.publicMetadata.role as UserRole) || 'owner',
           admin_type: (profile as any).admin_type,
           permissions: (profile as any).permissions,
           is_suspended: (profile as any).is_suspended,

@@ -1,27 +1,69 @@
-import { useEffect } from 'react';
-import { useSignIn, useSignUp } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 
 const SSOCallback: React.FC = () => {
-  const { signIn, isLoaded: signInLoaded } = useSignIn();
-  const { signUp, isLoaded: signUpLoaded } = useSignUp();
+  const { handleRedirectCallback } = useClerk();
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!signInLoaded || !signUpLoaded) return;
-
-    const handleCallback = async () => {
+    const processCallback = async () => {
       try {
-        // O Clerk processa automaticamente o callback via URL
-        navigate('/');
-      } catch (err) {
+        // Clerk processes the OAuth/SSO tokens from the URL automatically
+        await handleRedirectCallback({
+          afterSignInUrl: '/',
+          afterSignUpUrl: '/',
+        });
+      } catch (err: any) {
         console.error('SSO callback error:', err);
-        navigate('/login');
+        
+        // If the callback has already been consumed or the session already exists,
+        // just redirect to the appropriate page
+        if (err?.message?.includes('is not a valid callback URL') || 
+            err?.message?.includes('already been consumed') ||
+            err?.errors?.[0]?.code === 'session_exists') {
+          navigate('/', { replace: true });
+          return;
+        }
+
+        setError(err?.message || 'Erro ao processar autenticação');
+        
+        // Redirect to login after a short delay on unexpected errors
+        setTimeout(() => {
+          navigate('/login', { replace: true });
+        }, 3000);
       }
     };
 
-    handleCallback();
-  }, [signInLoaded, signUpLoaded]);
+    processCallback();
+  }, [handleRedirectCallback, navigate]);
+
+  if (error) {
+    return (
+      <div style={{
+        height: '100vh',
+        background: '#0b1011',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '16px',
+      }}>
+        <div style={{ 
+          color: '#f87171', 
+          fontSize: '14px', 
+          fontFamily: 'sans-serif',
+          textAlign: 'center',
+          maxWidth: '400px',
+        }}>
+          <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Erro na autenticação</p>
+          <p style={{ color: '#94a3b8', fontSize: '12px' }}>{error}</p>
+          <p style={{ color: '#64748b', fontSize: '11px', marginTop: '12px' }}>Redirecionando para o login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

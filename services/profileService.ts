@@ -56,27 +56,45 @@ export const profileService = {
     if (existingById) return existingById;
 
     // 2. Check if a placeholder profile exists with the same email
-    // This happens when an owner pre-registers a tenant
+    // This happens when an owner pre-registers a tenant via the Tenants page.
+    // The placeholder has a temporary UUID as `id`, so we need to migrate it
+    // to the real Clerk auth ID.
     if (user.email) {
       const existingByEmail = await this.getByEmail(user.email);
-      if (existingByEmail) {
-        console.log('Claiming existing profile for email:', user.email);
+      if (existingByEmail && existingByEmail.id !== user.id) {
+        console.log('Claiming existing profile for email:', user.email, '| Old ID:', existingByEmail.id, '| New ID:', user.id);
         
-        // Update the placeholder profile with the actual authenticated ID
-        const { data: claimed, error: updateError } = await supabase
+        // Strategy: Create new profile with the auth ID, copying role & data 
+        // from the placeholder. We cannot UPDATE a primary key in Supabase,
+        // so we insert a new row and delete the old one.
+        const claimedPayload: ProfileInsert = {
+          id: user.id,
+          email: existingByEmail.email,
+          name: existingByEmail.name || user.user_metadata?.name || user.email.split('@')[0],
+          role: existingByEmail.role, // CRITICAL: Preserve the tenant role!
+          avatar_url: user.user_metadata?.avatar_url || existingByEmail.avatar_url,
+          phone: user.user_metadata?.phone || user.phone || existingByEmail.phone,
+          property_id: (existingByEmail as any).property_id,
+        };
+
+        const { data: claimed, error: claimError } = await supabase
           .from('profiles')
-          .update({ 
-            id: user.id,
-            name: existingByEmail.name || user.user_metadata?.name || user.email.split('@')[0],
-            avatar_url: user.user_metadata?.avatar_url || existingByEmail.avatar_url,
-            phone: user.user_metadata?.phone || user.phone || existingByEmail.phone,
-          })
-          .eq('email', user.email)
+          .upsert(claimedPayload, { onConflict: 'id' })
           .select()
           .single();
 
-        if (!updateError && claimed) return claimed;
-        // If update fails (e.g. constraints), continue to create new
+        if (!claimError && claimed) {
+          // Clean up the old placeholder profile
+          await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', existingByEmail.id);
+          
+          console.log('Profile claimed successfully. Role:', claimed.role);
+          return claimed;
+        }
+
+        console.warn('Failed to claim profile, will create fresh:', claimError);
       }
     }
 
