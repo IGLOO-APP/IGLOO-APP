@@ -28,6 +28,8 @@ import { CashFlowChart } from './dashboard/components/CashFlowChart';
 import { PropertyPerformance } from './dashboard/components/PropertyPerformance';
 import { ActivityTimeline } from './dashboard/components/ActivityTimeline';
 import { DashboardAIInsights } from './dashboard/components/DashboardAIInsights';
+import { PropertyCard } from '../components/properties/PropertyCard';
+import { propertyService } from '../services/propertyService';
 
 import AnnouncementTicker from '../components/AnnouncementTicker';
 
@@ -46,6 +48,12 @@ const Dashboard: React.FC = () => {
     queryFn: () => dashboardService.getDashboardData(),
     staleTime: 1000 * 60, // 1 minute
   });
+
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: () => propertyService.getAll(),
+    staleTime: 1000 * 60 * 5,
+  });
   const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -60,7 +68,13 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const { metrics, financialHistory, topProperties, activities, onboarding } = dashboardData;
+  const { metrics, financialHistory, topProperties, activities, onboarding: rawOnboarding } = dashboardData;
+
+  // Merge raw onboarding with live data to ensure sync
+  const onboarding = {
+    ...rawOnboarding,
+    step1: properties.length > 0 || rawOnboarding?.step1,
+  };
 
   return (
     <div
@@ -181,16 +195,54 @@ const Dashboard: React.FC = () => {
 
       </header>
 
-      <div className='p-6 space-y-8 pb-24'>
-        {/* --- 0. ONBOARDING --- */}
-        {!onboarding?.allCompleted && (
-          <OnboardingChecklist onboarding={onboarding} />
-        )}
-
-
-
-        {/* --- 1. HERO METRICS --- */}
+      <div className='p-6 space-y-12 pb-24'>
+        {/* --- 0. HERO METRICS --- */}
         <HeroMetrics metrics={metrics} />
+
+        {/* --- 1. GESTÃO DE ATIVOS & ONBOARDING --- */}
+        <div className='grid grid-cols-1 lg:grid-cols-6 gap-6 mb-16'>
+          {/* Left: Highlighted Property - Spans 2 columns */}
+          <section className='lg:col-span-2 space-y-4'>
+            <div className='flex justify-between items-end px-1'>
+              <div>
+                <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Gestão de Ativos</h2>
+                <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Patrimônio em destaque</p>
+              </div>
+              <button 
+                onClick={() => navigate('/properties')}
+                className='text-[10px] font-black text-primary uppercase tracking-widest hover:underline'
+              >
+                Ver todos
+              </button>
+            </div>
+            
+            <div className='w-full'>
+              {/* Highlighted Property Card (Full Detail) */}
+              {properties.slice(0, 1).map((prop) => (
+                <PropertyCard
+                  key={prop.id}
+                  property={prop}
+                  onClick={(p) => navigate(`/properties?id=${p.id}`)}
+                  viewMode='grid'
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Right: Onboarding Steps (2x2) - Spans 4 columns (fills the space) */}
+          {!onboarding?.allCompleted && (
+            <section className='lg:col-span-4 space-y-4'>
+              <div className='px-1'>
+                <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Próximos Passos</h2>
+                <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Complete seu perfil</p>
+              </div>
+              <OnboardingChecklist 
+                onboarding={onboarding} 
+                variant='compact-2x2' 
+              />
+            </section>
+          )}
+        </div>
 
         {/* --- 2. ALERTS & ACTIONS --- */}
         <section className='flex flex-col md:flex-row gap-6'>
@@ -234,7 +286,7 @@ const Dashboard: React.FC = () => {
         </section>
 
         {/* --- 3. MAIN GRID --- */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16'>
           {/* LEFT COLUMN (2/3) */}
           <div className='lg:col-span-2 space-y-6'>
             <CashFlowChart financialHistory={financialHistory} isDark={isDark} />

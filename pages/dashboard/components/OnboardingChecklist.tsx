@@ -9,9 +9,10 @@ interface OnboardingProps {
     step3: boolean;
     step4: boolean;
   };
+  variant?: 'full' | 'compact-2x2';
 }
 
-export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) => {
+export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding, variant = 'full' }) => {
   const navigate = useNavigate();
 
   const steps: {
@@ -76,7 +77,11 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
   const completedCount = steps.filter(s => s.completed).length;
 
   return (
-    <section className='grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 animate-fadeIn'>
+    <section className={
+      variant === 'compact-2x2' 
+        ? 'grid grid-cols-2 gap-x-3 gap-y-2' 
+        : 'grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 animate-fadeIn'
+    }>
       {steps.map((step, index) => {
         const isNext =
           !step.completed &&
@@ -88,7 +93,9 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
             key={step.id}
             disabled={step.disabled && !step.completed}
             onClick={step.onClick}
-            className={`group relative overflow-hidden text-left bg-white dark:bg-surface-dark p-3 md:p-5 rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] ${
+            className={`group relative overflow-hidden text-left bg-white dark:bg-surface-dark p-2.5 md:p-3 rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300 active:scale-[0.98] ${
+              variant === 'compact-2x2' ? 'min-h-[90px]' : 'md:p-5'
+            } ${
               step.completed
                 ? 'border-emerald-500/20 dark:border-emerald-500/10'
                 : isNext
@@ -100,17 +107,17 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
           >
             {/* Ghost icon — same as HeroCard */}
             <div
-              className={`absolute top-0 right-0 p-2 md:p-4 transition-opacity opacity-5 group-hover:opacity-10 ${
+              className={`absolute top-0 right-0 p-2 md:p-3 transition-opacity opacity-5 group-hover:opacity-10 ${
                 step.completed ? 'text-emerald-400' : step.color
               }`}
             >
-              <step.icon size={80} className='hidden md:block' />
+              <step.icon size={variant === 'compact-2x2' ? 50 : 80} className='hidden md:block' />
             </div>
 
             {/* Top row: icon badge + counter pill */}
             <div className='flex justify-between items-start mb-2 md:mb-4'>
               <div
-                className={`p-2 md:p-3 rounded-xl transition-colors ${
+                className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                   step.completed
                     ? 'bg-emerald-500/10'
                     : step.disabled
@@ -120,7 +127,7 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding }) =
               >
                 {
                   <step.icon
-                    size={20}
+                    size={variant === 'compact-2x2' ? 14 : 20}
                     className={
                       step.completed 
                         ? 'text-emerald-400' 

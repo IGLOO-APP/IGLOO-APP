@@ -200,14 +200,6 @@ const Properties: React.FC = () => {
                 <Map size={20} />
               </button>
             </div>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className='flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95'
-            >
-              <Plus size={18} />
-              <span className='hidden sm:inline'>Novo Imóvel</span>
-              <span className='sm:hidden'>Novo</span>
-            </button>
           </div>
         </header>
       )}
@@ -378,6 +370,22 @@ const Properties: React.FC = () => {
                     viewMode={viewMode === 'grid' ? 'grid' : 'list'}
                   />
                 ))}
+
+                {/* Creator Card */}
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className={`group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl bg-slate-50/50 dark:bg-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 animate-fadeIn ${
+                    viewMode === 'grid' ? 'aspect-[4/5] p-6' : 'h-[140px] w-full flex-row gap-6 p-4'
+                  }`}
+                >
+                  <div className='w-12 h-12 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all group-hover:shadow-md'>
+                    <Plus size={24} strokeWidth={3} />
+                  </div>
+                  <div className={viewMode === 'grid' ? 'mt-4 text-center' : 'text-left'}>
+                    <p className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>Novo Imóvel</p>
+                    <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1'>Adicionar Ativo</p>
+                  </div>
+                </button>
               </div>
             ) : (
               <div className='flex flex-col items-center justify-center py-10 text-center pt-4'>

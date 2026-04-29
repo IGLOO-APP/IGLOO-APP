@@ -9,7 +9,7 @@ interface PropertyCardProps {
   onEdit?: (id: string | number) => void;
   onDelete?: (id: string | number) => void;
   onCreateContract?: (property: Property) => void;
-  viewMode?: 'list' | 'grid';
+  viewMode?: 'list' | 'grid' | 'compact';
 }
 
 // Derives the left-border accent color from contract status
@@ -53,6 +53,47 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const timeInfo = getTimeLabel(property);
   const isAvailable = property.status === 'DISPONÍVEL';
   const tenantName = property.tenant?.name;
+
+  /* ─── COMPACT / DASHBOARD CARD ──────────────────────────── */
+  if (viewMode === 'compact') {
+    return (
+      <article
+        onClick={() => onClick(property)}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] aspect-[4/5] ${borderClass}`}
+      >
+        {/* Photo - Smaller height for compact */}
+        <div
+          className='h-full w-full bg-cover bg-center relative'
+          style={{ backgroundImage: `url(${property.image})` }}
+        >
+          {/* Overlay Gradient for readability */}
+          <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity' />
+          
+          {/* Content Over Photo */}
+          <div className='absolute bottom-0 left-0 right-0 p-3'>
+             <span
+              className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[8px] font-bold ring-1 ring-inset uppercase tracking-wide mb-1.5 ${property.status_color || 'bg-gray-100 text-gray-600'}`}
+            >
+              {property.status}
+            </span>
+            <h3 className='text-xs font-black text-white leading-tight line-clamp-1 uppercase tracking-tight'>
+              {property.name}
+            </h3>
+            <p className='text-[10px] text-white/70 font-medium line-clamp-1'>
+              {property.price} / mês
+            </p>
+          </div>
+
+          {/* Mini Edit Action on Hover */}
+          <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+             <div className='bg-white/20 backdrop-blur-md p-1.5 rounded-lg text-white'>
+                <Eye size={12} />
+             </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   /* ─── GRID CARD ─────────────────────────────────────────── */
   if (viewMode === 'grid') {

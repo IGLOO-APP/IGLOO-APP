@@ -64,10 +64,13 @@ const Tenants: React.FC = () => {
     sendInvite: true,
   });
 
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const inviteMutation = useMutation({
     mutationFn: (data: any) => (data.sendInvite ? tenantService.invite(data) : tenantService.create(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      setIsSuccess(true);
       addToast(
         newTenant.sendInvite ? 'Convite Enviado' : 'Inquilino Adicionado',
         newTenant.sendInvite 
@@ -75,8 +78,6 @@ const Tenants: React.FC = () => {
           : `O inquilino ${newTenant.name} foi cadastrado com sucesso.`,
         'success'
       );
-      setShowAddForm(false);
-      setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
     },
     onError: (error: any) => {
       addToast('Erro', `Ocorreu um erro ao processar: ${error.message}`, 'error');
@@ -383,176 +384,207 @@ const Tenants: React.FC = () => {
       {showAddForm && (
         <div className='fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4 animate-fadeIn'>
           <div className='w-full h-[95vh] md:h-auto md:max-h-[85vh] md:max-w-md bg-background-light dark:bg-background-dark rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slideUp ring-1 ring-white/10'>
-            <header className='flex items-center justify-between px-6 py-4 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-white/5'>
+            <header className='flex items-center justify-between px-6 py-5 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-white/5'>
               <button
-                onClick={() => setShowAddForm(false)}
-                className='text-slate-500 dark:text-slate-400 font-medium hover:text-slate-800 dark:hover:text-white transition-colors'
+                onClick={() => {
+                  setShowAddForm(false);
+                  setIsSuccess(false);
+                  setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
+                }}
+                className='text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-slate-800 dark:hover:text-white transition-colors px-2'
               >
-                Cancelar
+                {isSuccess ? 'Fechar' : 'Cancelar'}
               </button>
-              <h1 className='text-slate-900 dark:text-white text-lg font-bold'>Novo Inquilino</h1>
-              <button 
-                onClick={() => inviteMutation.mutate(newTenant)}
-                disabled={inviteMutation.isPending || !newTenant.name || !newTenant.email}
-                className='text-primary font-bold hover:text-primary-dark transition-colors disabled:opacity-50'
-              >
-                {inviteMutation.isPending ? 'Salvando...' : 'Salvar'}
-              </button>
+              <div className="text-center">
+                <h1 className='text-slate-900 dark:text-white text-base font-black uppercase tracking-tight'>Novo Inquilino</h1>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cadastro & Convite</p>
+              </div>
+              {!isSuccess && (
+                <button 
+                  onClick={() => inviteMutation.mutate(newTenant)}
+                  disabled={inviteMutation.isPending || !newTenant.name || !newTenant.email || !newTenant.email.includes('@')}
+                  className='bg-primary text-white px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all disabled:opacity-30 shadow-lg shadow-primary/20'
+                >
+                  {inviteMutation.isPending ? '...' : 'Salvar'}
+                </button>
+              )}
             </header>
 
-            <div className='flex-1 overflow-y-auto px-6 py-6 space-y-6'>
-              {/* Invite Toggle */}
-              <div className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-                <div>
-                  <h3 className="text-slate-900 dark:text-white text-sm font-bold">Enviar convite por e-mail</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">O inquilino receberá um link para completar o cadastro</p>
+            {isSuccess ? (
+              <div className='flex-1 flex flex-col items-center justify-center px-8 py-12 text-center animate-fadeIn'>
+                <div className='w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mb-6 animate-bounce'>
+                  <CheckCircle size={40} />
                 </div>
-                <button 
-                  onClick={() => setNewTenant(prev => ({ ...prev, sendInvite: !prev.sendInvite }))}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${newTenant.sendInvite ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${newTenant.sendInvite ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                <h2 className='text-2xl font-black text-slate-900 dark:text-white mb-2'>Sucesso!</h2>
+                <p className='text-slate-500 dark:text-slate-400 text-sm mb-8'>
+                  {newTenant.sendInvite 
+                    ? `O convite foi enviado para ${newTenant.name}. Agora ele pode completar o cadastro.`
+                    : `O inquilino ${newTenant.name} foi cadastrado com sucesso no sistema.`}
+                </p>
+                
+                <div className='w-full space-y-3'>
+                  <button 
+                    onClick={() => {
+                      // Logic to redirect to contract creation wizard with this tenant selected
+                      console.log('Redirecting to contract wizard for:', newTenant);
+                      addToast('Em breve', 'Módulo de criação de contrato via atalho em desenvolvimento.', 'info');
+                    }}
+                    className='w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2'
+                  >
+                    <FileText size={18} /> Gerar Contrato Agora
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setIsSuccess(false);
+                      setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
+                    }}
+                    className='w-full py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-all'
+                  >
+                    Concluir
+                  </button>
+                </div>
               </div>
-
-              <div className='flex flex-col gap-4'>
-                <div className='flex flex-col gap-2'>
-                  <label className='text-slate-900 dark:text-white text-sm font-semibold'>
-                    Nome Completo
-                  </label>
-                  <div className='relative'>
-                    <User
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
-                    <input
-                      value={newTenant.name}
-                      onChange={(e) => setNewTenant(prev => ({ ...prev, name: e.target.value }))}
-                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
-                      placeholder='Ex: João da Silva'
-                      type='text'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-2'>
-                  <label className='text-slate-900 dark:text-white text-sm font-semibold'>
-                    Vincular a Imóvel
-                  </label>
-                  <div className='relative'>
-                    <Briefcase
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
-                    <select
-                      value={newTenant.propertyId}
-                      onChange={(e) => setNewTenant(prev => ({ ...prev, propertyId: e.target.value }))}
-                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white appearance-none transition-colors'
-                    >
-                      <option value="">Selecione um imóvel (Opcional)</option>
-                      {properties.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {!newTenant.sendInvite && (
-                  <div className='flex flex-col gap-2 animate-fadeIn'>
-                    <label className='text-slate-900 dark:text-white text-sm font-semibold flex justify-between'>
-                      CPF / CNPJ{' '}
-                      <span className='text-xs font-normal text-slate-400'>Somente números</span>
-                    </label>
-                    <div className='relative'>
-                      <FileText
-                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                        size={20}
-                      />
+            ) : (
+              <div className='flex-1 overflow-y-auto px-6 py-8 space-y-8 hide-scrollbar'>
+              {/* Profile Data Group */}
+              <div className="space-y-4">
+                <h2 className='text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4'>Dados do Locatário</h2>
+                
+                <div className='grid grid-cols-1 gap-4'>
+                  {/* Name */}
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase ml-1'>Nome Completo</label>
+                    <div className='relative group'>
+                      <User className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={18} />
                       <input
-                        value={newTenant.cpf}
-                        onChange={(e) => setNewTenant(prev => ({ ...prev, cpf: formatCPF(e.target.value) }))}
-                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
-                        placeholder='000.000.000-00'
-                        type='tel'
-                        maxLength={14}
+                        value={newTenant.name}
+                        onChange={(e) => setNewTenant(prev => ({ ...prev, name: e.target.value }))}
+                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 transition-all text-sm font-medium'
+                        placeholder='Ex: João da Silva'
                       />
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className='h-px bg-gray-200 dark:bg-white/5'></div>
-
-              <div className='flex flex-col gap-4'>
-                <h2 className='text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider'>
-                  Contatos
-                </h2>
-                <div className='flex flex-col gap-2'>
-                  <label className='text-slate-900 dark:text-white text-sm font-semibold'>
-                    E-mail
-                  </label>
-                  <div className='relative'>
-                    <Mail
-                      className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                      size={20}
-                    />
-                    <input
-                      value={newTenant.email}
-                      onChange={(e) => setNewTenant(prev => ({ ...prev, email: e.target.value }))}
-                      className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
-                      placeholder='email@exemplo.com'
-                      type='email'
-                    />
+                  {/* Email */}
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase ml-1'>E-mail Principal</label>
+                    <div className='relative group'>
+                      <Mail className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={18} />
+                      <input
+                        value={newTenant.email}
+                        onChange={(e) => setNewTenant(prev => ({ ...prev, email: e.target.value }))}
+                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 transition-all text-sm font-medium'
+                        placeholder='email@exemplo.com'
+                        type='email'
+                      />
+                    </div>
                   </div>
                 </div>
-                {!newTenant.sendInvite && (
-                  <div className='flex flex-col gap-2 animate-fadeIn'>
-                    <label className='text-slate-900 dark:text-white text-sm font-semibold'>
-                      Telefone
-                    </label>
-                    <div className='relative'>
-                      <Phone
-                        className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
-                        size={20}
-                      />
+
+                <div className='grid grid-cols-2 gap-4'>
+                  {/* Phone */}
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase ml-1'>WhatsApp / Tel</label>
+                    <div className='relative group'>
+                      <Phone className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={16} />
                       <input
                         value={newTenant.phone}
                         onChange={(e) => setNewTenant(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
-                        className='w-full pl-12 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors'
+                        className='w-full pl-10 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 transition-all text-sm font-medium'
                         placeholder='(00) 00000-0000'
-                        type='tel'
                         maxLength={15}
                       />
                     </div>
                   </div>
-                )}
+
+                  {/* CPF */}
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase ml-1'>CPF</label>
+                    <div className='relative group'>
+                      <FileText className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={16} />
+                      <input
+                        value={newTenant.cpf}
+                        onChange={(e) => setNewTenant(prev => ({ ...prev, cpf: formatCPF(e.target.value) }))}
+                        className='w-full pl-10 pr-4 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white placeholder-slate-400 transition-all text-sm font-medium'
+                        placeholder='000.000.000-00'
+                        maxLength={14}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {!newTenant.sendInvite && (
-                <>
-                  <div className='h-px bg-gray-200 dark:bg-white/5'></div>
-                  <div className='flex flex-col gap-4 animate-fadeIn'>
-                    <div className='flex justify-between items-end'>
-                      <h2 className='text-slate-900 dark:text-white text-sm font-semibold'>
-                        Documentos Anexos
-                      </h2>
-                      <span className='text-xs text-slate-500 dark:text-slate-400'>Max 5MB</span>
-                    </div>
-                    <label className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-gray-700 rounded-2xl cursor-pointer bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:border-primary/50 transition-all'>
-                      <div className='flex flex-col items-center justify-center pt-5 pb-6'>
-                        <div className='bg-primary/10 p-3 rounded-full mb-3'>
-                          <CloudUpload className='text-primary' size={24} />
-                        </div>
-                        <p className='mb-1 text-sm text-slate-900 dark:text-white font-medium'>
-                          Toque para anexar
-                        </p>
-                      </div>
-                      <input type='file' className='hidden' />
-                    </label>
+              {/* Property Group */}
+              <div className="space-y-4">
+                <h2 className='text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4'>Imóvel Vinculado</h2>
+                <div className='relative group'>
+                  <Briefcase className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors' size={18} />
+                  <select
+                    value={newTenant.propertyId}
+                    onChange={(e) => setNewTenant(prev => ({ ...prev, propertyId: e.target.value }))}
+                    className='w-full pl-12 pr-10 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white appearance-none transition-all text-sm font-bold cursor-pointer'
+                  >
+                    <option value="">Selecione um imóvel (Opcional)</option>
+                    {properties.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronRight size={16} className="rotate-90" />
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+
+              {/* Invite Delivery Option */}
+              <div className="space-y-4 pt-4">
+                <h2 className='text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4'>Finalização</h2>
+                <div 
+                  onClick={() => setNewTenant(prev => ({ ...prev, sendInvite: !prev.sendInvite }))}
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${
+                    newTenant.sendInvite 
+                      ? 'bg-primary/5 border-primary/30 shadow-md shadow-primary/5' 
+                      : 'bg-white dark:bg-surface-dark border-slate-200 dark:border-white/5'
+                  }`}
+                >
+                  <div className="flex gap-4 items-center">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      newTenant.sendInvite ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'
+                    }`}>
+                      <Mail size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-slate-900 dark:text-white text-sm font-bold">Enviar convite imediato</h3>
+                      <p className="text-[10px] text-slate-500">O inquilino recebe o link de ativação por e-mail.</p>
+                    </div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    newTenant.sendInvite ? 'border-primary bg-primary' : 'border-slate-300 dark:border-white/20'
+                  }`}>
+                    {newTenant.sendInvite && <CheckCircle size={12} className="text-white" />}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 pb-8">
+                <div className='flex justify-between items-end'>
+                  <h2 className='text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]'>Anexos do Contrato</h2>
+                  <span className='text-[10px] text-slate-400 font-bold'>Max 5MB • PDF/JPG</span>
+                </div>
+                <label className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-3xl cursor-pointer bg-white dark:bg-surface-dark hover:bg-primary/5 hover:border-primary/50 transition-all group'>
+                  <div className='flex flex-col items-center justify-center'>
+                    <div className='bg-primary/10 p-3 rounded-2xl mb-2 group-hover:scale-110 transition-transform'>
+                      <CloudUpload className='text-primary' size={24} />
+                    </div>
+                    <p className='text-xs text-slate-500 dark:text-slate-400 font-bold'>
+                      Arraste ou toque para anexar documentos
+                    </p>
+                  </div>
+                  <input type='file' className='hidden' />
+                </label>
+              </div>
+              </div>
+            )}
           </div>
         </div>
       )}
