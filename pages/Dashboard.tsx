@@ -200,23 +200,23 @@ const Dashboard: React.FC = () => {
         <HeroMetrics metrics={metrics} />
 
         {/* --- 1. GESTÃO DE ATIVOS & ONBOARDING --- */}
-        <div className='grid grid-cols-1 lg:grid-cols-6 gap-6 mb-16'>
+        <div className='grid grid-cols-1 lg:grid-cols-6 gap-6 mb-16 items-stretch'>
           {/* Left: Highlighted Property - Spans 2 columns */}
-          <section className='lg:col-span-2 space-y-4'>
-            <div className='flex justify-between items-end px-1'>
+          <section className='lg:col-span-2 flex flex-col h-full'>
+            <div className='flex justify-between items-end px-1 h-[42px] mb-4'>
               <div>
                 <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Gestão de Ativos</h2>
                 <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Patrimônio em destaque</p>
               </div>
               <button 
                 onClick={() => navigate('/properties')}
-                className='text-[10px] font-black text-primary uppercase tracking-widest hover:underline'
+                className='text-[10px] font-black text-primary uppercase tracking-widest hover:underline pb-0.5'
               >
                 Ver todos
               </button>
             </div>
             
-            <div className='w-full'>
+            <div className='flex-grow h-full'>
               {/* Highlighted Property Card (Full Detail) */}
               {properties.slice(0, 1).map((prop) => (
                 <PropertyCard
@@ -224,6 +224,7 @@ const Dashboard: React.FC = () => {
                   property={prop}
                   onClick={(p) => navigate(`/properties?id=${p.id}`)}
                   viewMode='grid'
+                  className="h-full"
                 />
               ))}
             </div>
@@ -232,9 +233,11 @@ const Dashboard: React.FC = () => {
           {/* Right: Onboarding Steps (2x2) - Spans 4 columns (fills the space) */}
           {!onboarding?.allCompleted && (
             <section className='lg:col-span-4 space-y-4'>
-              <div className='px-1'>
-                <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Próximos Passos</h2>
-                <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Complete seu perfil</p>
+              <div className='flex justify-between items-end px-1 h-[42px]'>
+                <div>
+                  <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Próximos Passos</h2>
+                  <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Complete seu perfil</p>
+                </div>
               </div>
               <OnboardingChecklist 
                 onboarding={onboarding} 

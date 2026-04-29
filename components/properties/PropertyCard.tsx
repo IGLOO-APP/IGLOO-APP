@@ -10,6 +10,7 @@ interface PropertyCardProps {
   onDelete?: (id: string | number) => void;
   onCreateContract?: (property: Property) => void;
   viewMode?: 'list' | 'grid' | 'compact';
+  className?: string;
 }
 
 // Derives the left-border accent color from contract status
@@ -47,6 +48,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   onDelete,
   onCreateContract,
   viewMode = 'list',
+  className = '',
 }) => {
   const navigate = useNavigate();
   const borderClass = getStatusBorder(property);
@@ -59,7 +61,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <article
         onClick={() => onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] aspect-[4/5] ${borderClass}`}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] aspect-[4/5] ${borderClass} ${className}`}
       >
         {/* Photo - Smaller height for compact */}
         <div
@@ -100,11 +102,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <article
         onClick={() => onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass}`}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass} ${className}`}
       >
         {/* Photo */}
         <div
-          className='h-40 w-full shrink-0 bg-cover bg-center rounded-t-2xl relative'
+          className='flex-grow min-h-[160px] w-full bg-cover bg-center rounded-t-2xl relative'
           style={{ backgroundImage: `url(${property.image})` }}
         >
           {/* Status badge overlay */}
@@ -198,7 +200,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   return (
     <article
       onClick={() => onClick(property)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass}`}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer active:scale-[0.99] ${borderClass} ${className}`}
     >
       {/* ── ZONE SUPERIOR ──────────────────────────────────── */}
       <div className='flex items-stretch'>

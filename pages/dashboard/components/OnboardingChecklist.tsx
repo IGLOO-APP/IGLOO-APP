@@ -105,85 +105,81 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding, var
                     : 'border-gray-100 dark:border-white/5 hover:border-primary/20'
             }`}
           >
-            {/* Ghost icon — same as HeroCard */}
-            <div
-              className={`absolute top-0 right-0 p-2 md:p-3 transition-opacity opacity-5 group-hover:opacity-10 ${
-                step.completed ? 'text-emerald-400' : step.color
-              }`}
-            >
-              <step.icon size={variant === 'compact-2x2' ? 50 : 80} className='hidden md:block' />
-            </div>
-
-            {/* Top row: icon badge + counter pill */}
-            <div className='flex justify-between items-start mb-2 md:mb-4'>
-              <div
-                className={`p-1.5 md:p-2 rounded-lg transition-colors ${
-                  step.completed
-                    ? 'bg-emerald-500/10'
-                    : step.disabled
-                      ? 'bg-slate-100 dark:bg-white/5'
-                      : `${step.color.replace('text-', 'bg-')}/10`
-                }`}
-              >
-                {
-                  <step.icon
-                    size={variant === 'compact-2x2' ? 14 : 20}
-                    className={
-                      step.completed 
-                        ? 'text-emerald-400' 
-                        : step.disabled 
-                          ? 'text-slate-400 dark:text-slate-500' 
-                          : step.color
-                    }
-                  />
-                }
-              </div>
-
-              <span
-                className={`text-[9px] md:text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                  step.completed
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : isNext
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500'
-                }`}
-              >
-                {step.completed ? 'Feito' : `${completedCount}/${steps.length}`}
+            {/* Background Decorative Step Label — Stealth Silver */}
+            <div className='absolute right-2 -bottom-2 md:right-4 md:-bottom-4 select-none pointer-events-none whitespace-nowrap overflow-visible z-0'>
+              <span className={`text-5xl md:text-7xl font-black italic tracking-tighter transition-all duration-700 ${
+                step.completed 
+                  ? 'text-slate-900/5 dark:text-white/5' 
+                  : 'text-slate-200 dark:text-white/5'
+              } group-hover:scale-110 group-hover:-translate-y-2`}>
+                PASSO 0{step.id}
               </span>
             </div>
 
-            {/* Body — mirrors HeroCard */}
-            <div>
-              <p className='text-slate-500 dark:text-slate-400 text-[9px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1'>
-                Passo {step.id}
-              </p>
-              <div className='flex flex-col gap-0.5'>
-                <h3 className={`text-sm md:text-base font-extrabold tracking-tight leading-tight transition-all duration-300 ${
-                  step.completed 
-                    ? 'text-slate-900 dark:text-white' 
-                    : 'text-slate-900 dark:text-white'
+            {/* Subtle Silver Glow for Active Step */}
+            {isNext && (
+              <div className='absolute -inset-1 bg-gradient-to-r from-slate-400/10 to-white/10 blur-xl opacity-50 group-hover:opacity-100 transition-opacity' />
+            )}
+
+            {/* Top row: Icon + Status */}
+            <div className='relative z-10 flex justify-between items-center mb-5 md:mb-8'>
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner ${
+                  step.completed
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 rotate-3'
+                    : step.disabled
+                      ? 'bg-slate-100 dark:bg-white/5 text-slate-400'
+                      : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl'
+                } group-hover:rotate-0`}
+              >
+                <step.icon size={variant === 'compact-2x2' ? 18 : 24} />
+              </div>
+
+              <div className='flex items-center gap-2'>
+                {step.completed ? (
+                  <div className='flex items-center justify-center w-8 h-8 bg-slate-900 dark:bg-white rounded-full shadow-lg'>
+                    <Check size={14} className='text-white dark:text-slate-900' strokeWidth={4} />
+                  </div>
+                ) : (
+                  <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${
+                    isNext 
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg' 
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-400'
+                  }`}>
+                    {completedCount}/{steps.length}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Content Body */}
+            <div className='relative z-10'>
+              <div className='flex flex-col gap-1'>
+                <h3 className={`text-sm md:text-xl font-black tracking-tight leading-tight transition-colors ${
+                  step.completed ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'
                 }`}>
                   {step.title}
                 </h3>
                 {step.completed && (
-                  <p className='text-[10px] md:text-xs font-medium text-slate-400 dark:text-slate-500 line-through decoration-emerald-500/30'>
+                  <p className='text-[10px] md:text-xs font-bold text-slate-300 dark:text-slate-600 line-through decoration-slate-400/50'>
                     {step.originalTitle}
                   </p>
                 )}
               </div>
-              <div className='flex items-center gap-1.5 md:gap-2 mt-1 md:mt-2'>
-                <span
-                  className={`flex items-center text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded ${
-                    step.completed
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      : isNext
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
-                  }`}
-                >
-                  {step.completed ? '✓' : '→'}
-                </span>
-                <span className='text-[9px] md:text-xs text-slate-400 font-medium line-clamp-1'>
+              
+              <div className='flex items-center gap-3 mt-4'>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  step.completed
+                    ? 'bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600'
+                    : isNext
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
+                      : 'bg-slate-50 dark:bg-white/5 text-slate-300'
+                } group-hover:translate-x-1`}>
+                  {step.completed ? <Check size={14} /> : <span className='font-black'>→</span>}
+                </div>
+                <span className={`text-[10px] md:text-xs font-black uppercase tracking-[0.2em] ${
+                  step.completed ? 'text-slate-300 dark:text-slate-600' : isNext ? 'text-slate-900 dark:text-white' : 'text-slate-400'
+                }`}>
                   {step.actionLabel}
                 </span>
               </div>
