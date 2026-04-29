@@ -1,5 +1,6 @@
 import React from 'react';
-import { DollarSign, Download } from 'lucide-react';
+import { DollarSign, Download, Info } from 'lucide-react';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
 import {
   ComposedChart,
   Line,
@@ -25,6 +26,12 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory, 
         <div>
           <h3 className='text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2'>
             <DollarSign className='text-primary' size={20} /> Fluxo de Caixa & Projeção
+            <InfoTooltip 
+              title="Fluxo de Caixa & Projeção" 
+              description="O histórico mostra transações reais. A projeção de 3 meses é calculada somando os aluguéis de contratos ativos e subtraindo despesas fixas conhecidas."
+            >
+              <Info size={16} className='text-slate-400 cursor-help' />
+            </InfoTooltip>
           </h3>
           <p className='text-sm text-slate-500 dark:text-slate-400'>
             Análise financeira com previsão de 3 meses

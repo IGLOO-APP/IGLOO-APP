@@ -32,41 +32,10 @@ import {
   ChevronDown,
   CheckCircle2,
 } from 'lucide-react';
-import { ModalWrapper } from '../components/ui/ModalWrapper';
+import { messageService, ChatThread, ChatMessage } from '../services/messageService';
 import { faqService } from '../services/faqService';
+import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { FAQ } from '../types';
-
-interface Message {
-  id: number;
-  text: string;
-  sender: 'me' | 'tenant' | 'system';
-  time: string;
-  isRead: boolean;
-  type?: 'text' | 'image' | 'status_update';
-}
-
-interface TicketDetails {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  images: string[];
-  category: string;
-}
-
-interface Chat {
-  id: number;
-  tenantName: string;
-  tenantAvatar?: string;
-  property: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  category: 'maintenance' | 'finance' | 'general';
-  ticket?: TicketDetails; // Linked ticket if maintenance
-  messages: Message[];
-}
 
 const quickReplies = [
   'Estou verificando.',
@@ -77,13 +46,15 @@ const quickReplies = [
 
 const OwnerMessages: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeChatId, setActiveChatId] = useState<number | null>(1);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general' | 'urgent'>(
     'all'
   );
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'tenant'>('ticket');
+  const [chats, setChats] = useState<ChatThread[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // FAQ Manager State
   const [showFAQManager, setShowFAQManager] = useState(false);
@@ -97,39 +68,73 @@ const OwnerMessages: React.FC = () => {
   const [propertyFilter, setPropertyFilter] = useState('Todos');
   const [isStatusLocked, setIsStatusLocked] = useState(true);
 
+  // 1. Initial Load
   useEffect(() => {
-    if (showFAQManager) {
-      setFaqs(faqService.getFAQs());
+    loadChats();
+  }, []);
+
+  const loadChats = async () => {
+    setLoading(true);
+    const data = await messageService.getChats();
+    setChats(data);
+    setLoading(false);
+  };
+
+  // 2. Fetch messages for active chat
+  useEffect(() => {
+    if (activeChatId) {
+      const activeChat = chats.find(c => c.id === activeChatId);
+      if (activeChat) {
+        loadMessages(activeChatId, activeChat.category);
+      }
     }
+  }, [activeChatId]);
+
+  const loadMessages = async (threadId: string, category: string) => {
+    const msgs = await messageService.getMessages(threadId, category);
+    setChats(prev => prev.map(c => c.id === threadId ? { ...c, messages: msgs } : c));
+  };
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      if (showFAQManager) {
+        const data = await faqService.getFAQs();
+        setFaqs(data);
+      }
+    };
+    fetchFaqs();
   }, [showFAQManager]);
 
-  const handleSaveFAQ = () => {
+  const handleSaveFAQ = async () => {
     if (editingFaq) {
-      faqService.updateFAQ(editingFaq.id, editingFaq);
+      await faqService.updateFAQ(editingFaq.id, editingFaq);
     } else if (newFaq.question && newFaq.answer) {
-      faqService.addFAQ({
+      await faqService.addFAQ({
         question: newFaq.question,
         answer: newFaq.answer,
         order: faqs.length + 1,
         is_active: newFaq.is_active ?? true,
       });
     }
-    setFaqs(faqService.getFAQs());
+    const updated = await faqService.getFAQs();
+    setFaqs(updated);
     setEditingFaq(null);
     setNewFaq({ question: '', answer: '', is_active: true });
     alert('FAQ salva com sucesso!');
   };
 
-  const handleDeleteFAQ = (id: string) => {
+  const handleDeleteFAQ = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta FAQ?')) {
-      faqService.deleteFAQ(id);
-      setFaqs(faqService.getFAQs());
+      await faqService.deleteFAQ(id);
+      const updated = await faqService.getFAQs();
+      setFaqs(updated);
     }
   };
 
-  const toggleFAQStatus = (faq: FAQ) => {
-    faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
-    setFaqs(faqService.getFAQs());
+  const toggleFAQStatus = async (faq: FAQ) => {
+    await faqService.updateFAQ(faq.id, { is_active: !faq.is_active });
+    const updated = await faqService.getFAQs();
+    setFaqs(updated);
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -138,125 +143,6 @@ const OwnerMessages: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-
-  // Mock Data Sincronizado com TenantMaintenance
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: 1,
-      tenantName: 'João Silva',
-      tenantAvatar:
-        'https://i.pravatar.cc/150?u=joao',
-      property: 'Apt 101 - Centro',
-      lastMessage: 'Aguardando o técnico.',
-      lastMessageTime: '10:30',
-      unreadCount: 1,
-      category: 'maintenance',
-      ticket: {
-        id: '#REQ-2024-001',
-        title: 'Torneira Pingando',
-        category: 'Hidráulica',
-        description:
-          'A torneira da cozinha não fecha completamente, está pingando muito durante a noite. O registro geral não fecha.',
-        status: 'pending',
-        priority: 'urgent',
-        images: [
-          'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400',
-        ],
-      },
-      messages: [
-        {
-          id: 1,
-          text: 'SOLICITAÇÃO ABERTA AUTOMATICAMENTE.',
-          sender: 'system',
-          time: '09:20',
-          isRead: true,
-        },
-        {
-          id: 2,
-          text: 'Olá João, vi seu chamado sobre a torneira. É na cozinha ou banheiro?',
-          sender: 'me',
-          time: '09:30',
-          isRead: true,
-        },
-        {
-          id: 3,
-          text: 'Na cozinha. Está pingando bastante.',
-          sender: 'tenant',
-          time: '09:32',
-          isRead: true,
-        },
-        {
-          id: 4,
-          text: 'Vou agendar um encanador para avaliar.',
-          sender: 'me',
-          time: '09:35',
-          isRead: true,
-        },
-        { id: 5, text: 'Aguardando o técnico.', sender: 'tenant', time: '10:30', isRead: false },
-      ],
-    },
-    {
-      id: 2,
-      tenantName: 'Maria Oliveira',
-      tenantAvatar:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuD78MRhEj5vokBi3Zr5ORCa84xM4Q0aoHqRqMtmFY5rqqioFglngu_CVvuUlAwFFXylrVwhOX-6rB0xO0RM04aD6spoISdNI-pJR9jsw0SwQsb3-TQPyS3OBbENLbte3Z-Zqv9lEOgt3WuKjxTIrLaStD2Bove6Q5jDIX7PpiUDn1x-gcN2lMoAOEi9fV_nI4dv-32WMg0se3QVylj1o0-E7hPHafz8wUKADMIvPRoIn91W1pDK1-L-SQnqBavDYiPc4Udc_4ypGJ2q',
-      property: 'Kitnet 05 - Jardins',
-      lastMessage: 'Comprovante enviado.',
-      lastMessageTime: 'Ontem',
-      unreadCount: 0,
-      category: 'finance',
-      messages: [
-        {
-          id: 1,
-          text: 'Olá Maria, o boleto deste mês já está disponível.',
-          sender: 'me',
-          time: 'Ontem, 08:00',
-          isRead: true,
-        },
-        {
-          id: 2,
-          text: 'Já realizei o pagamento. Segue o comprovante.',
-          sender: 'tenant',
-          time: 'Ontem, 14:00',
-          isRead: true,
-        },
-        {
-          id: 3,
-          text: 'Comprovante enviado.',
-          sender: 'tenant',
-          time: 'Ontem, 14:01',
-          isRead: true,
-        },
-      ],
-    },
-    {
-      id: 3,
-      tenantName: 'Carlos Pereira',
-      property: 'Studio 22 - Vila Madalena',
-      lastMessage: 'Ok, combinado!',
-      lastMessageTime: '25 Dez',
-      unreadCount: 0,
-      category: 'general',
-      messages: [
-        {
-          id: 1,
-          text: 'Carlos, preciso agendar a visita anual.',
-          sender: 'me',
-          time: '25 Dez, 10:00',
-          isRead: true,
-        },
-        {
-          id: 2,
-          text: 'Pode ser semana que vem?',
-          sender: 'tenant',
-          time: '25 Dez, 11:30',
-          isRead: true,
-        },
-        { id: 3, text: 'Sim, terça às 10h?', sender: 'me', time: '25 Dez, 11:35', isRead: true },
-        { id: 4, text: 'Ok, combinado!', sender: 'tenant', time: '25 Dez, 11:40', isRead: true },
-      ],
-    },
-  ]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -272,97 +158,54 @@ const OwnerMessages: React.FC = () => {
     }
   }, [activeChatId]);
 
-  const handleSendMessage = (e?: React.FormEvent, overrideText?: string) => {
+  const handleSendMessage = async (e?: React.FormEvent, overrideText?: string) => {
     if (e) e.preventDefault();
     const textToSend = overrideText || inputText;
 
     if (!textToSend.trim() || activeChatId === null) return;
 
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id === activeChatId) {
-          const newMessage: Message = {
-            id: Date.now(),
-            text: textToSend,
-            sender: 'me',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isRead: false,
-          };
-          return {
-            ...chat,
-            messages: [...chat.messages, newMessage],
-            lastMessage: textToSend,
-            lastMessageTime: 'Agora',
-          };
-        }
-        return chat;
-      })
-    );
+    const activeChat = chats.find(c => c.id === activeChatId);
+    if (!activeChat) return;
 
+    // Send to server
+    await messageService.sendMessage(activeChatId, activeChat.category, textToSend);
+    
+    // Refresh messages
+    await loadMessages(activeChatId, activeChat.category);
+    
     setInputText('');
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && activeChatId) {
+      const activeChat = chats.find(c => c.id === activeChatId);
+      if (!activeChat) return;
+
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64String = reader.result as string;
-        setChats((prevChats) =>
-          prevChats.map((chat) => {
-            if (chat.id === activeChatId) {
-              const newMessage: Message = {
-                id: Date.now(),
-                text: base64String,
-                sender: 'me',
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isRead: false,
-                type: 'image'
-              };
-              return {
-                ...chat,
-                messages: [...chat.messages, newMessage],
-                lastMessage: '📷 Imagem enviada',
-                lastMessageTime: 'Agora',
-              };
-            }
-            return chat;
-          })
-        );
+        await messageService.sendMessage(activeChatId, activeChat.category, base64String, 'image');
+        await loadMessages(activeChatId, activeChat.category);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleStatusChange = (newStatus: 'pending' | 'in_progress' | 'completed') => {
+  const handleStatusChange = async (newStatus: 'pending' | 'in_progress' | 'completed') => {
     if (!activeChatId) return;
+    const activeChat = chats.find(c => c.id === activeChatId);
+    if (!activeChat || !activeChat.ticket) return;
 
-    setChats((prev) =>
-      prev.map((chat) => {
-        if (chat.id === activeChatId && chat.ticket) {
-          const statusText =
-            newStatus === 'in_progress'
-              ? 'Em Andamento'
-              : newStatus === 'completed'
-                ? 'Concluído'
-                : 'Pendente';
-          const systemMsg: Message = {
-            id: Date.now(),
-            text: `Status do chamado alterado para: ${statusText}`,
-            sender: 'system',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isRead: true,
-          };
-          return {
-            ...chat,
-            ticket: { ...chat.ticket, status: newStatus },
-            messages: [...chat.messages, systemMsg],
-          };
-        }
-        return chat;
-      })
-    );
-    setIsStatusLocked(true); // Auto-lock after change
+    await messageService.updateMaintenanceStatus(activeChat.dbId, newStatus);
+    
+    // Add system message
+    const statusText = newStatus === 'in_progress' ? 'Em Andamento' : newStatus === 'completed' ? 'Concluído' : 'Pendente';
+    await messageService.sendMessage(activeChatId, 'maintenance', `Status do chamado alterado para: ${statusText}`);
+    
+    await loadMessages(activeChatId, 'maintenance');
+    await loadChats(); // Refresh sidebar to see new status
+    setIsStatusLocked(true);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -422,6 +265,12 @@ const OwnerMessages: React.FC = () => {
 
   return (
     <div className='flex h-full w-full bg-background-light dark:bg-background-dark overflow-hidden relative'>
+      {loading && (
+        <div className='absolute inset-0 z-50 bg-white/80 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center'>
+          <div className='w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4'></div>
+          <p className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest animate-pulse'>Carregando Mensagens...</p>
+        </div>
+      )}
       {/* 1. CHAT LIST SIDEBAR */}
       <div
         className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200 dark:border-white/5 bg-surface-light dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}

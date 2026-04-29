@@ -257,14 +257,14 @@ const Dashboard: React.FC = () => {
             <AlertBadge
               icon={FileText}
               label='Contratos Vencendo'
-              count={2}
+              count={metrics.expiringContractsCount || 0}
               color='bg-amber-500 border-amber-500 text-amber-600 dark:text-amber-400'
               onClick={() => navigate('/contracts')}
             />
             <AlertBadge
               icon={Wrench}
               label='Manutenções'
-              count={3}
+              count={metrics.pendingMaintenanceCount || 0}
               color='bg-blue-500 border-blue-500 text-blue-600 dark:text-blue-400'
               onClick={() => navigate('/messages')}
             />
@@ -295,7 +295,7 @@ const Dashboard: React.FC = () => {
 
           {/* RIGHT COLUMN (1/3) */}
           <div className='space-y-6'>
-            <DashboardAIInsights occupancyRate={metrics.occupancyRate} />
+            <DashboardAIInsights metrics={metrics} />
             <ActivityTimeline activities={activities} />
           </div>
         </div>

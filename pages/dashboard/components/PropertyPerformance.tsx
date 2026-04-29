@@ -1,4 +1,5 @@
 import React from 'react';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
 
 interface PropertyPerformanceProps {
   topProperties: any[];
@@ -21,7 +22,14 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             <tr className='text-xs text-slate-400 border-b border-gray-100 dark:border-white/5'>
               <th className='pb-3 font-bold uppercase pl-2'>Imóvel</th>
               <th className='pb-3 font-bold uppercase text-right'>Receita</th>
-              <th className='pb-3 font-bold uppercase text-right'>Yield (a.m)</th>
+              <th className='pb-3 font-bold uppercase text-right'>
+                <InfoTooltip 
+                  title="Yield (a.m)" 
+                  description="Rendimento mensal do imóvel. É o valor do aluguel dividido pelo valor de mercado. Indica a eficiência do seu capital alocado."
+                >
+                  <span className='cursor-help underline decoration-dotted decoration-slate-300 underline-offset-4'>Yield (a.m)</span>
+                </InfoTooltip>
+              </th>
               <th className='pb-3 font-bold uppercase text-center'>Status</th>
             </tr>
           </thead>
