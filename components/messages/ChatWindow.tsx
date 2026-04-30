@@ -87,10 +87,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <div className='flex gap-2'>
           <button
             onClick={() => {
-              setShowDetailsPanel(true);
-              setActiveRightTab('tenant');
+              if (showDetailsPanel && activeRightTab === 'tenant') {
+                setShowDetailsPanel(false);
+              } else {
+                setShowDetailsPanel(true);
+                setActiveRightTab('tenant');
+              }
             }}
-            className='p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors'
+            className={`p-2 rounded-lg transition-colors ${
+              showDetailsPanel && activeRightTab === 'tenant' 
+                ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' 
+                : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
+            }`}
             title='Mini Dashboard do Inquilino'
           >
             <LayoutDashboard size={20} />

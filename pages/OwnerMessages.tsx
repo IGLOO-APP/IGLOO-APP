@@ -105,6 +105,7 @@ const OwnerMessages: React.FC = () => {
     const data = await messageService.getChats();
     setChats(data);
     setLoading(false);
+    return data;
   };
 
   // 2. Fetch messages for active chat
@@ -323,9 +324,17 @@ const OwnerMessages: React.FC = () => {
     try {
       setLoading(true);
       const threadId = await messageService.getOrCreateConversation(tenantId);
-      await loadChats(); 
+      const updatedChats = await loadChats(); 
+      
+      // Force selection even if search/filter might hide it temporarily
       setActiveChatId(threadId);
       setShowNewChatModal(false);
+      
+      // If the chat is not in the filtered list, clear filters
+      if (!updatedChats.some(c => c.id === threadId)) {
+        setSearchTerm('');
+        setActiveFilter('all');
+      }
     } catch (err) {
       console.error(err);
     } finally {
