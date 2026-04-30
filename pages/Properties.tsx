@@ -9,7 +9,10 @@ import { AddPropertyForm } from '../components/properties/AddPropertyForm';
 import { PropertyMapView } from '../components/properties/PropertyMapView';
 import { propertyService } from '../services/propertyService';
 
+import { useAuth } from '../context/AuthContext';
+
 const Properties: React.FC = () => {
+  const { user, tokenReady } = useAuth();
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
@@ -33,8 +36,9 @@ const Properties: React.FC = () => {
   const [localProperties, setLocalProperties] = useState<Property[]>([]);
 
   const { data: properties = [], isLoading: loading } = useQuery({
-    queryKey: ['properties'],
+    queryKey: ['properties', user?.id],
     queryFn: () => propertyService.getAll(),
+    enabled: !!user && tokenReady,
     staleTime: 0,
   });
 

@@ -29,7 +29,10 @@ import { useNotification } from '../context/NotificationContext';
 import { formatCPF, formatPhone } from '../utils/formatters';
 import { Tenant } from '../types';
 
+import { useAuth } from '../context/AuthContext';
+
 const Tenants: React.FC = () => {
+  const { user, tokenReady } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [billingTenant, setBillingTenant] = useState<Tenant | null>(null);
@@ -42,15 +45,17 @@ const Tenants: React.FC = () => {
 
   const queryClient = useQueryClient();
   const { data: tenants = [], isLoading } = useQuery({
-    queryKey: ['tenants'],
+    queryKey: ['tenants', user?.id],
     queryFn: () => tenantService.getAll(),
+    enabled: !!user && tokenReady,
     staleTime: 0,
     gcTime: 1000 * 60 * 5,
   });
 
   const { data: properties = [] } = useQuery({
-    queryKey: ['properties'],
+    queryKey: ['properties', user?.id],
     queryFn: () => propertyService.getAll(),
+    enabled: !!user && tokenReady,
     staleTime: 0,
   });
 

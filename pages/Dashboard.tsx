@@ -24,10 +24,14 @@ import { useTheme } from '../hooks/useTheme';
 // Modular Dashboard Components
 import { OnboardingChecklist } from './dashboard/components/OnboardingChecklist';
 import { HeroMetrics } from './dashboard/components/HeroMetrics';
+import { PortfolioHealth } from './dashboard/components/PortfolioHealth';
 import { CashFlowChart } from './dashboard/components/CashFlowChart';
+import { WealthEvolutionChart } from './dashboard/components/WealthEvolutionChart';
 import { PropertyPerformance } from './dashboard/components/PropertyPerformance';
+import { PropertyYieldChart } from './dashboard/components/PropertyYieldChart';
 import { ActivityTimeline } from './dashboard/components/ActivityTimeline';
 import { DashboardAIInsights } from './dashboard/components/DashboardAIInsights';
+import { RiskRadar } from './dashboard/components/RiskRadar';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { propertyService } from '../services/propertyService';
 
@@ -35,7 +39,7 @@ import AnnouncementTicker from '../components/AnnouncementTicker';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout, user, tokenReady } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, triggerTestNotification } =
     useNotification();
 
@@ -43,15 +47,18 @@ const Dashboard: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ['dashboardData'],
+  const { data: dashboardData, isLoading, isError, error: queryError, refetch } = useQuery({
+    queryKey: ['dashboardData', user?.id],
     queryFn: () => dashboardService.getDashboardData(),
+    enabled: !!user && tokenReady,
     staleTime: 1000 * 60, // 1 minute
+    retry: 1,
   });
 
   const { data: properties = [] } = useQuery({
-    queryKey: ['properties'],
+    queryKey: ['properties', user?.id],
     queryFn: () => propertyService.getAll(),
+    enabled: !!user && tokenReady,
     staleTime: 1000 * 60 * 5,
   });
   const { isDark, toggleTheme } = useTheme();
@@ -60,7 +67,7 @@ const Dashboard: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
-  if (isLoading || !dashboardData) {
+  if (isLoading) {
     return (
       <div className='flex h-screen items-center justify-center bg-background-light dark:bg-background-dark'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
@@ -68,7 +75,38 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const { metrics, financialHistory, topProperties, activities, onboarding: rawOnboarding } = dashboardData;
+  if (isError || !dashboardData) {
+    return (
+      <div className='flex h-screen flex-col items-center justify-center bg-background-light dark:bg-background-dark p-6 text-center'>
+        <div className='w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-4'>
+            <AlertTriangle size={32} />
+        </div>
+        <h2 className='text-xl font-bold text-slate-900 dark:text-white mb-2'>Erro ao carregar Dashboard</h2>
+        <p className='text-slate-500 dark:text-slate-400 mb-6 max-w-md'>
+            Não conseguimos sincronizar seus dados agora. Por favor, verifique sua conexão ou tente novamente.
+            {queryError instanceof Error && <span className='block mt-2 text-xs opacity-50'>{queryError.message}</span>}
+        </p>
+        <button 
+            onClick={() => refetch()}
+            className='px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all'
+        >
+            Tentar Novamente
+        </button>
+      </div>
+    );
+  }
+
+  const { 
+    metrics, 
+    financialHistory, 
+    topProperties, 
+    activities, 
+    onboarding: rawOnboarding,
+    portfolioHealth,
+    yieldByProperty,
+    risks,
+    wealthHistory
+  } = dashboardData;
 
   // Merge raw onboarding with live data to ensure sync
   const onboarding = {
@@ -199,6 +237,9 @@ const Dashboard: React.FC = () => {
         {/* --- 0. HERO METRICS --- */}
         <HeroMetrics metrics={metrics} />
 
+        {/* --- 0.1 PORTFOLIO HEALTH (New Component 1) --- */}
+        <PortfolioHealth health={portfolioHealth} />
+
         {/* --- 1. GESTÃO DE ATIVOS & ONBOARDING --- */}
         <div className='grid grid-cols-1 lg:grid-cols-6 gap-6 mb-16 items-stretch'>
           {/* Left: Highlighted Property - Spans 2 columns */}
@@ -262,8 +303,8 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* --- 2. ALERTS & ACTIONS --- */}
-        <section className='flex flex-col md:flex-row gap-6'>
-          <div className='flex-1 overflow-x-auto hide-scrollbar flex gap-3 pb-2 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0'>
+        <section className='flex flex-col xl:flex-row gap-6'>
+          <div className='flex-1 flex flex-wrap gap-3 md:gap-4'>
             <AlertBadge
               icon={AlertTriangle}
               label='Vacância Crítica'
@@ -286,7 +327,7 @@ const Dashboard: React.FC = () => {
               onClick={() => navigate('/messages')}
             />
           </div>
-          <div className='grid grid-cols-2 md:flex gap-3 shrink-0'>
+          <div className='grid grid-cols-2 sm:flex gap-3 shrink-0'>
             <button
               onClick={() => navigate('/financials', { state: { openAdd: true, type: 'expense' } })}
               className='h-12 md:h-14 px-3 md:px-6 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 font-bold text-[10px] md:text-sm text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5 md:gap-2'
@@ -307,12 +348,23 @@ const Dashboard: React.FC = () => {
           {/* LEFT COLUMN (2/3) */}
           <div className='lg:col-span-2 space-y-6'>
             <CashFlowChart financialHistory={financialHistory} isDark={isDark} />
+            
+            {/* New Component 4: Evolução do Patrimônio */}
+            <WealthEvolutionChart wealthHistory={wealthHistory} isDark={isDark} />
+            
             <PropertyPerformance topProperties={topProperties} />
+
+            {/* New Component 2: Yield por Imóvel */}
+            <PropertyYieldChart yieldData={yieldByProperty} avgYield={portfolioHealth.yield} />
           </div>
 
           {/* RIGHT COLUMN (1/3) */}
           <div className='space-y-6'>
             <DashboardAIInsights metrics={metrics} />
+            
+            {/* New Component 3: Radar de Riscos */}
+            <RiskRadar risks={risks} />
+            
             <ActivityTimeline activities={activities} />
           </div>
         </div>

@@ -8,6 +8,7 @@ import { User, UserRole } from '../types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  tokenReady: boolean;
   signIn: () => Promise<void>;
   signUp: () => Promise<void>;
   logout: () => Promise<void>;
@@ -26,21 +27,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [impersonatingFrom, setImpersonatingFrom] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tokenReady, setTokenReady] = useState(false);
   const navigate = useNavigate();
 
   // Ponte de Segurança Clerk -> Supabase
   useEffect(() => {
     const updateSupabaseToken = async () => {
+      setTokenReady(false);
       if (session) {
         try {
           const token = await session.getToken({ template: 'supabase' });
           setSupabaseToken(token);
+          setTokenReady(true);
         } catch (error) {
           console.error('Erro ao obter token do Supabase via Clerk:', error);
           setSupabaseToken(null);
+          setTokenReady(false);
         }
       } else {
         setSupabaseToken(null);
+        setTokenReady(false);
       }
     };
 
@@ -171,6 +177,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         loading: !isLoaded || loading,
+        tokenReady,
         signIn: async () => navigate('/login'),
         signUp: async () => navigate('/signup'),
         logout,

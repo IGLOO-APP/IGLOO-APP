@@ -88,7 +88,7 @@ export const AlertBadge = ({ icon: Icon, label, count, color, onClick }: AlertBa
       <Icon size={18} className='md:hidden shrink-0' />
       <Icon size={20} className='hidden md:block shrink-0' />
       {count > 0 && (
-        <span className='absolute -top-1 -right-1 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark'></span>
+        <span className='absolute -top-1 -right-1 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark'></span>
       )}
     </div>
     <div className='text-left flex-1 min-w-0'>

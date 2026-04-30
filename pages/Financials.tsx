@@ -64,7 +64,7 @@ import autoTable from 'jspdf-autotable';
 
 
 const Financials: React.FC = () => {
-  const { user } = useAuth();
+  const { user, tokenReady } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPropertyId, setSelectedPropertyId] = useState('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -79,18 +79,21 @@ const Financials: React.FC = () => {
 
   // Queries
   const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
-    queryKey: ['financial_transactions'],
+    queryKey: ['financial_transactions', user?.id],
     queryFn: () => financeService.getAll(),
+    enabled: !!user && tokenReady,
   });
 
   const { data: properties = [] } = useQuery({
-    queryKey: ['properties'],
+    queryKey: ['properties', user?.id],
     queryFn: () => propertyService.getAll(),
+    enabled: !!user && tokenReady,
   });
 
   const { data: contracts = [] } = useQuery({
-    queryKey: ['contracts'],
+    queryKey: ['contracts', user?.id],
     queryFn: () => contractService.getAll(),
+    enabled: !!user && tokenReady,
   });
 
   // Mutations

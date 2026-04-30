@@ -9,7 +9,10 @@ import { RenewContractModal } from '../components/contracts/RenewContractModal';
 import { contractService } from '../services/contractService';
 import { useNotification } from '../context/NotificationContext';
 
+import { useAuth } from '../context/AuthContext';
+
 const Contracts: React.FC = () => {
+  const { user, tokenReady } = useAuth();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filter, setFilter] = useState<'all' | ContractStatus>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +24,9 @@ const Contracts: React.FC = () => {
   const { addToast } = useNotification();
 
   useEffect(() => {
-    loadContracts();
+    if (user && tokenReady) {
+      loadContracts();
+    }
     
     // Check if coming from Properties with a pre-selected property or from onboarding
     if (location.state && (location.state as any).preSelectedProperty) {
@@ -29,9 +34,10 @@ const Contracts: React.FC = () => {
     } else if (location.state && (location.state as any).openWizard) {
       setShowWizard(true);
     }
-  }, [location]);
+  }, [location, user, tokenReady]);
 
   const loadContracts = async () => {
+    if (!user || !tokenReady) return;
     setLoading(true);
     try {
       const data = await contractService.getAll();

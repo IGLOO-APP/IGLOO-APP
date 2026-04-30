@@ -170,17 +170,25 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           </div>
 
           {/* Compact metrics */}
-          <div className='flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400'>
-            <span className='flex items-center gap-1'>
-              <Bed size={13} className='text-primary/70' />
-              <span className='font-bold text-slate-700 dark:text-slate-200'>{property.bedrooms ?? 0}</span>
-            </span>
-            <span className='w-px h-3 bg-gray-200 dark:bg-white/10' />
-            <span className='flex items-center gap-1'>
-              <Square size={13} className='text-primary/70' />
-              <span className='font-bold text-slate-700 dark:text-slate-200'>{property.area}</span>
-            </span>
-          </div>
+          {(property.bedrooms || (property.area && property.area !== '0m²' && property.area !== 'nullm²')) && (
+            <div className='flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400'>
+              {property.bedrooms ? (
+                <span className='flex items-center gap-1'>
+                  <Bed size={13} className='text-primary/70' />
+                  <span className='font-bold text-slate-700 dark:text-slate-200'>{property.bedrooms}</span>
+                </span>
+              ) : null}
+              {property.bedrooms && property.area && property.area !== '0m²' && property.area !== 'nullm²' && (
+                <span className='w-px h-3 bg-gray-200 dark:bg-white/10' />
+              )}
+              {property.area && property.area !== '0m²' && property.area !== 'nullm²' ? (
+                <span className='flex items-center gap-1'>
+                  <Square size={13} className='text-primary/70' />
+                  <span className='font-bold text-slate-700 dark:text-slate-200'>{property.area}</span>
+                </span>
+              ) : null}
+            </div>
+          )}
 
           {/* Action */}
           <div className='mt-auto'>
@@ -265,37 +273,46 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className='flex flex-1 items-center gap-0 overflow-hidden'>
 
           {/* Quartos */}
-          <div className='flex items-center gap-1.5 pr-3'>
-            <Bed size={14} className='text-slate-400 shrink-0' />
-            <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.bedrooms ?? 0}</span>
-              <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>quartos</span>
-            </div>
-          </div>
-
-          <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+          {property.bedrooms ? (
+            <>
+              <div className='flex items-center gap-1.5 pr-3'>
+                <Bed size={14} className='text-slate-400 shrink-0' />
+                <div className='flex flex-col leading-none'>
+                  <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.bedrooms}</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>quartos</span>
+                </div>
+              </div>
+              <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+            </>
+          ) : null}
 
           {/* Banheiros */}
-          <div className='flex items-center gap-1.5 px-3'>
-            <Bath size={14} className='text-slate-400 shrink-0' />
-            <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.bathrooms ?? 0}</span>
-              <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>banheiros</span>
-            </div>
-          </div>
-
-          <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+          {property.bathrooms ? (
+            <>
+              <div className='flex items-center gap-1.5 px-3'>
+                <Bath size={14} className='text-slate-400 shrink-0' />
+                <div className='flex flex-col leading-none'>
+                  <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.bathrooms}</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>banheiros</span>
+                </div>
+              </div>
+              <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+            </>
+          ) : null}
 
           {/* Área */}
-          <div className='flex items-center gap-1.5 px-3'>
-            <Square size={14} className='text-slate-400 shrink-0' />
-            <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.area}</span>
-              <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>área total</span>
-            </div>
-          </div>
-
-          <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+          {property.area && property.area !== '0m²' && property.area !== 'nullm²' ? (
+            <>
+              <div className='flex items-center gap-1.5 px-3'>
+                <Square size={14} className='text-slate-400 shrink-0' />
+                <div className='flex flex-col leading-none'>
+                  <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>{property.area}</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>área total</span>
+                </div>
+              </div>
+              <div className='w-px h-6 bg-gray-100 dark:bg-white/10 shrink-0 mx-0.5' />
+            </>
+          ) : null}
 
           {/* Tempo / Visualizações */}
           <div className='flex items-center gap-1.5 px-3'>
