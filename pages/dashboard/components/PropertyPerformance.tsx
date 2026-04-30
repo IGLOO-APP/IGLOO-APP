@@ -5,7 +5,7 @@ interface PropertyPerformanceProps {
   topProperties: any[];
 }
 
-export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topProperties }) => {
+export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topProperties = [] }) => {
   return (
     <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
       <div className='flex justify-between items-center mb-4'>
@@ -34,7 +34,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             </tr>
           </thead>
           <tbody className='text-sm'>
-            {topProperties.map((prop: any) => (
+            {topProperties && topProperties.length > 0 ? topProperties.map((prop: any) => (
               <tr
                 key={prop.id}
                 className='group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0'
@@ -82,7 +82,11 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                   </div>
                 </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-slate-400">Sem dados de performance</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

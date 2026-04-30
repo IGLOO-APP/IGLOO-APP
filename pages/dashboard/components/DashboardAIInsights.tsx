@@ -13,7 +13,7 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
   const { occupancyRate, pendingMaintenanceCount, expiringContractsCount } = metrics;
   
   return (
-    <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+    <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
       <div className='flex items-center gap-2 mb-4'>
         <div className='p-2 rounded-lg bg-amber-50 dark:bg-white/5'>
           <Zap size={18} className='text-amber-500' />
@@ -55,7 +55,7 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
           </li>
         )}
       </ul>
-      <button className='mt-6 w-full py-3 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-xs font-black text-slate-700 dark:text-slate-300 transition-all border border-gray-100 dark:border-white/5 uppercase tracking-widest'>
+      <button className='mt-4 w-full py-2 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-[10px] font-black text-slate-700 dark:text-slate-300 transition-all border border-gray-100 dark:border-white/5 uppercase tracking-widest'>
         Ver Recomendações
       </button>
     </div>

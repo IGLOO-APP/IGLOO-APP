@@ -19,7 +19,7 @@ interface CashFlowChartProps {
   isDark: boolean;
 }
 
-export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory, isDark }) => {
+export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory = [], isDark }) => {
   return (
     <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
       <div className='flex justify-between items-center mb-6'>
@@ -106,7 +106,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory, 
               maxBarSize={30}
               stackId='a'
             >
-              {financialHistory.map((entry, index) => (
+              {financialHistory && financialHistory.length > 0 && financialHistory.map((entry, index) => (
                 <Cell
                   key={`cell-income-${index}`}
                   fill={entry.projected ? '#10b981' : '#10b981'}
@@ -123,7 +123,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory, 
               maxBarSize={30}
               stackId='a'
             >
-              {financialHistory.map((entry, index) => (
+              {financialHistory && financialHistory.length > 0 && financialHistory.map((entry, index) => (
                 <Cell
                   key={`cell-expense-${index}`}
                   fill={entry.projected ? '#ef4444' : '#ef4444'}

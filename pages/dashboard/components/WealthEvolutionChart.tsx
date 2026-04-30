@@ -15,7 +15,7 @@ interface WealthEvolutionChartProps {
   isDark: boolean;
 }
 
-export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ wealthHistory, isDark }) => {
+export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ wealthHistory = [], isDark }) => {
   const [period, setPeriod] = useState('Último ano');
 
   return (
@@ -43,7 +43,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ weal
         </div>
       </div>
 
-      <div className='h-[250px] w-full'>
+      <div className='h-[300px] w-full'>
         <ResponsiveContainer width='100%' height='100%'>
           <AreaChart
             data={wealthHistory}
@@ -84,7 +84,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ weal
                       <p className='text-lg font-black text-cyan-400'>
                         R$ {(payload[0].value as number).toLocaleString('pt-BR')}
                       </p>
-                      {data.events?.length > 0 && (
+                      {data.events && data.events.length > 0 && (
                         <div className='mt-2 space-y-1'>
                           {data.events.map((e: any, i: number) => (
                             <div key={i} className='flex items-center gap-1.5 text-[9px] font-bold text-slate-300'>

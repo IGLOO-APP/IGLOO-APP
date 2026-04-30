@@ -23,6 +23,7 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -43,10 +44,12 @@
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: #94a3b8;
     border-radius: 4px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: #64748b;
   }
@@ -54,6 +57,7 @@
   .dark ::-webkit-scrollbar-thumb {
     background: #334155;
   }
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background: #475569;
   }
@@ -64,15 +68,18 @@
     0% {
       background-position: -1000px 0;
     }
+
     100% {
       background-position: 1000px 0;
     }
   }
+
   .animate-shimmer {
     animation: shimmer 2s infinite linear;
     background: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
     background-size: 1000px 100%;
   }
+
   .dark .animate-shimmer {
     background: linear-gradient(to right, #141b1d 0%, #1c2528 20%, #141b1d 40%, #141b1d 100%);
     background-size: 1000px 100%;
@@ -83,6 +90,7 @@
       opacity: 0;
       transform: scale(0.95) translateY(-5px);
     }
+
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -90,8 +98,13 @@
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes slideUp {
@@ -99,6 +112,7 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -122,6 +136,7 @@
     position: relative;
     overflow: hidden;
   }
+
   .auth-button-shimmer::after {
     content: '';
     position: absolute;
@@ -129,15 +144,14 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
+    background: linear-gradient(transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent);
     transform: rotate(45deg);
     transition: 0.5s;
     pointer-events: none;
   }
+
   .auth-button-shimmer:hover::after {
     left: 120%;
     top: 120%;
@@ -147,6 +161,7 @@
   .auth-input-focus {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   .auth-input-focus:focus {
     box-shadow: 0 0 0 4px rgba(19, 200, 236, 0.15), 0 8px 16px rgba(0, 0, 0, 0.2);
     transform: translateY(-1px);
@@ -174,14 +189,20 @@
 .cl-card {
   padding-bottom: 0 !important;
 }
-.cl-footer ~ * {
+
+.cl-footer~* {
   display: none !important;
 }
 
 /* ─── Announcement Ticker ─── */
 @keyframes ticker-scroll {
-  0%   { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .ticker-track {
@@ -193,18 +214,14 @@
 }
 
 .ticker-mask {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 12%,
-    black 75%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 12%,
-    black 75%,
-    transparent 100%
-  );
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0%,
+      black 12%,
+      black 75%,
+      transparent 100%);
+  mask-image: linear-gradient(to right,
+      transparent 0%,
+      black 12%,
+      black 75%,
+      transparent 100%);
 }

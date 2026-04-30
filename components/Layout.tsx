@@ -116,7 +116,7 @@ const Layout: React.FC = () => {
         </nav>
 
         <div className='p-4 mx-4 mb-4 border-t border-gray-100 dark:border-white/5 space-y-1'>
-          <Link 
+          <Link
             to='/settings'
             className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'
           >
@@ -200,8 +200,8 @@ const Layout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${isActive
-                      ? 'text-primary scale-105'
-                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    ? 'text-primary scale-105'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                 >
                   <div
