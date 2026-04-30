@@ -218,15 +218,29 @@ const Dashboard: React.FC = () => {
             
             <div className='flex-grow h-full'>
               {/* Highlighted Property Card (Full Detail) */}
-              {properties.slice(0, 1).map((prop) => (
-                <PropertyCard
-                  key={prop.id}
-                  property={prop}
-                  onClick={(p) => navigate(`/properties?id=${p.id}`)}
-                  viewMode='grid'
-                  className="h-full"
-                />
-              ))}
+              {properties.length > 0 ? (
+                properties.slice(0, 1).map((prop) => (
+                  <PropertyCard
+                    key={prop.id}
+                    property={prop}
+                    onClick={(p) => navigate(`/properties?id=${p.id}`)}
+                    viewMode='grid'
+                    className="h-full"
+                  />
+                ))
+              ) : (
+                <div 
+                  onClick={() => navigate('/properties', { state: { openAdd: true } })}
+                  className="h-full flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group min-h-[340px]"
+                >
+                  <div className="w-16 h-16 rounded-3xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:scale-110 transition-all mb-4 shadow-inner">
+                    <Plus size={32} strokeWidth={3} />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors">Meu Imóvel</p>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
