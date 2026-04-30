@@ -15,6 +15,8 @@ import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
 import { FAQManager } from '../components/messages/FAQManager';
 import { NewChatModal } from '../components/messages/NewChatModal';
+import { useAuth } from '../context/AuthContext';
+
 
 const quickReplies = [
   'Estou verificando.',
@@ -25,6 +27,8 @@ const quickReplies = [
 
 const OwnerMessages: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth(); // Get Clerk user ID to pass to messageService
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -282,13 +286,13 @@ const OwnerMessages: React.FC = () => {
   }, [chats.find(c => c.id === activeChatId)?.messages]);
 
   const handleSendMessage = async (text: string = inputText, type: 'text' | 'image' | 'system' = 'text') => {
-    if (!text.trim() || !activeChatId) return;
+    if (!text.trim() || !activeChatId || !user?.id) return;
 
     const chat = chats.find(c => c.id === activeChatId);
     if (!chat) return;
 
     setInputText('');
-    await messageService.sendMessage(activeChatId, chat.category, text, type);
+    await messageService.sendMessage(activeChatId, chat.category, text, user.id, type);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -321,16 +325,18 @@ const OwnerMessages: React.FC = () => {
   };
 
   const handleSelectTenant = async (tenantId: string) => {
+    if (!user?.id) {
+      console.error('User not authenticated — cannot create conversation.');
+      return;
+    }
     try {
       setLoading(true);
-      const threadId = await messageService.getOrCreateConversation(tenantId);
-      const updatedChats = await loadChats(); 
-      
-      // Force selection even if search/filter might hide it temporarily
+      const threadId = await messageService.getOrCreateConversation(tenantId, user.id);
+      const updatedChats = await loadChats();
+
       setActiveChatId(threadId);
       setShowNewChatModal(false);
-      
-      // If the chat is not in the filtered list, clear filters
+
       if (!updatedChats.some(c => c.id === threadId)) {
         setSearchTerm('');
         setActiveFilter('all');

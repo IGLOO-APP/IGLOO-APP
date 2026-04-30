@@ -189,32 +189,24 @@ export const messageService = {
     return messages.reverse();
   },
 
-  async sendMessage(threadId: string, category: string, text: string, type: 'text' | 'image' | 'system' = 'text') {
+  async sendMessage(threadId: string, category: string, text: string, userId: string, type: 'text' | 'image' | 'system' = 'text') {
     try {
       const dbId = threadId.split('_')[1];
-      
-      // 1. Get owner_id from the specific thread
-      let ownerId: string;
-      if (category === 'maintenance') {
-        const { data } = await supabase.from('maintenance_requests').select('owner_id').eq('id', dbId).single();
-        ownerId = data?.owner_id;
-      } else {
-        const { data } = await supabase.from('conversations').select('owner_id').eq('id', dbId).single();
-        ownerId = data?.owner_id;
-      }
 
-      if (!ownerId) throw new Error('Não foi possível identificar o proprietário desta conversa.');
+      // userId is the Clerk user ID passed explicitly from the component
+      // (supabase.auth.getSession() is always null in the Clerk integration)
+      if (!userId) throw new Error('Usuário não autenticado. Faça login novamente.');
 
       if (category === 'maintenance') {
         return await supabase.from('maintenance_messages').insert({
           request_id: dbId,
-          sender_id: ownerId,
+          sender_id: userId,
           sender_role: 'owner',
           content: text,
           type,
         });
       } else {
-        // Update last message info in parallel
+        // Update last message metadata in parallel (fire and forget)
         supabase.from('conversations').update({
           last_message: type === 'image' ? '📷 Imagem enviada' : text,
           last_message_at: new Date().toISOString(),
@@ -222,7 +214,7 @@ export const messageService = {
 
         return await supabase.from('conversation_messages').insert({
           conversation_id: dbId,
-          sender_id: ownerId,
+          sender_id: userId,
           sender_role: 'owner',
           content: text,
           type,
@@ -277,70 +269,63 @@ export const messageService = {
 
   async listTenantsForMessaging() {
     try {
-      // Fetch tenants from both sources simultaneously
-      // We don't filter by owner_id here because RLS (Row Level Security) 
-      // already handles this based on the authenticated session token.
-      const [convRes, contractRes] = await Promise.all([
-        supabase
-          .from('conversations')
-          .select(`
-            tenant_id,
-            profiles:tenant_id(id, name, avatar_url, email)
-          `),
-        supabase
-          .from('contracts')
-          .select(`
-            tenant_id,
-            profiles:tenant_id(id, name, avatar_url, email)
-          `)
-      ]);
+      // Use contracts as the source of truth for tenants.
+      // Fetch profiles directly to avoid RLS join issues on conversations.
+      const { data: contractData, error } = await supabase
+        .from('contracts')
+        .select('tenant_id')
+        .not('tenant_id', 'is', null);
 
-      const tenantMap = new Map();
+      if (error) {
+        console.error('Error fetching contracts for tenant list:', error);
+        return [];
+      }
 
-      // Merge results from both sources
-      const allSources = [...(convRes.data || []), ...(contractRes.data || [])];
-      
-      allSources.forEach(item => {
-        if (item.profiles && !tenantMap.has(item.profiles.id)) {
-          tenantMap.set(item.profiles.id, item.profiles);
-        }
-      });
+      const tenantIds = [...new Set((contractData || []).map(c => c.tenant_id))];
+      if (tenantIds.length === 0) return [];
 
-      return Array.from(tenantMap.values());
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url, email')
+        .in('id', tenantIds);
+
+      if (profilesError) {
+        console.error('Error fetching tenant profiles:', profilesError);
+        return [];
+      }
+
+      return profiles || [];
     } catch (err) {
       console.error('Critical error in listTenantsForMessaging:', err);
       return [];
     }
   },
 
-  async getOrCreateConversation(tenantId: string) {
+  async getOrCreateConversation(tenantId: string, ownerId: string) {
     try {
-      // 1. Get owner_id from an existing contract with this tenant
-      // This is necessary because Supabase Auth might not return the user object 
-      // directly when using Clerk, but RLS allows us to see our own contracts.
-      const { data: contract } = await supabase
-        .from('contracts')
-        .select('owner_id')
-        .eq('tenant_id', tenantId)
-        .limit(1)
-        .single();
+      // ownerId is the Clerk user ID passed explicitly from the component.
+      // supabase.auth.getSession() always returns null in the Clerk integration,
+      // so we never call it here.
+      if (!ownerId) throw new Error('ID do proprietário não informado.');
 
-      if (!contract) throw new Error('Não foi possível encontrar um contrato com este inquilino para iniciar a conversa.');
-      const ownerId = contract.owner_id;
-
-      // 2. Check if a general conversation already exists
-      const { data: existing } = await supabase
+      // 1. Check if a general conversation already exists between owner and tenant
+      const { data: existing, error: selectError } = await supabase
         .from('conversations')
         .select('id')
         .eq('owner_id', ownerId)
         .eq('tenant_id', tenantId)
         .eq('category', 'general')
-        .single();
+        .maybeSingle();
+
+      if (selectError) {
+        console.error('Error checking existing conversation:', selectError);
+        throw selectError;
+      }
 
       if (existing) return `conv_${existing.id}`;
 
-      // 3. Create new conversation if not found
-      const { data: created, error } = await supabase
+      // 2. Create new conversation if not found
+      const { data: created, error: insertError } = await supabase
         .from('conversations')
         .insert({
           owner_id: ownerId,
@@ -352,7 +337,7 @@ export const messageService = {
         .select('id')
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       return `conv_${created.id}`;
     } catch (err) {
       console.error('Error in getOrCreateConversation:', err);
