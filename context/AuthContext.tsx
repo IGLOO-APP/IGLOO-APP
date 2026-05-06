@@ -52,6 +52,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (isLoaded) {
       updateSupabaseToken();
+      
+      // Atualiza o token a cada 50 segundos para evitar expiração (o JWT do Clerk para Supabase expira em 1 min)
+      const intervalId = setInterval(updateSupabaseToken, 50000);
+      return () => clearInterval(intervalId);
     }
   }, [session, isLoaded]);
 

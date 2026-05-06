@@ -65,53 +65,50 @@ const Properties: React.FC = () => {
   }, [location, properties]);
 
   const handleSaveProperty = async (data: any) => {
-    const newProperty: Property = {
-      id: Date.now(),
-      name: data.nickname,
-      address: `${data.street}, ${data.number} - ${data.neighborhood}`,
-      status: 'DISPONÍVEL',
-      status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-      price: data.rentValue,
-      area: `${data.area}m²`,
-      bedrooms: data.bedrooms || 0,
-      bathrooms: data.bathrooms || 0,
-      parking: data.parking || 0,
-      image: data.coverImage || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
-      galleryImages: data.galleryImages || [],
-      tenant: null,
-      contract: null
-    };
-
-    setLocalProperties([newProperty, ...localProperties]);
+    if (!user) return;
+    
+    try {
+      await propertyService.create({
+        owner_id: user.id,
+        name: data.nickname,
+        address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+        status: 'DISPONÍVEL',
+        price: parseFloat(data.rentValue) || 0,
+        area: parseFloat(data.area) || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        parking: data.parking || 0,
+        image_url: data.coverImage || null,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+    } catch (err: any) {
+      console.error('Erro ao criar imóvel:', err);
+      alert(`Erro ao salvar imóvel: ${err.message || 'Erro desconhecido'}. Tente novamente.`);
+    }
     setShowAddForm(false);
   };
 
   const handleUpdateProperty = async (data: any) => {
     if (!editingProperty) return;
 
-    const updatedProperties = localProperties.map(p => {
-      if (p.id === editingProperty.id) {
-        return {
-          ...p,
-          name: data.nickname,
-          address: `${data.street}, ${data.number} - ${data.neighborhood}`,
-          price: data.rentValue,
-          area: `${data.area}m²`,
-          bedrooms: data.bedrooms || 0,
-          bathrooms: data.bathrooms || 0,
-          parking: data.parking || 0,
-          image: data.coverImage || p.image,
-          galleryImages: data.galleryImages || p.galleryImages || []
-        };
-      }
-      return p;
-    });
-
-    setLocalProperties(updatedProperties);
-    setEditingProperty(null);
-    if (selectedProperty?.id === editingProperty.id) {
-      setSelectedProperty(updatedProperties.find(p => p.id === editingProperty.id) || null);
+    try {
+      await propertyService.update(String(editingProperty.id), {
+        name: data.nickname,
+        address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+        price: parseFloat(data.rentValue) || 0,
+        area: parseFloat(data.area) || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        parking: data.parking || 0,
+        image_url: data.coverImage || null,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+    } catch (err) {
+      console.error('Erro ao atualizar imóvel:', err);
+      alert('Erro ao atualizar imóvel. Tente novamente.');
     }
+    setEditingProperty(null);
+    setSelectedProperty(null);
   };
 
   const handleEditProperty = (id: number) => {
@@ -121,11 +118,17 @@ const Properties: React.FC = () => {
     }
   };
 
-  const handleDeleteProperty = (id: number) => {
+  const handleDeleteProperty = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este imóvel?')) {
-      setLocalProperties(localProperties.filter(p => p.id !== id));
-      if (selectedProperty?.id === id) {
-        setSelectedProperty(null);
+      try {
+        await propertyService.delete(String(id));
+        await queryClient.invalidateQueries({ queryKey: ['properties'] });
+        if (selectedProperty?.id === id) {
+          setSelectedProperty(null);
+        }
+      } catch (err) {
+        console.error('Erro ao excluir imóvel:', err);
+        alert('Erro ao excluir imóvel. Tente novamente.');
       }
     }
   };

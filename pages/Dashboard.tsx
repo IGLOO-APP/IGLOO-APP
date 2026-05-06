@@ -29,6 +29,13 @@ import { PropertyCard } from '../components/properties/PropertyCard';
 import { propertyService } from '../services/propertyService';
 
 import AnnouncementTicker from '../components/AnnouncementTicker';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '../components/ui/carousel';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -142,7 +149,7 @@ const Dashboard: React.FC = () => {
 
         {/* Row 3: Assets & Wealth Evolution (SIDE BY SIDE) */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start'>
-          <section className={`${properties.length <= 1 ? 'lg:col-span-4' : 'lg:col-span-7'} flex flex-col gap-4`}>
+          <section className="lg:col-span-5 flex flex-col gap-4">
             <div className='flex justify-between items-end px-1 h-[42px]'>
               <div className='flex items-end gap-6'>
                 <div>
@@ -152,11 +159,29 @@ const Dashboard: React.FC = () => {
                 <button onClick={() => navigate('/properties')} className='text-[10px] font-black text-primary uppercase tracking-widest hover:underline pb-0.5'>Ver todos</button>
               </div>
             </div>
-            <div className={`grid grid-cols-1 ${properties.length <= 1 ? '' : 'md:grid-cols-2'} gap-6`}>
-              {properties.length > 0 ? properties.slice(0, 2).map((prop) => (
-                <PropertyCard key={prop.id} property={prop} onClick={(p) => navigate(`/properties?id=${p.id}`)} viewMode='grid' />
-              )) : (
-                <div onClick={() => navigate('/properties', { state: { openAdd: true } })} className="col-span-full h-48 flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary transition-all cursor-pointer group">
+            <div className="relative group/carousel">
+              {properties.length > 0 ? (
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {properties.slice(0, 5).map((prop) => (
+                      <CarouselItem key={prop.id} className="basis-full">
+                        <div className="px-1">
+                          <PropertyCard 
+                            property={prop} 
+                            onClick={(p) => navigate(`/properties?id=${p.id}`)} 
+                            viewMode='grid' 
+                          />
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <div className="absolute -right-2 -top-12 flex gap-2">
+                    <CarouselPrevious className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
+                    <CarouselNext className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
+                  </div>
+                </Carousel>
+              ) : (
+                <div onClick={() => navigate('/properties', { state: { openAdd: true } })} className="h-48 flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary transition-all cursor-pointer group">
                   <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:text-primary transition-all mb-3"><Plus size={24} strokeWidth={3} /></div>
                   <p className="text-sm font-black text-slate-900 dark:text-white">Cadastrar imóvel</p>
                 </div>
@@ -164,7 +189,7 @@ const Dashboard: React.FC = () => {
             </div>
           </section>
 
-          <section className={`${properties.length <= 1 ? 'lg:col-span-8' : 'lg:col-span-5'} h-full`}>
+          <section className="lg:col-span-7 h-full">
             <WealthEvolutionChart wealthHistory={wealthHistory || []} isDark={isDark} />
           </section>
         </div>

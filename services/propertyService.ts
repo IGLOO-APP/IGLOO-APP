@@ -111,12 +111,9 @@ export const propertyService = {
   },
 
   async create(property: PropertyInsert): Promise<Property> {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('User not authenticated');
-
     const { data, error } = await supabase
       .from('properties')
-      .insert({ ...property, owner_id: userData.user.id })
+      .insert(property)
       .select()
       .single();
 

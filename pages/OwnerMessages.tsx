@@ -86,12 +86,13 @@ const OwnerMessages: React.FC = () => {
   // 1. Initial Load
   useEffect(() => {
     const init = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      setCurrentUserId(userData.user?.id || null);
-      await loadChats();
+      if (user) {
+        setCurrentUserId(user.id);
+        await loadChats();
+      }
     };
     init();
-  }, []);
+  }, [user]);
 
   // Handle deep link from Tenants page
   useEffect(() => {

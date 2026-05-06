@@ -40,8 +40,8 @@ create table public.admin_activity_log (
 -- SUPPORT TICKETS
 create table public.support_tickets (
   id uuid default uuid_generate_v4() primary key,
-  owner_id uuid references public.profiles(id) not null,
-  assigned_admin_id uuid references public.profiles(id),
+  owner_id text references public.profiles(id) not null,
+  assigned_admin_id text references public.profiles(id),
   category text check (category in ('billing', 'technical', 'feature_request', 'bug', 'other')) not null,
   priority text check (priority in ('low', 'medium', 'high', 'urgent')) default 'medium',
   status text check (status in ('open', 'in_progress', 'waiting_response', 'resolved', 'closed')) default 'open',
@@ -59,7 +59,7 @@ create table public.support_tickets (
 create table public.support_ticket_messages (
   id uuid default uuid_generate_v4() primary key,
   ticket_id uuid references public.support_tickets(id) on delete cascade not null,
-  sender_id uuid references public.profiles(id) not null,
+  sender_id text references public.profiles(id) not null,
   message text not null,
   attachments text[],
   is_internal_note boolean default false,
@@ -69,7 +69,7 @@ create table public.support_ticket_messages (
 -- SYSTEM ANNOUNCEMENTS
 create table public.system_announcements (
   id uuid default uuid_generate_v4() primary key,
-  created_by_admin_id uuid references public.profiles(id) not null,
+  created_by_admin_id text references public.profiles(id) not null,
   title text not null,
   content text not null,
   type text check (type in ('info', 'warning', 'maintenance', 'feature')) default 'info',
@@ -83,7 +83,7 @@ create table public.system_announcements (
 create table public.impersonation_sessions (
   id uuid default uuid_generate_v4() primary key,
   admin_id uuid references public.profiles(id) not null,
-  target_user_id uuid references public.profiles(id) not null,
+  target_user_id text references public.profiles(id) not null,
   reason text not null,
   started_at timestamp with time zone default timezone('utc'::text, now()) not null,
   ended_at timestamp with time zone,
@@ -93,7 +93,7 @@ create table public.impersonation_sessions (
 -- PROPERTIES
 create table public.properties (
   id uuid default uuid_generate_v4() primary key,
-  owner_id uuid references public.profiles(id) on delete cascade not null,
+  owner_id text references public.profiles(id) on delete cascade not null,
   name text not null,
   address text not null,
   status text check (status in ('DISPONÍVEL', 'ALUGADO', 'MANUTENÇÃO')) default 'DISPONÍVEL',
@@ -102,6 +102,9 @@ create table public.properties (
   image_url text,
   description text,
   market_value numeric,
+  bedrooms integer default 0,
+  bathrooms integer default 0,
+  parking integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -111,8 +114,8 @@ create table public.contracts (
   id uuid default uuid_generate_v4() primary key,
   contract_number text,
   property_id uuid references public.properties(id) on delete cascade not null,
-  tenant_id uuid references public.profiles(id),
-  owner_id uuid references public.profiles(id) not null,
+  tenant_id text references public.profiles(id),
+  owner_id text references public.profiles(id) not null,
   start_date date not null,
   end_date date not null,
   monthly_value numeric not null,
@@ -140,7 +143,7 @@ create table public.payments (
 create table public.maintenance_requests (
   id uuid default uuid_generate_v4() primary key,
   property_id uuid references public.properties(id) on delete cascade not null,
-  tenant_id uuid references public.profiles(id),
+  tenant_id text references public.profiles(id),
   title text not null,
   description text,
   category text,
@@ -155,7 +158,7 @@ create table public.maintenance_requests (
 create table public.signature_audits (
   id uuid default uuid_generate_v4() primary key,
   contract_id uuid references public.contracts(id) on delete cascade not null,
-  signer_id uuid references public.profiles(id) not null,
+  signer_id text references public.profiles(id) not null,
   signed_at timestamp with time zone default timezone('utc'::text, now()) not null,
   signer_ip text,
   user_agent text,

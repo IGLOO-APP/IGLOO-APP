@@ -50,10 +50,11 @@ const Contracts: React.FC = () => {
   };
 
   const handleCreateContract = async (data: any) => {
+    if (!user) return;
     try {
       // This is now just a wrapper for the service
       // In a real app we'd need to map the wizard data to the service format more carefully
-      await contractService.create(data);
+      await contractService.create(user.id, data);
       loadContracts();
       setShowWizard(false);
     } catch (error) {

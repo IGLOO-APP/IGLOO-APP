@@ -40,15 +40,13 @@ export const contractService = {
     return data.map(mapContract);
   },
 
-  async create(contractData: any): Promise<void> {
-    const { data: user } = await supabase.auth.getUser();
-
+  async create(ownerId: string, contractData: any): Promise<void> {
     // Transform UI data to DB data
     const payload = {
       contract_number: `CTR-${Date.now()}`,
-      owner_id: user.user?.id,
-      property_id: contractData.property_id, // Needs to be selected in wizard
-      tenant_id: contractData.tenant_id, // Needs to be selected in wizard
+      owner_id: ownerId,
+      property_id: contractData.property_id,
+      tenant_id: contractData.tenant_id,
       start_date: contractData.startDate,
       end_date: new Date(
         new Date(contractData.startDate).setMonth(

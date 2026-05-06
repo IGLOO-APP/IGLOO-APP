@@ -132,14 +132,9 @@ export const adminService = {
 
   // --- Logs ---
 
-  async logActivity(action: string, targetType: string, targetId?: string, changes?: any) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
+  async logActivity(action: string, targetType: string, targetId?: string, changes?: any, adminId: string = 'system') {
     await supabase.from('admin_activity_log').insert({
-      admin_id: user.id,
+      admin_id: adminId,
       action,
       target_type: targetType,
       target_id: targetId,
@@ -492,15 +487,10 @@ export const adminService = {
     }
   },
 
-  async createAnnouncement(announcement: any) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
+  async createAnnouncement(announcement: any, adminId: string) {
     const { data, error } = await supabase.from('system_announcements').insert({
       ...announcement,
-      created_by_admin_id: user.id,
+      created_by_admin_id: adminId,
     });
 
     if (error) throw error;

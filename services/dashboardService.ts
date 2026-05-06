@@ -5,21 +5,18 @@ import { financeService } from './financeService';
 import { supabase } from '../lib/supabase';
 
 export const dashboardService = {
-    async getDashboardData() {
+    async getDashboardData(userId: string) {
         try {
             console.log('Fetching dashboard data...');
             // Fetch all necessary data in parallel
-            const [properties, tenants, contracts, transactions, maintenanceRequests, pendingPayments, authRes] = await Promise.all([
+            const [properties, tenants, contracts, transactions, maintenanceRequests, pendingPayments] = await Promise.all([
                 propertyService.getAll().catch(e => { console.error('P error:', e); return []; }),
                 tenantService.getAll().catch(e => { console.error('T error:', e); return []; }),
                 contractService.getAll().catch(e => { console.error('C error:', e); return []; }),
                 financeService.getAll().catch(e => { console.error('F error:', e); return []; }),
                 supabase.from('maintenance_requests').select('*').order('created_at', { ascending: false }).then(res => res.data || []),
                 supabase.from('payments').select('*').eq('status', 'pending').order('due_date', { ascending: true }).then(res => res.data || []),
-                supabase.auth.getUser().catch(e => ({ data: { user: null } })),
             ]);
-
-            const userData = authRes.data;
 
             // 1. Occupancy Calculation (Real)
             const totalProperties = properties.length;
@@ -157,7 +154,7 @@ export const dashboardService = {
                         { id: 'l1s1', label: 'Adicionar primeiro imóvel', completed: propertyCount > 0, action: '/properties' },
                         { id: 'l1s2', label: 'Cadastrar primeiro inquilino', completed: tenants.length > 0, action: '/tenants' },
                         { id: 'l1s3', label: 'Criar primeiro contrato', completed: activeContractsCount > 0, action: '/contracts' },
-                        { id: 'l1s4', label: 'Configurar recebimento', completed: !!userData?.user, action: '/settings' },
+                        { id: 'l1s4', label: 'Configurar recebimento', completed: properties.length > 0, action: '/settings' },
                     ]
                 },
                 {
