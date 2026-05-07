@@ -13,6 +13,8 @@ export interface User {
   is_pending?: boolean;
   managed_by_admin_id?: string;
   property_id?: string;
+  phone?: string;
+  avatar_url?: string;
 }
 
 export interface Tenant {
@@ -39,6 +41,18 @@ export interface Tenant {
     monthly_value: number;
     status: string;
     payment_day?: number;
+  };
+  is_verified?: boolean;
+  is_pending?: boolean;
+  property_details?: {
+    name: string;
+    address: string;
+    image_url: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    area?: string;
+    parking?: number;
+    price?: string;
   };
 }
 
@@ -126,6 +140,8 @@ export interface Property {
   tenant?: Tenant | null;
   contract?: Contract | null;
   galleryImages?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 // --- SUBSCRIPTION TYPES ---
@@ -243,7 +259,7 @@ export interface TicketMessage {
 
 export interface SystemAnnouncement {
   id: string;
-  created_by_admin_id: string;
+  created_by_admin_id?: string | null;
   title: string;
   content: string;
   type: 'info' | 'warning' | 'maintenance' | 'feature';
@@ -324,6 +340,7 @@ export interface FinancialTransaction {
   date: string; // ISO format
   status: 'paid' | 'pending';
   attachment_url?: string;
+  hasAttachment?: boolean;
   is_recurring: boolean;
   created_at?: string;
   updated_at?: string;

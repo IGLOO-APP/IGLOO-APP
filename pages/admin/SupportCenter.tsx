@@ -39,6 +39,7 @@ import { faqService } from '../../services/faqService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { FAQ } from '../../types';
 
 interface Message {
@@ -57,6 +58,7 @@ interface Message {
 
 const SupportCenter: React.FC = () => {
   const { user: currentUser } = useAuth();
+  const { addToast } = useNotification();
   const queryClient = useQueryClient();
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -137,7 +139,7 @@ const SupportCenter: React.FC = () => {
 
   const sendMessageMutation = useMutation({
     mutationFn: (content: string) => 
-      adminService.sendTicketMessage(selectedTicketId!, currentUser!.id, 'admin', content),
+      adminService.sendTicketMessage(selectedTicketId!, String(currentUser!.id), 'admin', content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support_messages', selectedTicketId] });
       setInputText('');
@@ -148,7 +150,7 @@ const SupportCenter: React.FC = () => {
     mutationFn: (status: string) => adminService.updateTicketStatus(selectedTicketId!, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support_tickets'] });
-      showToast('Status atualizado com sucesso', 'success');
+      addToast('Status atualizado', 'Status atualizado com sucesso', 'success');
     }
   });
 
@@ -156,7 +158,7 @@ const SupportCenter: React.FC = () => {
     mutationFn: (adminId: string | null) => adminService.assignTicket(selectedTicketId!, adminId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support_tickets'] });
-      showToast('Responsável alterado com sucesso', 'success');
+      addToast('Responsável alterado', 'Responsável alterado com sucesso', 'success');
     }
   });
 
@@ -393,7 +395,7 @@ const SupportCenter: React.FC = () => {
                       {t.user?.name || 'Sistema'}
                     </h3>
                     <span className='text-[10px] text-slate-400 shrink-0'>
-                      {new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                     </span>
                   </div>
                   <p className='text-[10px] text-primary uppercase font-bold tracking-wider mb-0.5 truncate'>
@@ -405,7 +407,7 @@ const SupportCenter: React.FC = () => {
                     </p>
                     {t.assignee && (
                       <div className='w-5 h-5 bg-slate-200 dark:bg-white/10 text-[10px] font-bold flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300'>
-                        {t.assignee.initial}
+                        {t.assignee.name?.charAt(0) || '?'}
                       </div>
                     )}
                   </div>
@@ -485,7 +487,7 @@ const SupportCenter: React.FC = () => {
                 <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-4'>
                   <div className='flex justify-center mb-6'>
                     <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full'>
-                      Início do Ticket — {new Date(selectedTicket.created_at).toLocaleDateString()}
+                      Início do Ticket — {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleDateString() : '--/--/----'}
                     </span>
                   </div>
 
@@ -636,8 +638,8 @@ const SupportCenter: React.FC = () => {
                           <div>
                             <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
                              <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
-                              {new Date(selectedTicket.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                            </p>
+                               {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '---'}
+                             </p>
                           </div>
                         </div>
                         <div className='flex items-start gap-3'>
@@ -657,15 +659,15 @@ const SupportCenter: React.FC = () => {
                     <div className='p-4 space-y-5'>
                       <div className='flex flex-col items-center text-center pb-4 border-b border-gray-200 dark:border-white/5'>
                         <div className='w-16 h-16 rounded-full bg-slate-200 dark:bg-white/10 mb-2 overflow-hidden border-2 border-primary/20'>
-                          {selectedTicket.ownerAvatar ? (
-                            <img src={selectedTicket.ownerAvatar} alt='' className='w-full h-full object-cover' />
+                          {selectedTicket.user?.avatar_url ? (
+                            <img src={selectedTicket.user.avatar_url} alt='' className='w-full h-full object-cover' />
                           ) : (
                             <div className='w-full h-full flex items-center justify-center text-slate-400'>
                               <User size={32} />
                             </div>
                           )}
                         </div>
-                        <h4 className='text-sm font-bold text-slate-900 dark:text-white'>{selectedTicket.owner}</h4>
+                        <h4 className='text-sm font-bold text-slate-900 dark:text-white'>{selectedTicket.user?.name || 'Sistema'}</h4>
                         <p className='text-[11px] text-slate-500'>Membro desde Jan 2023</p>
                       </div>
 

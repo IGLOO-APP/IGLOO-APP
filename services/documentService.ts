@@ -29,10 +29,10 @@ export const documentService = {
       name: doc.name,
       category: doc.category as any,
       size: doc.size || '0 KB',
-      uploadDate: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+      uploadDate: new Date(doc.created_at || Date.now()).toLocaleDateString('pt-BR'),
       type: doc.type,
       status: doc.status as any,
-      url: doc.url
+      url: doc.url || undefined
     }));
   },
 
@@ -61,10 +61,10 @@ export const documentService = {
       name: data.name,
       category: data.category as any,
       size: data.size || '0 KB',
-      uploadDate: new Date(data.created_at).toLocaleDateString('pt-BR'),
+      uploadDate: new Date(data.created_at || Date.now()).toLocaleDateString('pt-BR'),
       type: data.type,
       status: data.status as any,
-      url: data.url
+      url: data.url || undefined
     };
   },
 

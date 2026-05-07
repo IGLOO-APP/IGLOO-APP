@@ -65,6 +65,18 @@ export const adminService = {
     return { users: data as User[], total: count };
   },
 
+  async getRecentUsers(limit = 5) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'owner')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data as User[];
+  },
+
   async updateUserPlan(userId: string, plan: string) {
     const { error } = await supabase.from('profiles').update({ plan }).eq('id', userId);
 
@@ -229,25 +241,12 @@ export const adminService = {
     return data;
   },
 
-  async getGrowthData() {
-    // This is hard to calculate without a dedicated metrics table
-    // So we'll return a more realistic but still placeholder-y data for now
-    // or try to group profiles by month
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('created_at')
-      .order('created_at', { ascending: true });
-
-    if (error) return [];
-
-    // Simple grouping by month logic...
-    return data;
-  },
 
   async createAdmin(email: string, name: string, adminType: string, permissions: string[]) {
     // In a real app, this would use supabase.auth.admin.inviteUserByEmail
     // Here we simulate adding to profiles with a pending status
     const { error } = await supabase.from('profiles').insert({
+      id: crypto.randomUUID(),
       email,
       name,
       role: 'admin',
@@ -487,7 +486,7 @@ export const adminService = {
     }
   },
 
-  async createAnnouncement(announcement: any, adminId: string) {
+  async createAnnouncement(announcement: any, adminId: string = '') {
     const { data, error } = await supabase.from('system_announcements').insert({
       ...announcement,
       created_by_admin_id: adminId,

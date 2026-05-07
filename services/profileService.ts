@@ -74,12 +74,12 @@ export const profileService = {
             p_avatar_url: user.user_metadata?.avatar_url || null,
           });
 
-        if (!claimError && claimResult && !claimResult.error) {
-          console.log('Profile claimed successfully via RPC. Role:', claimResult.role);
-          return claimResult as Profile;
+        if (!claimError && claimResult && !(claimResult as any).error) {
+          console.log('Profile claimed successfully via RPC. Role:', (claimResult as any).role);
+          return claimResult as unknown as Profile;
         }
 
-        console.warn('RPC claim failed, will create fresh profile:', claimError || claimResult?.error);
+        console.warn('RPC claim failed, will create fresh profile:', claimError || (claimResult as any)?.error);
       }
     }
 

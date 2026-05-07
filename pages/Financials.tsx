@@ -730,7 +730,7 @@ const Financials: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedVoucher(tx.attachmentUrl || null);
+                          setSelectedVoucher(tx.attachment_url || null);
                         }}
                         className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'
                         title='Ver Comprovante'

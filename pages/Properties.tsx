@@ -69,7 +69,7 @@ const Properties: React.FC = () => {
     
     try {
       await propertyService.create({
-        owner_id: user.id,
+        owner_id: String(user.id),
         name: data.nickname,
         address: `${data.street}, ${data.number} - ${data.neighborhood}`,
         status: 'DISPONÍVEL',
@@ -111,14 +111,14 @@ const Properties: React.FC = () => {
     setSelectedProperty(null);
   };
 
-  const handleEditProperty = (id: number) => {
+  const handleEditProperty = (id: string | number) => {
     const property = localProperties.find(p => p.id === id);
     if (property) {
       setEditingProperty(property);
     }
   };
 
-  const handleDeleteProperty = async (id: number) => {
+  const handleDeleteProperty = async (id: string | number) => {
     if (window.confirm('Tem certeza que deseja excluir este imóvel?')) {
       try {
         await propertyService.delete(String(id));
@@ -201,7 +201,7 @@ const Properties: React.FC = () => {
               </button>
               <button
                 onClick={() => setViewMode('map')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                className={`p-1.5 rounded-md transition-all ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
                 title='Mapa'
               >
                 <Map size={20} />

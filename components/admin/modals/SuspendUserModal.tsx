@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, AdminActivityLog } from '../../types';
+import { User, AdminActivityLog } from '../../../types';
 import { X, AlertTriangle, Send, Loader } from 'lucide-react';
 
 interface SuspendUserModalProps {

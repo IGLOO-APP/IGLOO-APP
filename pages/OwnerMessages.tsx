@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { messageService, ChatThread, ChatMessage } from '../services/messageService';
-import { faqService, FAQ } from '../services/faqService';
+import { faqService } from '../services/faqService';
+import { messageService } from '../services/messageService';
+import { FAQ, Property, Tenant, SystemAnnouncement } from '../types';
+import { ChatThread, ChatMessage } from '../services/messageService';
 import { 
   Search, 
   Filter, 
@@ -87,7 +89,7 @@ const OwnerMessages: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       if (user) {
-        setCurrentUserId(user.id);
+        setCurrentUserId(String(user.id));
         await loadChats();
       }
     };
@@ -218,7 +220,7 @@ const OwnerMessages: React.FC = () => {
 
     setChats(prev => prev.map(c => {
       if (c.id === threadId) {
-        if (c.messages.some(m => m.id === formattedMsg.id)) return c;
+        if (c.messages.some((m: ChatMessage) => m.id === formattedMsg.id)) return c;
         const isCurrent = activeChatId === threadId;
         return {
           ...c,
@@ -293,7 +295,12 @@ const OwnerMessages: React.FC = () => {
     if (!chat) return;
 
     setInputText('');
-    await messageService.sendMessage(activeChatId, chat.category, text, user.id, type);
+    await messageService.sendMessage(activeChatId, chat.category, text, String(user.id), type);
+  };
+
+  const onSendMessage = (e?: React.FormEvent, overrideText?: string) => {
+    if (e) e.preventDefault();
+    handleSendMessage(overrideText || inputText);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,13 +339,13 @@ const OwnerMessages: React.FC = () => {
     }
     try {
       setLoading(true);
-      const threadId = await messageService.getOrCreateConversation(tenantId, user.id);
+      const threadId = await messageService.getOrCreateConversation(tenantId, String(user.id));
       const updatedChats = await loadChats();
 
       setActiveChatId(threadId);
       setShowNewChatModal(false);
 
-      if (!updatedChats.some(c => c.id === threadId)) {
+      if (!updatedChats.some((c: ChatThread) => c.id === threadId)) {
         setSearchTerm('');
         setActiveFilter('all');
       }
@@ -423,7 +430,7 @@ const OwnerMessages: React.FC = () => {
               setActiveRightTab={setActiveRightTab}
               messagesEndRef={messagesEndRef}
               quickReplies={quickReplies}
-              handleSendMessage={handleSendMessage}
+              handleSendMessage={onSendMessage}
               inputText={inputText}
               setInputText={setInputText}
               attachmentInputRef={attachmentInputRef}
@@ -466,9 +473,9 @@ const OwnerMessages: React.FC = () => {
         setEditingFaq={setEditingFaq}
         newFaq={newFaq}
         setNewFaq={setNewFaq}
-        handleSaveFAQ={handleSaveFAQ}
-        handleDeleteFAQ={handleDeleteFAQ}
-        toggleFAQStatus={toggleFAQStatus}
+        onSave={handleSaveFAQ}
+        onDelete={handleDeleteFAQ}
+        onToggleStatus={toggleFAQStatus}
       />
 
       <NewChatModal 

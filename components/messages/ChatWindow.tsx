@@ -10,13 +10,16 @@ interface ChatWindowProps {
   showDetailsPanel: boolean;
   activeRightTab: 'ticket' | 'tenant';
   setActiveRightTab: (tab: 'ticket' | 'tenant') => void;
-  messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  messagesEndRef: React.RefObject<HTMLDivElement>;
   quickReplies: string[];
   handleSendMessage: (e?: React.FormEvent, overrideText?: string) => void;
   inputText: string;
   setInputText: (text: string) => void;
-  attachmentInputRef: React.RefObject<HTMLInputElement | null>;
+  attachmentInputRef: React.RefObject<HTMLInputElement>;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  loadMoreMessages: () => void;
+  loadingMore: boolean;
+  typingUsers: Record<string, boolean>;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({

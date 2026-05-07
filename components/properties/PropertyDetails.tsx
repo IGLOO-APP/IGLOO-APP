@@ -30,8 +30,10 @@ import {
   Building2,
   CircleDollarSign,
   Hash,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { tenantService } from '../../services/tenantService';
 import { Property } from '../../types';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { PropertyInspection } from './PropertyInspection';
@@ -208,13 +210,13 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
                 <h3 className='text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest'>Informações Básicas</h3>
                 <div className='flex items-center gap-2'>
                   <button 
-                    onClick={() => onEdit?.(property.id)}
+                    onClick={() => onEdit?.(Number(property.id))}
                     className='flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
                   >
                     <Edit2 size={14} /> Editar
                   </button>
                   <button 
-                    onClick={() => onDelete?.(property.id)}
+                    onClick={() => onDelete?.(Number(property.id))}
                     className='flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
                   >
                     <Trash2 size={14} /> Excluir

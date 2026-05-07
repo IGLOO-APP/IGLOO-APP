@@ -25,6 +25,7 @@ const PLANS: Plan[] = [
       { text: 'Assinatura Digital', included: false },
       { text: 'Cobrança Automatizada', included: false },
     ],
+    is_active: true,
   },
   {
     id: 'starter',
@@ -50,6 +51,7 @@ const PLANS: Plan[] = [
       { text: 'Cobrança Automatizada', included: false },
       { text: 'Gestão de Equipe', included: false },
     ],
+    is_active: true,
   },
   {
     id: 'professional',
@@ -76,6 +78,7 @@ const PLANS: Plan[] = [
       { text: 'Contratos Ilimitados', included: true },
       { text: 'Multi-usuários (5)', included: true },
     ],
+    is_active: true,
   },
   {
     id: 'enterprise',
@@ -101,6 +104,7 @@ const PLANS: Plan[] = [
       { text: 'Gerente de Conta', included: true },
       { text: 'SLA de 99.9%', included: true },
     ],
+    is_active: true,
   },
 ];
 
@@ -145,7 +149,7 @@ export const subscriptionService = {
     if (!plan) return { total: 0, savings: 0, pricePerMonth: 0, totalBilled: 0 };
 
     const monthlyPrice = plan.price.monthly;
-    let cyclePrice = plan.price[cycle];
+    let cyclePrice = plan.price[cycle] || monthlyPrice;
     let total = 0;
     let savings = 0;
 
@@ -186,7 +190,7 @@ export const subscriptionService = {
       planId: planId,
       status: 'active',
       billingCycle: cycle,
-      amount: calc.pricePerMonth,
+      amount: calc.pricePerMonth || 0,
       currentPeriodEnd:
         cycle === 'monthly'
           ? new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()

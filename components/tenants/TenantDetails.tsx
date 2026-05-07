@@ -72,8 +72,8 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         const t = await tenantService.getById(tenantId!);
         if (t?.contract) {
             const [paymentsData, maintenanceData] = await Promise.all([
-                tenantService.getPayments(t.contract.id),
-                tenantService.getMaintenanceRequests(t.id)
+                tenantService.getPayments(String(t.contract.id)),
+                tenantService.getMaintenanceRequests(String(t.id))
             ]);
             setPayments(paymentsData);
             setMaintenance(maintenanceData);
@@ -142,6 +142,9 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
       </ModalWrapper>
     );
   }
+
+  // Type narrowing: guarantees tenant is defined for the remainder of the component
+  if (!tenant) return null;
 
   // Calculate contract progress
   let contractProgress = 0;
@@ -341,7 +344,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   <div className="flex-1 p-5">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-black text-slate-900 dark:text-white text-lg">{tenant.property || tenant.contract?.property_name || 'Imóvel vinculado'}</h3>
+                        <h3 className="font-black text-slate-900 dark:text-white text-lg">{tenant.property || 'Imóvel vinculado'}</h3>
                         <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium">
                           <MapPin size={12} className="text-primary" />
                           {tenant.property_address || 'Endereço não disponível'}

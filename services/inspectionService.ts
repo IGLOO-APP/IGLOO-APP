@@ -45,7 +45,13 @@ export const inspectionService = {
       return [];
     }
 
-    return data;
+    return (data || []).map((i: any) => ({
+      id: i.id,
+      property_id: i.property_id || '',
+      type: i.type as 'IN' | 'OUT',
+      status: i.status || 'pending',
+      date: i.date || new Date().toISOString(),
+    }));
   },
 
   async getDetails(inspectionId: string): Promise<Room[]> {
@@ -75,11 +81,11 @@ export const inspectionService = {
         name: item.item_name,
         status: item.status as any,
         notes: item.notes || '',
-        entryPhoto: item.entry_photo_url,
-        exitPhoto: item.exit_photo_url,
+        entryPhoto: item.entry_photo_url || undefined,
+        exitPhoto: item.exit_photo_url || undefined,
         tenantFeedback: {
           status: item.tenant_feedback_status as any,
-          comment: item.tenant_feedback_comment,
+          comment: item.tenant_feedback_comment || undefined,
           timestamp: item.tenant_feedback_at ? new Date(item.tenant_feedback_at).toLocaleString('pt-BR') : undefined
         },
         ownerResolution: {

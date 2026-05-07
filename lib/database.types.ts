@@ -560,6 +560,7 @@ export type Database = {
         Row: {
           admin_type: string | null
           avatar_url: string | null
+          company_name: string | null
           converted_at: string | null
           cpf: string | null
           created_at: string
@@ -584,6 +585,7 @@ export type Database = {
         Insert: {
           admin_type?: string | null
           avatar_url?: string | null
+          company_name?: string | null
           converted_at?: string | null
           cpf?: string | null
           created_at?: string
@@ -608,6 +610,7 @@ export type Database = {
         Update: {
           admin_type?: string | null
           avatar_url?: string | null
+          company_name?: string | null
           converted_at?: string | null
           cpf?: string | null
           created_at?: string
@@ -832,12 +835,13 @@ export type Database = {
           created_at: string | null
           created_by_admin_id: string | null
           id: string
+          is_active: boolean
           link: string | null
           show_until: string | null
           status: string
           target_audience: string
           title: string
-          type: string
+          type: "info" | "warning" | "maintenance" | "feature"
           views: number | null
         }
         Insert: {
@@ -846,12 +850,13 @@ export type Database = {
           created_at?: string | null
           created_by_admin_id?: string | null
           id?: string
+          is_active?: boolean
           link?: string | null
           show_until?: string | null
           status?: string
           target_audience?: string
           title: string
-          type?: string
+          type?: "info" | "warning" | "maintenance" | "feature"
           views?: number | null
         }
         Update: {
@@ -859,12 +864,13 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_active?: boolean
           link?: string | null
           show_until?: string | null
           status?: string
           target_audience?: string
           title?: string
-          type?: string
+          type?: "info" | "warning" | "maintenance" | "feature"
           views?: number | null
         }
         Relationships: []
@@ -916,6 +922,107 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      admin_activity_log: {
+        Row: {
+          action: string
+          admin_id: string
+          changes: Json | null
+          created_at: string
+          id: string
+          target_id: string | null
+          target_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id?: string | null
+          target_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id?: string | null
+          target_type?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_activity_log_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          name: string
+          target_audience: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name: string
+          target_audience?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name?: string
+          target_audience?: string | null
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          limits: Json | null
+          name: string
+          price: Json | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          limits?: Json | null
+          name: string
+          price?: Json | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          limits?: Json | null
+          name?: string
+          price?: Json | null
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -113,7 +113,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
     const mockNotif: Notification = {
       id: Date.now().toString(),
-      user_id: user?.id || 'uid',
+      user_id: String(user?.id || 'uid'),
       title: titles[random],
       message: messages[random],
       type: 'system',

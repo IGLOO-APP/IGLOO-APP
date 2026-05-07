@@ -14,6 +14,8 @@ export const tenantService = {
           status,
           monthly_value,
           payment_day,
+          start_date,
+          end_date,
           property:properties(id, name)
         )
       `)
@@ -41,7 +43,7 @@ export const tenantService = {
         phone: t.phone || '',
         cpf: t.cpf,
         image: t.avatar_url,
-        status: activeContract?.status || 'active',
+        status: (activeContract?.status === 'late' ? 'late' : activeContract?.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'late' | 'inactive',
         is_pending: t.is_pending,
         property: property?.name || 'NÃO VINCULADO',
         property_id: property?.id,
@@ -49,7 +51,9 @@ export const tenantService = {
           id: activeContract.id,
           monthly_value: activeContract.monthly_value,
           status: activeContract.status || 'active',
-          payment_day: activeContract.payment_day ?? undefined
+          payment_day: activeContract.payment_day ?? undefined,
+          start_date: activeContract.start_date || '',
+          end_date: activeContract.end_date || ''
         } : undefined
       };
     });
@@ -91,20 +95,23 @@ export const tenantService = {
       name: t.name || 'Sem Nome',
       email: t.email,
       phone: t.phone || '',
-      cpf: t.cpf,
-      image: t.avatar_url,
-      status: activeContract?.status || 'active',
-      is_pending: t.is_pending,
+      cpf: t.cpf || undefined,
+      image: t.avatar_url || undefined,
+      status: (activeContract?.status === 'late' ? 'late' : activeContract?.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'late' | 'inactive',
+      is_pending: t.is_pending ?? undefined,
       property: property?.name || (activeContract ? 'Imóvel sem nome' : 'Imóvel não vinculado'),
       property_id: property?.id,
       property_address: property?.address,
-      property_image: property?.image_url,
+      property_image: property?.image_url || undefined,
       property_details: property ? {
-        bedrooms: property.bedrooms,
-        bathrooms: property.bathrooms,
-        area: property.area,
-        parking: property.parking_spaces,
-        price: property.price
+        name: property.name,
+        address: property.address,
+        image_url: property.image_url || '',
+        bedrooms: property.bedrooms ?? undefined,
+        bathrooms: property.bathrooms ?? undefined,
+        area: property.area ? `${property.area}` : undefined,
+        parking: property.parking ?? undefined,
+        price: property.price ? `R$ ${property.price.toLocaleString('pt-BR')}` : undefined
       } : undefined,
       contract: activeContract ? {
         id: activeContract.id,

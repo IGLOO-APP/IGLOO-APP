@@ -56,7 +56,7 @@ const PlanManager: React.FC = () => {
     if (!editingPlan || !editingPlan.id) return;
 
     // Upsert to Supabase
-    const { error } = await supabase.from('plans').upsert({
+    const { error } = await (supabase.from('plans') as any).upsert({
       id: editingPlan.id,
       name: editingPlan.name,
       description: editingPlan.description,

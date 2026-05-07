@@ -22,12 +22,21 @@ export const financeService = {
       .order('date', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(this.mapTransaction);
   },
 
-  /**
-   * Creates a new transaction.
-   */
+  mapTransaction(t: any): FinancialTransaction {
+    return {
+      ...t,
+      property_id: t.property_id || undefined,
+      category: t.category || 'Geral',
+      description: t.description || '',
+      attachment_url: t.attachment_url || undefined,
+      hasAttachment: !!t.attachment_url,
+      is_recurring: t.is_recurring ?? false
+    };
+  },
+
   async create(transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>): Promise<FinancialTransaction> {
     const { data, error } = await supabase
       .from('financial_transactions')
@@ -36,7 +45,7 @@ export const financeService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return this.mapTransaction(data);
   },
 
   /**
@@ -51,7 +60,7 @@ export const financeService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return this.mapTransaction(data);
   },
 
   /**

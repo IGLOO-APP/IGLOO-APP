@@ -45,7 +45,7 @@ const AdminProfile: React.FC = () => {
           avatar_url: avatar,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user?.id);
+        .eq('id', String(user?.id ?? ''));
 
       if (error) throw error;
     },

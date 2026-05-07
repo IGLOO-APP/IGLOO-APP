@@ -149,7 +149,7 @@ const Settings: React.FC = () => {
       const publicUrl = await storageService.uploadFile('avatars', fileName, file);
 
       if (publicUrl) {
-        await profileService.update(user.id, { avatar_url: publicUrl });
+        await profileService.update(String(user.id), { avatar_url: publicUrl });
         setProfileData(prev => ({ ...prev, avatarUrl: publicUrl }));
       }
     } catch (err) {
@@ -212,7 +212,7 @@ const Settings: React.FC = () => {
     setIsSaving(true);
     try {
       const { profileService } = await import('../services/profileService');
-      await profileService.update(user.id, {
+      await profileService.update(String(user.id), {
         name: profileData.name,
         phone: profileData.phone,
         company_name: profileData.companyName,
@@ -1099,7 +1099,7 @@ const Settings: React.FC = () => {
                   .filter((p) => p.id !== 'free')
                   .map((plan) => {
                     const pricing = subscriptionService.calculateTotal(
-                      plan.id,
+                      plan.id as PlanTier,
                       selectedBillingCycle
                     );
                     const isCurrent = subscription?.planId === plan.id;
@@ -1165,7 +1165,7 @@ const Settings: React.FC = () => {
                         </div>
 
                         <button
-                          onClick={() => !isCurrent && selectPlan(plan.id)}
+                          onClick={() => !isCurrent && selectPlan(plan.id as PlanTier)}
                           disabled={isCurrent}
                           className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
                             isCurrent

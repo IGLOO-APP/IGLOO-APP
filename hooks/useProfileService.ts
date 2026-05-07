@@ -1,4 +1,4 @@
-import { useSupabase } from '../context/SupabaseContext';
+import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -6,7 +6,6 @@ type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
 
 export const useProfileService = () => {
-  const supabase = useSupabase();
 
   return {
     async getById(id: string): Promise<Profile | null> {

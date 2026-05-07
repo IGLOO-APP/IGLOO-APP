@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
 
   const { data: dashboardData, isLoading, isError, error: queryError, refetch } = useQuery({
     queryKey: ['dashboardData', user?.id],
-    queryFn: () => dashboardService.getDashboardData(),
+    queryFn: () => dashboardService.getDashboardData(String(user!.id)),
     enabled: !!user && tokenReady,
     staleTime: 1000 * 60,
     retry: 1,

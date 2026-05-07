@@ -47,7 +47,7 @@ const Announcements: React.FC = () => {
   const loadAnnouncements = async () => {
     try {
       const { list, stats: s } = await adminService.getAnnouncements();
-      setAnnouncements(list || []);
+      setAnnouncements((list as Announcement[]) || []);
       setStats(s);
     } catch (err) {
       console.error(err);

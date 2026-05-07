@@ -231,7 +231,7 @@ const TenantDashboard: React.FC = () => {
           .order('created_at', { ascending: false })
           .limit(2);
         
-        if (annRes) setAnnouncements(annRes);
+        if (annRes) setAnnouncements(annRes as any);
 
         // 4. Fetch Pending Inspection
         if (data?.property_id) {

@@ -308,7 +308,7 @@ const SubscriptionManagement: React.FC = () => {
                       return (
                         <div className='bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-white/10'>
                           <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>{label} 2024</p>
-                          <p className='text-sm font-bold'>R$ {payload[0].value.toLocaleString()}</p>
+                          <p className='text-sm font-bold'>R$ {(payload[0]?.value ?? 0).toLocaleString()}</p>
                         </div>
                       );
                     }

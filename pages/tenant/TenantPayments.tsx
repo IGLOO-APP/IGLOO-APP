@@ -84,9 +84,9 @@ const TenantPayments: React.FC = () => {
           const dDate = new Date(p.due_date);
           return {
             ...p,
-            month: `${monthNames[dDate.getMonth()]} ${dDate.getFullYear()}`,
+            month: p.due_date ? `${monthNames[dDate.getMonth()]} ${dDate.getFullYear()}` : 'N/A',
             breakdown: p.notes?.includes('{') ? JSON.parse(p.notes) : {
-              rent: Number(tData.contract.monthly_value),
+              rent: Number(tData?.contract?.monthly_value || 0),
               condo: 0,
               iptu: 0
             }
@@ -140,7 +140,7 @@ const TenantPayments: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `comprovante_${payment.month.replace(' ', '_')}.pdf`; // Mocked as PDF
+    a.download = `comprovante_${(payment.month || 'pagamento').replace(' ', '_')}.pdf`; // Mocked as PDF
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -158,7 +158,9 @@ const TenantPayments: React.FC = () => {
           ...payment,
           amount: fees.totalPagar,
           breakdown: {
-            ...payment.breakdown,
+            rent: payment.breakdown?.rent || 0,
+            condo: payment.breakdown?.condo || 0,
+            iptu: payment.breakdown?.iptu || 0,
             fine: fees.valorMulta + fees.valorJuros
           }
         };
@@ -380,13 +382,13 @@ const TenantPayments: React.FC = () => {
                 <div className='space-y-1'>
                   <p className='text-xs text-slate-500 flex justify-between w-32'>
                     <span>Aluguel:</span>{' '}
-                    <span className='font-medium'>R$ {payment.breakdown.rent}</span>
+                    <span className='font-medium'>R$ {payment.breakdown?.rent || 0}</span>
                   </p>
                   <p className='text-xs text-slate-500 flex justify-between w-32'>
                     <span>Condomínio:</span>{' '}
                     <span className='font-medium'>R$ {payment.breakdown?.condo || 0}</span>
                   </p>
-                  {payment.breakdown.fine && (
+                  {payment.breakdown?.fine && (
                     <p className='text-xs text-red-500 flex justify-between w-32 font-bold'>
                       <span>Multa/Juros:</span>{' '}
                       <span>R$ {payment.breakdown.fine.toFixed(2)}</span>
@@ -486,7 +488,7 @@ const TenantPayments: React.FC = () => {
                       R$ {Number(selectedPayment.breakdown?.iptu || 0).toFixed(2)}
                     </span>
                   </div>
-                  {selectedPayment.breakdown.fine && (
+                  {selectedPayment.breakdown?.fine && (
                     <div className='flex justify-between text-sm pt-2 border-t border-red-100 dark:border-red-900/20'>
                       <span className='text-red-500 font-bold'>Multa e Juros</span>
                       <span className='font-black text-red-500'>

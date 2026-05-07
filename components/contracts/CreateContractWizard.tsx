@@ -284,7 +284,6 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
       vacantDays: '2 d.',
       visits: 12,
       image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
-      image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
     }
   ];
 

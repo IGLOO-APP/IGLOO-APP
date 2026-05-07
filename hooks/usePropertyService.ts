@@ -1,4 +1,4 @@
-import { useSupabase } from '../context/SupabaseContext';
+import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
 import { Property } from '../types';
 
@@ -56,7 +56,6 @@ const mapProperty = (row: any): Property => ({
 });
 
 export const usePropertyService = () => {
-  const supabase = useSupabase();
 
   return {
     async getAll(): Promise<Property[]> {

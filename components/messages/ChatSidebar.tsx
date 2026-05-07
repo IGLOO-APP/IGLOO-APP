@@ -33,7 +33,7 @@ interface ChatSidebarProps {
   setShowFAQManager: (show: boolean) => void;
   getCategoryIcon: (category: string) => React.ReactNode;
   onNewChat: () => void;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
+  scrollRef: React.RefObject<HTMLDivElement>;
   handleMouseDown: (e: React.MouseEvent) => void;
   handleMouseLeave: () => void;
   handleMouseUp: () => void;

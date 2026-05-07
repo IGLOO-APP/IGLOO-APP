@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Property } from '../../types';
-import { inspectionService, Inspection, Room } from '../../services/inspectionService';
+import { inspectionService, Inspection } from '../../services/inspectionService';
 import { supabase } from '../../lib/supabase';
 
 // --- Types ---
@@ -128,7 +128,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
     setIsLoading(true);
     setSelectedInspection(inspection);
     const data = await inspectionService.getDetails(inspection.id);
-    setInspectionData(data);
+    setInspectionData(data as Room[]);
     setView('detail');
     setIsLoading(false);
   };

@@ -239,7 +239,7 @@ export const dashboardService = {
                     };
                 }),
                 ...properties.map(p => {
-                    const d = new Date(p.updated_at || p.created_at);
+                    const d = new Date(p.updated_at || p.created_at || Date.now());
                     return {
                         id: p.id,
                         type: 'property',

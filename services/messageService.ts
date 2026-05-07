@@ -85,20 +85,20 @@ export const messageService = {
           .single();
 
         const prop = req.properties as any;
-        const profile = profileMap.get(req.tenant_id);
+        const profile = req.tenant_id ? profileMap.get(req.tenant_id) : null;
 
         chats.push({
           id: `maint_${req.id}`,
           dbId: req.id,
           tenantName: profile?.name || 'Inquilino',
-          tenantAvatar: profile?.avatar_url,
-          tenantEmail: profile?.email,
-          tenantPhone: profile?.phone,
+          tenantAvatar: profile?.avatar_url || undefined,
+          tenantEmail: profile?.email || undefined,
+          tenantPhone: profile?.phone || undefined,
           property: prop?.name || 'Imóvel',
           propertyImage: prop?.image_url,
           propertyValue: prop?.price,
           lastMessage: lastMsg?.content || 'Chamado aberto',
-          lastMessageTime: lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
+          lastMessageTime: lastMsg?.created_at ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
           unreadCount: 0,
           category: 'maintenance',
           ticket: {
@@ -120,22 +120,22 @@ export const messageService = {
     if (conversationsRes) {
       for (const conv of conversationsRes) {
         const prop = conv.properties as any;
-        const profile = profileMap.get(conv.tenant_id);
+        const profile = conv.tenant_id ? profileMap.get(conv.tenant_id) : null;
 
         chats.push({
           id: `conv_${conv.id}`,
           dbId: conv.id,
           tenantName: profile?.name || 'Inquilino',
-          tenantAvatar: profile?.avatar_url,
-          tenantEmail: profile?.email,
-          tenantPhone: profile?.phone,
+          tenantAvatar: profile?.avatar_url || undefined,
+          tenantEmail: profile?.email || undefined,
+          tenantPhone: profile?.phone || undefined,
           property: prop?.name || 'Geral',
           propertyImage: prop?.image_url,
           propertyValue: prop?.price,
           lastMessage: conv.last_message || 'Início da conversa',
-          lastMessageTime: new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          lastMessageTime: conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
           unreadCount: conv.unread_count_owner || 0,
-          category: conv.category as any,
+          category: (conv.category || 'general') as any,
           messages: [],
           hasMore: true,
         });
@@ -176,13 +176,13 @@ export const messageService = {
       return [];
     }
 
-    const messages = (data || []).map((m: any) => ({
+    const messages: ChatMessage[] = (data || []).map((m: any) => ({
       id: m.id,
       text: m.content,
-      sender: m.sender_role === 'owner' ? 'me' : m.sender_role === 'system' ? 'system' : 'tenant',
+      sender: (m.sender_role === 'owner' ? 'me' : m.sender_role === 'system' ? 'system' : 'tenant') as 'me' | 'tenant' | 'system',
       time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isRead: m.is_read || true,
-      type: m.type || 'text',
+      type: (m.type || 'text') as 'text' | 'image' | 'system',
       created_at: m.created_at
     }));
 
@@ -287,7 +287,7 @@ export const messageService = {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, name, avatar_url, email')
-        .in('id', tenantIds);
+        .in('id', tenantIds as string[]);
 
       if (profilesError) {
         console.error('Error fetching tenant profiles:', profilesError);

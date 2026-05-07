@@ -18,6 +18,7 @@ export const OnboardingChecklist: React.FC<OnboardingProps> = ({ onboarding, var
   const steps: {
     id: number;
     title: string;
+    originalTitle: string;
     completed: boolean;
     actionLabel: string;
     onClick: () => void;

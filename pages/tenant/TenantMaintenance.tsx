@@ -27,6 +27,7 @@ import {
   ChevronUp,
   CheckCheck,
   Paperclip,
+  Loader2,
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { tenantService } from '../../services/tenantService';
@@ -59,6 +60,8 @@ interface MaintenanceRequest {
   date: string;
   status: 'pending' | 'in_progress' | 'completed' | 'open' | 'resolved';
   description: string;
+  created_at: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   messages: MaintenanceMessage[];
   timeline: TimelineEvent[];
   lastResponseDate?: string;

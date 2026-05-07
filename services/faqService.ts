@@ -10,11 +10,22 @@ export const faqService = {
         .order('order', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return (data || []).map(this.mapFAQ);
     } catch (e) {
       console.error('Error fetching FAQs:', e);
       return [];
     }
+  },
+
+  mapFAQ(f: any): FAQ {
+    return {
+      id: f.id,
+      question: f.question,
+      answer: f.answer,
+      order: f.order || 0,
+      is_active: f.is_active ?? true,
+      created_at: f.created_at
+    };
   },
 
   async getActiveFAQs(): Promise<FAQ[]> {
@@ -23,7 +34,7 @@ export const faqService = {
       .select('*')
       .eq('is_active', true)
       .order('order', { ascending: true });
-    return data || [];
+    return (data || []).map(this.mapFAQ);
   },
 
   async addFAQ(faq: Omit<FAQ, 'id' | 'created_at'>): Promise<FAQ> {
@@ -34,7 +45,7 @@ export const faqService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return faqService.mapFAQ(data);
   },
 
   async updateFAQ(id: string, updates: Partial<FAQ>): Promise<FAQ> {
@@ -46,7 +57,7 @@ export const faqService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return faqService.mapFAQ(data);
   },
 
   async deleteFAQ(id: string) {

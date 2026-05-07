@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRouteError, useNavigate, clinicalError, isRouteErrorResponse } from 'react-router-dom';
+import { useRouteError, useNavigate, isRouteErrorResponse } from 'react-router-dom';
 import { AlertCircle, RefreshCw, Home, ChevronLeft } from 'lucide-react';
 
 const GlobalErrorElement: React.FC = () => {

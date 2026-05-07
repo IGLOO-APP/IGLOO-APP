@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, PlanTier } from '../../types';
+import { User, PlanTier } from '../../../types';
 import { X, DollarSign, RefreshCcw, Loader, CreditCard, Wallet } from 'lucide-react';
 
 interface RefundModalProps {
