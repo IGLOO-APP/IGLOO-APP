@@ -869,6 +869,54 @@ export type Database = {
         }
         Relationships: []
       }
+      signature_audits: {
+        Row: {
+          contract_id: string
+          created_at: string
+          document_hash: string
+          id: string
+          integrity_verified: boolean | null
+          signature_image_url: string | null
+          signer_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          document_hash: string
+          id?: string
+          integrity_verified?: boolean | null
+          signature_image_url?: string | null
+          signer_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          document_hash?: string
+          id?: string
+          integrity_verified?: boolean | null
+          signature_image_url?: string | null
+          signer_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_audits_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_audits_signer_id_fkey"
+            columns: ["signer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

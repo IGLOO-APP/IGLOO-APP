@@ -7,7 +7,7 @@ export const generateFilledContract = (template: string, data: Record<string, an
   // Regex para encontrar padrões {{chave}} globalmente
   const regex = /{{(.*?)}}/g;
 
-  return template.replace(regex, (match, key) => {
+  return template.replace(regex, (_, key) => {
     // Remove espaços em branco extras da chave (ex: {{ nome }} virar nome)
     const cleanKey = key.trim();
 

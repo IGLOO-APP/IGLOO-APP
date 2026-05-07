@@ -48,8 +48,8 @@ export const tenantService = {
         contract: activeContract ? {
           id: activeContract.id,
           monthly_value: activeContract.monthly_value,
-          status: activeContract.status,
-          payment_day: activeContract.payment_day
+          status: activeContract.status || 'active',
+          payment_day: activeContract.payment_day ?? undefined
         } : undefined
       };
     });
@@ -108,12 +108,12 @@ export const tenantService = {
       } : undefined,
       contract: activeContract ? {
         id: activeContract.id,
-        contract_number: activeContract.contract_number,
+        contract_number: activeContract.contract_number ?? undefined,
         start_date: activeContract.start_date,
         end_date: activeContract.end_date,
         monthly_value: activeContract.monthly_value,
-        status: activeContract.status,
-        payment_day: activeContract.payment_day
+        status: activeContract.status || 'active',
+        payment_day: activeContract.payment_day ?? undefined
       } : undefined
     };
   },
@@ -214,7 +214,7 @@ export const tenantService = {
             category: doc.category,
             type: doc.type,
             size: doc.size || '0 KB',
-            date: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+            date: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : 'N/A',
             status: doc.status,
             url: doc.url
           });

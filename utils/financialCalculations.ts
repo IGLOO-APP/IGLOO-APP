@@ -29,7 +29,7 @@ export const calculateCarneLeao = (transactions: RentalTransaction[]) => {
   // Deduction per dependent (Hypothetical 2026 value updated from 2024)
   const deducaoPorDependente = 189.59;
   // Apply dependent deduction if any
-  // totalTributavel -= (transactions[0]?.dependentes || 0) * deducaoPorDependente;
+  totalTributavel -= (transactions[0]?.dependentes || 0) * deducaoPorDependente;
 
   // Tabela Progressiva Mensal (Vigente 2024/2025 - MP 1206/24)
   let aliquota = 0;

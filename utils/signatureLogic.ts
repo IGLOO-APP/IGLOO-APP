@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import { SignatureAudit } from '../types';
 
 /**
  * Simulates SHA-256 Hashing of a file or string.

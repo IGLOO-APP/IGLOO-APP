@@ -295,8 +295,8 @@ export const adminService = {
       const conversionTimes = data
         .filter(u => u.trial_started_at && u.converted_at)
         .map(u => {
-          const start = new Date(u.trial_started_at).getTime();
-          const end = new Date(u.converted_at).getTime();
+          const start = new Date(u.trial_started_at!).getTime();
+          const end = new Date(u.converted_at!).getTime();
           return (end - start) / (1000 * 60 * 60 * 24); // days
         });
 
@@ -316,13 +316,13 @@ export const adminService = {
 
         const trials = data.filter(u => {
           if (!u.trial_started_at) return false;
-          const d = new Date(u.trial_started_at);
+          const d = new Date(u.trial_started_at!);
           return d >= weekStart && d <= weekEnd;
         }).length;
 
         const conversions = data.filter(u => {
           if (!u.converted_at) return false;
-          const d = new Date(u.converted_at);
+          const d = new Date(u.converted_at!);
           return d >= weekStart && d <= weekEnd;
         }).length;
 
