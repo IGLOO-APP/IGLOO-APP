@@ -84,7 +84,9 @@ export const profileService = {
     }
 
     // 3. Create a brand new profile if none found
-    const ADMIN_EMAILS = ['kitnetpro@gmail.com', 'reginaldo.ro@gmail.com', 'admin@teste.com'];
+    // Admin emails carregados da variável de ambiente (nunca hardcoded no bundle)
+    const adminEmailsRaw = import.meta.env.VITE_ADMIN_EMAILS || '';
+    const ADMIN_EMAILS = adminEmailsRaw.split(',').map((e: string) => e.trim()).filter(Boolean);
     const isAdminEmail = user.email && ADMIN_EMAILS.includes(user.email);
 
     const payload: ProfileInsert = {

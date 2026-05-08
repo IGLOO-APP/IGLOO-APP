@@ -59,8 +59,8 @@ export const usePropertyService = () => {
 
   return {
     async getAll(): Promise<Property[]> {
-      // Immediate fallback for Dev Mode to avoid hanging on connection issues
-      if (localStorage.getItem('igloo_dev_session')) {
+      // Modo dev: retorna dados mockados apenas em ambiente de desenvolvimento
+      if (import.meta.env.DEV && localStorage.getItem('igloo_dev_session')) {
         return [
           {
             id: 'p1',
@@ -99,6 +99,8 @@ export const usePropertyService = () => {
       }
 
       if (!data || data.length === 0) {
+        // Retorna demo apenas em desenvolvimento, nunca em produção
+        if (!import.meta.env.DEV) return [];
         return [
           {
             id: 'p1',

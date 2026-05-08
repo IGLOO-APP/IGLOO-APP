@@ -73,17 +73,26 @@ export const messageService = {
 
       const chats: ChatThread[] = [];
 
-    // Map Maintenance
-    if (maintenanceRes) {
-      for (const req of maintenanceRes) {
-        const { data: lastMsg } = await supabase
-          .from('maintenance_messages')
-          .select('*')
-          .eq('request_id', req.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+      // Map Maintenance
+    if (maintenanceRes && maintenanceRes.length > 0) {
+      // CORREÇÃO N+1: busca todas as últimas mensagens de uma vez só
+      const requestIds = maintenanceRes.map(r => r.id);
+      const { data: allMessages } = await supabase
+        .from('maintenance_messages')
+        .select('*')
+        .in('request_id', requestIds)
+        .order('created_at', { ascending: false });
 
+      // Agrupar por request_id e pegar apenas a primeira (mais recente)
+      const lastMsgMap = new Map<string, any>();
+      (allMessages || []).forEach(msg => {
+        if (!lastMsgMap.has(msg.request_id)) {
+          lastMsgMap.set(msg.request_id, msg);
+        }
+      });
+
+      for (const req of maintenanceRes) {
+        const lastMsg = lastMsgMap.get(req.id) ?? null;
         const prop = req.properties as any;
         const profile = req.tenant_id ? profileMap.get(req.tenant_id) : null;
 

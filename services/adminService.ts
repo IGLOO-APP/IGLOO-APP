@@ -1,6 +1,17 @@
 import { supabase } from '../lib/supabase';
 import { User, AdminActivityLog, SupportTicket } from '../types';
 
+// ID do admin atualmente autenticado (setado pelo AuthContext)
+let _currentAdminId: string = 'system';
+
+/**
+ * Define o ID do admin logado para ser usado nos logs de atividade.
+ * Deve ser chamado no AuthContext quando o usuário admin fizer login.
+ */
+export const setCurrentAdminId = (id: string) => {
+  _currentAdminId = id || 'system';
+};
+
 export const adminService = {
   // --- User Management ---
 
@@ -144,9 +155,9 @@ export const adminService = {
 
   // --- Logs ---
 
-  async logActivity(action: string, targetType: string, targetId?: string, changes?: any, adminId: string = 'system') {
+  async logActivity(action: string, targetType: string, targetId?: string, changes?: any, adminId?: string) {
     await supabase.from('admin_activity_log').insert({
-      admin_id: adminId,
+      admin_id: adminId || _currentAdminId, // usa o admin rastreado globalmente
       action,
       target_type: targetType,
       target_id: targetId,

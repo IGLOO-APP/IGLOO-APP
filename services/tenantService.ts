@@ -144,7 +144,7 @@ export const tenantService = {
     // para disparar um e-mail oficial de convite.
     // Por enquanto, registramos o perfil como pendente no banco.
     const { error } = await supabase.from('profiles').insert({
-      id: `pending_${crypto.randomUUID()}`,
+      id: crypto.randomUUID(), // UUID válido — is_pending=true diferencia do ativo
       email: tenantData.email,
       name: tenantData.name,
       role: 'tenant',

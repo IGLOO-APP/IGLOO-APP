@@ -40,8 +40,29 @@ export const contractService = {
     return data.map(mapContract);
   },
 
+  async getById(id: string): Promise<Contract | null> {
+    const { data, error } = await supabase
+      .from('contracts')
+      .select(
+        `
+                *,
+                properties:property_id(name),
+                profiles_tenant:tenant_id(name, email),
+                profiles_owner:owner_id(name)
+            `
+      )
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching contract:', error);
+      return null;
+    }
+
+    return mapContract(data);
+  },
+
   async create(ownerId: string, contractData: any): Promise<void> {
-    // Transform UI data to DB data
     const payload = {
       contract_number: `CTR-${Date.now()}`,
       owner_id: ownerId,
@@ -55,10 +76,43 @@ export const contractService = {
       ).toISOString(),
       monthly_value: parseFloat(contractData.rentValue),
       status: 'draft',
-      payment_day: 10,
+      // Usa o valor fornecido pelo usuário, com fallback para dia 10
+      payment_day: parseInt(contractData.paymentDay) || 10,
     };
 
     const { error } = await supabase.from('contracts').insert(payload);
     if (error) throw error;
+  },
+
+  async update(id: string, updates: {
+    monthly_value?: number;
+    end_date?: string;
+    payment_day?: number;
+    status?: string;
+    pdf_url?: string;
+    signers?: any[];
+    history?: any[];
+  }): Promise<void> {
+    const { error } = await supabase
+      .from('contracts')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating contract:', error);
+      throw error;
+    }
+  },
+
+  async updateStatus(id: string, status: 'draft' | 'active' | 'expired' | 'terminated'): Promise<void> {
+    await contractService.update(id, { status });
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase.from('contracts').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting contract:', error);
+      throw error;
+    }
   },
 };

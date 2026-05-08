@@ -46,7 +46,7 @@ import { useNavigate } from 'react-router-dom';
 import { tenantConfigService } from '../../services/tenantConfigService';
 
 interface TenantDetailsProps {
-  id: number | string;
+  id: string;
   onClose: () => void;
 }
 
@@ -64,7 +64,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     }
   }, [activeTab]);
 
-  const tenantId = typeof id === 'string' ? id : id?.toString();
+  const tenantId = id;
 
   const { data: tenant, isLoading, error } = useQuery({
     queryKey: ['tenant', tenantId],
@@ -90,6 +90,31 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   });
 
   const financialSummary = calculateTenantFinancials(payments);
+
+  const tenantInsight = React.useMemo(() => {
+    const rate = financialSummary.punctualityRate;
+    const isLate = financialSummary.isLate;
+    const daysLate = financialSummary.daysLate;
+    const maintenanceCount = maintenance.length;
+    const openMaintenance = maintenance.filter((m: any) => m.status !== 'completed').length;
+
+    if (rate === 100 && maintenanceCount === 0) {
+      return { score: 'A+', color: 'text-emerald-600 dark:text-emerald-400', text: 'Inquilino sem ocorrências e com histórico de pagamentos perfeito. Perfil de risco zero — ideal para renovação antecipada.' };
+    }
+    if (rate >= 90 && !isLate) {
+      return { score: 'A', color: 'text-emerald-600 dark:text-emerald-400', text: `Pontualidade de ${rate}% — acima da média. ${openMaintenance > 0 ? `${openMaintenance} chamado(s) aberto(s). ` : ''}Perfil de baixo risco para renovação.` };
+    }
+    if (rate >= 70 && !isLate) {
+      return { score: 'B', color: 'text-blue-600 dark:text-blue-400', text: `Pontualidade de ${rate}%. Pagamentos geralmente em dia. ${maintenanceCount > 2 ? 'Frequência de manutenção acima do esperado — verifique as causas.' : ''}` };
+    }
+    if (isLate && daysLate > 30) {
+      return { score: 'D', color: 'text-red-600 dark:text-red-400', text: `Pagamento em atraso há ${daysLate} dias. Atenção: risco elevado de inadimplência. Considere acionar o fiador ou iniciar negociação.` };
+    }
+    if (isLate) {
+      return { score: 'C', color: 'text-amber-600 dark:text-amber-400', text: `Pagamento em atraso (${daysLate} dia${daysLate !== 1 ? 's' : ''}). Pontualidade histórica de ${rate}%. Acompanhe de perto o próximo vencimento.` };
+    }
+    return { score: 'B+', color: 'text-blue-600 dark:text-blue-400', text: `Pontualidade de ${rate}%. Sem atrasos no momento. ${maintenanceCount > 0 ? `${maintenanceCount} chamado(s) de manutenção registrado(s).` : ''}` };
+  }, [financialSummary, maintenance]);
 
   const tenantRequirements = React.useMemo(() => {
     if (!tenant?.property_id) return null;
@@ -313,13 +338,15 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/20">
                     <Sparkles size={20} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">IGLOO Insight AI</h4>
-                      <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-[8px] font-black text-indigo-600 dark:text-indigo-400 uppercase">Beta</span>
+                      <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">IGLOO Insight</h4>
+                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wide ${tenantInsight.color} bg-current/10`}>
+                        Score {tenantInsight.score}
+                      </span>
                     </div>
                     <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                      Inquilino com <span className="text-indigo-600 dark:text-indigo-400 font-black">Score A+</span>. Demonstra alto índice de conservação do patrimônio e pontualidade exemplar nos últimos ciclos. Recomendação: Perfil de baixa manutenção.
+                      {tenantInsight.text}
                     </p>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser, useAuth as useClerkAuth, useSession } from '@clerk/clerk-react';
 import { profileService } from '../services/profileService';
 import { setSupabaseToken } from '../lib/supabase';
+import { setCurrentAdminId } from '../services/adminService';
 import { User, UserRole } from '../types';
 
 interface AuthContextType {
@@ -114,6 +115,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           property_id: (profile as any).property_id,
         } as User;
         setUser(userData);
+        // Registra o admin ID para auditoria nos logs de atividade
+        if (userData.role === 'admin') {
+          setCurrentAdminId(String(userData.id));
+        }
       }
     } catch (error) {
       console.error('Error loading user profile from Supabase:', error);

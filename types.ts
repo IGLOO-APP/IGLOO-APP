@@ -2,7 +2,7 @@ export type UserRole = 'owner' | 'tenant' | 'admin';
 export type AdminType = 'super' | 'support' | 'finance' | 'content';
 
 export interface User {
-  id: string | number;
+  id: string; // Clerk always returns string IDs
   name: string;
   email: string;
   role: UserRole;
@@ -18,7 +18,7 @@ export interface User {
 }
 
 export interface Tenant {
-  id: number | string;
+  id: string; // Clerk/Supabase UUID always string
   name: string;
   email: string;
   phone: string;
@@ -92,7 +92,7 @@ export interface ContractHistoryEvent {
 }
 
 export interface Contract {
-  id: number | string;
+  id: string;
   contract_number: string;
   property: string; // Property Name/Address
   tenant_name: string;
@@ -123,7 +123,7 @@ export interface Contract {
 }
 
 export interface Property {
-  id: number | string;
+  id: string;
   name: string;
   address: string;
   status: 'DISPONÍVEL' | 'ALUGADO' | 'MANUTENÇÃO';
