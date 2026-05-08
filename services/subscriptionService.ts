@@ -225,7 +225,7 @@ export const subscriptionService = {
           subscription_expires_at: periodEnd,
         })
         .eq('id', userId)
-        .then(({ error }) => {
+        .then(({ error }: any) => {
           if (error) console.warn('[subscriptionService] Sync Supabase falhou:', error.message);
         });
     }
@@ -253,7 +253,7 @@ export const subscriptionService = {
       (supabase.from('profiles') as any)
         .update({ subscription_status: 'canceled' })
         .eq('id', userId)
-        .then(({ error }) => {
+        .then(({ error }: any) => {
           if (error) console.warn('[subscriptionService] Sync cancelamento falhou:', error.message);
         });
     }
