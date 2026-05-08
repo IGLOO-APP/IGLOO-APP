@@ -86,7 +86,7 @@ export const ChatSidebar = React.memo(({
           </div>
         </div>
 
-        <div className='flex gap-2 mb-4'>
+        <div className='flex gap-2 mb-2'>
            <div className='relative flex-1'>
             <input
               type='text'
@@ -99,11 +99,68 @@ export const ChatSidebar = React.memo(({
           </div>
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className={`w-11 h-11 flex items-center justify-center rounded-2xl transition-all ${showAdvancedFilters ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
+            className={`w-11 h-11 flex items-center justify-center rounded-2xl transition-all ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
           >
             <Filter size={18} />
           </button>
         </div>
+
+        {showAdvancedFilters && (
+          <div className='p-4 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 space-y-4 animate-slideDown mb-4'>
+            <div className='space-y-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Prioridade
+              </label>
+              <div className='relative'>
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                  style={{ colorScheme: 'dark' }}
+                >
+                  <option value='all'>Todas as Prioridades</option>
+                  <option value='urgent'>Urgente</option>
+                  <option value='high'>Alta</option>
+                  <option value='medium'>Média</option>
+                  <option value='low'>Baixa</option>
+                </select>
+                <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Imóvel
+              </label>
+              <div className='relative'>
+                <select
+                  value={propertyFilter}
+                  onChange={(e) => setPropertyFilter(e.target.value)}
+                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                  style={{ colorScheme: 'dark' }}
+                >
+                  <option value='all'>Todos os Imóveis</option>
+                  {Array.from(new Set(chats.map(c => c.property))).map(prop => (
+                    <option key={prop} value={prop}>{prop}</option>
+                  ))}
+                </select>
+                <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => {
+                setPriorityFilter('all');
+                setPropertyFilter('all');
+                setActiveFilter('all');
+                setSearchTerm('');
+              }}
+              className='w-full py-2.5 text-[10px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-widest'
+            >
+              Limpar Filtros
+            </button>
+          </div>
+        )}
 
         {/* Categories Navigation - Mobile Sticky Style */}
         <div 
