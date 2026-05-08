@@ -5,7 +5,13 @@ import { useTheme } from '../../hooks/useTheme';
 
 const TenantSettings: React.FC = () => {
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
+  const theme = isDark ? 'dark' : 'light';
+  const setTheme = (val: string) => {
+    if ((val === 'dark' && !isDark) || (val === 'light' && isDark)) {
+      toggleTheme();
+    }
+  };
   const [saved, setSaved] = useState(false);
 
   const [notifications, setNotifications] = useState({

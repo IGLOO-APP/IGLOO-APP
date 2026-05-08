@@ -125,9 +125,9 @@ export const subscriptionService = {
   getCurrentSubscription: async (userId?: string): Promise<Subscription> => {
     if (userId) {
       try {
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase
           .from('profiles')
-          .select('subscription_plan, subscription_status, subscription_expires_at')
+          .select('subscription_plan, subscription_status, subscription_expires_at') as any)
           .eq('id', userId)
           .single();
 
@@ -218,13 +218,12 @@ export const subscriptionService = {
 
     // Tenta sincronizar com Supabase (best-effort, não bloqueia o fluxo)
     if (userId) {
-      supabase
-        .from('profiles')
+      (supabase.from('profiles') as any)
         .update({
           subscription_plan: planId,
           subscription_status: 'active',
           subscription_expires_at: periodEnd,
-        } as any)
+        })
         .eq('id', userId)
         .then(({ error }) => {
           if (error) console.warn('[subscriptionService] Sync Supabase falhou:', error.message);
@@ -251,9 +250,8 @@ export const subscriptionService = {
     saveToStorage(SUBSCRIPTION_KEY, currentSubscription);
 
     if (userId) {
-      supabase
-        .from('profiles')
-        .update({ subscription_status: 'canceled' } as any)
+      (supabase.from('profiles') as any)
+        .update({ subscription_status: 'canceled' })
         .eq('id', userId)
         .then(({ error }) => {
           if (error) console.warn('[subscriptionService] Sync cancelamento falhou:', error.message);
