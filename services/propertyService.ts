@@ -1,90 +1,13 @@
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
 import { Property } from '../types';
+import { mapProperty } from '../utils/mappingUtils';
 
-type PropertyRow = Database['public']['Tables']['properties']['Row'];
 type PropertyInsert = Database['public']['Tables']['properties']['Insert'];
 type PropertyUpdate = Database['public']['Tables']['properties']['Update'];
 
-// Helper to map DB row to Frontend Type
-const mapProperty = (row: any): Property => ({
-  id: row.id,
-  name: row.name,
-  address: row.address,
-  status: row.status,
-  price: `R$ ${row.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-  numeric_price: row.price,
-  market_value: row.market_value || 0,
-  area: `${row.area}m²`,
-  image:
-    row.image_url ||
-    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300', // Fallback image
-  bedrooms: row.bedrooms,
-  bathrooms: row.bathrooms,
-  parking: row.parking,
-  status_color:
-    row.status === 'ALUGADO'
-      ? 'text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
-      : row.status === 'MANUTENÇÃO'
-        ? 'text-orange-700 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400'
-        : 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400',
-  // In a real join, we would fetch tenant and contract data
-  tenant: row.contracts?.[0]?.profiles
-    ? {
-        id: row.contracts[0].profiles.id,
-        name: row.contracts[0].profiles.name,
-        email: row.contracts[0].profiles.email,
-        phone: row.contracts[0].profiles.phone || '',
-        status: 'active',
-        image: row.contracts[0].profiles.avatar_url,
-      }
-    : null,
-  contract: row.contracts?.[0]
-    ? {
-        id: row.contracts[0].id,
-        contract_number: row.contracts[0].contract_number || 'N/A',
-        property: row.name,
-        tenant_name: row.contracts[0].profiles?.name || 'N/A',
-        owner_name: 'Você',
-        start_date: new Date(row.contracts[0].start_date).toLocaleDateString('pt-BR'),
-        end_date: new Date(row.contracts[0].end_date).toLocaleDateString('pt-BR'),
-        value: `R$ ${row.contracts[0].monthly_value}`,
-        numeric_value: row.contracts[0].monthly_value,
-        payment_day: row.contracts[0].payment_day,
-        status: row.contracts[0].status,
-        signers: [],
-        history: [],
-      }
-    : null,
-  created_at: row.created_at,
-  updated_at: row.updated_at,
-});
-
 export const propertyService = {
   async getAll(): Promise<Property[]> {
-    // Modo dev: retorna dados mockados apenas em ambiente de desenvolvimento
-    if (import.meta.env.DEV && localStorage.getItem('igloo_dev_session')) {
-      return [
-        {
-          id: 'p1',
-          name: 'Studio Centro 01 (Demo)',
-          address: 'Rua Augusta, 150 - Consolação',
-          status: 'DISPONÍVEL',
-          price: 'R$ 1.800,00',
-          numeric_price: 1800,
-          market_value: 250000,
-          area: '32m²',
-          image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300',
-          bedrooms: 1,
-          bathrooms: 1,
-          parking: 0,
-          status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
-          tenant: null,
-          contract: null,
-        }
-      ] as Property[];
-    }
-
     const { data, error } = await supabase
       .from('properties')
       .select(

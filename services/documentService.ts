@@ -4,14 +4,48 @@ export interface PropertyDocument {
   id: string;
   name: string;
   category: 'Jurídico' | 'Financeiro' | 'Técnico' | 'Outros';
-  size: string;
-  uploadDate: string;
   type: string;
-  status: 'Validado' | 'Pendente' | 'Expirado';
+  size: string;
+  status: 'Validado' | 'Pendente';
+  uploadDate: string;
   url?: string;
 }
 
 export const documentService = {
+  async getByTenant(tenantId: string): Promise<any[]> {
+    const { data: contract, error: contractError } = await supabase
+      .from('contracts')
+      .select('property_id, pdf_url')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (contractError) {
+      console.error('[documentService] Error fetching contract for docs:', contractError);
+    }
+
+    const docs: any[] = [];
+    if (contract?.pdf_url) {
+      docs.push({ 
+        id: 'contract-pdf',
+        name: 'Contrato de Locação', 
+        type: 'PDF', 
+        url: contract.pdf_url, 
+        date: 'Vigente',
+        category: 'Jurídico',
+        status: 'Validado'
+      });
+    }
+
+    const propertyId = contract?.property_id;
+    if (propertyId) {
+      const propertyDocs = await this.getByProperty(propertyId);
+      docs.push(...propertyDocs);
+    }
+
+    return docs;
+  },
+
   async getByProperty(propertyId: string): Promise<PropertyDocument[]> {
     const { data, error } = await supabase
       .from('property_documents')
@@ -20,7 +54,7 @@ export const documentService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching documents:', error);
+      console.error('[documentService] Error fetching property docs:', error);
       return [];
     }
 
@@ -28,31 +62,30 @@ export const documentService = {
       id: doc.id,
       name: doc.name,
       category: doc.category as any,
-      size: doc.size || '0 KB',
-      uploadDate: new Date(doc.created_at || Date.now()).toLocaleDateString('pt-BR'),
       type: doc.type,
-      status: doc.status as any,
-      url: doc.url || undefined
+      size: doc.size || '0 KB',
+      status: (doc.status as any) || 'Pendente',
+      uploadDate: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : 'N/A',
+      url: doc.url
     }));
   },
 
-  async create(propertyId: string, docData: Omit<PropertyDocument, 'id' | 'uploadDate'>): Promise<PropertyDocument | null> {
+  async create(propertyId: string, docData: Partial<PropertyDocument>): Promise<PropertyDocument | null> {
     const { data, error } = await supabase
       .from('property_documents')
       .insert({
         property_id: propertyId,
         name: docData.name,
         category: docData.category,
-        size: docData.size,
         type: docData.type,
-        status: docData.status,
-        url: docData.url
+        size: docData.size,
+        status: docData.status || 'Pendente',
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating document:', error);
+      console.error('[documentService] Error creating doc:', error);
       return null;
     }
 
@@ -60,25 +93,20 @@ export const documentService = {
       id: data.id,
       name: data.name,
       category: data.category as any,
-      size: data.size || '0 KB',
-      uploadDate: new Date(data.created_at || Date.now()).toLocaleDateString('pt-BR'),
       type: data.type,
+      size: data.size || '0 KB',
       status: data.status as any,
+      uploadDate: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : 'N/A',
       url: data.url || undefined
     };
   },
 
   async delete(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('property_documents')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('property_documents').delete().eq('id', id);
     if (error) {
-      console.error('Error deleting document:', error);
+      console.error('[documentService] Error deleting doc:', error);
       return false;
     }
-
     return true;
   }
 };

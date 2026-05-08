@@ -453,14 +453,42 @@ const OwnerMessages: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className='hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-black/20'>
-            <div className='w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-3xl flex items-center justify-center mb-6 text-slate-300'>
-              <MessageSquare size={40} />
+          <div className='hidden md:flex flex-1 flex-col items-center justify-center p-12 text-center bg-slate-50 dark:bg-black/20'>
+            <div className='relative'>
+              <div className='w-24 h-24 bg-white dark:bg-surface-dark rounded-[32px] shadow-2xl flex items-center justify-center mb-8 text-slate-200 dark:text-white/10 ring-1 ring-black/5 dark:ring-white/5'>
+                <MessageSquare size={48} strokeWidth={1.5} />
+              </div>
+              <div className='absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg animate-bounce'>
+                <Plus size={16} strokeWidth={3} />
+              </div>
             </div>
-            <h2 className='text-xl font-bold text-slate-900 dark:text-white mb-2'>Sua Central de Mensagens</h2>
-            <p className='text-slate-500 dark:text-slate-400 max-w-sm'>
-              Selecione uma conversa para começar ou clique no botão "+" para iniciar uma nova conversa com um inquilino.
-            </p>
+            
+            <div className='max-w-md space-y-4'>
+              <h2 className='text-2xl font-black text-slate-900 dark:text-white tracking-tighter'>
+                Central de Mensagens Igloo
+              </h2>
+              <p className='text-sm text-slate-500 dark:text-slate-400 leading-relaxed'>
+                Gerencie todos os seus chamados de manutenção, dúvidas financeiras e conversas gerais em um só lugar. 
+                <span className='block mt-2 font-bold text-slate-900 dark:text-slate-300'>Selecione um chat ao lado para começar.</span>
+              </p>
+            </div>
+
+            <div className='grid grid-cols-2 gap-4 mt-12 w-full max-w-sm'>
+               <div className='p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-left'>
+                  <div className='w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-3'>
+                    <Filter size={16} />
+                  </div>
+                  <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>Filtros Rápidos</p>
+                  <p className='text-xs font-bold text-slate-900 dark:text-white mt-1'>Encontre por categoria</p>
+               </div>
+               <div className='p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-left'>
+                  <div className='w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3'>
+                    <Search size={16} />
+                  </div>
+                  <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>Busca Inteligente</p>
+                  <p className='text-xs font-bold text-slate-900 dark:text-white mt-1'>Busque por imóvel</p>
+               </div>
+            </div>
           </div>
         )}
       </div>

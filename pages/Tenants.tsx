@@ -20,6 +20,7 @@ import {
   Star,
   History,
   CheckCircle,
+  Building2,
 } from 'lucide-react';
 import { TenantDetails } from '../components/tenants/TenantDetails';
 import { BillingModal } from '../components/tenants/BillingModal';
@@ -263,109 +264,125 @@ const Tenants: React.FC = () => {
             <div
               key={t.id}
               onClick={() => setSelectedTenantId(t.id.toString())}
-              className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 hover:border-primary/50 transition-colors duration-200 cursor-pointer overflow-hidden'
+              className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-[24px] border border-gray-100 dark:border-white/5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-pointer overflow-hidden'
             >
               <div className='p-5 flex items-center gap-5'>
-                {/* Minimalist Avatar */}
+                {/* Modern Avatar with Pattern */}
                 <div className='relative shrink-0'>
                   {t.image ? (
                     <div
-                      className='h-12 w-12 rounded-xl bg-cover bg-center grayscale-[0.5] group-hover:grayscale-0 transition-all'
+                      className='h-14 w-14 rounded-2xl bg-cover bg-center grayscale-[0.3] group-hover:grayscale-0 transition-all border-2 border-white dark:border-white/5 shadow-md'
                       style={{ backgroundImage: `url(${t.image})` }}
                     ></div>
                   ) : (
-                    <div className='h-12 w-12 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-lg'>
+                    <div className='h-14 w-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-white/5 dark:to-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-black text-xl shadow-inner relative overflow-hidden'>
+                       <div className="absolute inset-0 opacity-10 pointer-events-none">
+                         <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '12px 12px' }}></div>
+                       </div>
                       {t.name[0]}
                     </div>
                   )}
                 </div>
-
+ 
                 {/* Info Section */}
                 <div className='flex-1 min-w-0'>
-                  <div className='flex items-center justify-between mb-1'>
-                    <h3 className='text-slate-900 dark:text-white text-base font-bold truncate tracking-tight'>
+                  <div className='flex items-center justify-between mb-1.5'>
+                    <h3 className='text-slate-900 dark:text-white text-lg font-black truncate tracking-tight'>
                       {t.name}
                     </h3>
                     
                     {(() => {
                       const status = getPaymentStatus(t);
+                      const isLate = status.type === 'Atrasado';
+                      const isUpcoming = status.type === 'Vencendo';
+                      const isPaid = status.type === 'Liquidado';
+                      const isPending = status.type === 'Pendente';
+
                       return (
-                        <div className='flex items-center gap-1.5'>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
-                            status.type === 'Atrasado' 
-                              ? 'bg-red-500 text-white' 
-                              : status.type === 'Pendente'
+                        <div className='flex items-center gap-2'>
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] shadow-sm ${
+                            isLate 
+                              ? 'bg-rose-500 text-white' 
+                              : isUpcoming
                               ? 'bg-amber-500 text-white'
+                              : isPending
+                              ? 'bg-slate-400 text-white'
                               : 'bg-emerald-500 text-white'
                           }`}>
                             {status.label}
                           </span>
-                          {status.type === 'Pendente' && (
-                            <span 
-                              className='cursor-help flex items-center justify-center w-3 h-3 rounded-full border border-slate-300 dark:border-white/20 text-[8px] font-bold text-slate-400 dark:text-slate-500 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors'
-                              title="Este inquilino já foi convidado, mas ainda não completou o cadastro e a criação de senha no aplicativo."
-                            >
-                              ?
-                            </span>
+                          {isPending && (
+                            <div className="group/help relative">
+                              <span 
+                                className='flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-white/20 text-[9px] font-black text-slate-400 dark:text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all'
+                              >
+                                ?
+                              </span>
+                              <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-900 text-white text-[9px] font-bold rounded-lg opacity-0 group-hover/help:opacity-100 pointer-events-none transition-all z-20 shadow-xl">
+                                Convite enviado, aguardando ativação do locatário.
+                              </div>
+                            </div>
                           )}
                         </div>
                       );
                     })()}
                   </div>
-
-                  <div className='flex items-center gap-2'>
-                    <p className='text-slate-500 dark:text-slate-400 text-[11px] font-medium flex items-center gap-1'>
-                      <Briefcase size={12} />
-                      {t.property || (t as any).contract?.property?.name || 'NÃO VINCULADO'}
-                    </p>
-                    <span className='text-slate-300 dark:text-slate-700'>•</span>
-                    <p className='text-slate-900 dark:text-slate-200 text-[11px] font-bold'>
+ 
+                  <div className='flex items-center gap-3'>
+                    <div className='flex items-center gap-1 text-slate-400 dark:text-slate-500'>
+                      <Building2 size={12} strokeWidth={2.5} />
+                      <p className='text-[10px] font-black uppercase tracking-wider truncate max-w-[120px]'>
+                        {t.property || (t as any).contract?.property?.name || 'NÃO VINCULADO'}
+                      </p>
+                    </div>
+                    <span className='text-slate-300 dark:text-slate-800 font-black'>•</span>
+                    <p className='text-slate-900 dark:text-white text-xs font-black tracking-tight'>
                       R$ {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
-
+ 
                   {/* Clean Actions Area */}
-                  <div className='flex gap-2 mt-4'>
+                  <div className='flex gap-2 mt-5'>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         window.location.href = `/messages?tenantId=${t.id}`;
                       }}
-                      className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
+                      className='h-8 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 active:scale-95 shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
                     >
-                      <MessageCircle size={12} /> Mensagem
+                      <MessageCircle size={12} strokeWidth={2.5} /> Mensagem
                     </button>
                     {(t as any).is_pending ? (
-                      <>
-                        <button
-                          onClick={(e) => handleWhatsAppInvite(e, t)}
-                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
-                        >
-                          <Phone size={12} /> WhatsApp
-                        </button>
-                      </>
+                      <button
+                        onClick={(e) => handleWhatsAppInvite(e, t)}
+                        className='h-8 px-4 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 shadow-md shadow-emerald-500/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                      >
+                        <Phone size={12} strokeWidth={2.5} /> WhatsApp
+                      </button>
                     ) : (
-                      <>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
-                          className='h-7 px-3 rounded bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all flex items-center gap-2 text-[10px] font-bold uppercase'
-                        >
-                          <DollarSign size={12} /> Cobrar
-                        </button>
-                      </>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
+                        className='h-8 px-4 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary active:scale-95 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                      >
+                        <DollarSign size={12} strokeWidth={2.5} /> Cobrar
+                      </button>
                     )}
                   </div>
                 </div>
-
+ 
                 {/* Navigation Indicator */}
-                <div className='shrink-0'>
-                  <ChevronRight className='text-slate-300 dark:text-slate-700 group-hover:text-primary transition-colors' size={20} />
+                <div className='shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all'>
+                  <ChevronRight className='text-primary' size={24} strokeWidth={3} />
                 </div>
               </div>
               
-              {(getPaymentStatus(t).type === 'Atrasado' || t.status === 'late') && (
-                <div className='absolute bottom-0 left-0 right-0 h-1 bg-red-500'></div>
-              )}
+              {/* Context Indicator Line */}
+              {(() => {
+                const status = getPaymentStatus(t);
+                if (status.type === 'Atrasado') return <div className='absolute bottom-0 left-0 right-0 h-1 bg-red-500 shadow-[0_-2px_8px_rgba(239,68,68,0.5)]'></div>;
+                if (status.type === 'Vencendo') return <div className='absolute bottom-0 left-0 right-0 h-1 bg-amber-500 shadow-[0_-2px_8px_rgba(245,158,11,0.5)]'></div>;
+                return null;
+              })()}
             </div>
           ))
         ) : (

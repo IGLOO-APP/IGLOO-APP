@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, LayoutDashboard, FileText, MoreVertical, Paperclip, Send } from 'lucide-react';
+import { ChevronLeft, FileText, Paperclip, Send, X } from 'lucide-react';
 import { ChatThread, ChatMessage } from '../../services/messageService';
 import { MessageBubble } from './MessageBubble';
 
@@ -54,72 +54,64 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           </button>
 
           <div>
-            <div className='flex flex-wrap items-center gap-1.5 md:gap-2'>
-              <h2 className='text-sm md:text-base font-bold text-slate-900 dark:text-white leading-tight truncate max-w-[140px] md:max-w-none'>
+            <div className='flex flex-wrap items-center gap-1.5 md:gap-3'>
+              <h2 className='text-sm md:text-lg font-black text-slate-900 dark:text-white tracking-tighter leading-none truncate max-w-[140px] md:max-w-none'>
                 {activeChat.tenantName}
               </h2>
-              <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                  activeChat.category === 'maintenance'
-                    ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+              <div className='flex items-center gap-1.5'>
+                <span
+                  className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] border ${
+                    activeChat.category === 'maintenance'
+                      ? 'bg-orange-50 border-orange-100 text-orange-600 dark:bg-orange-900/20 dark:border-orange-500/20 dark:text-orange-400'
+                      : activeChat.category === 'finance'
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-500/20 dark:text-emerald-400'
+                        : 'bg-blue-50 border-blue-100 text-blue-600 dark:bg-blue-900/20 dark:border-blue-500/20 dark:text-blue-400'
+                  }`}
+                >
+                  {activeChat.category === 'maintenance'
+                    ? 'Manutenção'
                     : activeChat.category === 'finance'
-                      ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                      : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                }`}
-              >
-                {activeChat.category === 'maintenance'
-                  ? 'Chamado'
-                  : activeChat.category === 'finance'
-                    ? 'Financeiro'
-                    : 'Geral'}
-              </span>
+                      ? 'Financeiro'
+                      : 'Geral'}
+                </span>
+                {activeChat.ticket && (
+                  <span className='text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded border border-slate-200/50 dark:border-white/5'>
+                    #{activeChat.ticket.id}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className='flex items-center gap-2'>
-              <p className='text-xs text-slate-500 dark:text-slate-400'>
+            <div className='flex items-center gap-2 mt-0.5'>
+              <p className='text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
                 {activeChat.property}
               </p>
               {Object.keys(typingUsers).length > 0 && (
-                <span className='text-[10px] text-primary font-bold animate-pulse italic'>
-                  • Digitando...
-                </span>
+                <div className='flex items-center gap-1.5 ml-2'>
+                  <div className='flex gap-0.5'>
+                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]' />
+                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]' />
+                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce' />
+                  </div>
+                  <span className='text-[10px] text-primary font-black uppercase tracking-widest'>
+                    Digitando
+                  </span>
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className='flex gap-2'>
+        <div className='flex items-center gap-2'>
           <button
-            onClick={() => {
-              if (showDetailsPanel && activeRightTab === 'tenant') {
-                setShowDetailsPanel(false);
-              } else {
-                setShowDetailsPanel(true);
-                setActiveRightTab('tenant');
-              }
-            }}
-            className={`p-2 rounded-lg transition-colors ${
-              showDetailsPanel && activeRightTab === 'tenant' 
-                ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' 
+            onClick={() => setShowDetailsPanel(!showDetailsPanel)}
+            className={`p-2 rounded-xl transition-all ${
+              showDetailsPanel 
+                ? 'bg-primary text-white shadow-lg shadow-primary/20' 
                 : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
             }`}
-            title='Mini Dashboard do Inquilino'
+            title='Informações Adicionais'
           >
-            <LayoutDashboard size={20} />
-          </button>
-          {activeChat.ticket && (
-            <button
-              onClick={() => {
-                setShowDetailsPanel(!showDetailsPanel);
-                setActiveRightTab('ticket');
-              }}
-              className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
-              title='Ver detalhes do chamado'
-            >
-              <FileText size={20} />
-            </button>
-          )}
-          <button className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors'>
-            <MoreVertical size={20} />
+            {showDetailsPanel ? <X size={20} /> : <FileText size={20} />}
           </button>
         </div>
       </div>

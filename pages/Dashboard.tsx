@@ -21,7 +21,7 @@ import { PortfolioHealth } from './dashboard/components/PortfolioHealth';
 import { CashFlowChart } from './dashboard/components/CashFlowChart';
 import { WealthEvolutionChart } from './dashboard/components/WealthEvolutionChart';
 import { PropertyPerformance } from './dashboard/components/PropertyPerformance';
-import { PropertyYieldChart } from './dashboard/components/PropertyYieldChart';
+// import { PropertyYieldChart } from './dashboard/components/PropertyYieldChart'; // Unused
 import { ActivityTimeline } from './dashboard/components/ActivityTimeline';
 import { DashboardAIInsights } from './dashboard/components/DashboardAIInsights';
 import { RiskRadar } from './dashboard/components/RiskRadar';
@@ -53,12 +53,6 @@ const Dashboard: React.FC = () => {
     retry: 1,
   });
 
-  const { data: properties = [] } = useQuery({
-    queryKey: ['properties', user?.id],
-    queryFn: () => propertyService.getAll(),
-    enabled: !!user && tokenReady,
-    staleTime: 1000 * 60 * 5,
-  });
   const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -100,7 +94,8 @@ const Dashboard: React.FC = () => {
     topProperties,
     portfolioHealth,
     risks,
-    wealthHistory
+    wealthHistory,
+    properties
   } = dashboardData;
 
   return (
