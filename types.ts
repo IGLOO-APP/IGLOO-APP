@@ -142,6 +142,12 @@ export interface Property {
   galleryImages?: string[];
   created_at?: string;
   updated_at?: string;
+  
+  // Stats added for UI and build stability
+  beds?: number;
+  baths?: number;
+  vacantDays?: number;
+  visits?: number;
 }
 
 // --- SUBSCRIPTION TYPES ---

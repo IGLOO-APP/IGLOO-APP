@@ -8,7 +8,7 @@ interface SidebarProps {
   navItems: any[];
   adminItems: any[];
   user: User | null;
-  impersonatingFrom: string | null;
+  impersonatingFrom: User | null | undefined;
   isDark: boolean;
   toggleTheme: () => void;
   logout: () => void;

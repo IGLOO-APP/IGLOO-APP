@@ -66,7 +66,7 @@ export const documentService = {
       size: doc.size || '0 KB',
       status: (doc.status as any) || 'Pendente',
       uploadDate: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : 'N/A',
-      url: doc.url
+      url: doc.url || undefined
     }));
   },
 
@@ -80,7 +80,7 @@ export const documentService = {
         type: docData.type,
         size: docData.size,
         status: docData.status || 'Pendente',
-      })
+      } as any)
       .select()
       .single();
 

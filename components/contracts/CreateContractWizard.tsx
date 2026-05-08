@@ -741,7 +741,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                             key={tenant.id}
                             onClick={() => {
                               setSelectedTenantId(tenant.id);
-                              setFormData({ ...formData, tenantName: tenant.name, tenantCpf: tenant.cpf });
+                              setFormData({ ...formData, tenantName: tenant.name, tenantCpf: tenant.cpf || '' });
                             }}
                             className={`group p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                               selectedTenantId === tenant.id
