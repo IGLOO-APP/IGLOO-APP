@@ -134,8 +134,12 @@ const Dashboard: React.FC = () => {
               </>
             )}
           </div>
-          <button onClick={() => navigate('/properties', { state: { openAdd: true } })} className='w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform'>
-            <Plus size={20} />
+          <button
+            onClick={() => navigate('/properties', { state: { openAdd: true } })}
+            className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          >
+            <Plus size={18} />
+            <span className='hidden md:inline'>Novo Imóvel</span>
           </button>
         </div>
       </header>
@@ -166,19 +170,21 @@ const Dashboard: React.FC = () => {
                     {properties.slice(0, 5).map((prop) => (
                       <CarouselItem key={prop.id} className="basis-full">
                         <div className="px-1">
-                          <PropertyCard 
-                            property={prop} 
-                            onClick={(p) => navigate(`/properties?id=${p.id}`)} 
-                            viewMode='grid' 
+                          <PropertyCard
+                            property={prop}
+                            onClick={(p) => navigate(`/properties?id=${p.id}`)}
+                            viewMode='grid'
                           />
                         </div>
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <div className="absolute -right-2 -top-12 flex gap-2">
-                    <CarouselPrevious className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
-                    <CarouselNext className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
-                  </div>
+                  {properties.length > 1 && (
+                    <div className="absolute -right-2 -top-12 flex gap-2">
+                      <CarouselPrevious className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
+                      <CarouselNext className="static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10" />
+                    </div>
+                  )}
                 </Carousel>
               ) : (
                 <div onClick={() => navigate('/properties', { state: { openAdd: true } })} className="h-48 flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary transition-all cursor-pointer group">

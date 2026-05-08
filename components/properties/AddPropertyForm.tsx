@@ -439,9 +439,15 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
 
             {/* 4. Características */}
             <section>
-              <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2'>
-                <FileText size={14} /> Características
-              </h3>
+              <div className='flex items-center justify-between mb-4'>
+                <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2'>
+                  <FileText size={14} /> Características
+                </h3>
+                <div className='flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary animate-pulse'>
+                  <ImageIcon size={12} />
+                  <span className='text-[9px] font-black uppercase tracking-widest'>Lembre de subir as fotos</span>
+                </div>
+              </div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <div className='space-y-2'>
                   <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
@@ -484,6 +490,12 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className='mt-4 flex items-center gap-2 text-slate-500 dark:text-slate-400'>
+                <div className='w-1 h-1 rounded-full bg-primary'></div>
+                <p className='text-[10px] font-medium'>
+                  Cada quarto ou banheiro adicionado gera automaticamente um espaço para foto na seção de mídia.
+                </p>
               </div>
             </section>
 

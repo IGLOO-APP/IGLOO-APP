@@ -47,6 +47,9 @@ import {
 import { ContractUploader } from './ContractUploader';
 import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
 import { generateFilledContract } from '../../utils/contractGenerator';
+import { propertyService } from '../../services/propertyService';
+import { tenantService } from '../../services/tenantService';
+import { Property, Tenant } from '../../types';
 
 interface CreateContractWizardProps {
   onClose: () => void;
@@ -242,57 +245,9 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   
-  const mockProperties = [
-    {
-      id: 1,
-      name: 'Studio Centro 01',
-      address: 'Rua Augusta, 150 - Consolação',
-      price: '1.800,00',
-      type: 'Residencial',
-      status: 'Disponível',
-      beds: 1,
-      baths: 1,
-      area: '32m²',
-      vacantDays: '12 d.',
-      visits: 24,
-      image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=400',
-    },
-    {
-      id: 2,
-      name: 'Garden Loft Jardins',
-      address: 'Al. Campinas, 980 - Jardins',
-      price: '4.500,00',
-      type: 'Residencial',
-      status: 'Disponível',
-      beds: 2,
-      baths: 2,
-      area: '85m²',
-      vacantDays: '5 d.',
-      visits: 42,
-      image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=400',
-    },
-    {
-      id: 3,
-      name: 'Kitnet Vila Olímpia',
-      address: 'Rua das Olimpíadas, 45 - V. Olímpia',
-      price: '2.200,00',
-      type: 'Residencial',
-      status: 'Disponível',
-      beds: 1,
-      baths: 1,
-      area: '28m²',
-      vacantDays: '2 d.',
-      visits: 12,
-      image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=400',
-    }
-  ];
-
-  const mockTenants = [
-    { id: 1, name: 'João Silva', cpf: '123.456.789-00', email: 'joao@teste.com', avatar: 'https://i.pravatar.cc/150?u=joao' },
-    { id: 2, name: 'Maria Oliveira', cpf: '987.654.321-11', email: 'maria@teste.com', avatar: 'https://i.pravatar.cc/150?u=maria' },
-    { id: 3, name: 'Carlos Pereira', cpf: '456.789.123-22', email: 'carlos@teste.com', avatar: 'https://i.pravatar.cc/150?u=carlos' },
-    { id: 4, name: 'Ana Costa', cpf: '234.567.890-33', email: 'ana@teste.com', avatar: 'https://i.pravatar.cc/150?u=ana' },
-  ];
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     property: initialProperty || '',
@@ -307,7 +262,26 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
 
   const [tenantSearch, setTenantSearch] = useState('');
   const [showNewTenantForm, setShowNewTenantForm] = useState(false);
-  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [propsData, tenantsData] = await Promise.all([
+          propertyService.getAll(),
+          tenantService.getAll()
+        ]);
+        setProperties(propsData.filter(p => p.status === 'DISPONÍVEL'));
+        setTenants(tenantsData);
+      } catch (error) {
+        console.error('Error fetching data for wizard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const getEndDate = () => {
     const start = new Date(formData.startDate);
@@ -363,7 +337,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   // Auto-generate contract text when entering Step 5
   useEffect(() => {
     if (currentStep === 5 && contractPages.length === 1 && contractPages[0] === '') {
-      const selectedProp = mockProperties.find(p => p.name === formData.property);
+      const selectedProp = properties.find(p => p.name === formData.property);
       
       const dataMap = {
         nome_proprietario: 'Investidor Exemplo', // Mock owner
@@ -582,7 +556,18 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                 </p>
               </div>
               <div className='flex flex-col gap-4'>
-                {mockProperties.map((prop) => (
+                {loading ? (
+                  <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
+                    <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2'></div>
+                    <p className='text-xs font-bold uppercase tracking-widest'>Buscando imóveis...</p>
+                  </div>
+                ) : properties.length === 0 ? (
+                  <div className='text-center py-10 bg-white dark:bg-surface-dark rounded-3xl border border-dashed border-slate-200 dark:border-white/10'>
+                    <Building2 className='mx-auto text-slate-300 mb-2' />
+                    <p className='text-sm font-bold text-slate-500'>Nenhum imóvel disponível encontrado.</p>
+                  </div>
+                ) : (
+                  properties.map((prop) => (
                   <button
                     key={prop.id}
                     onClick={() => {
@@ -688,7 +673,8 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                       )}
                     </div>
                   </button>
-                ))}
+                  )))
+                }
               </div>
             </div>
           )}
@@ -740,11 +726,16 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                       {tenantSearch ? 'Resultados da busca' : 'Inquilinos Recentes'}
                     </p>
                     <div className='grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar'>
-                      {mockTenants
-                        .filter(t => 
-                          t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || 
-                          t.cpf.includes(tenantSearch)
-                        )
+                      {loading ? (
+                        <div className='py-10 text-center'>
+                          <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2'></div>
+                        </div>
+                      ) : (
+                        tenants
+                          .filter(t => 
+                            t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || 
+                            (t.cpf && t.cpf.includes(tenantSearch))
+                          )
                         .map((tenant) => (
                           <button
                             key={tenant.id}
@@ -758,7 +749,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                                 : 'border-white dark:border-white/5 bg-white dark:bg-surface-dark hover:border-slate-100 dark:hover:border-white/10'
                             }`}
                           >
-                            <img src={tenant.avatar} className='w-12 h-12 rounded-full border border-slate-100 dark:border-white/5' alt="" />
+                            <img src={tenant.image || `https://i.pravatar.cc/150?u=${tenant.email}`} className='w-12 h-12 rounded-full border border-slate-100 dark:border-white/5' alt="" />
                             <div className='flex-1'>
                               <h4 className='font-bold text-slate-900 dark:text-white leading-tight'>{tenant.name}</h4>
                               <p className='text-xs text-slate-400 font-medium'>{tenant.cpf} • {tenant.email}</p>
@@ -767,11 +758,11 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                               {selectedTenantId === tenant.id && <div className='w-1.5 h-1.5 bg-white rounded-full' />}
                             </div>
                           </button>
-                        ))
+                          )))
                       }
                       
                       {/* Empty State */}
-                      {mockTenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || t.cpf.includes(tenantSearch)).length === 0 && (
+                      {!loading && tenants.filter(t => t.name.toLowerCase().includes(tenantSearch.toLowerCase()) || (t.cpf && t.cpf.includes(tenantSearch))).length === 0 && (
                         <div className='p-8 text-center bg-slate-50 dark:bg-white/5 rounded-3xl border-2 border-dashed border-slate-200 dark:border-white/10'>
                           <User size={40} className='mx-auto text-slate-300 mb-3' />
                           <p className='text-slate-500 font-bold'>Nenhum inquilino encontrado</p>
@@ -868,7 +859,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                         <div>
                           <p className='text-[10px] font-bold text-slate-400 uppercase'>Aluguel Base</p>
                           <p className='text-2xl font-black text-slate-900 dark:text-white'>
-                            R$ {mockProperties.find(p => p.name === formData.property)?.price || '0,00'}
+                            R$ {properties.find(p => p.name === formData.property)?.price || '0,00'}
                           </p>
                         </div>
                         
@@ -914,10 +905,10 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                         <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black'>
                           Aluguel Negociado
                         </label>
-                        {formData.rentValue !== mockProperties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') && (
+                        {formData.rentValue !== properties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') && (
                           <button 
                             onClick={() => {
-                              const base = mockProperties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') || '0';
+                              const base = properties.find(p => p.name === formData.property)?.price.replace(/\./g, '').replace(',', '.') || '0';
                               setFormData({...formData, rentValue: base});
                             }}
                             className='text-[10px] font-black text-primary flex items-center gap-1 hover:underline'
@@ -1465,7 +1456,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                         <div className='space-y-4'>
                             {/* Integrated Property View */}
                             {(() => {
-                                const prop = mockProperties.find(p => p.name === formData.property);
+                                const prop = properties.find(p => p.name === formData.property);
                                 return (
                                     <div className='p-3 rounded-2xl bg-white dark:bg-black/20 border border-slate-100 dark:border-white/5 shadow-sm group/prop transition-all hover:border-primary/20'>
                                         <div className='flex flex-col gap-3'>
@@ -1552,7 +1543,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
                             <div className='flex items-start gap-4'>
                                 <div className='w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-slate-800 shrink-0'>
                                     <img 
-                                        src={mockProperties.find(p => p.name === formData.property)?.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400'} 
+                                        src={properties.find(p => p.name === formData.property)?.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400'} 
                                         className='w-full h-full object-cover' 
                                         alt="" 
                                     />

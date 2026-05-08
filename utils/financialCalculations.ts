@@ -16,20 +16,46 @@ export interface RentalTransaction {
 }
 
 export const calculateCarneLeao = (transactions: RentalTransaction[]) => {
-  // Filter transactions by month/year if needed, here we assume the array passed is for the target month
+  if (!transactions || transactions.length === 0) {
+    return {
+      totalTributavel: 0,
+      aliquota: 0,
+      impostoDevido: 0,
+      faixa: 'Isento',
+    };
+  }
 
-  let totalTributavel = 0;
+  let totalBruto = 0;
+  let totalDeducoesAdmissiveis = 0;
+  let maxDependentes = 0;
 
+  // Soma todas as transações do período
   transactions.forEach((t) => {
-    const liquido =
-      t.valor_bruto - (t.deducoes.iptu + t.deducoes.condominio + t.deducoes.taxa_administracao);
-    if (liquido > 0) totalTributavel += liquido;
+    totalBruto += t.valor_bruto;
+    
+    // Deduções permitidas (IPTU, Condomínio, Taxa Adm)
+    const deducoesDestaTransacao = 
+      (t.deducoes.iptu || 0) + 
+      (t.deducoes.condominio || 0) + 
+      (t.deducoes.taxa_administracao || 0);
+    
+    totalDeducoesAdmissiveis += deducoesDestaTransacao;
+
+    // Pega o número de dependentes (usamos o máximo encontrado no período como referência do contribuinte)
+    if ((t.dependentes || 0) > maxDependentes) {
+      maxDependentes = t.dependentes || 0;
+    }
   });
 
-  // Deduction per dependent (Hypothetical 2026 value updated from 2024)
+  // Base de Cálculo = Bruto - Deduções de Imóveis
+  let totalTributavel = totalBruto - totalDeducoesAdmissiveis;
+
+  // Dedução por dependente (Valor ref. 2024/2025: R$ 189,59)
   const deducaoPorDependente = 189.59;
-  // Apply dependent deduction if any
-  totalTributavel -= (transactions[0]?.dependentes || 0) * deducaoPorDependente;
+  totalTributavel -= maxDependentes * deducaoPorDependente;
+
+  // Garante que a base não seja negativa
+  totalTributavel = Math.max(0, totalTributavel);
 
   // Tabela Progressiva Mensal (Vigente 2024/2025 - MP 1206/24)
   let aliquota = 0;
@@ -55,9 +81,9 @@ export const calculateCarneLeao = (transactions: RentalTransaction[]) => {
   const impostoDevido = totalTributavel * aliquota - parcelaDeduzir;
 
   return {
-    totalTributavel,
+    totalTributavel: Number(totalTributavel.toFixed(2)),
     aliquota: aliquota * 100,
-    impostoDevido: Math.max(0, impostoDevido),
+    impostoDevido: Math.max(0, Number(impostoDevido.toFixed(2))),
     faixa: aliquota === 0 ? 'Isento' : `${(aliquota * 100).toFixed(1)}%`,
   };
 };

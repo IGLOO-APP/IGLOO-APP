@@ -66,7 +66,7 @@ const Properties: React.FC = () => {
 
   const handleSaveProperty = async (data: any) => {
     if (!user) return;
-    
+
     try {
       await propertyService.create({
         owner_id: String(user.id),
@@ -184,6 +184,13 @@ const Properties: React.FC = () => {
             <p className='text-sm text-slate-500 dark:text-slate-400'>Gestão de propriedades</p>
           </div>
           <div className='flex items-center gap-3'>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+            >
+              <Plus size={18} />
+              <span className='hidden sm:inline'>Novo Imóvel</span>
+            </button>
             <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700'>
               <button
                 onClick={() => setViewMode('list')}
@@ -257,8 +264,8 @@ const Properties: React.FC = () => {
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors ${showAdvancedFilters
-                    ? 'bg-primary/10 border-primary text-primary'
-                    : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'
+                  ? 'bg-primary/10 border-primary text-primary'
+                  : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'
                   }`}
               >
                 <Filter size={20} />
@@ -343,8 +350,8 @@ const Properties: React.FC = () => {
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
                   className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold ${activeFilter === filter
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
-                      : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                    : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
                     }`}
                 >
                   {filter}
@@ -378,21 +385,6 @@ const Properties: React.FC = () => {
                   />
                 ))}
 
-                {/* Creator Card */}
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className={`group relative flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl bg-slate-50/50 dark:bg-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 animate-fadeIn ${
-                    viewMode === 'grid' ? 'aspect-[4/5] p-6' : 'h-[140px] w-full flex-row gap-6 p-4'
-                  }`}
-                >
-                  <div className='w-12 h-12 rounded-2xl bg-white dark:bg-surface-dark shadow-sm border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all group-hover:shadow-md'>
-                    <Plus size={24} strokeWidth={3} />
-                  </div>
-                  <div className={viewMode === 'grid' ? 'mt-4 text-center' : 'text-left'}>
-                    <p className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>Novo Imóvel</p>
-                    <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1'>Adicionar Ativo</p>
-                  </div>
-                </button>
               </div>
             ) : (
               <div className='flex flex-col items-center justify-center py-10 text-center pt-4'>
@@ -413,9 +405,9 @@ const Properties: React.FC = () => {
       )}
 
       {selectedProperty && viewMode === 'list' && (
-        <PropertyDetails 
-          property={selectedProperty} 
-          onClose={() => setSelectedProperty(null)} 
+        <PropertyDetails
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
           onEdit={handleEditProperty}
           onDelete={handleDeleteProperty}
         />
@@ -426,9 +418,9 @@ const Properties: React.FC = () => {
       )}
 
       {editingProperty && (
-        <AddPropertyForm 
-          onClose={() => setEditingProperty(null)} 
-          onSave={handleUpdateProperty} 
+        <AddPropertyForm
+          onClose={() => setEditingProperty(null)}
+          onSave={handleUpdateProperty}
           initialData={{
             nickname: editingProperty.name,
             rentValue: editingProperty.price,

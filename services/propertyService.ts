@@ -62,6 +62,29 @@ const mapProperty = (row: any): Property => ({
 
 export const propertyService = {
   async getAll(): Promise<Property[]> {
+    // Modo dev: retorna dados mockados apenas em ambiente de desenvolvimento
+    if (import.meta.env.DEV && localStorage.getItem('igloo_dev_session')) {
+      return [
+        {
+          id: 'p1',
+          name: 'Studio Centro 01 (Demo)',
+          address: 'Rua Augusta, 150 - Consolação',
+          status: 'DISPONÍVEL',
+          price: 'R$ 1.800,00',
+          numeric_price: 1800,
+          market_value: 250000,
+          area: '32m²',
+          image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300',
+          bedrooms: 1,
+          bathrooms: 1,
+          parking: 0,
+          status_color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 ring-emerald-600/20',
+          tenant: null,
+          contract: null,
+        }
+      ] as Property[];
+    }
+
     const { data, error } = await supabase
       .from('properties')
       .select(
