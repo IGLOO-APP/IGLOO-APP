@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igloo - Modo Offline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b1011;
+            color: #ffffff;
+            font-family: 'Manrope', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .offline-card {
+            background: rgba(20, 27, 29, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #13c8ec;
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #94a3b8;
+        }
+
+        .btn {
+            background-color: #13c8ec;
+            color: #0b1011;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #0fb8d8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(19, 200, 236, 0.2);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: rgba(19, 200, 236, 0.1);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            color: #13c8ec;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="icon-box">📡</div>
+        <h1>Você está offline</h1>
+        <p>A iGloo precisa de conexão para carregar esta página. Verifique sua rede e tente novamente.</p>
+        <a href="/" class="btn">Tentar novamente</a>
+    </div>
+</body>
+</html>
