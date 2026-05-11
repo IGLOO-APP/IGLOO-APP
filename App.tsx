@@ -32,6 +32,7 @@ const SSOCallback = lazy(() => import('./pages/SSOCallback'));
 const OwnerMessages = lazy(() => import('./pages/OwnerMessages'));
 const OwnerProfile = lazy(() => import('./pages/OwnerProfile'));
 const Settings = lazy(() => import('./pages/Settings'));
+const PendingAccess = lazy(() => import('./pages/PendingAccess'));
 
 // Tenant Pages
 const TenantDashboard = lazy(() => import('./pages/tenant/TenantDashboard'));
@@ -87,6 +88,7 @@ const ProtectedRoute: React.FC<{
     : role === allowedRole;
 
   if (!isAllowed) {
+    if (role === 'pending') return <Navigate to='/pending-access' replace />;
     if (role === 'admin') return <Navigate to='/admin' replace />;
     return <Navigate to={role === 'owner' ? '/' : '/tenant'} replace />;
   }
@@ -126,6 +128,14 @@ const router = createBrowserRouter([
       {
         path: '/sso-callback',
         element: <SSOCallback />,
+      },
+      {
+        path: '/pending-access',
+        element: (
+          <ProtectedRoute allowedRole='pending'>
+            <PendingAccess />
+          </ProtectedRoute>
+        ),
       },
       // Owner Routes
       {

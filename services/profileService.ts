@@ -93,7 +93,7 @@ export const profileService = {
       id: user.id,
       email: user.email || '',
       name: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
-      role: isAdminEmail ? 'admin' : (user.user_metadata?.role || 'owner'),
+      role: isAdminEmail ? 'admin' : (user.user_metadata?.role || 'pending'),
       admin_type: isAdminEmail ? 'super' : null,
       phone: user.user_metadata?.phone || user.phone || null,
     };

@@ -107,7 +107,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           email: profile.email,
           // Role priority: Supabase profile (set by owner) > Clerk metadata > fallback
           // Safety: If it has admin_type, it MUST be an admin role
-          role: ((profile as any).admin_type ? 'admin' : (profile.role as UserRole)) || (clerkUser.publicMetadata.role as UserRole) || 'owner',
+          role: ((profile as any).admin_type ? 'admin' : (profile.role as UserRole)) || (clerkUser.publicMetadata.role as UserRole) || 'pending',
           admin_type: (profile as any).admin_type,
           permissions: (profile as any).permissions,
           is_suspended: (profile as any).is_suspended,
@@ -129,7 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           id: clerkUser.id,
           name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Usuário Igloo',
           email: clerkUser.primaryEmailAddress?.emailAddress || '',
-          role: (clerkUser.publicMetadata.role as UserRole) || 'owner',
+          role: (clerkUser.publicMetadata.role as UserRole) || 'pending',
           avatar: clerkUser.imageUrl,
         } as User);
       } else {
