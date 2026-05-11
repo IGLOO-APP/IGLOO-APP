@@ -132,6 +132,7 @@ export interface Property {
   numeric_price?: number; // Numeric rental price for calculations
   area: string;
   image: string;
+  owner_id?: string;
   bedrooms?: number;
   bathrooms?: number;
   parking?: number;

@@ -88,7 +88,7 @@ export const announcementService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(ann => ({
+    return (data || []).map((ann: any) => ({
       ...ann,
       views_count: (ann as any).acknowledgments?.[0]?.count || 0
     })) as OwnerAnnouncement[];
@@ -105,7 +105,7 @@ export const announcementService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []).map(ann => ({
+    return (data || []).map((ann: any) => ({
       ...ann,
       views_count: (ann as any).acknowledgments?.[0]?.count || 0
     })) as OwnerAnnouncement[];

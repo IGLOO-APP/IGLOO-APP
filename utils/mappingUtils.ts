@@ -23,6 +23,7 @@ export const mapProperty = (row: any): Property => ({
   image:
     row.image_url ||
     'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300',
+  owner_id: row.owner_id,
   bedrooms: row.bedrooms,
   bathrooms: row.bathrooms,
   parking: row.parking,
