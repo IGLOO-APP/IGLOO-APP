@@ -39,6 +39,8 @@ import { PropertyCard } from '../../components/properties/PropertyCard';
 import { tenantService } from '../../services/tenantService';
 import { supabase } from '../../lib/supabase';
 import { Property, Tenant, SystemAnnouncement } from '../../types';
+import CommunicationHub from '../../components/announcements/CommunicationHub';
+import { announcementService } from '../../services/announcementService';
 
 const TenantDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -224,14 +226,17 @@ const TenantDashboard: React.FC = () => {
         }
 
         // 3. Fetch Announcements
-        const { data: annRes } = await supabase
-          .from('system_announcements')
-          .select('*')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(2);
+        const [systemAnn, ownerAnn] = await Promise.all([
+          announcementService.getSystemAnnouncements(),
+          announcementService.getForTenant()
+        ]);
         
-        if (annRes) setAnnouncements(annRes as any);
+        const combined: any[] = [
+          ...(systemAnn || []),
+          ...(ownerAnn || [])
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setAnnouncements(combined.slice(0, 3));
 
         // 4. Fetch Pending Inspection
         if (data?.property_id) {
@@ -476,6 +481,11 @@ const TenantDashboard: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Communication Hub - SUPER CARD */}
+      <div className='px-6 mb-8'>
+        <CommunicationHub />
+      </div>
 
       {/* --- PROPERTY & CONTRACT INFO (Ajuste 1 & 2) --- */}
       <div className='px-6 mb-8 animate-fadeIn'>

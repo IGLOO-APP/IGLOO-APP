@@ -11,7 +11,8 @@ import {
   HelpCircle, 
   ChevronRight, 
   User, 
-  ChevronDown 
+  ChevronDown,
+  Megaphone
 } from 'lucide-react';
 import { ChatThread } from '../../services/messageService';
 
@@ -39,6 +40,7 @@ interface ChatSidebarProps {
   handleMouseUp: () => void;
   handleMouseMove: (e: React.MouseEvent) => void;
   isDragging: boolean;
+  onCommunicate: () => void;
 }
 
 export const ChatSidebar = React.memo(({
@@ -65,6 +67,7 @@ export const ChatSidebar = React.memo(({
   handleMouseUp,
   handleMouseMove,
   isDragging,
+  onCommunicate,
 }: ChatSidebarProps) => {
   return (
     <div
@@ -248,14 +251,24 @@ export const ChatSidebar = React.memo(({
           </div>
         ))}
         
-        {/* FAQ Manager Trigger for Mobile */}
-        <button
-          onClick={() => setShowFAQManager(true)}
-          className='w-full mt-6 p-4 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/5 flex items-center justify-center gap-3 text-slate-400 hover:text-primary hover:border-primary/50 transition-all group'
-        >
-          <HelpCircle size={20} />
-          <span className='text-[10px] font-black uppercase tracking-widest'>Gerenciar FAQ do Inquilino</span>
-        </button>
+        {/* Communication & FAQ Actions */}
+        <div className='mt-6 space-y-3'>
+          <button
+            onClick={onCommunicate}
+            className='w-full p-4 rounded-2xl bg-purple-500 hover:bg-purple-600 text-white flex items-center justify-center gap-3 shadow-lg shadow-purple-500/20 transition-all active:scale-95 group'
+          >
+            <Megaphone size={20} />
+            <span className='text-[10px] font-black uppercase tracking-widest'>Enviar Comunicado</span>
+          </button>
+
+          <button
+            onClick={() => setShowFAQManager(true)}
+            className='w-full p-4 rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/5 flex items-center justify-center gap-3 text-slate-400 hover:text-primary hover:border-primary/50 transition-all group'
+          >
+            <HelpCircle size={20} />
+            <span className='text-[10px] font-black uppercase tracking-widest'>Gerenciar FAQ do Inquilino</span>
+          </button>
+        </div>
       </div>
     </div>
   );

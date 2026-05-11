@@ -8,6 +8,7 @@ import {
   Sun,
   AlertTriangle,
   FileText,
+  Megaphone,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -27,8 +28,7 @@ import { DashboardAIInsights } from './dashboard/components/DashboardAIInsights'
 import { RiskRadar } from './dashboard/components/RiskRadar';
 import { PropertyCard } from '../components/properties/PropertyCard';
 import { propertyService } from '../services/propertyService';
-
-import AnnouncementTicker from '../components/AnnouncementTicker';
+import CommunicationHub from '../components/announcements/CommunicationHub';
 import {
   Carousel,
   CarouselContent,
@@ -36,6 +36,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../components/ui/carousel';
+import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +45,8 @@ const Dashboard: React.FC = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [announcementToDuplicate, setAnnouncementToDuplicate] = useState<any>(null);
 
   const { data: dashboardData, isLoading, isError, error: queryError, refetch } = useQuery({
     queryKey: ['dashboardData', user?.id],
@@ -102,7 +105,7 @@ const Dashboard: React.FC = () => {
     <div className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 flex justify-between items-center'>
         <div className='flex items-center gap-4'></div>
-        <AnnouncementTicker />
+        
         <div className='flex items-center gap-3'>
           <button onClick={toggleTheme} className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors'>
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -139,12 +142,29 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className='p-6 space-y-12 pb-24'>
-        {/* Row 1: Metrics */}
-        <HeroMetrics metrics={metrics} />
+      <div className='p-6 space-y-8 pb-24'>
+        {/* Top Section: Metrics, Health & Communication Integrated */}
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+          {/* Main Area (Left) - 9/12 Columns */}
+          <div className='lg:col-span-9 flex flex-col gap-6'>
+            <HeroMetrics metrics={metrics} />
+            <PortfolioHealth health={portfolioHealth} />
+          </div>
 
-        {/* Row 2: Health */}
-        <PortfolioHealth health={portfolioHealth} />
+          {/* Side Hub (Right) - 3/12 Columns */}
+          <div className='lg:col-span-3 h-full'>
+            <CommunicationHub 
+              onNewAnnouncement={() => {
+                setAnnouncementToDuplicate(null);
+                setShowAnnouncementModal(true);
+              }} 
+              onDuplicate={(ann) => {
+                setAnnouncementToDuplicate(ann);
+                setShowAnnouncementModal(true);
+              }}
+            />
+          </div>
+        </div>
 
         {/* Row 3: Assets & Wealth Evolution (SIDE BY SIDE) */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start'>
@@ -216,6 +236,20 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CreateAnnouncementModal 
+        isOpen={showAnnouncementModal} 
+        onClose={() => {
+          setShowAnnouncementModal(false);
+          setAnnouncementToDuplicate(null);
+        }}
+        properties={properties}
+        initialData={announcementToDuplicate}
+        onSuccess={() => {
+          refetch();
+          setAnnouncementToDuplicate(null);
+        }}
+      />
     </div>
   );
 };

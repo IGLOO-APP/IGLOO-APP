@@ -275,6 +275,32 @@ export interface SystemAnnouncement {
   created_at: string;
 }
 
+export type AnnouncementTargetType = 'all' | 'property' | 'condominium';
+export type AnnouncementType = 'maintenance' | 'event' | 'warning' | 'info';
+
+export interface OwnerAnnouncement {
+  id: string;
+  owner_id: string;
+  title: string;
+  content: string;
+  type: AnnouncementType;
+  target_type: AnnouncementTargetType;
+  target_value?: any;
+  attachments?: string[];
+  views_count?: number;
+  expires_at?: string;
+  is_urgent?: boolean;
+  created_at: string;
+  acknowledged?: boolean; // UI helper
+}
+
+export interface AnnouncementAcknowledgment {
+  id: string;
+  announcement_id: string;
+  user_id: string;
+  created_at: string;
+}
+
 export interface GlobalStats {
   active_owners: number;
   active_tenants: number;

@@ -17,6 +17,8 @@ import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
 import { FAQManager } from '../components/messages/FAQManager';
 import { NewChatModal } from '../components/messages/NewChatModal';
+import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
+import { propertyService } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
 
 
@@ -49,6 +51,8 @@ const OwnerMessages: React.FC = () => {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
 
   // Sidebar Filters State
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -91,6 +95,8 @@ const OwnerMessages: React.FC = () => {
       if (user) {
         setCurrentUserId(String(user.id));
         await loadChats();
+        const props = await propertyService.getForOwner(String(user.id));
+        setProperties(props);
       }
     };
     init();
@@ -417,6 +423,7 @@ const OwnerMessages: React.FC = () => {
           handleMouseUp={handleMouseUp}
           handleMouseMove={handleMouseMove}
           isDragging={isDragging}
+          onCommunicate={() => setShowAnnouncementModal(true)}
         />
 
         {activeChat ? (
@@ -510,6 +517,15 @@ const OwnerMessages: React.FC = () => {
         show={showNewChatModal}
         onClose={() => setShowNewChatModal(false)}
         onSelectTenant={handleSelectTenant}
+      />
+
+      <CreateAnnouncementModal 
+        isOpen={showAnnouncementModal} 
+        onClose={() => setShowAnnouncementModal(false)}
+        properties={properties}
+        onSuccess={() => {
+          setShowAnnouncementModal(false);
+        }}
       />
     </div>
   );
