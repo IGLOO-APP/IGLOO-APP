@@ -1,4 +1,4 @@
-export type UserRole = 'owner' | 'tenant' | 'admin';
+export type UserRole = 'owner' | 'tenant' | 'admin' | 'pending';
 export type AdminType = 'super' | 'support' | 'finance' | 'content';
 
 export interface User {

@@ -162,7 +162,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                             <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Receita</span>
                           </div>
                           <span className='text-xs font-black text-white'>
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(income)}
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(income))}
                           </span>
                         </div>
                         
@@ -172,7 +172,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                             <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Despesa</span>
                           </div>
                           <span className='text-xs font-black text-white'>
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(expense)}
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(expense))}
                           </span>
                         </div>
 
@@ -183,7 +183,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                               <span className='text-[9px] font-black text-indigo-400 uppercase tracking-widest'>Líquido</span>
                             </div>
                             <span className='text-sm font-black text-indigo-400'>
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(net)}
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(net))}
                             </span>
                           </div>
                         </div>
