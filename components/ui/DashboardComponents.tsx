@@ -33,39 +33,39 @@ export const HeroCard = ({
   color,
   sparkData,
 }: HeroCardProps) => (
-  <div className='bg-white dark:bg-surface-dark p-3 md:p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300 group relative overflow-hidden'>
+  <div className='bg-white dark:bg-surface-dark p-3 md:p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden'>
     <div
-      className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-10 transition-opacity ${color}`}
+      className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0`}
     >
       <Icon size={60} className='md:hidden' />
-      <Icon size={80} className='hidden md:block' />
+      <Icon size={120} className='hidden md:block' />
     </div>
-    <div className='flex justify-between items-start mb-2 md:mb-4'>
+    <div className='flex justify-between items-start mb-2 md:mb-6'>
       <div
-        className={`p-2 md:p-3 rounded-xl ${color.replace('text-', 'bg-').replace('500', '50')} dark:bg-white/5`}
+        className={`p-3 md:p-4 rounded-2xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20`}
       >
-        <Icon size={20} className={color} />
+        <Icon size={24} className={`${color} group-hover:scale-110 transition-transform duration-500`} />
       </div>
       {sparkData && (
-        <div className='hidden sm:block'>
+        <div className='hidden sm:block pt-2'>
           <Sparkline data={sparkData} color={trendUp ? '#10b981' : '#ef4444'} />
         </div>
       )}
     </div>
-    <div>
-      <p className='text-slate-500 dark:text-slate-400 text-[9px] md:text-xs font-bold uppercase tracking-wider mb-0.5 md:mb-1'>
+    <div className="relative z-10">
+      <p className='text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.15em] mb-1 md:mb-2'>
         {title}
       </p>
-      <h3 className='text-lg md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight'>
+      <h3 className='text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 md:mb-3'>
         {value}
       </h3>
-      <div className='flex flex-wrap items-center gap-1.5 md:gap-2 mt-1 md:mt-2'>
+      <div className='flex flex-wrap items-center gap-1.5 md:gap-3'>
         <span
-          className={`flex items-center text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded ${trendUp ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}
+          className={`flex items-center gap-1 text-[9px] md:text-[10px] font-black px-2 py-1 rounded-lg ${trendUp ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
         >
           {trendUp ? <ArrowUp size={10} /> : <ArrowDown size={10} />} {trend}
         </span>
-        <span className='text-[9px] md:text-xs text-slate-400 font-medium line-clamp-1'>{subtext}</span>
+        <span className='text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wide opacity-60 line-clamp-1'>{subtext}</span>
       </div>
     </div>
   </div>
@@ -82,19 +82,25 @@ interface AlertBadgeProps {
 export const AlertBadge = ({ icon: Icon, label, count, color, onClick }: AlertBadgeProps) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl border transition-all active:scale-95 shrink-0 ${color} bg-opacity-10 border-opacity-20 hover:bg-opacity-20`}
+    className={`flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-2xl border transition-all duration-300 active:scale-95 shrink-0 ${color} bg-opacity-5 border-opacity-10 hover:bg-opacity-15 hover:border-opacity-20 hover:shadow-lg group/alert`}
   >
     <div className='relative shrink-0'>
-      <Icon size={18} className='md:hidden shrink-0' />
-      <Icon size={20} className='hidden md:block shrink-0' />
+      <div className={`absolute inset-0 rounded-full ${color.replace('text-', 'bg-')} opacity-0 group-hover/alert:opacity-20 animate-ping`} />
+      <Icon size={20} className='shrink-0 transition-transform duration-500 group-hover/alert:scale-110' />
       {count > 0 && (
-        <span className='absolute -top-1 -right-1 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-surface-light dark:border-surface-dark'></span>
+        <span className='absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark shadow-[0_0_10px_rgba(239,68,68,0.5)]'></span>
       )}
     </div>
     <div className='text-left flex-1 min-w-0'>
-      <p className='text-[9px] md:text-xs font-bold uppercase opacity-80 truncate'>{label}</p>
-      {count > 0 && <p className='text-[10px] md:text-sm font-bold truncate'>{count} pendentes</p>}
+      <p className='text-[10px] md:text-xs font-black uppercase tracking-widest opacity-60 mb-0.5 truncate'>{label}</p>
+      {count > 0 ? (
+        <p className='text-xs md:text-sm font-black truncate flex items-center gap-1.5'>
+          {count} <span className="opacity-50 font-bold">pendentes</span>
+        </p>
+      ) : (
+        <p className='text-xs md:text-sm font-bold opacity-40 italic'>Tudo em ordem</p>
+      )}
     </div>
-    <ChevronRight size={14} className='opacity-50 shrink-0' />
+    <ChevronRight size={16} className='opacity-30 group-hover/alert:opacity-100 group-hover/alert:translate-x-1 transition-all duration-300' />
   </button>
 );

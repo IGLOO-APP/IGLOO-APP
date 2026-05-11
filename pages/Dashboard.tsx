@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
     <div className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 flex justify-between items-center'>
         <div className='flex items-center gap-4'></div>
-        
+
         <div className='flex items-center gap-3'>
           <button onClick={toggleTheme} className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors'>
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -153,11 +153,11 @@ const Dashboard: React.FC = () => {
 
           {/* Side Hub (Right) - 3/12 Columns */}
           <div className='lg:col-span-3 h-full'>
-            <CommunicationHub 
+            <CommunicationHub
               onNewAnnouncement={() => {
                 setAnnouncementToDuplicate(null);
                 setShowAnnouncementModal(true);
-              }} 
+              }}
               onDuplicate={(ann) => {
                 setAnnouncementToDuplicate(ann);
                 setShowAnnouncementModal(true);
@@ -227,22 +227,26 @@ const Dashboard: React.FC = () => {
         </section>
 
         {/* Row 6: Main Content & Sidebar */}
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch'>
           {/* Left: Activity Timeline */}
-          <div className='lg:col-span-8'>
+          <div className='lg:col-span-8 flex flex-col'>
             <ActivityTimeline activities={activities || []} />
           </div>
 
-          {/* Right: AI Insights & Performance */}
-          <div className='lg:col-span-4 flex flex-col gap-8'>
+          {/* Right: AI Insights */}
+          <div className='lg:col-span-4 flex flex-col'>
             <DashboardAIInsights metrics={metrics} />
-            <PropertyPerformance topProperties={topProperties || []} />
           </div>
         </div>
+
+        {/* Row 7: Full-Width Property Performance */}
+        <section className='w-full'>
+          <PropertyPerformance topProperties={topProperties || []} />
+        </section>
       </div>
 
-      <CreateAnnouncementModal 
-        isOpen={showAnnouncementModal} 
+      <CreateAnnouncementModal
+        isOpen={showAnnouncementModal}
         onClose={() => {
           setShowAnnouncementModal(false);
           setAnnouncementToDuplicate(null);

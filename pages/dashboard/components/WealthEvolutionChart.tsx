@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { TrendingUp, Home, FileText, ChevronDown } from 'lucide-react';
+import { TrendingUp, Home, FileText, ChevronDown, Info } from 'lucide-react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
+// import { motion } from 'framer-motion';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
 import {
   AreaChart,
   Area,
@@ -19,28 +22,69 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ weal
   const [period, setPeriod] = useState('Último ano');
 
   return (
-    <div className='bg-white dark:bg-surface-dark p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm'>
+    <div 
+      className='bg-white dark:bg-surface-dark p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'
+    >
       <div className='flex justify-between items-center mb-6'>
         <div>
           <h3 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2'>
             <TrendingUp className='text-cyan-500' size={20} /> Evolução do Patrimônio
+            <InfoTooltip 
+              title="Evolução do Patrimônio" 
+              description="Esta métrica representa o valor total estimado de todos os seus ativos imobiliários cadastrados, considerando valorizações de mercado e novas aquisições ao longo do tempo."
+            >
+              <Info size={16} className='text-slate-400 cursor-help hover:text-cyan-500 transition-colors' />
+            </InfoTooltip>
           </h3>
           <p className='text-xs text-slate-500 dark:text-slate-400 font-medium'>
             Valorização total da carteira imobiliária
           </p>
         </div>
 
-        <div className='relative'>
-          <select 
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className='appearance-none pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[10px] font-bold text-slate-600 dark:text-slate-400 focus:outline-none cursor-pointer hover:bg-slate-100 transition-colors'
+        <Menu as="div" className="relative inline-block text-left">
+          <MenuButton className='flex items-center gap-2 pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all relative'>
+            {period}
+            <ChevronDown size={12} className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400' />
+          </MenuButton>
+
+          <Transition
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
           >
-            <option>Últimos 6 meses</option>
-            <option>Último ano</option>
-          </select>
-          <ChevronDown size={12} className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' />
-        </div>
+            <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+              <div className="py-1">
+                <MenuItem>
+                  {({ focus }) => (
+                    <button
+                      onClick={() => setPeriod('Últimos 6 meses')}
+                      className={`${
+                        focus ? 'bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
+                      } group flex w-full items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors`}
+                    >
+                      Últimos 6 meses
+                    </button>
+                  )}
+                </MenuItem>
+                <MenuItem>
+                  {({ focus }) => (
+                    <button
+                      onClick={() => setPeriod('Último ano')}
+                      className={`${
+                        focus ? 'bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
+                      } group flex w-full items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors`}
+                    >
+                      Último ano
+                    </button>
+                  )}
+                </MenuItem>
+              </div>
+            </MenuItems>
+          </Transition>
+        </Menu>
       </div>
 
       <div className='h-[300px] w-full'>
@@ -118,6 +162,8 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ weal
               strokeWidth={3}
               fillOpacity={1}
               fill='url(#colorWealth)'
+              animationDuration={2000}
+              animationBegin={200}
               dot={(props: any) => {
                 const { cx, cy, payload } = props;
                 if (payload.events?.length > 0) {

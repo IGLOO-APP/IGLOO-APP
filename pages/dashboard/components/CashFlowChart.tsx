@@ -1,6 +1,8 @@
-import React from 'react';
-import { DollarSign, Download, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { DollarSign, Download, Info, ChevronDown } from 'lucide-react';
 import { InfoTooltip } from '../../../components/ui/InfoTooltip';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
+// import { motion } from 'framer-motion';
 import {
   ComposedChart,
   Line,
@@ -20,105 +22,171 @@ interface CashFlowChartProps {
 }
 
 export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory = [], isDark }) => {
+  const [period, setPeriod] = useState('Último ano');
+
   return (
-    <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+    <div 
+      className='bg-white dark:bg-surface-dark p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'
+    >
       <div className='flex justify-between items-center mb-6'>
         <div>
-          <h3 className='text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-            <DollarSign className='text-primary' size={20} /> Fluxo de Caixa & Projeção
+          <h3 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2'>
+            <DollarSign className='text-emerald-500' size={20} /> Fluxo de Caixa & Projeção
             <InfoTooltip 
               title="Fluxo de Caixa & Projeção" 
-              description="O histórico mostra transações reais. A projeção de 3 meses é calculada somando os aluguéis de contratos ativos e subtraindo despesas fixas conhecidas."
+              description="Visualize o histórico real de entradas e saídas financeiras. A área pontilhada representa a projeção para os próximos 3 meses baseada em contratos vigentes e despesas recorrentes."
             >
-              <Info size={16} className='text-slate-400 cursor-help' />
+              <Info size={16} className='text-slate-400 cursor-help hover:text-emerald-500 transition-colors' />
             </InfoTooltip>
           </h3>
-          <p className='text-sm text-slate-500 dark:text-slate-400'>
-            Análise financeira com previsão de 3 meses
+          <p className='text-xs text-slate-500 dark:text-slate-400 font-medium'>
+            Histórico de transações e previsões contratuais
           </p>
         </div>
-        <button className='p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors'>
-          <Download size={18} className='text-slate-400' />
-        </button>
+
+        <div className='flex items-center gap-3'>
+          <Menu as="div" className="relative inline-block text-left">
+            <MenuButton className='flex items-center gap-2 pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all relative'>
+              {period}
+              <ChevronDown size={12} className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400' />
+            </MenuButton>
+
+            <Transition
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <MenuItems className="absolute right-0 mt-2 w-40 origin-top-right rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/10 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+                <div className="py-1">
+                  <MenuItem>
+                    {({ focus }) => (
+                      <button
+                        onClick={() => setPeriod('Últimos 6 meses')}
+                        className={`${
+                          focus ? 'bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
+                        } group flex w-full items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors`}
+                      >
+                        Últimos 6 meses
+                      </button>
+                    )}
+                  </MenuItem>
+                  <MenuItem>
+                    {({ focus }) => (
+                      <button
+                        onClick={() => setPeriod('Último ano')}
+                        className={`${
+                          focus ? 'bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
+                        } group flex w-full items-center px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors`}
+                      >
+                        Último ano
+                      </button>
+                    )}
+                  </MenuItem>
+                </div>
+              </MenuItems>
+            </Transition>
+          </Menu>
+
+          <button className='p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-primary'>
+            <Download size={18} />
+          </button>
+        </div>
       </div>
-      <div className='h-[250px] md:h-[350px] w-full mt-4 md:mt-0'>
+
+      <div className='h-[300px] w-full'>
         <ResponsiveContainer width='100%' height='100%'>
           <ComposedChart
             data={financialHistory}
-            margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+            margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
           >
+            <defs>
+              <linearGradient id='colorIncome' x1='0' y1='0' x2='0' y2='1'>
+                <stop offset='5%' stopColor='#10b981' stopOpacity={0.8} />
+                <stop offset='95%' stopColor='#10b981' stopOpacity={0.5} />
+              </linearGradient>
+              <linearGradient id='colorExpense' x1='0' y1='0' x2='0' y2='1'>
+                <stop offset='5%' stopColor='#ef4444' stopOpacity={0.8} />
+                <stop offset='95%' stopColor='#ef4444' stopOpacity={0.5} />
+              </linearGradient>
+              <linearGradient id='colorNet' x1='0' y1='0' x2='0' y2='1'>
+                <stop offset='5%' stopColor='#6366f1' stopOpacity={0.1} />
+                <stop offset='95%' stopColor='#6366f1' stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            
             <CartesianGrid
               strokeDasharray='3 3'
               vertical={false}
               stroke={isDark ? '#334155' : '#e2e8f0'}
+              opacity={0.3}
             />
+            
             <XAxis
               dataKey='month'
               axisLine={false}
               tickLine={false}
-              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 600 }}
               dy={10}
             />
+            
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11 }}
-              tickFormatter={(val) => `k${val / 1000}`}
+              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }}
+              tickFormatter={(val) => `R$ ${val / 1000}k`}
             />
+            
             <Tooltip
-              cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+              cursor={{ fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const income = payload[0]?.value || 0;
                   const expense = payload[1]?.value || 0;
                   const net = payload[2]?.value || 0;
-                  const margin = income > 0 ? ((net / income) * 100).toFixed(1) : 0;
-
-                  const formatBRL = (val: number) => 
-                    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+                  const isProjected = payload[0].payload.projected;
 
                   return (
-                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[200px]'>
-                      <p className='font-black text-xs uppercase tracking-[0.2em] mb-3 text-slate-400 border-b border-white/5 pb-2'>
+                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
+                      <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2 flex justify-between items-center'>
                         {label}
+                        {isProjected && <span className='text-amber-500 text-[8px]'>PROJEÇÃO</span>}
                       </p>
-                      <div className='space-y-2.5'>
-                        <div className='flex justify-between items-center gap-4'>
+                      
+                      <div className='space-y-3'>
+                        <div className='flex justify-between items-center'>
                           <div className='flex items-center gap-2'>
-                            <div className='w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' />
-                            <span className='text-[10px] font-bold text-slate-400 uppercase'>Receita</span>
+                            <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Receita</span>
                           </div>
-                          <span className='text-xs font-black text-emerald-400'>{formatBRL(income)}</span>
+                          <span className='text-xs font-black text-white'>
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(income)}
+                          </span>
                         </div>
                         
-                        <div className='flex justify-between items-center gap-4'>
+                        <div className='flex justify-between items-center'>
                           <div className='flex items-center gap-2'>
-                            <div className='w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' />
-                            <span className='text-[10px] font-bold text-slate-400 uppercase'>Despesa</span>
+                            <div className='w-1.5 h-1.5 rounded-full bg-red-500' />
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>Despesa</span>
                           </div>
-                          <span className='text-xs font-black text-red-400'>{formatBRL(expense)}</span>
+                          <span className='text-xs font-black text-white'>
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(expense)}
+                          </span>
                         </div>
 
                         <div className='pt-2 mt-2 border-t border-white/5'>
-                          <div className='flex justify-between items-center gap-4 mb-1'>
-                            <span className='text-[10px] font-bold text-cyan-400 uppercase'>Resultado Líquido</span>
-                            <span className='text-sm font-black text-cyan-400'>{formatBRL(net)}</span>
-                          </div>
-                          <div className='flex justify-between items-center gap-4'>
-                            <span className='text-[9px] font-bold text-slate-500 uppercase'>Margem de Lucro</span>
-                            <span className={`text-[10px] font-black ${Number(margin) > 50 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                              {margin}%
+                          <div className='flex justify-between items-center'>
+                            <div className='flex items-center gap-2'>
+                              <div className='w-1.5 h-1.5 rounded-full bg-indigo-500' />
+                              <span className='text-[9px] font-black text-indigo-400 uppercase tracking-widest'>Líquido</span>
+                            </div>
+                            <span className='text-sm font-black text-indigo-400'>
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(net)}
                             </span>
                           </div>
                         </div>
-
-                        {payload[0].payload.projected && (
-                          <div className='mt-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg'>
-                            <p className='text-[8px] text-amber-500 font-black uppercase tracking-widest text-center'>
-                              ✨ Análise Preditiva
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
@@ -126,79 +194,83 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                 return null;
               }}
             />
+
             <Bar
               dataKey='income'
               name='Receita'
               radius={[4, 4, 0, 0]}
               maxBarSize={30}
               stackId='a'
+              animationDuration={2000}
+              animationBegin={400}
             >
-              {financialHistory && financialHistory.length > 0 && financialHistory.map((entry, index) => (
+              {financialHistory.map((entry, index) => (
                 <Cell
-                  key={`cell-income-${index}`}
-                  fill={entry.projected ? '#10b981' : '#10b981'}
-                  fillOpacity={entry.projected ? 0.4 : 1}
+                  key={`income-${index}`}
+                  fill='url(#colorIncome)'
+                  fillOpacity={entry.projected ? 0.3 : 1}
                   stroke={entry.projected ? '#10b981' : 'none'}
-                  strokeDasharray={entry.projected ? '4 4' : '0'}
+                  strokeDasharray={entry.projected ? '3 3' : '0'}
                 />
               ))}
             </Bar>
+
             <Bar
               dataKey='expense'
               name='Despesa'
               radius={[4, 4, 0, 0]}
               maxBarSize={30}
               stackId='a'
+              animationDuration={2000}
+              animationBegin={600}
             >
-              {financialHistory && financialHistory.length > 0 && financialHistory.map((entry, index) => (
+              {financialHistory.map((entry, index) => (
                 <Cell
-                  key={`cell-expense-${index}`}
-                  fill={entry.projected ? '#ef4444' : '#ef4444'}
-                  fillOpacity={entry.projected ? 0.4 : 1}
+                  key={`expense-${index}`}
+                  fill='url(#colorExpense)'
+                  fillOpacity={entry.projected ? 0.3 : 1}
                   stroke={entry.projected ? '#ef4444' : 'none'}
                   strokeDasharray={entry.projected ? '4 4' : '0'}
                 />
               ))}
             </Bar>
-            <Line
-              type='monotone'
-              dataKey='net'
-              name='Líquido'
-              stroke='#13c8ec'
-              strokeWidth={3}
-              dot={{ r: 4, fill: '#13c8ec', strokeWidth: 0 }}
-              activeDot={{ r: 6 }}
-            />
+
             <Area
               type='monotone'
               dataKey='net'
               fill='url(#colorNet)'
               stroke='none'
-              fillOpacity={0.1}
+              animationDuration={2500}
+              animationBegin={800}
             />
-            <defs>
-              <linearGradient id='colorNet' x1='0' y1='0' x2='0' y2='1'>
-                <stop offset='5%' stopColor='#13c8ec' stopOpacity={0.3} />
-                <stop offset='95%' stopColor='#13c8ec' stopOpacity={0} />
-              </linearGradient>
-            </defs>
+
+            <Line
+              type='monotone'
+              dataKey='net'
+              name='Líquido'
+              stroke='#6366f1'
+              strokeWidth={3}
+              dot={{ r: 3, fill: '#6366f1', strokeWidth: 0 }}
+              activeDot={{ r: 5 }}
+              animationDuration={2500}
+              animationBegin={800}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Chart Legend */}
-      <div className='flex items-center gap-4 mt-4 px-2'>
+      <div className='flex items-center gap-6 mt-6 px-2'>
         <div className='flex items-center gap-2'>
-          <div className='w-2.5 h-2.5 rounded-[2px] bg-[#10b981]'></div>
-          <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
+          <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
+          <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest'>Receita</span>
         </div>
         <div className='flex items-center gap-2'>
-          <div className='w-2.5 h-2.5 rounded-[2px] bg-[#ef4444]'></div>
-          <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
+          <div className='w-3 h-3 rounded-full bg-red-500'></div>
+          <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest'>Despesa</span>
         </div>
         <div className='flex items-center gap-2'>
-          <div className='w-[18px] h-[2px] bg-[#13c8ec]'></div>
-          <span className='text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400'>Projeção (3 meses)</span>
+          <div className='w-6 h-[2px] bg-indigo-500'></div>
+          <span className='text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest'>Resultado Líquido</span>
         </div>
       </div>
     </div>
