@@ -228,13 +228,17 @@ const TenantDashboard: React.FC = () => {
         // 3. Fetch Announcements
         const [systemAnn, ownerAnn] = await Promise.all([
           announcementService.getSystemAnnouncements(),
-          announcementService.getForTenant()
+          announcementService.getForTenant(user.id.toString())
         ]);
         
         const combined: any[] = [
           ...(systemAnn || []),
           ...(ownerAnn || [])
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        ].sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        });
 
         setAnnouncements(combined.slice(0, 3));
 

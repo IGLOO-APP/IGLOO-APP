@@ -12,7 +12,7 @@ export const announcementService = {
     expires_at?: string;
     is_urgent?: boolean;
   }) {
-    const { data: result, error } = await supabase
+    const { data: result, error } = await (supabase as any)
       .from('owner_announcements')
       .insert([data])
       .select()
@@ -24,7 +24,7 @@ export const announcementService = {
 
   async getForTenant(tenantUserId: string) {
     const now = new Date().toISOString();
-    const { data: announcements, error: annError } = await supabase
+    const { data: announcements, error: annError } = await (supabase as any)
       .from('owner_announcements')
       .select('*, announcement_acknowledgments(user_id)')
       .or(`expires_at.is.null,expires_at.gte.${now}`)
@@ -39,7 +39,7 @@ export const announcementService = {
   },
 
   async acknowledge(announcementId: string, userId: string) {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('announcement_acknowledgments')
       .upsert({
         announcement_id: announcementId,
@@ -77,7 +77,7 @@ export const announcementService = {
 
   async getForOwner(ownerId: string) {
     const now = new Date().toISOString();
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('owner_announcements')
       .select(`
         *,
@@ -95,7 +95,7 @@ export const announcementService = {
   },
 
   async getAllForOwner(ownerId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('owner_announcements')
       .select(`
         *,
@@ -112,7 +112,7 @@ export const announcementService = {
   },
 
   async getAcknowledgments(announcementId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('announcement_acknowledgments')
       .select(`
         created_at,
@@ -129,7 +129,7 @@ export const announcementService = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('owner_announcements')
       .delete()
       .eq('id', id);

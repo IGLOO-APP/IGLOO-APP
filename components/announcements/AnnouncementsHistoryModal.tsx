@@ -76,7 +76,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
         <div className='px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5'>
           <div className='flex items-center gap-3 sm:gap-4'>
             <div className='w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-xl'>
-              <History size={20} className="sm:size-7" strokeWidth={2.5} />
+              <History className="w-5 h-5 sm:w-7 sm:h-7" strokeWidth={2.5} />
             </div>
             <div>
               <h2 className='text-lg sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight'>Gestão</h2>
@@ -84,7 +84,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
             </div>
           </div>
           <button onClick={onClose} className='w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/10 rounded-2xl transition-colors text-slate-400'>
-            <X size={20} sm:size={24} />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
@@ -131,10 +131,10 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
                           ann.type === 'maintenance' ? 'bg-blue-500/10 text-blue-500' :
                           'bg-primary/10 text-primary'
                         }`}>
-                          {ann.type === 'info' && <Info size={14} className="sm:size-5" />}
-                          {ann.type === 'maintenance' && <Clock size={14} className="sm:size-5" />}
-                          {ann.type === 'warning' && <AlertTriangle size={14} className="sm:size-5" />}
-                          {ann.type === 'event' && <CheckCircle2 size={14} className="sm:size-5" />}
+                          {ann.type === 'info' && <Info className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
+                          {ann.type === 'maintenance' && <Clock className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
+                          {ann.type === 'warning' && <AlertTriangle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
+                          {ann.type === 'event' && <CheckCircle2 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
                         </div>
 
                         {/* Title & Info */}
@@ -165,14 +165,14 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
                             className='w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all'
                             title="Duplicar"
                           >
-                            <Copy size={14} className="sm:size-4" />
+                            <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </button>
                           <button 
                             onClick={() => handleDelete(ann.id)}
                             className='w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all'
                             title="Excluir"
                           >
-                            <Trash2 size={14} className="sm:size-4" />
+                            <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </button>
                         </div>
                       </div>
@@ -212,7 +212,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
                       {viewer.profiles?.avatar_url ? (
                         <img src={viewer.profiles.avatar_url} alt="" className='w-full h-full object-cover' />
                       ) : (
-                        <Users size={14} className='sm:size-4 text-slate-400' />
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
                       )}
                     </div>
                     <div className='min-w-0'>

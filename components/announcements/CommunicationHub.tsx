@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Users, CheckCircle2, ChevronRight, Plus, History } from 'lucide-react';
+import { Megaphone, Users, CheckCircle2, ChevronRight, Plus, History, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
 import { OwnerAnnouncement } from '../../types';
@@ -102,13 +102,13 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
 
         {/* Background Icon (HeroCard Pattern) */}
         <div className='absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity text-primary pointer-events-none'>
-          <Megaphone size={60} className="sm:size-20" />
+          <Megaphone className="w-16 h-16 sm:w-20 sm:h-20" />
         </div>
 
         {/* Header Section (HeroCard Pattern) */}
         <div className='flex justify-between items-start mb-3 sm:mb-4 relative z-20'>
           <div className='p-2 sm:p-3 rounded-lg sm:rounded-xl bg-primary/10 dark:bg-white/5'>
-            <Megaphone size={16} className='sm:size-5 text-primary' />
+            <Megaphone className='w-4 h-4 sm:w-5 sm:h-5 text-primary' />
           </div>
           {isOwner && (
             <button 
@@ -118,7 +118,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
               }}
               className='w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white transition-all'
             >
-              <Plus size={16} sm:size={20} />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           )}
         </div>
@@ -160,7 +160,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                         <h4 className={`text-[10px] sm:text-[11px] font-bold transition-colors line-clamp-1 ${idx === currentIndex ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover/item:text-primary'}`}>
                           {ann.title}
                         </h4>
-                        {ann.is_urgent && idx !== currentIndex && <AlertTriangle size={10} className='text-red-500/50 shrink-0' />}
+                        {ann.is_urgent && idx !== currentIndex && <AlertCircle size={10} className='text-red-500/50 shrink-0' />}
                       </div>
                     </div>
                   </div>

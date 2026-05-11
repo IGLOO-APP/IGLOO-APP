@@ -95,8 +95,9 @@ const OwnerMessages: React.FC = () => {
       if (user) {
         setCurrentUserId(String(user.id));
         await loadChats();
-        const props = await propertyService.getForOwner(String(user.id));
-        setProperties(props);
+        const props = await propertyService.getAll();
+        const ownerProps = props.filter(p => p.owner_id === user.id);
+        setProperties(ownerProps);
       }
     };
     init();
