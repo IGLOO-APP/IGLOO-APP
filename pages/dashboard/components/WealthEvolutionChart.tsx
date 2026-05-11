@@ -78,17 +78,28 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({ weal
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
+                  const value = payload[0].value as number;
+                  
                   return (
-                    <div className='bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-white/10'>
-                      <p className='font-bold text-[10px] mb-2 uppercase tracking-widest text-slate-400 border-b border-white/5 pb-1'>{label}</p>
-                      <p className='text-lg font-black text-cyan-400'>
-                        R$ {(payload[0].value as number).toLocaleString('pt-BR')}
+                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
+                      <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2'>
+                        {label}
                       </p>
+                      <div className='mb-3'>
+                        <p className='text-[9px] font-bold text-cyan-500 uppercase tracking-widest mb-1'>Valor Patrimonial</p>
+                        <p className='text-xl font-black text-white'>
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)}
+                        </p>
+                      </div>
+
                       {data.events && data.events.length > 0 && (
-                        <div className='mt-2 space-y-1'>
+                        <div className='mt-2 space-y-2 py-2 border-t border-white/5'>
+                          <p className='text-[8px] font-black text-slate-500 uppercase tracking-widest'>Eventos do Período</p>
                           {data.events.map((e: any, i: number) => (
-                            <div key={i} className='flex items-center gap-1.5 text-[9px] font-bold text-slate-300'>
-                              {e.type === 'property' ? <Home size={10} /> : <FileText size={10} />}
+                            <div key={i} className='flex items-center gap-2 text-[10px] font-bold text-slate-200'>
+                              <div className='p-1 rounded-md bg-white/5'>
+                                {e.type === 'property' ? <Home size={10} className="text-cyan-400" /> : <FileText size={10} className="text-emerald-400" />}
+                              </div>
                               {e.label}
                             </div>
                           ))}

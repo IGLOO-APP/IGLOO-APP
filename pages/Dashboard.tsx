@@ -221,15 +221,19 @@ const Dashboard: React.FC = () => {
           <AlertBadge icon={FileText} label='Contratos Vencendo' count={metrics.expiringContractsCount || 0} color='bg-amber-500 border-amber-500 text-amber-600 dark:text-amber-400' onClick={() => navigate('/contracts')} />
         </section>
 
-        {/* Row 5 & 6: Main Content & Sidebar */}
+        {/* Row 5: Full-Width Cash Flow */}
+        <section className='w-full'>
+          <CashFlowChart financialHistory={financialHistory || []} isDark={isDark} />
+        </section>
+
+        {/* Row 6: Main Content & Sidebar */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start'>
-          {/* Main Area (Left) */}
-          <div className='lg:col-span-8 flex flex-col gap-8'>
-            <CashFlowChart financialHistory={financialHistory || []} isDark={isDark} />
+          {/* Left: Activity Timeline */}
+          <div className='lg:col-span-8'>
             <ActivityTimeline activities={activities || []} />
           </div>
 
-          {/* Sidebar (Right) */}
+          {/* Right: AI Insights & Performance */}
           <div className='lg:col-span-4 flex flex-col gap-8'>
             <DashboardAIInsights metrics={metrics} />
             <PropertyPerformance topProperties={topProperties || []} />

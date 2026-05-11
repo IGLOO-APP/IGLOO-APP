@@ -69,28 +69,55 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
               cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
+                  const income = payload[0]?.value || 0;
+                  const expense = payload[1]?.value || 0;
+                  const net = payload[2]?.value || 0;
+                  const margin = income > 0 ? ((net / income) * 100).toFixed(1) : 0;
+
+                  const formatBRL = (val: number) => 
+                    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
                   return (
-                    <div className='bg-slate-900 text-white p-4 rounded-xl shadow-xl border border-white/10'>
-                      <p className='font-bold mb-2 border-b border-white/10 pb-1'>
+                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[200px]'>
+                      <p className='font-black text-xs uppercase tracking-[0.2em] mb-3 text-slate-400 border-b border-white/5 pb-2'>
                         {label}
                       </p>
-                      <div className='space-y-1 text-xs'>
-                        <p className='flex justify-between gap-4'>
-                          <span className='text-emerald-400'>Receita:</span>{' '}
-                          <b>R$ {payload[0].value}</b>
-                        </p>
-                        <p className='flex justify-between gap-4'>
-                          <span className='text-red-400'>Despesa:</span>{' '}
-                          <b>R$ {payload[1].value}</b>
-                        </p>
-                        <p className='flex justify-between gap-4 border-t border-white/10 pt-1 mt-1'>
-                          <span className='text-cyan-400 font-bold'>Líquido:</span>{' '}
-                          <b>R$ {payload[2].value}</b>
-                        </p>
+                      <div className='space-y-2.5'>
+                        <div className='flex justify-between items-center gap-4'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' />
+                            <span className='text-[10px] font-bold text-slate-400 uppercase'>Receita</span>
+                          </div>
+                          <span className='text-xs font-black text-emerald-400'>{formatBRL(income)}</span>
+                        </div>
+                        
+                        <div className='flex justify-between items-center gap-4'>
+                          <div className='flex items-center gap-2'>
+                            <div className='w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' />
+                            <span className='text-[10px] font-bold text-slate-400 uppercase'>Despesa</span>
+                          </div>
+                          <span className='text-xs font-black text-red-400'>{formatBRL(expense)}</span>
+                        </div>
+
+                        <div className='pt-2 mt-2 border-t border-white/5'>
+                          <div className='flex justify-between items-center gap-4 mb-1'>
+                            <span className='text-[10px] font-bold text-cyan-400 uppercase'>Resultado Líquido</span>
+                            <span className='text-sm font-black text-cyan-400'>{formatBRL(net)}</span>
+                          </div>
+                          <div className='flex justify-between items-center gap-4'>
+                            <span className='text-[9px] font-bold text-slate-500 uppercase'>Margem de Lucro</span>
+                            <span className={`text-[10px] font-black ${Number(margin) > 50 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {margin}%
+                            </span>
+                          </div>
+                        </div>
+
                         {payload[0].payload.projected && (
-                          <p className='text-[10px] text-amber-400 italic mt-2 text-center'>
-                            *Valor Projetado
-                          </p>
+                          <div className='mt-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg'>
+                            <p className='text-[8px] text-amber-500 font-black uppercase tracking-widest text-center'>
+                              ✨ Análise Preditiva
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
