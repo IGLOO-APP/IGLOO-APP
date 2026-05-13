@@ -49,7 +49,7 @@ const OwnerMessages: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general' | 'urgent'>(
     'all'
   );
-  const [showDetailsPanel, setShowDetailsPanel] = useState(true);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'tenant'>('ticket');
   const [chats, setChats] = useState<ChatThread[]>([]);
   const [loading, setLoading] = useState(true);

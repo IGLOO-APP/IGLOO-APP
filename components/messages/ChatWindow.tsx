@@ -60,18 +60,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     <div
       className={`flex-1 flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative inset-0 md:inset-auto w-full md:w-auto h-full transition-transform duration-300 z-30 md:z-10 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
     >
-      <div className='h-20 px-4 md:px-8 flex items-center justify-between bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
+      <div className='min-h-[72px] md:h-20 px-4 md:px-8 py-3 md:py-0 flex items-center justify-between bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
         <div className='flex items-center gap-2 md:gap-4 flex-1 min-w-0'>
           <button
             onClick={() => setActiveChatId(null)}
-            className='p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 md:hidden'
+            className='p-2 -ml-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 md:hidden active:scale-95 transition-all'
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} />
           </button>
 
           <div className='flex items-center gap-3 md:gap-4 flex-1 min-w-0'>
-            {/* Professional Header Avatar — Matching Sidebar Adjustment 2 */}
-            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg shadow-black/5 shrink-0`}>
+            {/* Professional Header Avatar */}
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg shadow-black/5 shrink-0 border border-white/10`}>
               {activeChat.tenantAvatar ? (
                 <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-2xl' />
               ) : (
@@ -81,21 +81,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
             <div className='flex flex-col min-w-0'>
               <div className='flex items-center gap-2'>
-                <h2 className='text-sm md:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none truncate'>
+                <h2 className='text-[13px] md:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none truncate'>
                   {activeChat.tenantName}
                 </h2>
-                <span className={`px-1.5 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0`}>
+                <span className='hidden sm:inline-flex px-1.5 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0'>
                    #{activeChat.id.slice(0, 8)}
                 </span>
               </div>
               <div className='flex items-center gap-1.5 mt-1 md:mt-1.5'>
-                <p className='text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] truncate'>
+                <p className='text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] truncate max-w-[120px] md:max-w-none'>
                   {activeChat.property}
                 </p>
                 <span className='text-slate-300 dark:text-slate-800 text-[10px]'>•</span>
-                <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-wider truncate ${
-                  activeChat.category === 'maintenance' ? 'text-orange-500' :
-                  activeChat.category === 'finance' ? 'text-emerald-500' : 'text-primary'
+                <span className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-wider truncate ${
+                  activeChat.category === 'maintenance' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
+                  activeChat.category === 'finance' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
+                  'bg-primary/10 text-primary'
                 }`}>
                   {activeChat.category === 'maintenance' ? 'Manutenção' : 
                    activeChat.category === 'finance' ? 'Financeiro' : 'Geral'}
@@ -113,9 +114,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             </div>
           </div>
+
           <button
             onClick={() => setShowDetailsPanel(!showDetailsPanel)}
-            className={`p-3 rounded-2xl transition-all ${
+            className={`p-2.5 md:p-3 rounded-2xl transition-all active:scale-95 ${
               showDetailsPanel 
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl' 
                 : 'bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -142,10 +144,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className='p-6 md:p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
+        <div className='p-4 md:p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
           {/* Quick Replies - Professional Pills with Management */}
-          <div className='flex gap-3 overflow-x-auto hide-scrollbar mb-6 pb-2 items-center'>
-            <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-2 shrink-0'>Sugestões:</span>
+          <div className='flex gap-3 overflow-x-auto hide-scrollbar mb-4 md:mb-6 pb-2 items-center'>
+            <span className='hidden md:inline-block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-2 shrink-0'>Sugestões:</span>
             
             {/* Add New Reply Button/Input */}
             {isAddingReply ? (
@@ -164,8 +166,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       setIsAddingReply(false);
                     }
                   }}
-                  placeholder='Nova resposta...'
-                  className='h-9 px-4 rounded-xl bg-primary/5 border border-primary/20 text-[10px] font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary/30 min-w-[120px]'
+                  placeholder='Nova...'
+                  className='h-8 md:h-9 px-3 md:px-4 rounded-xl bg-primary/5 border border-primary/20 text-[10px] font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary/30 min-w-[100px]'
                 />
                 <button 
                   onClick={() => setIsAddingReply(false)}
@@ -177,7 +179,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             ) : (
               <button
                 onClick={() => setIsAddingReply(true)}
-                className='p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shrink-0'
+                className='p-2 md:p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shrink-0'
                 title='Adicionar resposta rápida'
               >
                 <Plus size={16} strokeWidth={3} />
@@ -186,22 +188,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
             <div className='h-4 w-px bg-gray-100 dark:bg-white/5 mx-1 shrink-0' />
 
-            {quickReplies.map((reply, i) => (
-              <div key={i} className='relative group shrink-0'>
-                <button
-                  onClick={() => handleSendMessage(undefined, reply)}
-                  className='whitespace-nowrap px-5 py-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all shadow-sm'
-                >
-                  {reply}
-                </button>
-                <button 
-                  onClick={() => onRemoveQuickReply?.(i)}
-                  className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110'
-                >
-                  <X size={10} strokeWidth={3} />
-                </button>
-              </div>
-            ))}
+            <div className='flex gap-2 overflow-x-auto hide-scrollbar pr-10'>
+              {quickReplies.map((reply, i) => (
+                <div key={i} className='relative group shrink-0'>
+                  <button
+                    onClick={() => handleSendMessage(undefined, reply)}
+                    className='whitespace-nowrap px-4 md:px-5 py-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[9px] md:text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all shadow-sm'
+                  >
+                    {reply}
+                  </button>
+                  <button 
+                    onClick={() => onRemoveQuickReply?.(i)}
+                    className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-md'
+                  >
+                    <X size={10} strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-4 items-end max-w-[1000px] mx-auto'>
