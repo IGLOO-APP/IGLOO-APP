@@ -4,6 +4,17 @@ import './index.css';
 import App from './App';
 import { ClerkProvider } from '@clerk/clerk-react';
 
+// Limpeza automática de Service Workers em ambiente de desenvolvimento
+// Isso evita que o modo offline (PWA) de builds anteriores interfira no localhost
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      registration.unregister();
+      console.log('Stale Service Worker unregistered (Dev Mode)');
+    }
+  });
+}
+
 const PUBLISHABLE_KEY = String(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '');
 
 const rootElement = document.getElementById('root');

@@ -533,11 +533,12 @@ const Tenants: React.FC = () => {
                   <select
                     value={newTenant.propertyId}
                     onChange={(e) => setNewTenant(prev => ({ ...prev, propertyId: e.target.value }))}
-                    className='w-full pl-12 pr-10 py-3.5 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white appearance-none transition-all text-sm font-bold cursor-pointer'
+                    className='w-full pl-12 pr-10 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:border-primary dark:text-white appearance-none transition-all text-sm font-bold cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
                   >
-                    <option value="">Selecione um imóvel (Opcional)</option>
+                    <option value="" className="dark:bg-slate-800">Selecione um imóvel (Opcional)</option>
                     {properties.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id} className="dark:bg-slate-800">{p.name}</option>
                     ))}
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">

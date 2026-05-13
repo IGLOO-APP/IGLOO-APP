@@ -549,36 +549,39 @@ const OwnerMessages: React.FC = () => {
 
   return (
     <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
-      <TopBar 
-        title='Central de Mensagens' 
-        subtitle='Comunicação direta com locatários'
-      >
-        <div className='flex items-center gap-2'>
-          <button
-            onClick={() => setShowFAQManager(true)}
-            className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
-          >
-            <HelpCircle size={18} className='text-primary' />
-            <span className='hidden lg:inline'>FAQs</span>
-          </button>
+      {/* Header - Hidden on mobile when chat is active to maximize space */}
+      <div className={`${activeChatId ? 'hidden md:block' : 'block'}`}>
+        <TopBar 
+          title='Central de Mensagens' 
+          subtitle='Comunicação direta com locatários'
+        >
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={() => setShowFAQManager(true)}
+              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+            >
+              <HelpCircle size={18} className='text-primary' />
+              <span className='hidden lg:inline'>FAQs</span>
+            </button>
 
-          <button
-            onClick={() => setShowCategoryManager(true)}
-            className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
-          >
-            <Filter size={18} className='text-orange-500' />
-            <span className='hidden lg:inline'>Categorias</span>
-          </button>
+            <button
+              onClick={() => setShowCategoryManager(true)}
+              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+            >
+              <Filter size={18} className='text-orange-500' />
+              <span className='hidden lg:inline'>Categorias</span>
+            </button>
 
-          <button
-            onClick={() => setShowAnnouncementModal(true)}
-            className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
-          >
-            <Megaphone size={18} />
-            <span className='hidden md:inline'>Comunicado</span>
-          </button>
-        </div>
-      </TopBar>
+            <button
+              onClick={() => setShowAnnouncementModal(true)}
+              className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+            >
+              <Megaphone size={18} />
+              <span className='hidden md:inline'>Comunicado</span>
+            </button>
+          </div>
+        </TopBar>
+      </div>
 
       {loading && (
         <div className='absolute inset-0 z-[60] bg-white/80 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center'>
@@ -587,7 +590,7 @@ const OwnerMessages: React.FC = () => {
         </div>
       )}
 
-      <div className='flex flex-1 overflow-hidden relative min-h-0'>
+      <div className='flex flex-1 overflow-hidden relative min-h-0 bg-white dark:bg-background-dark'>
         <ChatSidebar 
           activeChatId={activeChatId}
           setActiveChatId={setActiveChatId}
@@ -638,15 +641,22 @@ const OwnerMessages: React.FC = () => {
             />
 
             {showDetailsPanel && (
-              <ContextPanel 
-                activeChat={activeChat}
-                activeRightTab={activeRightTab}
-                setActiveRightTab={setActiveRightTab}
-                setShowDetailsPanel={setShowDetailsPanel}
-                isStatusLocked={isStatusLocked}
-                setIsStatusLocked={setIsStatusLocked}
-                onStatusChange={handleStatusChange}
-              />
+              <>
+                {/* Mobile Backdrop for ContextPanel */}
+                <div 
+                  className='fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden animate-fadeIn'
+                  onClick={() => setShowDetailsPanel(false)}
+                />
+                <ContextPanel 
+                  activeChat={activeChat}
+                  activeRightTab={activeRightTab}
+                  setActiveRightTab={setActiveRightTab}
+                  setShowDetailsPanel={setShowDetailsPanel}
+                  isStatusLocked={isStatusLocked}
+                  setIsStatusLocked={setIsStatusLocked}
+                  onStatusChange={handleStatusChange}
+                />
+              </>
             )}
           </div>
         ) : (

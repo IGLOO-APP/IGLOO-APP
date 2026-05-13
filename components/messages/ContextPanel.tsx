@@ -23,8 +23,21 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
 }) => {
   return (
     <div 
-      className={`fixed lg:relative inset-y-0 right-0 w-80 md:w-96 lg:w-80 bg-white dark:bg-background-dark border-l border-gray-100 dark:border-white/5 flex flex-col h-full z-40 lg:z-10 transition-transform duration-300 animate-slideLeft min-h-0`}
+      className={`fixed lg:relative inset-y-0 right-0 w-[85%] sm:w-80 md:w-96 lg:w-80 bg-white dark:bg-background-dark border-l border-gray-100 dark:border-white/5 flex flex-col h-full z-[60] lg:z-10 transition-transform duration-300 shadow-2xl lg:shadow-none min-h-0`}
     >
+      {/* Drawer Header - Visible only on mobile/tablet */}
+      <div className='lg:hidden h-20 px-6 flex items-center justify-between border-b border-gray-100 dark:border-white/5 shrink-0'>
+        <div className='flex flex-col'>
+          <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>Detalhes</h3>
+          <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Informações do Chat</p>
+        </div>
+        <button 
+          onClick={() => setShowDetailsPanel(false)}
+          className='p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500'
+        >
+          <X size={20} />
+        </button>
+      </div>
 
       <div className='flex-1 overflow-y-auto p-6 space-y-8'>
         {/* Ticket Status Bar - Integrated if active */}

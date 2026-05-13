@@ -638,10 +638,11 @@ const SupportCenter: React.FC = () => {
                           <select
                             value={selectedTicket.assigned_to || ''}
                             onChange={(e) => handleAssign(selectedTicket.id, e.target.value || null)}
-                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-white/10 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
+                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
+                            style={{ colorScheme: 'dark' }}
                           >
-                            <option value=''>Não atribuído</option>
-                            <option value={currentUser?.id}>Minha Fila</option>
+                            <option value='' className="dark:bg-slate-800">Não atribuído</option>
+                            <option value={currentUser?.id || ''} className="dark:bg-slate-800">Minha Fila</option>
                           </select>
                           <ChevronDown className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
                         </div>

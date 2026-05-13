@@ -58,20 +58,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div
-      className={`flex-1 flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative w-full md:w-auto h-full transition-transform duration-300 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+      className={`flex-1 flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative inset-0 md:inset-auto w-full md:w-auto h-full transition-transform duration-300 z-30 md:z-10 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
     >
-      <div className='h-20 px-6 md:px-8 flex items-center justify-between bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
-        <div className='flex items-center gap-4'>
+      <div className='h-20 px-4 md:px-8 flex items-center justify-between bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
+        <div className='flex items-center gap-2 md:gap-4 flex-1 min-w-0'>
           <button
             onClick={() => setActiveChatId(null)}
-            className='md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
+            className='p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 md:hidden'
           >
             <ChevronLeft size={24} />
           </button>
 
-          <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-3 md:gap-4 flex-1 min-w-0'>
             {/* Professional Header Avatar — Matching Sidebar Adjustment 2 */}
-            <div className={`w-12 h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-xl shadow-lg shadow-black/5`}>
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg shadow-black/5 shrink-0`}>
               {activeChat.tenantAvatar ? (
                 <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-2xl' />
               ) : (
@@ -79,43 +79,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             </div>
 
-            <div className='flex flex-col'>
-              <div className='flex items-center gap-3'>
-                <h2 className='text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none'>
+            <div className='flex flex-col min-w-0'>
+              <div className='flex items-center gap-2'>
+                <h2 className='text-sm md:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none truncate'>
                   {activeChat.tenantName}
                 </h2>
-                <span className={`px-2 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[8px] font-black uppercase tracking-widest`}>
+                <span className={`px-1.5 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0`}>
                    #{activeChat.id.slice(0, 8)}
                 </span>
               </div>
-              <div className='flex items-center gap-2 mt-1.5'>
-                <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]'>
+              <div className='flex items-center gap-1.5 mt-1 md:mt-1.5'>
+                <p className='text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] truncate'>
                   {activeChat.property}
                 </p>
-                <span className='text-slate-300 dark:text-slate-800'>•</span>
-                <span className={`text-[9px] font-black uppercase tracking-wider ${
+                <span className='text-slate-300 dark:text-slate-800 text-[10px]'>•</span>
+                <span className={`text-[8px] md:text-[9px] font-black uppercase tracking-wider truncate ${
                   activeChat.category === 'maintenance' ? 'text-orange-500' :
                   activeChat.category === 'finance' ? 'text-emerald-500' : 'text-primary'
                 }`}>
-                  {activeChat.category === 'maintenance' ? 'Chamado de Manutenção' : 
-                   activeChat.category === 'finance' ? 'Financeiro' : 'Conversa Geral'}
+                  {activeChat.category === 'maintenance' ? 'Manutenção' : 
+                   activeChat.category === 'finance' ? 'Financeiro' : 'Geral'}
                 </span>
               </div>
+              
+              {Object.values(typingUsers).some(Boolean) && (
+                <div className='flex items-center gap-1.5 mt-1 animate-fadeIn'>
+                  <div className='flex items-center gap-1'>
+                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]' />
+                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce' />
+                  </div>
+                  <span className='text-[9px] text-primary font-black uppercase tracking-widest'>Digitando</span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-
-        <div className='flex items-center gap-3'>
-          {Object.keys(typingUsers).length > 0 && (
-            <div className='hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full'>
-              <div className='flex gap-0.5'>
-                <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]' />
-                <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]' />
-                <div className='w-1 h-1 bg-primary rounded-full animate-bounce' />
-              </div>
-              <span className='text-[9px] text-primary font-black uppercase tracking-widest'>Digitando</span>
-            </div>
-          )}
           <button
             onClick={() => setShowDetailsPanel(!showDetailsPanel)}
             className={`p-3 rounded-2xl transition-all ${

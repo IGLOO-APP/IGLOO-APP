@@ -117,14 +117,14 @@ export const ChatSidebar = React.memo(({
                 <select
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
                   style={{ colorScheme: 'dark' }}
                 >
-                  <option value='all'>Todas as Prioridades</option>
-                  <option value='urgent'>Urgente</option>
-                  <option value='high'>Alta</option>
-                  <option value='medium'>Média</option>
-                  <option value='low'>Baixa</option>
+                  <option value='all' className="dark:bg-slate-800">Todas as Prioridades</option>
+                  <option value='urgent' className="dark:bg-slate-800">Urgente</option>
+                  <option value='high' className="dark:bg-slate-800">Alta</option>
+                  <option value='medium' className="dark:bg-slate-800">Média</option>
+                  <option value='low' className="dark:bg-slate-800">Baixa</option>
                 </select>
                 <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />
               </div>
@@ -138,12 +138,12 @@ export const ChatSidebar = React.memo(({
                 <select
                   value={propertyFilter}
                   onChange={(e) => setPropertyFilter(e.target.value)}
-                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                  className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
                   style={{ colorScheme: 'dark' }}
                 >
-                  <option value='all'>Todos os Imóveis</option>
+                  <option value='all' className="dark:bg-slate-800">Todos os Imóveis</option>
                   {Array.from(new Set(chats.map(c => c.property))).map(prop => (
-                    <option key={prop} value={prop}>{prop}</option>
+                    <option key={prop} value={prop} className="dark:bg-slate-800">{prop}</option>
                   ))}
                 </select>
                 <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={14} />

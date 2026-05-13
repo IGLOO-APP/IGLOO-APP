@@ -31,11 +31,12 @@ export const PropertyYieldChart: React.FC<PropertyYieldChartProps> = ({ yieldDat
           <select 
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className='appearance-none pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-[10px] font-bold text-slate-600 dark:text-slate-400 focus:outline-none cursor-pointer hover:bg-slate-100 transition-colors'
+            className='appearance-none pl-3 pr-8 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-white focus:outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-colors'
+            style={{ colorScheme: 'dark' }}
           >
-            <option>Último mês</option>
-            <option>Últimos 3 meses</option>
-            <option>Último ano</option>
+            <option className="dark:bg-slate-800">Último mês</option>
+            <option className="dark:bg-slate-800">Últimos 3 meses</option>
+            <option className="dark:bg-slate-800">Último ano</option>
           </select>
           <ChevronDown size={12} className='absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' />
         </div>

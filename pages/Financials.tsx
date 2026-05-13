@@ -1095,24 +1095,25 @@ const Financials: React.FC = () => {
                       <select
                         value={txCategory}
                         onChange={(e) => setTxCategory(e.target.value)}
-                        className='w-full pl-10 pr-8 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                        className='w-full pl-10 pr-8 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                        style={{ colorScheme: 'dark' }}
                       >
-                        <option value='' disabled>
+                        <option value='' disabled className="dark:bg-slate-800">
                           Selecione
                         </option>
                         {transactionType === 'income' ? (
                           <>
-                            <option value='aluguel'>Aluguel</option>
-                            <option value='condominio'>Condomínio</option>
-                            <option value='iptu'>Reembolso IPTU</option>
-                            <option value='extra'>Renda Extra</option>
+                            <option value='aluguel' className="dark:bg-slate-800">Aluguel</option>
+                            <option value='condominio' className="dark:bg-slate-800">Condomínio</option>
+                            <option value='iptu' className="dark:bg-slate-800">Reembolso IPTU</option>
+                            <option value='extra' className="dark:bg-slate-800">Renda Extra</option>
                           </>
                         ) : (
                           <>
-                            <option value='manutencao'>Manutenção</option>
-                            <option value='impostos'>Impostos/Taxas</option>
-                            <option value='servicos'>Serviços (Água/Luz)</option>
-                            <option value='adm'>Taxa Administrativa</option>
+                            <option value='manutencao' className="dark:bg-slate-800">Manutenção</option>
+                            <option value='impostos' className="dark:bg-slate-800">Impostos/Taxas</option>
+                            <option value='servicos' className="dark:bg-slate-800">Serviços (Água/Luz)</option>
+                            <option value='adm' className="dark:bg-slate-800">Taxa Administrativa</option>
                           </>
                         )}
                       </select>
@@ -1163,11 +1164,12 @@ const Financials: React.FC = () => {
                     <select
                       value={txProperty}
                       onChange={(e) => setTxProperty(e.target.value)}
-                      className='w-full pl-10 pr-8 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                      className='w-full pl-10 pr-8 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                      style={{ colorScheme: 'dark' }}
                     >
-                      <option value=''>Geral (Sem vínculo)</option>
+                      <option value='' className="dark:bg-slate-800">Geral (Sem vínculo)</option>
                       {properties.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id} className="dark:bg-slate-800">{p.name}</option>
                       ))}
                     </select>
                     <ChevronDown
