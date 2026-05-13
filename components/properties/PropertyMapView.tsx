@@ -33,8 +33,7 @@ const expansionOpportunities = [
     left: '60%',
     roi: '15% a.a.',
     status: 'LEILÃO',
-    image:
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=300',
+    image: null,
   },
   {
     id: 'exp2',
@@ -46,8 +45,7 @@ const expansionOpportunities = [
     left: '45%',
     roi: '22% a.a.',
     status: 'VENDA',
-    image:
-      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=300',
+    image: null,
   },
   {
     id: 'exp3',
@@ -59,8 +57,7 @@ const expansionOpportunities = [
     left: '35%',
     roi: '18% a.a.',
     status: 'OPORTUNIDADE',
-    image:
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=300',
+    image: null,
   },
 ];
 
@@ -377,9 +374,18 @@ export const PropertyMapView: React.FC<PropertyMapViewProps> = ({ properties, on
               <div className='flex flex-col gap-4'>
                 <div className='flex gap-4'>
                   <div
-                    className='w-24 h-24 rounded-xl bg-cover bg-center shrink-0 shadow-sm relative overflow-hidden group'
-                    style={{ backgroundImage: `url('${selectedItem.image}')` }}
+                    className='w-24 h-24 rounded-xl bg-slate-900 shrink-0 shadow-sm relative overflow-hidden group flex items-center justify-center'
                   >
+                    {selectedItem.image ? (
+                      <div 
+                        className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
+                        style={{ backgroundImage: `url('${selectedItem.image}')` }}
+                      />
+                    ) : (
+                      <span className='text-white/10 text-[8px] font-black uppercase tracking-[0.2em] select-none text-center px-1'>
+                        Meu Igloo
+                      </span>
+                    )}
                     <div className='absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors'></div>
                   </div>
                   <div className='flex flex-col flex-1 justify-between py-0.5 min-w-0'>

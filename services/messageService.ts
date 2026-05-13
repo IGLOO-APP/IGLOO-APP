@@ -34,6 +34,7 @@ export interface ChatThread {
     status: 'pending' | 'in_progress' | 'completed';
     priority: 'low' | 'medium' | 'high' | 'urgent';
     images: string[];
+    realId: string;
   };
   messages: ChatMessage[];
   hasMore?: boolean;
@@ -42,7 +43,7 @@ export interface ChatThread {
 export const messageService = {
   async getChats(): Promise<ChatThread[]> {
     try {
-      // 1. Fetch Maintenance Chats (No join to profiles to avoid RLS/FK errors)
+      // 1. Fetch Maintenance Requests
       const { data: maintenanceRes, error: maintError } = await supabase
         .from('maintenance_requests')
         .select('*, properties(id, name, image_url, price)')
@@ -50,7 +51,7 @@ export const messageService = {
 
       if (maintError) console.error('Error fetching maintenance chats:', maintError);
 
-      // 2. Fetch General/Finance Chats
+      // 2. Fetch General/Finance Conversations
       const { data: conversationsRes, error: convError } = await supabase
         .from('conversations')
         .select('*, properties(id, name, image_url, price)')
@@ -58,7 +59,7 @@ export const messageService = {
 
       if (convError) console.error('Error fetching general chats:', convError);
 
-      // 3. Fetch Profiles for all unique tenants found
+      // 3. Fetch Profiles
       const tenantIds = new Set<string>();
       [...(maintenanceRes || []), ...(conversationsRes || [])].forEach(r => {
         if (r.tenant_id) tenantIds.add(r.tenant_id);
@@ -71,128 +72,160 @@ export const messageService = {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]));
 
-      const chats: ChatThread[] = [];
+      // 4. Grouping Logic - THE WHATSAPP WAY
+      const tenantThreads = new Map<string, ChatThread>();
 
-      // Map Maintenance
-    if (maintenanceRes && maintenanceRes.length > 0) {
-      // CORREÇÃO N+1: busca todas as últimas mensagens de uma vez só
-      const requestIds = maintenanceRes.map(r => r.id);
-      const { data: allMessages } = await supabase
-        .from('maintenance_messages')
-        .select('*')
-        .in('request_id', requestIds)
-        .order('created_at', { ascending: false });
-
-      // Agrupar por request_id e pegar apenas a primeira (mais recente)
-      const lastMsgMap = new Map<string, any>();
-      (allMessages || []).forEach(msg => {
-        if (!lastMsgMap.has(msg.request_id)) {
-          lastMsgMap.set(msg.request_id, msg);
+      // Process Maintenance Requests first to get ticket info
+      if (maintenanceRes) {
+        for (const req of maintenanceRes) {
+          if (!req.tenant_id) continue;
+          
+          const profile = profileMap.get(req.tenant_id);
+          const prop = req.properties as any;
+          
+          if (!tenantThreads.has(req.tenant_id)) {
+            tenantThreads.set(req.tenant_id, {
+              id: `tenant_${req.tenant_id}`,
+              dbId: req.tenant_id,
+              tenantName: profile?.name || 'Inquilino',
+              tenantAvatar: profile?.avatar_url || undefined,
+              tenantEmail: profile?.email || undefined,
+              tenantPhone: profile?.phone || undefined,
+              property: prop?.name || 'Imóvel',
+              propertyImage: prop?.image_url,
+              propertyValue: prop?.price,
+              lastMessage: 'Chamado aberto',
+              lastMessageTime: new Date(req.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              unreadCount: 0,
+              category: 'maintenance',
+              ticket: {
+                id: `#REQ-${req.id.slice(0, 4).toUpperCase()}`,
+                title: req.title,
+                category: req.category || 'Geral',
+                description: req.description || '',
+                status: req.status as any,
+                priority: req.priority as any,
+                images: req.images || [],
+                realId: req.id,
+              },
+              messages: [],
+              hasMore: true,
+            });
+          } else {
+            // Tenant already exists, maybe update to show multiple tickets if needed
+            // For now, the first (most recent) one found wins the "active ticket" slot in header
+          }
         }
+      }
+
+      // Process Conversations
+      if (conversationsRes) {
+        for (const conv of conversationsRes) {
+          if (!conv.tenant_id) continue;
+
+          const existing = tenantThreads.get(conv.tenant_id);
+          const prop = conv.properties as any;
+          const profile = profileMap.get(conv.tenant_id);
+
+          if (!existing) {
+            tenantThreads.set(conv.tenant_id, {
+              id: `tenant_${conv.tenant_id}`,
+              dbId: conv.tenant_id,
+              tenantName: profile?.name || 'Inquilino',
+              tenantAvatar: profile?.avatar_url || undefined,
+              tenantEmail: profile?.email || undefined,
+              tenantPhone: profile?.phone || undefined,
+              property: prop?.name || 'Geral',
+              propertyImage: prop?.image_url,
+              propertyValue: prop?.price,
+              lastMessage: conv.last_message || 'Início da conversa',
+              lastMessageTime: conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
+              unreadCount: conv.unread_count_owner || 0,
+              category: (conv.category || 'general') as any,
+              messages: [],
+              hasMore: true,
+            });
+          } else {
+            // Update last message and unread count if conversation is more recent
+            if (!conv.last_message_at || !existing.lastMessageTime || new Date(conv.last_message_at) > new Date(existing.lastMessageTime)) {
+              existing.lastMessage = conv.last_message || existing.lastMessage;
+              existing.lastMessageTime = conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : existing.lastMessageTime;
+            }
+            existing.unreadCount += conv.unread_count_owner || 0;
+          }
+        }
+      }
+
+      // Fetch actual last messages to be accurate
+      const sortedThreads = Array.from(tenantThreads.values()).sort((a, b) => {
+        // Simple sort for now, would be better with actual timestamps
+        return 0;
       });
 
-      for (const req of maintenanceRes) {
-        const lastMsg = lastMsgMap.get(req.id) ?? null;
-        const prop = req.properties as any;
-        const profile = req.tenant_id ? profileMap.get(req.tenant_id) : null;
-
-        chats.push({
-          id: `maint_${req.id}`,
-          dbId: req.id,
-          tenantName: profile?.name || 'Inquilino',
-          tenantAvatar: profile?.avatar_url || undefined,
-          tenantEmail: profile?.email || undefined,
-          tenantPhone: profile?.phone || undefined,
-          property: prop?.name || 'Imóvel',
-          propertyImage: prop?.image_url,
-          propertyValue: prop?.price,
-          lastMessage: lastMsg?.content || 'Chamado aberto',
-          lastMessageTime: lastMsg?.created_at ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
-          unreadCount: 0,
-          category: 'maintenance',
-          ticket: {
-            id: `#REQ-${req.id.slice(0, 4).toUpperCase()}`,
-            title: req.title,
-            category: req.category || 'Geral',
-            description: req.description || '',
-            status: req.status as any,
-            priority: req.priority as any,
-            images: req.images || [],
-          },
-          messages: [],
-          hasMore: true,
-        });
-      }
-    }
-
-    // Map General/Finance
-    if (conversationsRes) {
-      for (const conv of conversationsRes) {
-        const prop = conv.properties as any;
-        const profile = conv.tenant_id ? profileMap.get(conv.tenant_id) : null;
-
-        chats.push({
-          id: `conv_${conv.id}`,
-          dbId: conv.id,
-          tenantName: profile?.name || 'Inquilino',
-          tenantAvatar: profile?.avatar_url || undefined,
-          tenantEmail: profile?.email || undefined,
-          tenantPhone: profile?.phone || undefined,
-          property: prop?.name || 'Geral',
-          propertyImage: prop?.image_url,
-          propertyValue: prop?.price,
-          lastMessage: conv.last_message || 'Início da conversa',
-          lastMessageTime: conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recém',
-          unreadCount: conv.unread_count_owner || 0,
-          category: (conv.category || 'general') as any,
-          messages: [],
-          hasMore: true,
-        });
-      }
-    }
-
-      return chats;
+      return sortedThreads;
     } catch (err) {
       console.error('Error in getChats:', err);
       return [];
     }
   },
 
-  async getMessages(threadId: string, category: string, limit = 20, offset = 0) {
-    const dbId = threadId.split('_')[1];
-    let query;
+  async getMessages(threadId: string, category: string, limit = 50, offset = 0) {
+    const tenantId = threadId.substring(threadId.indexOf('_') + 1);
+    
+    // 1. Get all Maintenance Requests for this tenant
+    const { data: requests } = await supabase
+      .from('maintenance_requests')
+      .select('id, title')
+      .eq('tenant_id', tenantId);
+    
+    const requestIds = (requests || []).map(r => r.id);
 
-    if (category === 'maintenance') {
-      query = supabase
+    // 2. Get General Conversation for this tenant
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('category', 'general')
+      .maybeSingle();
+
+    // 3. Fetch messages from both sources
+    let maintMsgs: any[] = [];
+    if (requestIds.length > 0) {
+      const { data } = await supabase
         .from('maintenance_messages')
         .select('*')
-        .eq('request_id', dbId)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-    } else {
-      query = supabase
+        .in('request_id', requestIds)
+        .order('created_at', { ascending: false });
+      maintMsgs = data || [];
+    }
+
+    let convMsgs: any[] = [];
+    if (conv) {
+      const { data } = await supabase
         .from('conversation_messages')
         .select('*')
-        .eq('conversation_id', dbId)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: false });
+      convMsgs = data || [];
     }
 
-    const { data, error } = await query;
+    // 4. Merge and Map
+    const allRaw = [...maintMsgs, ...convMsgs].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
-    if (error) {
-      console.error('Error fetching messages:', error);
-      return [];
-    }
+    // Slice for pagination
+    const paginated = allRaw.slice(offset, offset + limit);
 
-    const messages: ChatMessage[] = (data || []).map((m: any) => ({
+    const messages: ChatMessage[] = paginated.map((m: any) => ({
       id: m.id,
       text: m.content,
       sender: (m.sender_role === 'owner' ? 'me' : m.sender_role === 'system' ? 'system' : 'tenant') as 'me' | 'tenant' | 'system',
       time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isRead: m.is_read || true,
       type: (m.type || 'text') as 'text' | 'image' | 'system',
-      created_at: m.created_at
+      created_at: m.created_at,
+      requestId: m.request_id // to know which request this belongs to
     }));
 
     return messages.reverse();
@@ -200,35 +233,68 @@ export const messageService = {
 
   async sendMessage(threadId: string, category: string, text: string, userId: string, type: 'text' | 'image' | 'system' = 'text') {
     try {
-      const dbId = threadId.split('_')[1];
-
-      // userId is the Clerk user ID passed explicitly from the component
-      // (supabase.auth.getSession() is always null in the Clerk integration)
+      const tenantId = threadId.substring(threadId.indexOf('_') + 1);
       if (!userId) throw new Error('Usuário não autenticado. Faça login novamente.');
 
-      if (category === 'maintenance') {
-        return await supabase.from('maintenance_messages').insert({
-          request_id: dbId,
-          sender_id: userId,
-          sender_role: 'owner',
-          content: text,
-          type,
-        });
-      } else {
-        // Update last message metadata in parallel (fire and forget)
-        supabase.from('conversations').update({
-          last_message: type === 'image' ? '📷 Imagem enviada' : text,
-          last_message_at: new Date().toISOString(),
-        }).eq('id', dbId).then();
+      // 1. Check for the most recent active maintenance request for this tenant
+      const { data: latestMaint } = await supabase
+        .from('maintenance_requests')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .in('status', ['pending', 'in_progress', 'open'])
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-        return await supabase.from('conversation_messages').insert({
-          conversation_id: dbId,
+      if (latestMaint) {
+        return await supabase.from('maintenance_messages').insert({
+          request_id: latestMaint.id,
           sender_id: userId,
-          sender_role: 'owner',
+          sender_role: type === 'system' ? 'system' : 'owner',
           content: text,
           type,
         });
       }
+
+      // 2. If no active maintenance, use General Conversation
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('category', 'general')
+        .maybeSingle();
+
+      let targetConvId = conv?.id;
+
+      if (!targetConvId) {
+        // Create conversation if it doesn't exist
+        const { data: newConv } = await supabase
+          .from('conversations')
+          .insert({
+            owner_id: userId,
+            tenant_id: tenantId,
+            category: 'general',
+            last_message: text,
+            last_message_at: new Date().toISOString()
+          })
+          .select('id')
+          .single();
+        targetConvId = newConv?.id;
+      } else {
+        // Update last message metadata
+        supabase.from('conversations').update({
+          last_message: type === 'image' ? '📷 Imagem enviada' : text,
+          last_message_at: new Date().toISOString(),
+        }).eq('id', targetConvId).then();
+      }
+
+      return await supabase.from('conversation_messages').insert({
+        conversation_id: targetConvId,
+        sender_id: userId,
+        sender_role: type === 'system' ? 'system' : 'owner',
+        content: text,
+        type,
+      });
     } catch (err) {
       console.error('Critical error sending message:', err);
       throw err;

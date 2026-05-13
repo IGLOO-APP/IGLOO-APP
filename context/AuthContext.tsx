@@ -15,7 +15,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   impersonatingFrom?: User | null;
-  startImpersonation: (targetUser: User) => void;
+  startImpersonation: (targetUser: User, redirectPath?: string) => void;
   stopImpersonation: () => void;
 }
 
@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const startImpersonation = (targetUser: User) => {
+  const startImpersonation = (targetUser: User, redirectPath?: string) => {
     // Salva no sessionStorage para persistir no reload
     sessionStorage.setItem('igloo_impersonated_user', JSON.stringify(targetUser));
     sessionStorage.setItem('igloo_admin_user', JSON.stringify(user));
@@ -149,7 +149,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(targetUser);
     
     // Redireciona via hard reload para limpar estados globais e caches
-    if (targetUser.role === 'tenant') {
+    if (redirectPath) {
+      window.location.href = redirectPath;
+    } else if (targetUser.role === 'tenant') {
       window.location.href = '/tenant';
     } else {
       window.location.href = '/';

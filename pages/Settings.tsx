@@ -37,6 +37,7 @@ import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../types';
 import { ModalWrapper } from '../components/ui/ModalWrapper';
 import { useLocation } from 'react-router-dom';
 import { TenantProfileConfigPanel } from '../components/properties/TenantProfileConfigPanel';
+import { TopBar } from '../components/layout/TopBar';
 
 interface PaymentMethodConfig {
   id: string;
@@ -418,13 +419,10 @@ const Settings: React.FC = () => {
   return (
     <div className='flex flex-col h-full w-full max-w-md mx-auto md:max-w-5xl relative bg-background-light dark:bg-background-dark'>
       {/* Header */}
-      <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-5 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
-        <div>
-          <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Configurações</h1>
-          <p className='text-sm text-slate-500 dark:text-slate-400'>
-            {user?.role === 'tenant' ? 'Gerencie seus dados e preferências' : 'Administração do sistema'}
-          </p>
-        </div>
+      <TopBar 
+        title='Configurações' 
+        subtitle={user?.role === 'tenant' ? 'Gerencie seus dados e preferências' : 'Administração do sistema'}
+      >
         <button
           onClick={handleSave}
           disabled={isSaving}
@@ -438,7 +436,7 @@ const Settings: React.FC = () => {
           {!isSaving && !saveSuccess && <Save size={18} />}
           {saveSuccess && <CheckCircle size={18} />}
         </button>
-      </header>
+      </TopBar>
 
       <div className='flex flex-col md:flex-row h-full overflow-hidden'>
         {/* Navigation */}

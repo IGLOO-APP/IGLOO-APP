@@ -195,8 +195,8 @@ const AdminDashboard: React.FC = () => {
       {toast && (
         <div
           className={`fixed top-4 right-4 z-[60] px-6 py-4 rounded-2xl text-white font-bold shadow-2xl animate-slideDown flex items-center gap-3 ${toast.type === 'success'
-              ? 'bg-emerald-500 shadow-emerald-500/20'
-              : 'bg-red-500 shadow-red-500/20'
+            ? 'bg-emerald-500 shadow-emerald-500/20'
+            : 'bg-red-500 shadow-red-500/20'
             }`}
         >
           {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
@@ -222,16 +222,16 @@ const AdminDashboard: React.FC = () => {
             </h1>
             <p className='text-sm text-slate-500 font-medium'>Visão geral da performance do Igloo.</p>
           </div>
-          
+
           <div className='flex items-center gap-3'>
-            <button 
+            <button
               onClick={() => navigate('/admin/conversion')}
               className='px-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center gap-2'
             >
               <Activity size={16} className='text-primary' />
               Relatórios
             </button>
-            <button 
+            <button
               onClick={() => navigate('/admin/support')}
               className='px-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center gap-2'
             >
@@ -447,10 +447,10 @@ const AdminDashboard: React.FC = () => {
                 >
                   <div
                     className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${activity.action?.includes('error')
-                        ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
-                        : activity.action?.includes('money')
-                          ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-                          : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
+                      ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                      : activity.action?.includes('money')
+                        ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                        : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'
                       }`}
                   ></div>
                   <div className='flex-1'>
@@ -541,7 +541,7 @@ const AdminDashboard: React.FC = () => {
                   </td>
                   <td className='px-8 py-5 text-right'>
                     <div className='flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                      <button 
+                      <button
                         onClick={() => navigate(`/admin/users?id=${u.id}`)}
                         className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-slate-400 hover:text-primary transition-colors'
                       >

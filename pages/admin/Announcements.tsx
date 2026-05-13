@@ -122,29 +122,29 @@ const Announcements: React.FC = () => {
       {/* Stats Quick Overview */}
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
         {[
-          { 
-            label: 'Visu. Totais', 
-            value: stats.total_views.toLocaleString(), 
-            change: '+0', 
-            icon: Eye, 
+          {
+            label: 'Visu. Totais',
+            value: stats.total_views.toLocaleString(),
+            change: '+0',
+            icon: Eye,
             color: 'primary',
             tooltipTitle: 'Visualizações Totais',
             tooltipDesc: 'Número total de vezes que seus comunicados foram exibidos nos dashboards dos proprietários.'
           },
-          { 
-            label: 'Cliques Totais', 
-            value: stats.total_clicks.toLocaleString(), 
-            change: 'Total', 
-            icon: Users, 
+          {
+            label: 'Cliques Totais',
+            value: stats.total_clicks.toLocaleString(),
+            change: 'Total',
+            icon: Users,
             color: 'amber',
             tooltipTitle: 'Engajamento Direto',
             tooltipDesc: 'Total de cliques em links ou botões de "Ver Mais" dentro dos comunicados ativos.'
           },
-          { 
-            label: 'CTR Médio', 
-            value: `${stats.ctr}%`, 
-            change: 'Interação real', 
-            icon: Target, 
+          {
+            label: 'CTR Médio',
+            value: `${stats.ctr}%`,
+            change: 'Interação real',
+            icon: Target,
             color: 'emerald',
             tooltipTitle: 'Taxa de Clique (CTR)',
             tooltipDesc: 'A porcentagem de usuários que clicaram em um comunicado após visualizá-lo. Mede a eficácia da sua mensagem.'
@@ -174,11 +174,10 @@ const Announcements: React.FC = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-tight ${
-                  activeTab === tab
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-tight ${activeTab === tab
                     ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
                     : 'text-slate-400 hover:text-slate-600'
-                }`}
+                  }`}
               >
                 {tab === 'all' ? 'Todos' : tab === 'active' ? 'Ativos' : tab === 'draft' ? 'Rascunhos' : 'Arquivados'}
               </button>
@@ -208,7 +207,7 @@ const Announcements: React.FC = () => {
               <div className={`p-3 rounded-2xl border ${getTypeStyles(ann.type)} shrink-0`}>
                 <Megaphone size={24} />
               </div>
-              
+
               <div className='flex-1 space-y-1'>
                 <div className='flex items-center gap-2'>
                   <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase border ${getTypeStyles(ann.type)}`}>
@@ -317,7 +316,7 @@ const Announcements: React.FC = () => {
                   <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-1.5 block'>
                     Tipo de Aviso
                   </label>
-                  <select 
+                  <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value as any)}
                     className='w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm font-medium'
@@ -332,7 +331,7 @@ const Announcements: React.FC = () => {
                   <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 mb-1.5 block'>
                     Público Alvo
                   </label>
-                  <select 
+                  <select
                     value={newTarget}
                     onChange={(e) => setNewTarget(e.target.value as any)}
                     className='w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm font-medium'

@@ -20,9 +20,7 @@ export const mapProperty = (row: any): Property => ({
   numeric_price: row.price,
   market_value: row.market_value || 0,
   area: `${row.area}m²`,
-  image:
-    row.image_url ||
-    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=300',
+  image: row.image_url,
   owner_id: row.owner_id,
   bedrooms: row.bedrooms,
   bathrooms: row.bathrooms,

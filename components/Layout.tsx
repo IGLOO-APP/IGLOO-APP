@@ -15,6 +15,8 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Sidebar } from './layout/Sidebar';
 import { MobileNav } from './layout/MobileNav';
+import { useSearch } from '../context/SearchContext';
+import CommandPalette from './layout/CommandPalette';
 
 const navItems = [
   { path: '/', label: 'Início', icon: LayoutDashboard },
@@ -39,6 +41,7 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const { logout, impersonatingFrom, user, stopImpersonation } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { isOpen, closeSearch } = useSearch();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   useEffect(() => {
@@ -49,6 +52,7 @@ const Layout: React.FC = () => {
 
   return (
     <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark transition-colors duration-300'>
+      <CommandPalette isOpen={isOpen} onClose={closeSearch} />
       <Sidebar
         navItems={navItems}
         adminItems={adminItems}

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { UserRole } from './types';
 import { NotificationProvider } from './context/NotificationContext';
+import { SearchProvider } from './context/SearchContext';
 import { useAuth } from './context/AuthContext';
 
 // Layouts
@@ -49,6 +50,7 @@ const SubscriptionManagement = lazy(() => import('./pages/admin/SubscriptionMana
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const Announcements = lazy(() => import('./pages/admin/Announcements'));
 const ConversionReport = lazy(() => import('./pages/admin/ConversionReport'));
+const AdminConversations = lazy(() => import('./pages/admin/Conversations'));
 const AdminManager = lazy(() => import('./components/admin/AdminManager'));
 
 const queryClient = new QueryClient({
@@ -203,6 +205,7 @@ const router = createBrowserRouter([
           { path: 'support', element: <SupportCenter /> },
           { path: 'announcements', element: <Announcements /> },
           { path: 'conversion', element: <ConversionReport /> },
+          { path: 'conversations', element: <AdminConversations /> },
           { path: 'team', element: <AdminManager /> },
           { path: 'settings', element: <SystemSettings /> },
         ],
@@ -213,12 +216,24 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
+});
 
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SearchProvider>
+        <RouterProvider 
+          router={router} 
+          future={{
+            v7_startTransition: true,
+          }}
+        />
+      </SearchProvider>
     </QueryClientProvider>
   );
 };

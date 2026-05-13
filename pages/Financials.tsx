@@ -58,6 +58,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { TopBar } from '../components/layout/TopBar';
 
 
 
@@ -402,99 +403,98 @@ const Financials: React.FC = () => {
 
   return (
     <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative'>
-      <header className='sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-4 border-b border-gray-200 dark:border-white/5 transition-colors'>
-        <div className='flex items-center justify-between px-4 pb-2'>
-          <h1 className='text-slate-900 dark:text-white text-lg font-bold leading-tight flex-1'>
-            Lançamentos
-          </h1>
-          <div className='flex gap-2'>
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
-              title='Exportar Relatório'
-            >
-              {isExporting ? (
-                <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
-              ) : (
-                <Download size={20} className="group-hover:scale-110 transition-transform" />
-              )}
-            </button>
-            <button
-              onClick={() => setShowApportImportModal(true)}
-              className='flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
-              title='Conciliação Bancária'
-            >
-              <FileUp size={20} className="group-hover:scale-110 transition-transform" />
-            </button>
-            <button
-              onClick={() => setShowApportionment(true)}
-              className='flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
-              title='Rateio de Despesas'
-            >
-              <PieChart size={20} className="group-hover:scale-110 transition-transform" />
-            </button>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className='flex h-10 px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-sm active:scale-95'
-            >
-              <Plus size={18} /> Nova Receita
-            </button>
-          </div>
+      <TopBar 
+        title='Lançamentos' 
+        subtitle='Fluxo de caixa e gestão'
+      >
+        <div className='flex gap-2'>
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
+            title='Exportar Relatório'
+          >
+            {isExporting ? (
+              <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
+            ) : (
+              <Download size={20} className="group-hover:scale-110 transition-transform" />
+            )}
+          </button>
+          <button
+            onClick={() => setShowApportImportModal(true)}
+            className='flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
+            title='Conciliação Bancária'
+          >
+            <FileUp size={20} className="group-hover:scale-110 transition-transform" />
+          </button>
+          <button
+            onClick={() => setShowApportionment(true)}
+            className='flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
+            title='Rateio de Despesas'
+          >
+            <PieChart size={20} className="group-hover:scale-110 transition-transform" />
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className='flex h-11 px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-sm active:scale-95'
+          >
+            <Plus size={18} /> Nova Receita
+          </button>
         </div>
-        <div className='px-4 pb-4 pt-2 space-y-3'>
-          {/* Search Bar */}
-          <div className='relative'>
-            <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
-            <input
-              type='text'
-              placeholder='Buscar lançamentos (ex: aluguel, conserto...)'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='w-full pl-11 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm focus:outline-none focus:border-primary transition-all dark:text-white shadow-sm'
+      </TopBar>
+
+      <div className='px-4 py-4 space-y-3 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-white/5'>
+        {/* Search Bar */}
+        <div className='relative'>
+          <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+          <input
+            type='text'
+            placeholder='Buscar lançamentos (ex: aluguel, conserto...)'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='w-full pl-11 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm focus:outline-none focus:border-primary transition-all dark:text-white shadow-sm'
+          />
+        </div>
+
+        <div className='flex gap-3'>
+          <div className='relative flex-1'>
+            <select 
+              value={selectedPropertyId}
+              onChange={(e) => setSelectedPropertyId(e.target.value)}
+              className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'
+            >
+              <option value='all'>Todos os Imóveis</option>
+              {properties.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <ChevronDown
+              className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500'
+              size={20}
             />
           </div>
-
-          <div className='flex gap-3'>
-            <div className='relative flex-1'>
-              <select 
-                value={selectedPropertyId}
-                onChange={(e) => setSelectedPropertyId(e.target.value)}
-                className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'
-              >
-                <option value='all'>Todos os Imóveis</option>
-                {properties.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              <ChevronDown
-                className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500'
-                size={20}
-              />
+          <div className='h-11 px-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
+            <button 
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <ArrowLeft size={14} />
+            </button>
+            <div className="flex items-center gap-2 px-1">
+              <Calendar size={16} className='text-primary' />
+              <span className="min-w-[60px] text-center capitalize">
+                {selectedDate.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '')}
+              </span>
             </div>
-            <div className='h-11 px-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
-              <button 
-                onClick={handlePrevMonth}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-              >
-                <ArrowLeft size={14} />
-              </button>
-              <div className="flex items-center gap-2 px-1">
-                <Calendar size={16} className='text-primary' />
-                <span className="min-w-[60px] text-center capitalize">
-                  {selectedDate.toLocaleString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '')}
-                </span>
-              </div>
-              <button 
-                onClick={handleNextMonth}
-                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
-              >
-                <ArrowUp size={14} className="rotate-90" />
-              </button>
-            </div>
+            <button 
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <ArrowUp size={14} className="rotate-90" />
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <div className='flex-1 overflow-y-auto px-4 pt-10 pb-24'>
         {/* Trend Chart Area */}

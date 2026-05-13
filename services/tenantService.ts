@@ -94,4 +94,7 @@ export const tenantService = {
   updateMaintenanceRequest: maintenanceService.update,
   getMaintenanceMessages: maintenanceService.getMessages,
   sendMaintenanceMessage: maintenanceService.sendMessage,
+  getMaintenanceCategories: maintenanceService.getCategories,
+  addMaintenanceCategory: maintenanceService.addCategory,
+  deleteMaintenanceCategory: maintenanceService.deleteCategory,
 };

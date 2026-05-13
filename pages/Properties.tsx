@@ -8,6 +8,7 @@ import { PropertyDetails } from '../components/properties/PropertyDetails';
 import { AddPropertyForm } from '../components/properties/AddPropertyForm';
 import { PropertyMapView } from '../components/properties/PropertyMapView';
 import { propertyService } from '../services/propertyService';
+import { TopBar } from '../components/layout/TopBar';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -115,6 +116,7 @@ const Properties: React.FC = () => {
     const property = localProperties.find(p => p.id === id);
     if (property) {
       setEditingProperty(property);
+      setSelectedProperty(null);
     }
   };
 
@@ -176,46 +178,41 @@ const Properties: React.FC = () => {
       className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-md mx-auto md:max-w-4xl' : ''}`}
     >
       {viewMode !== 'map' && (
-        <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center transition-colors'>
-          <div>
-            <h1 className='text-xl font-bold tracking-tight text-slate-900 dark:text-white'>
-              Meus Ativos
-            </h1>
-            <p className='text-sm text-slate-500 dark:text-slate-400'>Gestão de propriedades</p>
-          </div>
-          <div className='flex items-center gap-3'>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
-            >
-              <Plus size={18} />
-              <span className='hidden sm:inline'>Novo Imóvel</span>
-            </button>
-            <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700'>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-                title='Lista'
-              >
-                <List size={20} />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-                title='Grade'
-              >
-                <Grid size={20} />
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={`p-1.5 rounded-md transition-all ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-                title='Mapa'
-              >
-                <Map size={20} />
-              </button>
-            </div>
-          </div>
-        </header>
+      <TopBar 
+        title='Meus Ativos' 
+        subtitle='Gestão de propriedades'
+      >
+        <button
+          onClick={() => setShowAddForm(true)}
+          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+        >
+          <Plus size={18} />
+          <span className='hidden sm:inline'>Novo Imóvel</span>
+        </button>
+        <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700'>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            title='Lista'
+          >
+            <List size={20} />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            title='Grade'
+          >
+            <Grid size={20} />
+          </button>
+          <button
+            onClick={() => setViewMode('map')}
+            className={`p-1.5 rounded-md transition-all ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            title='Mapa'
+          >
+            <Map size={20} />
+          </button>
+        </div>
+      </TopBar>
       )}
 
       {viewMode !== 'map' ? (

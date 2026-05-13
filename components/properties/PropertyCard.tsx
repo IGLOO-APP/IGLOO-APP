@@ -76,11 +76,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         onClick={() => !isTenant && onClick(property)}
         className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} aspect-[4/5] ${borderClass} ${className}`}
       >
-        {/* Photo - Smaller height for compact */}
-        <div
-          className='h-full w-full bg-cover bg-center relative'
-          style={{ backgroundImage: `url(${property.image})` }}
-        >
+        {/* Photo Container */}
+        <div className='h-full w-full relative overflow-hidden bg-slate-900'>
+          {property.image ? (
+            <div
+              className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
+              style={{ backgroundImage: `url(${property.image})` }}
+            />
+          ) : (
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <span className='text-white/10 text-[10px] font-black uppercase tracking-[0.3em] select-none'>
+                Meu Igloo
+              </span>
+            </div>
+          )}
           {/* Overlay Gradient for readability */}
           <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity' />
           
@@ -117,11 +126,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         onClick={() => !isTenant && onClick(property)}
         className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} ${borderClass} ${className}`}
       >
-        {/* Photo */}
-        <div
-          className='flex-grow min-h-[160px] w-full bg-cover bg-center rounded-t-2xl relative'
-          style={{ backgroundImage: `url(${property.image})` }}
-        >
+        {/* Photo Container */}
+        <div className='flex-grow min-h-[160px] w-full relative overflow-hidden bg-slate-900 rounded-t-2xl'>
+          {property.image ? (
+            <div
+              className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
+              style={{ backgroundImage: `url(${property.image})` }}
+            />
+          ) : (
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <span className='text-white/10 text-xl font-black uppercase tracking-[0.4em] select-none'>
+                Meu Igloo
+              </span>
+            </div>
+          )}
           {/* Status badge overlay */}
           <div className='absolute top-3 left-3'>
             <span
@@ -225,11 +243,21 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     >
       {/* ── ZONE SUPERIOR ──────────────────────────────────── */}
       <div className='flex items-stretch'>
-        {/* Photo — fixed 120px wide, full-height of zone, rounded left corners only */}
-        <div
-          className='w-[120px] shrink-0 bg-cover bg-center rounded-tl-2xl rounded-bl-2xl'
-          style={{ backgroundImage: `url(${property.image})` }}
-        />
+        {/* Photo Container */}
+        <div className='w-[120px] shrink-0 relative overflow-hidden bg-slate-900 rounded-tl-2xl rounded-bl-2xl'>
+          {property.image ? (
+            <div
+              className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
+              style={{ backgroundImage: `url(${property.image})` }}
+            />
+          ) : (
+            <div className='absolute inset-0 flex items-center justify-center'>
+              <span className='text-white/10 text-[8px] font-black uppercase tracking-[0.3em] select-none text-center px-2'>
+                Meu Igloo
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Info — two columns */}
         <div className='flex flex-1 min-w-0 p-4 gap-4'>

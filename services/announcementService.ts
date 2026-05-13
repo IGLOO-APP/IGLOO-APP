@@ -22,8 +22,12 @@ export const announcementService = {
     return result as OwnerAnnouncement;
   },
 
-  async getForTenant(tenantUserId: string) {
+  async getForTenant(tenantUserId: string, propertyId?: string, condoName?: string) {
     const now = new Date().toISOString();
+    
+    // Fetch all announcements from the database first, then filter in memory for complex JSONB logic 
+    // or use advanced PostgREST filters. For simplicity and reliability with JSONB target_value, 
+    // we'll filter the results.
     const { data: announcements, error: annError } = await (supabase as any)
       .from('owner_announcements')
       .select('*, announcement_acknowledgments(user_id)')
@@ -32,7 +36,32 @@ export const announcementService = {
 
     if (annError) throw annError;
 
-    return (announcements as any[]).map(ann => ({
+    const filtered = (announcements as any[]).filter(ann => {
+      // 1. All target
+      if (ann.target_type === 'all') return true;
+
+      // 2. Individual target
+      if (ann.target_type === 'individual' || ann.target_type === 'tenant') {
+        const targetIds = ann.target_value?.ids || [];
+        return targetIds.includes(tenantUserId);
+      }
+
+      // 3. Property target
+      if (ann.target_type === 'property' && propertyId) {
+        const targetIds = ann.target_value?.ids || [];
+        return targetIds.includes(propertyId);
+      }
+
+      // 4. Condominium target
+      if (ann.target_type === 'condominium' && condoName) {
+        const targetCondo = ann.target_value?.name;
+        return targetCondo === condoName;
+      }
+
+      return false;
+    });
+
+    return filtered.map(ann => ({
       ...ann,
       acknowledged: ann.announcement_acknowledgments?.some((ack: any) => ack.user_id === tenantUserId)
     })) as OwnerAnnouncement[];

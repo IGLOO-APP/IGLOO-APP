@@ -8,6 +8,7 @@ import { ContractDetails } from '../components/contracts/ContractDetails';
 import { RenewContractModal } from '../components/contracts/RenewContractModal';
 import { contractService } from '../services/contractService';
 import { useNotification } from '../context/NotificationContext';
+import { TopBar } from '../components/layout/TopBar';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -116,15 +117,10 @@ const Contracts: React.FC = () => {
   return (
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       {/* Header */}
-      <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-5 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
-        <div>
-          <h1 className='text-xl font-bold tracking-tight text-slate-900 dark:text-white'>
-            Gestão de Contratos
-          </h1>
-          <p className='text-sm text-slate-500 dark:text-slate-400 font-medium'>
-            Ciclo de vida e assinaturas digitais
-          </p>
-        </div>
+      <TopBar 
+        title='Gestão de Contratos' 
+        subtitle='Ciclo de vida e assinaturas digitais'
+      >
         <button
           onClick={() => setShowWizard(true)}
           className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
@@ -132,7 +128,7 @@ const Contracts: React.FC = () => {
           <Plus size={20} />
           <span className='hidden md:inline'>Novo Contrato</span>
         </button>
-      </header>
+      </TopBar>
 
       <div className='flex-1 overflow-y-auto px-6 pb-24'>
         {/* Stats Row */}

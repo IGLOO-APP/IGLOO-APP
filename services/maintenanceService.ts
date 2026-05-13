@@ -82,6 +82,9 @@ export const maintenanceService = {
         sender_id: senderId,
         sender_role: role,
         content,
+        id: undefined, // ensure ID is generated
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         type,
         url,
       })
@@ -90,5 +93,38 @@ export const maintenanceService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async getCategories(): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('maintenance_categories')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('[maintenanceService] Error fetching categories:', error);
+      return [];
+    }
+    return data;
+  },
+
+  async addCategory(category: { name: string; icon_name: string; color_class: string; bg_class: string }): Promise<any> {
+    const { data, error } = await supabase
+      .from('maintenance_categories')
+      .insert(category)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteCategory(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('maintenance_categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 };

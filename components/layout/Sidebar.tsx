@@ -24,7 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   logout,
 }) => {
   return (
-    <aside className='hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-white/5 h-full shrink-0 transition-colors z-20'>
+    <aside className='hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-white/5 h-full shrink-0 transition-colors z-50'>
       <div className='p-6 flex items-center gap-3 mb-2'>
         <Link to='/' className='flex items-center gap-3 hover:opacity-80 transition-opacity group'>
           <div className='w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-bold shadow-lg shadow-black/10 group-hover:scale-105 transition-transform'>

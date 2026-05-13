@@ -276,7 +276,7 @@ export interface SystemAnnouncement {
   created_at: string;
 }
 
-export type AnnouncementTargetType = 'all' | 'property' | 'condominium';
+export type AnnouncementTargetType = 'all' | 'property' | 'condominium' | 'individual';
 export type AnnouncementType = 'maintenance' | 'event' | 'warning' | 'info';
 
 export interface OwnerAnnouncement {

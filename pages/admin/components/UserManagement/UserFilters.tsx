@@ -135,13 +135,13 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
           filterRole !== 'Todos' ||
           filterPeriod !== 'Todos' ||
           searchTerm) && (
-          <button
-            onClick={onClearFilters}
-            className='text-xs font-bold text-primary hover:underline'
-          >
-            Limpar Filtros
-          </button>
-        )}
+            <button
+              onClick={onClearFilters}
+              className='text-xs font-bold text-primary hover:underline'
+            >
+              Limpar Filtros
+            </button>
+          )}
       </div>
     </div>
   );

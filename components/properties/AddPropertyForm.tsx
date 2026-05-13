@@ -181,7 +181,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
   return (
     <ModalWrapper
       onClose={onClose}
-      className='md:max-w-2xl'
+      className='md:max-w-3xl'
       title={initialData ? 'Editar Imóvel' : 'Novo Imóvel'}
       showCloseButton={true}
     >
@@ -207,6 +207,13 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                 {coverImage ? (
                   <>
                     <img src={coverImage} alt='Preview' className='w-full h-full object-cover' />
+                    <button
+                      type='button'
+                      onClick={(e) => { e.stopPropagation(); setCoverImage(null); }}
+                      className='absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10'
+                    >
+                      <X size={14} />
+                    </button>
                     <div className='absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
                       <span className='text-white font-bold flex items-center gap-2'>
                         <UploadCloud size={20} />

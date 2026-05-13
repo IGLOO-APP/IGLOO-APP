@@ -78,7 +78,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
       expiresAt.setDate(expiresAt.getDate() + parseInt(formData.expires_in_days));
 
       let targetValue = null;
-      if (formData.target_type === 'property') {
+      if (formData.target_type === 'property' || formData.target_type === 'individual') {
         targetValue = { ids: formData.target_value };
       } else if (formData.target_type === 'condominium') {
         targetValue = { name: formData.condo_name };
@@ -142,14 +142,14 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
 
         {/* Templates Banner */}
         {step === 1 && (
-          <div className='px-8 py-3 bg-purple-500/10 border-b border-purple-500/10 flex justify-between items-center'>
-            <div className='flex items-center gap-2 text-purple-500'>
+          <div className='px-8 py-3 bg-primary/10 border-b border-primary/10 flex justify-between items-center'>
+            <div className='flex items-center gap-2 text-primary'>
               <LayoutTemplate size={14} />
               <span className='text-[10px] font-black uppercase tracking-widest'>Use um modelo pronto para agilizar</span>
             </div>
             <button 
               onClick={() => setShowTemplates(!showTemplates)}
-              className='text-[10px] font-black uppercase tracking-widest text-purple-500 hover:underline'
+              className='text-[10px] font-black uppercase tracking-widest text-primary hover:underline'
             >
               {showTemplates ? 'Fechar Modelos' : 'Ver Modelos'}
             </button>
@@ -235,9 +235,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                         setFormData({ ...formData, title: tpl.title, content: tpl.content, type: tpl.type });
                         setShowTemplates(false);
                       }}
-                      className='text-left p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-purple-500/50 transition-all group'
+                      className='text-left p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-primary/50 transition-all group'
                     >
-                      <p className='text-[10px] font-black text-purple-500 uppercase tracking-widest mb-1'>{tpl.title}</p>
+                      <p className='text-[10px] font-black text-primary uppercase tracking-widest mb-1'>{tpl.title}</p>
                       <p className='text-[10px] text-slate-400 line-clamp-2 leading-relaxed'>{tpl.content}</p>
                     </button>
                   ))}
@@ -284,8 +284,25 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                   </div>
                 </button>
 
+                <button
+                  onClick={() => setFormData({ ...formData, target_type: 'individual' })}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                    formData.target_type === 'individual' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.target_type === 'individual' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}>
+                    <User size={20} />
+                  </div>
+                  <div className='text-left'>
+                    <p className='text-sm font-black text-slate-900 dark:text-white'>Inquilino Específico</p>
+                    <p className='text-[10px] text-slate-400 font-bold'>Enviar apenas para uma pessoa</p>
+                  </div>
+                </button>
+
                 {formData.target_type === 'condominium' && (
-                  <div className="relative">
+                  <div className="relative animate-slideDown">
                     <select
                       value={formData.condo_name}
                       onChange={(e) => setFormData({ ...formData, condo_name: e.target.value })}
@@ -299,6 +316,37 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                     <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                       <ChevronRight size={18} className="rotate-90" />
                     </div>
+                  </div>
+                )}
+
+                {formData.target_type === 'individual' && (
+                  <div className="max-h-40 overflow-y-auto space-y-2 p-2 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 animate-slideDown">
+                    {properties
+                      .filter(p => p.tenant)
+                      .map(p => (
+                        <label key={p.tenant!.id} className='flex items-center gap-3 p-3 hover:bg-white dark:hover:bg-white/5 rounded-xl cursor-pointer transition-all border border-transparent hover:border-primary/20'>
+                          <input
+                            type='checkbox'
+                            checked={formData.target_value.includes(p.tenant!.id)}
+                            onChange={(e) => {
+                              const newValues = e.target.checked 
+                                ? [...formData.target_value, p.tenant!.id]
+                                : formData.target_value.filter(id => id !== p.tenant!.id);
+                              setFormData({ ...formData, target_value: newValues });
+                            }}
+                            className='w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary'
+                          />
+                          <div className="flex flex-col">
+                            <span className='text-xs font-bold text-slate-900 dark:text-white'>{p.tenant!.name}</span>
+                            <span className='text-[10px] text-slate-400 uppercase font-black tracking-tight'>{p.name}</span>
+                          </div>
+                        </label>
+                      ))}
+                    {properties.filter(p => p.tenant).length === 0 && (
+                      <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase italic">
+                        Nenhum imóvel alugado no momento
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -374,9 +422,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
               Voltar
             </button>
           )}
-          <button
+            <button
             onClick={() => step === 1 ? setStep(2) : handleSubmit()}
-            disabled={loading || !formData.title || !formData.content || (step === 2 && formData.target_type === 'property' && formData.target_value.length === 0)}
+            disabled={loading || !formData.title || !formData.content || (step === 2 && (formData.target_type === 'property' || formData.target_type === 'individual') && formData.target_value.length === 0)}
             className='flex-[2] py-4 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2'
           >
             {loading ? (

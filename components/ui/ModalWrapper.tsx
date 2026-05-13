@@ -21,19 +21,17 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   const isSidePanel = variant === 'sidepanel';
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 flex items-end animate-fadeIn ${
-        isSidePanel 
-          ? 'md:left-64 md:items-stretch md:justify-stretch bg-black/20 md:bg-black/40' 
+    <div
+      className={`fixed inset-0 z-50 flex items-end animate-fadeIn ${isSidePanel
+          ? 'md:left-64 md:items-stretch md:justify-stretch bg-black/20 md:bg-black/40'
           : 'md:items-center md:justify-center bg-black/50 p-0 md:p-4'
-      } backdrop-blur-sm transition-all`}
+        } backdrop-blur-sm transition-all`}
     >
       <div
-        className={`w-full bg-background-light dark:bg-background-dark shadow-2xl flex flex-col overflow-hidden animate-slideUp relative ${
-          isSidePanel
+        className={`w-full bg-background-light dark:bg-background-dark shadow-2xl flex flex-col overflow-hidden animate-slideUp relative ${isSidePanel
             ? 'h-[95vh] md:h-full rounded-t-3xl md:rounded-none'
             : 'h-[95vh] md:h-auto md:max-h-[90vh] rounded-t-3xl md:rounded-3xl'
-        } ${className}`}
+          } ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Drag Handle */}

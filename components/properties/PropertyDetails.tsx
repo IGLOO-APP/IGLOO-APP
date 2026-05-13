@@ -47,8 +47,8 @@ import { useNavigate } from 'react-router-dom';
 interface PropertyDetailsProps {
   property: Property;
   onClose: () => void;
-  onEdit?: (id: number) => void;
-  onDelete?: (id: number) => void;
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
 }
 
 export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, onEdit, onDelete }) => {
@@ -57,15 +57,9 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
   const [showFullscreenImage, setShowFullscreenImage] = useState(false);
   const navigate = useNavigate();
 
-  // Use real gallery images if available, fallback to mock for demo if empty
-  const images = property.galleryImages && property.galleryImages.length > 0 
-    ? [property.image, ...property.galleryImages]
-    : [
-        property.image,
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000',
-        'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=1000',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=1000',
-      ];
+  // Use only real gallery images, remove mocks
+  const images = [property.image, ...(property.galleryImages || [])].filter(Boolean) as string[];
+  const hasImages = images.length > 0;
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,41 +93,51 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
       >
         {/* Multi-Photo Carousel */}
         <div className='h-64 w-full relative group shrink-0 overflow-hidden bg-slate-900'>
-          {/* Photos */}
-          <div 
-            className='absolute inset-0 bg-cover bg-center transition-all duration-500 ease-in-out transform'
-            style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
-          />
+          {/* Photos or Placeholder */}
+          {hasImages ? (
+            <div 
+              className='absolute inset-0 bg-cover bg-center transition-all duration-500 ease-in-out transform'
+              style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
+            />
+          ) : (
+            <div className='absolute inset-0 flex items-center justify-center bg-slate-900'>
+              <span className='text-white/10 text-4xl font-black uppercase tracking-[0.4em] select-none'>
+                Meu Igloo
+              </span>
+            </div>
+          )}
 
           {/* Gradients */}
           <div className='absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent'></div>
           <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent'></div>
 
-          {/* Modern Unified Navigation Bar */}
-          <div className='absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-3 py-2 bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 z-20 shadow-2xl'>
-            <button 
-              onClick={prevImage}
-              className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
-            >
-              <ChevronLeft size={18} />
-            </button>
-            
-            <div className='flex gap-1.5 px-1'>
-              {images.map((_, i) => (
-                <div 
-                  key={i}
-                  className={`h-1 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'w-4 bg-primary' : 'w-1 bg-white/30'}`}
-                />
-              ))}
-            </div>
+          {/* Modern Unified Navigation Bar - Only show if has more than 1 image */}
+          {images.length > 1 && (
+            <div className='absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-3 py-2 bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 z-20 shadow-2xl'>
+              <button 
+                onClick={prevImage}
+                className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
+              >
+                <ChevronLeft size={18} />
+              </button>
+              
+              <div className='flex gap-1.5 px-1'>
+                {images.map((_, i) => (
+                  <div 
+                    key={i}
+                    className={`h-1 rounded-full transition-all duration-300 ${i === currentImageIndex ? 'w-4 bg-primary' : 'w-1 bg-white/30'}`}
+                  />
+                ))}
+              </div>
 
-            <button 
-              onClick={nextImage}
-              className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
+              <button 
+                onClick={nextImage}
+                className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
 
           {/* Content Overlay */}
           <div className='absolute bottom-0 left-0 p-6 w-full z-10 bg-gradient-to-t from-black/80 via-transparent to-transparent pt-20'>
@@ -210,13 +214,13 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onCl
                 <h3 className='text-slate-900 dark:text-white font-black text-xs uppercase tracking-widest'>Informações Básicas</h3>
                 <div className='flex items-center gap-2'>
                   <button 
-                    onClick={() => onEdit?.(Number(property.id))}
+                    onClick={() => onEdit?.(property.id)}
                     className='flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
                   >
                     <Edit2 size={14} /> Editar
                   </button>
                   <button 
-                    onClick={() => onDelete?.(Number(property.id))}
+                    onClick={() => onDelete?.(property.id)}
                     className='flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
                   >
                     <Trash2 size={14} /> Excluir

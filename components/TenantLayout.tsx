@@ -104,8 +104,8 @@ const TenantLayout: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full'>
-        <div className='flex-1 overflow-y-auto pb-24 md:pb-0 w-full scroll-smooth'>
+      <main className='flex-1 overflow-y-auto flex flex-col relative h-full w-full custom-scrollbar'>
+        <div className='flex-1 w-full relative'>
           <Outlet />
         </div>
 

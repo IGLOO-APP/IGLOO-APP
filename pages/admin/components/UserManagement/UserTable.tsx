@@ -128,13 +128,12 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </td>
                   <td className='px-8 py-5'>
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                        u.role === 'admin'
+                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${u.role === 'admin'
                           ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
                           : u.role === 'owner'
-                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
-                          : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
-                      }`}
+                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                            : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
+                        }`}
                     >
                       {u.role === 'admin' ? 'Administrador' : u.role === 'owner' ? 'Proprietário' : 'Inquilino'}
                     </span>
@@ -152,11 +151,10 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </td>
                   <td className='px-8 py-5'>
                     <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-                        !u.is_suspended
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${!u.is_suspended
                           ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
                           : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'
-                      }`}
+                        }`}
                     >
                       <div
                         className={`w-1.5 h-1.5 rounded-full ${!u.is_suspended ? 'bg-emerald-500' : 'bg-rose-500'}`}

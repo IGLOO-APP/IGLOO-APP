@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, FileText, Paperclip, Send, X } from 'lucide-react';
+import { ChevronLeft, FileText, Paperclip, Send, X, Plus } from 'lucide-react';
 import { ChatThread, ChatMessage } from '../../services/messageService';
 import { MessageBubble } from './MessageBubble';
 
@@ -31,6 +31,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   setActiveRightTab,
   messagesEndRef,
   quickReplies,
+  onAddQuickReply,
+  onRemoveQuickReply,
   handleSendMessage,
   inputText,
   setInputText,
@@ -40,12 +42,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   loadingMore,
   typingUsers,
 }) => {
+  const [isAddingReply, setIsAddingReply] = React.useState(false);
+  const [newReplyText, setNewReplyText] = React.useState('');
+
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 
+      'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
   return (
     <div
-      className={`flex-1 flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative w-full h-full transition-transform duration-300 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+      className={`flex-1 flex flex-col bg-slate-50 dark:bg-black/20 absolute md:relative w-full md:w-auto h-full transition-transform duration-300 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
     >
-      <div className='h-16 px-4 md:px-6 flex items-center justify-between bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
-        <div className='flex items-center gap-3'>
+      <div className='h-20 px-6 md:px-8 flex items-center justify-between bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 shrink-0 z-20 shadow-sm'>
+        <div className='flex items-center gap-4'>
           <button
             onClick={() => setActiveChatId(null)}
             className='md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'
@@ -53,87 +67,75 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <ChevronLeft size={24} />
           </button>
 
-          <div>
-            <div className='flex flex-wrap items-center gap-1.5 md:gap-3'>
-              <h2 className='text-sm md:text-lg font-black text-slate-900 dark:text-white tracking-tighter leading-none truncate max-w-[140px] md:max-w-none'>
-                {activeChat.tenantName}
-              </h2>
-              <div className='flex items-center gap-1.5'>
-                <span
-                  className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] border ${
-                    activeChat.category === 'maintenance'
-                      ? 'bg-orange-50 border-orange-100 text-orange-600 dark:bg-orange-900/20 dark:border-orange-500/20 dark:text-orange-400'
-                      : activeChat.category === 'finance'
-                        ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-500/20 dark:text-emerald-400'
-                        : 'bg-blue-50 border-blue-100 text-blue-600 dark:bg-blue-900/20 dark:border-blue-500/20 dark:text-blue-400'
-                  }`}
-                >
-                  {activeChat.category === 'maintenance'
-                    ? 'Manutenção'
-                    : activeChat.category === 'finance'
-                      ? 'Financeiro'
-                      : 'Geral'}
-                </span>
-                {activeChat.ticket && (
-                  <span className='text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded border border-slate-200/50 dark:border-white/5'>
-                    #{activeChat.ticket.id}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className='flex items-center gap-2 mt-0.5'>
-              <p className='text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider'>
-                {activeChat.property}
-              </p>
-              {Object.keys(typingUsers).length > 0 && (
-                <div className='flex items-center gap-1.5 ml-2'>
-                  <div className='flex gap-0.5'>
-                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]' />
-                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]' />
-                    <div className='w-1 h-1 bg-primary rounded-full animate-bounce' />
-                  </div>
-                  <span className='text-[10px] text-primary font-black uppercase tracking-widest'>
-                    Digitando
-                  </span>
-                </div>
+          <div className='flex items-center gap-4'>
+            {/* Professional Header Avatar — Matching Sidebar Adjustment 2 */}
+            <div className={`w-12 h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-xl shadow-lg shadow-black/5`}>
+              {activeChat.tenantAvatar ? (
+                <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-2xl' />
+              ) : (
+                <span>{activeChat.tenantName.charAt(0)}</span>
               )}
+            </div>
+
+            <div className='flex flex-col'>
+              <div className='flex items-center gap-3'>
+                <h2 className='text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none'>
+                  {activeChat.tenantName}
+                </h2>
+                <span className={`px-2 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[8px] font-black uppercase tracking-widest`}>
+                   #{activeChat.id.slice(0, 8)}
+                </span>
+              </div>
+              <div className='flex items-center gap-2 mt-1.5'>
+                <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]'>
+                  {activeChat.property}
+                </p>
+                <span className='text-slate-300 dark:text-slate-800'>•</span>
+                <span className={`text-[9px] font-black uppercase tracking-wider ${
+                  activeChat.category === 'maintenance' ? 'text-orange-500' :
+                  activeChat.category === 'finance' ? 'text-emerald-500' : 'text-primary'
+                }`}>
+                  {activeChat.category === 'maintenance' ? 'Chamado de Manutenção' : 
+                   activeChat.category === 'finance' ? 'Financeiro' : 'Conversa Geral'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-3'>
+          {Object.keys(typingUsers).length > 0 && (
+            <div className='hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full'>
+              <div className='flex gap-0.5'>
+                <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]' />
+                <div className='w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]' />
+                <div className='w-1 h-1 bg-primary rounded-full animate-bounce' />
+              </div>
+              <span className='text-[9px] text-primary font-black uppercase tracking-widest'>Digitando</span>
+            </div>
+          )}
           <button
             onClick={() => setShowDetailsPanel(!showDetailsPanel)}
-            className={`p-2 rounded-xl transition-all ${
+            className={`p-3 rounded-2xl transition-all ${
               showDetailsPanel 
-                ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl' 
+                : 'bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
-            title='Informações Adicionais'
           >
-            {showDetailsPanel ? <X size={20} /> : <FileText size={20} />}
+            {showDetailsPanel ? <X size={20} strokeWidth={2.5} /> : <FileText size={20} strokeWidth={2.5} />}
           </button>
         </div>
       </div>
 
       <div className='flex-1 flex flex-col min-w-0'>
-        <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-4 flex flex-col'>
-          <div className='flex flex-col items-center gap-4 mb-6'>
-            {activeChat.hasMore && (
-              <button
-                onClick={loadMoreMessages}
-                disabled={loadingMore}
-                className='text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-xl transition-all disabled:opacity-50'
-              >
-                {loadingMore ? 'Carregando...' : 'Carregar mensagens anteriores'}
-              </button>
-            )}
-            <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full'>
-              Mensagens recentes
-            </span>
+        <div className='flex-1 overflow-y-auto p-6 md:p-10 space-y-8 flex flex-col custom-scrollbar'>
+          <div className='flex justify-center mb-4'>
+            <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-6 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] border border-gray-100 dark:border-white/5'>
+              Histórico de Mensagens
+            </div>
           </div>
 
-          <div className='space-y-4 flex flex-col'>
+          <div className='space-y-6 flex flex-col'>
             {activeChat.messages.map((msg) => (
               <MessageBubble key={msg.id} msg={msg} />
             ))}
@@ -141,27 +143,75 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className='p-4 bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 shrink-0'>
-          <div className='flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1'>
-            {quickReplies.map((reply, i) => (
+        <div className='p-6 md:p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
+          {/* Quick Replies - Professional Pills with Management */}
+          <div className='flex gap-3 overflow-x-auto hide-scrollbar mb-6 pb-2 items-center'>
+            <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-2 shrink-0'>Sugestões:</span>
+            
+            {/* Add New Reply Button/Input */}
+            {isAddingReply ? (
+              <div className='flex items-center gap-2 animate-fadeInLeft'>
+                <input 
+                  autoFocus
+                  type='text'
+                  value={newReplyText}
+                  onChange={(e) => setNewReplyText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      onAddQuickReply?.(newReplyText);
+                      setNewReplyText('');
+                      setIsAddingReply(false);
+                    } else if (e.key === 'Escape') {
+                      setIsAddingReply(false);
+                    }
+                  }}
+                  placeholder='Nova resposta...'
+                  className='h-9 px-4 rounded-xl bg-primary/5 border border-primary/20 text-[10px] font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary/30 min-w-[120px]'
+                />
+                <button 
+                  onClick={() => setIsAddingReply(false)}
+                  className='p-2 rounded-lg text-slate-400 hover:text-red-500 transition-colors'
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
               <button
-                key={i}
-                onClick={() => handleSendMessage(undefined, reply)}
-                className='whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
+                onClick={() => setIsAddingReply(true)}
+                className='p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all shrink-0'
+                title='Adicionar resposta rápida'
               >
-                {reply}
+                <Plus size={16} strokeWidth={3} />
               </button>
+            )}
+
+            <div className='h-4 w-px bg-gray-100 dark:bg-white/5 mx-1 shrink-0' />
+
+            {quickReplies.map((reply, i) => (
+              <div key={i} className='relative group shrink-0'>
+                <button
+                  onClick={() => handleSendMessage(undefined, reply)}
+                  className='whitespace-nowrap px-5 py-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all shadow-sm'
+                >
+                  {reply}
+                </button>
+                <button 
+                  onClick={() => onRemoveQuickReply?.(i)}
+                  className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110'
+                >
+                  <X size={10} strokeWidth={3} />
+                </button>
+              </div>
             ))}
           </div>
 
-          <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
+          <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-4 items-end max-w-[1000px] mx-auto'>
             <button
               type='button'
               onClick={() => attachmentInputRef.current?.click()}
-              className='p-2 md:p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
+              className='p-4 text-slate-400 hover:text-primary transition-all hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl border-2 border-transparent'
             >
-              <Paperclip size={18} className='md:hidden' />
-              <Paperclip size={20} className='hidden md:block' />
+              <Paperclip size={22} strokeWidth={2.5} />
             </button>
             <input 
               type="file" 
@@ -170,20 +220,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               accept="image/*"
               onChange={handleFileUpload}
             />
-            <div className='flex-1 bg-gray-100 dark:bg-black/20 rounded-2xl border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex items-center'>
+            <div className='flex-1 bg-slate-50 dark:bg-black/40 rounded-[24px] border-2 border-gray-100 dark:border-white/10 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center shadow-inner'>
               <input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder='Digite uma mensagem...'
-                className='w-full h-12 px-4 bg-transparent border-none focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400'
+                placeholder='Escreva sua mensagem...'
+                className='w-full h-14 px-6 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400'
               />
             </div>
             <button
               type='submit'
               disabled={!inputText.trim()}
-              className='h-12 w-12 rounded-full bg-primary disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white flex items-center justify-center shadow-lg shadow-primary/20 disabled:shadow-none hover:bg-primary-dark transition-all active:scale-95 shrink-0'
+              className='h-14 w-14 rounded-2xl bg-slate-900 dark:bg-white disabled:bg-slate-100 dark:disabled:bg-white/5 text-white dark:text-slate-900 flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all shrink-0'
             >
-              <Send size={20} className={inputText.trim() ? 'ml-0.5' : ''} />
+              <Send size={22} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
             </button>
           </form>
         </div>

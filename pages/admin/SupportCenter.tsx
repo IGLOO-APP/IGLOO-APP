@@ -57,7 +57,7 @@ interface Message {
 }
 
 const SupportCenter: React.FC = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, startImpersonation } = useAuth();
   const { addToast } = useNotification();
   const queryClient = useQueryClient();
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -125,7 +125,7 @@ const SupportCenter: React.FC = () => {
   ];
 
   // --- Real Data Fetching ---
-  
+
   const { data: tickets = [], isLoading: loadingTickets } = useQuery({
     queryKey: ['support_tickets'],
     queryFn: () => adminService.getTickets(),
@@ -138,7 +138,7 @@ const SupportCenter: React.FC = () => {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (content: string) => 
+    mutationFn: (content: string) =>
       adminService.sendTicketMessage(selectedTicketId!, String(currentUser!.id), 'admin', content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['support_messages', selectedTicketId] });
@@ -174,7 +174,7 @@ const SupportCenter: React.FC = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedTicketId) return;
-    
+
     // For now, simulate upload with a text message (future: upload to storage)
     sendMessageMutation.mutate(`📎 Arquivo enviado: ${file.name}`);
 
@@ -190,7 +190,7 @@ const SupportCenter: React.FC = () => {
 
   const getSLAStatus = (ticket: any) => {
     if (ticket.status === 'Resolvido' || ticket.status === 'Fechado') return { label: 'Concluído', color: 'text-emerald-500', type: 'success' };
-    
+
     const createdAt = new Date(ticket.created_at);
     const diff = Math.abs(new Date().getTime() - createdAt.getTime());
     const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -339,10 +339,10 @@ const SupportCenter: React.FC = () => {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border transition-all ${statusFilter === status || (status === 'Urgentes' && priorityFilter === 'Alta')
-                    ? status === 'Urgentes'
-                      ? 'bg-rose-500 text-white border-transparent'
-                      : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
-                    : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/10 hover:bg-slate-50'
+                  ? status === 'Urgentes'
+                    ? 'bg-rose-500 text-white border-transparent'
+                    : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
+                  : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/10 hover:bg-slate-50'
                   }`}
                 onClickCapture={() => {
                   if (status === 'Urgentes') {
@@ -368,8 +368,8 @@ const SupportCenter: React.FC = () => {
                 key={t.id}
                 onClick={() => setSelectedTicketId(t.id)}
                 className={`group p-3 rounded-xl flex items-start gap-3 cursor-pointer transition-all border border-transparent ${selectedTicketId === t.id
-                    ? 'bg-primary/10 dark:bg-primary/20 border-primary/20'
-                    : 'hover:bg-gray-100 dark:hover:bg-white/5'
+                  ? 'bg-primary/10 dark:bg-primary/20 border-primary/20'
+                  : 'hover:bg-gray-100 dark:hover:bg-white/5'
                   }`}
               >
                 <div className='relative shrink-0 mt-1'>
@@ -439,10 +439,10 @@ const SupportCenter: React.FC = () => {
                     </h2>
                     <span
                       className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap ${selectedTicket.status === 'Resolvido'
-                          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : selectedTicket.status === 'Em Andamento'
-                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                        ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : selectedTicket.status === 'Em Andamento'
+                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
                         }`}
                     >
                       {selectedTicket.status}
@@ -451,44 +451,49 @@ const SupportCenter: React.FC = () => {
                   <p className='text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]'>
                     {selectedTicket.subject}
                   </p>
-                </div>
               </div>
+            </div>
 
-              <div className='flex gap-2'>
-                <button
-                  onClick={() => {
-                    setShowDetailsPanel(true);
-                    setActiveRightTab('owner');
-                  }}
-                  className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'owner' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
-                  title='Mini Dashboard do Proprietário'
-                >
-                  <LayoutDashboard size={20} />
-                </button>
-                <button
-                  onClick={() => {
-                    setShowDetailsPanel(!showDetailsPanel);
-                    setActiveRightTab('ticket');
-                  }}
-                  className={`p-2 rounded-lg transition-colors ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-200 dark:bg-white/20 text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}
-                  title='Ver detalhes do chamado'
-                >
-                  <FileText size={20} />
-                </button>
-                <button className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors'>
-                  <MoreVertical size={20} />
-                </button>
+            <div className='flex items-center gap-6'>
+                <div className='flex items-center gap-2'>
+                  <div className='w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse'></div>
+                  <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]'>COMANDO ATIVO</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Lock size={12} className='text-slate-400' />
+                  <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]'>AES-256</span>
+                </div>
+                <div className='flex gap-1.5 ml-2'>
+                  <button
+                    onClick={() => {
+                      setShowDetailsPanel(true);
+                      setActiveRightTab('owner');
+                    }}
+                    className={`p-2.5 rounded-xl transition-all ${showDetailsPanel && activeRightTab === 'owner' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <LayoutDashboard size={18} strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDetailsPanel(!showDetailsPanel);
+                      setActiveRightTab('ticket');
+                    }}
+                    className={`p-2.5 rounded-xl transition-all ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <FileText size={18} strokeWidth={2.5} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <div className='flex-1 flex overflow-hidden'>
               {/* Messages Stream */}
               <div className='flex-1 flex flex-col min-w-0'>
-                <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-4'>
-                  <div className='flex justify-center mb-6'>
-                    <span className='text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full'>
-                      Início do Ticket — {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleDateString() : '--/--/----'}
-                    </span>
+                <div className='flex-1 overflow-y-auto p-10 space-y-10 scroll-smooth custom-scrollbar'>
+                  <div className='flex justify-center'>
+                    <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-8 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.4em] border border-gray-100 dark:border-white/5'>
+                      INÍCIO DA SESSÃO DE SUPORTE — {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleDateString('pt-BR') : '--/--/----'}
+                    </div>
                   </div>
 
                   {messages.map((msg: any) => (
@@ -497,30 +502,43 @@ const SupportCenter: React.FC = () => {
                       className={`flex w-full ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
                     >
                       {msg.sender_role === 'system' ? (
-                        <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
-                          {msg.content}
+                        <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-8 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.4em] my-6 border border-gray-100 dark:border-white/5 shadow-inner'>
+                          [ AUDIT LOG: {msg.content} ]
                         </div>
                       ) : (
                         <div
-                          className={`max-w-[80%] flex flex-col ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'items-end' : 'items-start'}`}
+                          className={`max-w-[85%] flex flex-col ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'items-end' : 'items-start'}`}
                         >
                           <div
-                            className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${msg.sender_role === 'admin' || msg.sender_role === 'me'
-                                ? 'bg-primary text-white rounded-tr-sm'
-                                : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
+                            className={`px-8 py-6 shadow-2xl relative group transition-all border-2 ${msg.sender_role === 'admin' || msg.sender_role === 'me'
+                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] rounded-tr-none border-transparent'
+                                : 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white rounded-[32px] rounded-tl-none border-slate-100 dark:border-white/10 shadow-xl'
                               }`}
                           >
-                            {msg.content}
+                            {(msg.sender_role === 'admin' || msg.sender_role === 'me') && (
+                              <div className='flex items-center gap-3 mb-4 pb-4 border-b border-white/10 dark:border-slate-900/10'>
+                                <ShieldCheck size={14} strokeWidth={3} className='text-emerald-400 dark:text-emerald-500' />
+                                <span className='text-[9px] font-black uppercase tracking-[0.2em] opacity-80'>OPERADOR AUTORIZADO</span>
+                                <div className='ml-auto text-[8px] font-black opacity-40 uppercase tracking-widest'>ID: ADMIN_LOG</div>
+                              </div>
+                            )}
+                            <p className='text-sm leading-relaxed font-black uppercase tracking-tight'>{msg.content}</p>
                           </div>
-                          <div className='flex items-center gap-1 mt-1 px-1'>
-                            <span className='text-[10px] text-slate-400 font-medium'>
-                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <div className={`flex items-center gap-3 mt-3 px-4 ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'flex-row-reverse' : ''}`}>
+                            <span className='text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] opacity-40'>
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </span>
                             {(msg.sender_role === 'admin' || msg.sender_role === 'me') && (
-                              <CheckCheck
-                                size={12}
-                                className={msg.is_read ? 'text-primary' : 'text-slate-300'}
-                              />
+                              <div className='flex items-center gap-1'>
+                                <CheckCheck
+                                  size={14}
+                                  strokeWidth={3}
+                                  className={msg.is_read ? 'text-emerald-500' : 'text-slate-300 dark:text-white/20'}
+                                />
+                                <span className='text-[8px] font-black text-slate-400 uppercase tracking-widest opacity-40'>
+                                  {msg.is_read ? 'LIDO' : 'ENVIADO'}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -530,20 +548,21 @@ const SupportCenter: React.FC = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className='p-4 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-white/5 shrink-0'>
-                  <div className='flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1'>
-                    {quickReplies.map((reply, i) => (
+                <div className='p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
+                  <div className='flex gap-3 overflow-x-auto hide-scrollbar mb-6 pb-2'>
+                    <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-2'>RESPOSTAS RÁPIDAS:</span>
+                    {['VERIFICADO', 'EM EXECUÇÃO', 'FINALIZADO', 'AGUARDANDO PROPRIETÁRIO'].map((reply, i) => (
                       <button
                         key={i}
                         onClick={() => handleSendMessage(undefined, reply)}
-                        className='whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
+                        className='whitespace-nowrap px-6 py-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[9px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all shadow-sm'
                       >
                         {reply}
                       </button>
                     ))}
                   </div>
 
-                  <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-3 items-end'>
+                  <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-6 items-end max-w-[1200px] mx-auto'>
                     <input
                       type='file'
                       ref={fileInputRef}
@@ -553,24 +572,24 @@ const SupportCenter: React.FC = () => {
                     <button
                       type='button'
                       onClick={() => fileInputRef.current?.click()}
-                      className='p-3 text-slate-400 hover:text-primary transition-colors hover:bg-gray-100 dark:hover:bg-white/5 rounded-full'
+                      className='p-5 text-slate-400 hover:text-primary transition-all hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl border-2 border-transparent'
                     >
-                      <Paperclip size={20} />
+                      <Paperclip size={24} strokeWidth={3} />
                     </button>
-                    <div className='flex-1 bg-gray-100 dark:bg-black/20 rounded-2xl border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex items-center'>
+                    <div className='flex-1 bg-slate-50 dark:bg-black/40 rounded-[32px] border-2 border-gray-100 dark:border-white/10 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center shadow-inner'>
                       <input
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
-                        placeholder='Digite uma resposta...'
-                        className='w-full h-12 px-4 bg-transparent border-none focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400'
+                        placeholder='TRANSMITIR COMANDO OPERACIONAL...'
+                        className='w-full h-16 px-8 bg-transparent border-none focus:ring-0 text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white placeholder-slate-400'
                       />
                     </div>
                     <button
                       type='submit'
                       disabled={!inputText.trim()}
-                      className='h-12 w-12 rounded-full bg-primary disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white flex items-center justify-center shadow-lg shadow-primary/20 disabled:shadow-none hover:bg-primary-dark transition-all active:scale-95 shrink-0'
+                      className='h-16 w-24 rounded-[24px] bg-slate-900 dark:bg-white disabled:bg-slate-100 dark:disabled:bg-white/5 text-white dark:text-slate-900 flex items-center justify-center shadow-2xl hover:scale-[1.05] active:scale-[0.95] transition-all shrink-0'
                     >
-                      <Send size={20} className={inputText.trim() ? 'ml-0.5' : ''} />
+                      <Send size={24} strokeWidth={3} />
                     </button>
                   </form>
                 </div>
@@ -637,9 +656,9 @@ const SupportCenter: React.FC = () => {
                           </div>
                           <div>
                             <p className='text-[9px] font-bold text-slate-400 uppercase'>Abertura</p>
-                             <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
-                               {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '---'}
-                             </p>
+                            <p className='text-[11px] font-bold text-slate-700 dark:text-slate-200'>
+                              {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '---'}
+                            </p>
                           </div>
                         </div>
                         <div className='flex items-start gap-3'>
@@ -713,7 +732,20 @@ const SupportCenter: React.FC = () => {
                       </div>
 
                       <div className='pt-3 border-t border-gray-200 dark:border-white/5 space-y-2'>
-                        <button className='w-full py-2.5 rounded-xl bg-primary text-white text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
+                        <button 
+                          onClick={() => {
+                            if (selectedTicket.user) {
+                              startImpersonation({
+                                ...selectedTicket.user,
+                                role: 'owner'
+                              } as User, '/messages');
+                            }
+                          }}
+                          className='w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg transition-all'
+                        >
+                          <MessageSquare size={14} /> Mensagens do Proprietário
+                        </button>
+                        <button className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>
                           <ExternalLink size={14} /> Ver Perfil Admin
                         </button>
                         <button className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'>

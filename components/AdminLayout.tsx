@@ -13,6 +13,8 @@ import {
   UserCog,
   Megaphone,
   BarChart3,
+  TrendingUp,
+  MessageSquare,
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
@@ -24,8 +26,9 @@ const adminNavItems = [
   { path: '/admin/team', label: 'Minha Equipe', icon: UserCog },
   { path: '/admin/subscriptions', label: 'Assinaturas', icon: CreditCard },
   { path: '/admin/support', label: 'Central de Suporte', icon: LifeBuoy },
+  { path: '/admin/conversations', label: 'Conversas', icon: MessageSquare },
   { path: '/admin/announcements', label: 'Comunicados', icon: Megaphone },
-  { path: '/admin/conversion', label: 'Conversão', icon: BarChart3 },
+  { path: '/admin/conversion', label: 'Vendas', icon: TrendingUp },
   { path: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 
@@ -97,7 +100,7 @@ const AdminLayout: React.FC = () => {
         </nav>
 
         <div className='p-4 mx-4 mb-4 border-t border-white/5 space-y-1'>
-          <Link 
+          <Link
             to='/admin/settings'
             className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-white/5 transition-all group'
           >

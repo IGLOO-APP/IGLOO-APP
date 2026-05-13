@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Building2,
 } from 'lucide-react';
+import { TopBar } from '../components/layout/TopBar';
 import { TenantDetails } from '../components/tenants/TenantDetails';
 import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenantService';
@@ -204,22 +205,17 @@ const Tenants: React.FC = () => {
 
   return (
     <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-5xl relative'>
-      <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-5 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
-        <div>
-          <h1 className='text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
-            Inquilinos
-          </h1>
-          <p className='text-sm text-slate-500 dark:text-slate-400'>
-            {tenants.length} locatários ativos
-          </p>
-        </div>
+      <TopBar 
+        title='Inquilinos' 
+        subtitle={`${tenants.length} locatários ativos`}
+      >
         <button
           onClick={() => setShowAddForm(true)}
           className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
         >
           <Plus size={18} /> Novo Inquilino
         </button>
-      </header>
+      </TopBar>
 
       <div className='px-6 py-4 flex flex-col gap-4'>
         <div className='flex gap-3'>

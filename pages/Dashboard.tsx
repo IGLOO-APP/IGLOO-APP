@@ -2,16 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Bell,
   Plus,
-  Moon,
-  Sun,
   AlertTriangle,
   FileText,
-  Megaphone,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { TopBar } from '../components/layout/TopBar';
 import { dashboardService } from '../services/dashboardService';
 import { AlertBadge } from '../components/ui/DashboardComponents';
 import { useTheme } from '../hooks/useTheme';
@@ -41,22 +38,18 @@ import CreateAnnouncementModal from '../components/announcements/CreateAnnouncem
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, tokenReady } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
-
-  const [showNotifications, setShowNotifications] = useState(false);
+  const { isDark } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [announcementToDuplicate, setAnnouncementToDuplicate] = useState<any>(null);
 
-  const { data: dashboardData, isLoading, isError, error: queryError, refetch } = useQuery({
+  const { data: dashboardData, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboardData', user?.id],
     queryFn: () => dashboardService.getDashboardData(String(user!.id)),
     enabled: !!user && tokenReady,
     staleTime: 1000 * 60,
     retry: 1,
   });
-
-  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -103,44 +96,18 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 flex justify-between items-center'>
-        <div className='flex items-center gap-4'></div>
-
-        <div className='flex items-center gap-3'>
-          <button onClick={toggleTheme} className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-colors'>
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <div className='relative'>
-            <button onClick={() => setShowNotifications(!showNotifications)} className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors relative ${showNotifications ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'}`}>
-              <Bell size={20} />
-              {unreadCount > 0 && <span className='absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark'></span>}
-            </button>
-            {showNotifications && (
-              <>
-                <div className='fixed inset-0 z-30' onClick={() => setShowNotifications(false)}></div>
-                <div className='absolute top-12 right-0 w-80 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
-                  <div className='px-4 py-3 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5 text-sm font-bold'>Notificações</div>
-                  <div className='max-h-80 overflow-y-auto'>
-                    {notifications.length > 0 ? notifications.map((notif) => (
-                      <div key={notif.id} onClick={() => markAsRead(notif.id)} className='px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0'>
-                        <p className='text-sm font-bold text-slate-900 dark:text-white'>{notif.title}</p>
-                        <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5'>{notif.message}</p>
-                      </div>
-                    )) : <div className='p-8 text-center text-slate-400 text-sm'>Nenhuma notificação</div>}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-          <button
-            onClick={() => navigate('/properties', { state: { openAdd: true } })}
-            className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
-          >
-            <Plus size={18} />
-            <span className='hidden md:inline'>Novo Imóvel</span>
-          </button>
-        </div>
-      </header>
+      <TopBar 
+        title="Dashboard" 
+        subtitle="Visão Geral do Patrimônio"
+      >
+        <button
+          onClick={() => navigate('/properties', { state: { openAdd: true } })}
+          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+        >
+          <Plus size={18} />
+          <span className='hidden md:inline'>Novo Imóvel</span>
+        </button>
+      </TopBar>
 
       <div className='p-6 space-y-8 pb-24'>
         {/* Top Section: Metrics, Health & Communication Integrated */}

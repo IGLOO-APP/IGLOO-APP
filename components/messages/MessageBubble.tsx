@@ -9,8 +9,8 @@ interface MessageBubbleProps {
 export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
   if (msg.sender === 'system') {
     return (
-      <div className='flex w-full justify-center'>
-        <div className='bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide my-2 shadow-sm'>
+      <div className='flex w-full justify-center my-6'>
+        <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-8 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.3em] border border-gray-100 dark:border-white/5 shadow-inner'>
           {msg.text}
         </div>
       </div>
@@ -20,13 +20,13 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
   const isMe = msg.sender === 'me';
 
   return (
-    <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[80%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+    <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
+      <div className={`max-w-[85%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
         <div
-          className={`px-4 py-3 rounded-2xl text-sm shadow-sm relative group ${
+          className={`px-6 py-4 shadow-xl relative group transition-all border-2 ${
             isMe
-              ? 'bg-primary text-white rounded-tr-sm'
-              : 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white rounded-tl-sm border border-gray-100 dark:border-gray-700'
+              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[28px] rounded-tr-none border-transparent'
+              : 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white rounded-[28px] rounded-tl-none border-slate-100 dark:border-white/10'
           }`}
         >
           {msg.type === 'image' ? (
@@ -34,26 +34,33 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
               <img 
                 src={msg.text} 
                 alt='Anexo' 
-                className='max-w-[240px] md:max-w-xs rounded-xl border border-white/10 shadow-sm cursor-pointer hover:scale-[1.02] transition-transform' 
+                className='max-w-full md:max-w-sm rounded-[20px] border border-white/10 shadow-lg cursor-pointer hover:scale-[1.02] transition-transform' 
                 onClick={() => window.open(msg.text, '_blank')}
               />
-              <div className='absolute bottom-2 right-2 p-1 bg-black/40 backdrop-blur-md rounded-lg'>
-                <ImageIcon size={14} className='text-white' />
+              <div className='absolute bottom-3 right-3 p-2 bg-black/40 backdrop-blur-md rounded-xl'>
+                <ImageIcon size={16} className='text-white' />
               </div>
             </div>
           ) : (
-            msg.text
+            <p className='text-sm leading-relaxed font-bold tracking-tight'>{msg.text}</p>
           )}
         </div>
-        <div className='flex items-center gap-1 mt-1 px-1'>
-          <span className='text-[10px] text-slate-400 font-medium'>
+        
+        <div className={`flex items-center gap-3 mt-2 px-4 ${isMe ? 'flex-row-reverse' : ''}`}>
+          <span className='text-[10px] text-slate-400 font-black uppercase tracking-[0.1em] opacity-50'>
             {msg.time}
           </span>
           {isMe && (
-            <CheckCheck
-              size={12}
-              className={msg.isRead ? 'text-primary' : 'text-slate-300'}
-            />
+            <div className='flex items-center gap-1.5'>
+              <CheckCheck
+                size={14}
+                strokeWidth={3}
+                className={msg.isRead ? 'text-emerald-500' : 'text-slate-300 dark:text-white/20'}
+              />
+              <span className='text-[8px] font-black text-slate-400 uppercase tracking-widest opacity-40'>
+                {msg.isRead ? 'LIDO' : 'ENVIADO'}
+              </span>
+            </div>
           )}
         </div>
       </div>

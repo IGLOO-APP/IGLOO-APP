@@ -226,9 +226,10 @@ const TenantDashboard: React.FC = () => {
         }
 
         // 3. Fetch Announcements
+        const condoName = data.property_address ? data.property_address.split(',')[0].split('-')[0].trim() : undefined;
         const [systemAnn, ownerAnn] = await Promise.all([
           announcementService.getSystemAnnouncements(),
-          announcementService.getForTenant(user.id.toString())
+          announcementService.getForTenant(user.id.toString(), data.property_id, condoName)
         ]);
         
         const combined: any[] = [
@@ -342,7 +343,7 @@ const TenantDashboard: React.FC = () => {
   }
 
   return (
-    <div className='flex flex-col w-full max-w-md mx-auto md:max-w-4xl md:px-6'>
+    <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 custom-scrollbar'>
       <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
         <div className='flex items-center gap-4'>
           <button 
@@ -487,8 +488,11 @@ const TenantDashboard: React.FC = () => {
       )}
 
       {/* Communication Hub - SUPER CARD */}
-      <div className='px-6 mb-8'>
-        <CommunicationHub />
+      <div className='px-6 mb-4'>
+        <CommunicationHub 
+          tenantPropertyId={tenantData?.property_id}
+          condoName={tenantData?.property_address ? tenantData.property_address.split(',')[0].split('-')[0].trim() : undefined}
+        />
       </div>
 
       {/* --- PROPERTY & CONTRACT INFO (Ajuste 1 & 2) --- */}

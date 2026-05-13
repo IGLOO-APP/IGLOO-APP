@@ -10,24 +10,35 @@ import {
   Filter, 
   Plus, 
   MessageSquare,
+  Droplets,
+  Zap,
+  Home,
+  CloudRain,
+  Shield,
+  Smartphone,
+  Sparkles,
+  DollarSign,
+  Wrench,
+  HelpCircle,
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 
+import { tenantService } from '../services/tenantService';
 import { ChatSidebar } from '../components/messages/ChatSidebar';
 import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
 import { FAQManager } from '../components/messages/FAQManager';
+import { CategoryManager } from '../components/messages/CategoryManager';
 import { NewChatModal } from '../components/messages/NewChatModal';
 import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
 import { propertyService } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
+import { TopBar } from '../components/layout/TopBar';
+import { Megaphone } from 'lucide-react';
 
 
-const quickReplies = [
-  'Estou verificando.',
-  'Agendado para amanhã.',
-  'Pode me enviar uma foto?',
-  'Recebido, obrigado.',
-];
+// Quick Replies moved to state inside the component
 
 const OwnerMessages: React.FC = () => {
   const location = useLocation();
@@ -47,8 +58,10 @@ const OwnerMessages: React.FC = () => {
 
   // FAQ Manager State
   const [showFAQManager, setShowFAQManager] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -63,6 +76,40 @@ const OwnerMessages: React.FC = () => {
   const [isStatusLocked, setIsStatusLocked] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
+
+  const [quickReplies, setQuickReplies] = useState<string[]>([
+    'Estou verificando.',
+    'Agendado para amanhã.',
+    'Pode me enviar uma foto?',
+    'Recebido, obrigado.',
+  ]);
+
+  // Load quick replies from localStorage if available
+  useEffect(() => {
+    const saved = localStorage.getItem('igloo_quick_replies');
+    if (saved) {
+      try {
+        setQuickReplies(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading quick replies:', e);
+      }
+    }
+  }, []);
+
+  // Save quick replies to localStorage
+  useEffect(() => {
+    localStorage.setItem('igloo_quick_replies', JSON.stringify(quickReplies));
+  }, [quickReplies]);
+
+  const handleAddQuickReply = (text: string) => {
+    if (!text.trim()) return;
+    if (quickReplies.includes(text)) return;
+    setQuickReplies(prev => [...prev, text]);
+  };
+
+  const handleRemoveQuickReply = (index: number) => {
+    setQuickReplies(prev => prev.filter((_, i) => i !== index));
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
@@ -122,14 +169,27 @@ const OwnerMessages: React.FC = () => {
     return data;
   };
 
-  // 2. Fetch messages for active chat
+  // 2. Fetch messages for active chat (always reload on chat switch)
   useEffect(() => {
     if (activeChatId) {
       const activeChat = chats.find(c => c.id === activeChatId);
-      if (activeChat && activeChat.messages.length === 0) {
+      if (activeChat) {
         loadMessages(activeChatId, activeChat.category);
       }
     }
+  }, [activeChatId]);
+
+  // 3. Polling: refresh messages every 10s for the active chat
+  useEffect(() => {
+    if (!activeChatId) return;
+    const activeChat = chats.find(c => c.id === activeChatId);
+    if (!activeChat) return;
+
+    const interval = setInterval(() => {
+      loadMessages(activeChatId, activeChat.category);
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [activeChatId]);
 
   const loadMessages = async (threadId: string, category: string) => {
@@ -200,15 +260,35 @@ const OwnerMessages: React.FC = () => {
     if (!currentUserId) return;
 
     const globalSub = supabase.channel('global_messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'maintenance_messages' }, (payload) => {
-        const newMsg = payload.new;
-        const threadId = `maint_${newMsg.request_id}`;
-        handleNewIncomingMessage(threadId, newMsg, 'maintenance');
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'maintenance_messages' }, async (payload) => {
+        const newMsg = payload.new as any;
+        // Skip our own messages (already shown via optimistic update)
+        if (newMsg.sender_id === currentUserId) return;
+
+        // Look up which tenant thread this request belongs to
+        const { data: req } = await supabase
+          .from('maintenance_requests')
+          .select('tenant_id')
+          .eq('id', newMsg.request_id)
+          .maybeSingle();
+        
+        if (req?.tenant_id) {
+          handleNewIncomingMessage(`tenant_${req.tenant_id}`, newMsg, 'maintenance');
+        }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_messages' }, (payload) => {
-        const newMsg = payload.new;
-        const threadId = `conv_${newMsg.conversation_id}`;
-        handleNewIncomingMessage(threadId, newMsg, 'general');
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_messages' }, async (payload) => {
+        const newMsg = payload.new as any;
+        if (newMsg.sender_id === currentUserId) return;
+
+        const { data: conv } = await supabase
+          .from('conversations')
+          .select('tenant_id')
+          .eq('id', newMsg.conversation_id)
+          .maybeSingle();
+
+        if (conv?.tenant_id) {
+          handleNewIncomingMessage(`tenant_${conv.tenant_id}`, newMsg, 'general');
+        }
       })
       .subscribe();
 
@@ -219,7 +299,7 @@ const OwnerMessages: React.FC = () => {
     const formattedMsg: ChatMessage = {
       id: newMsg.id,
       text: newMsg.content,
-      sender: newMsg.sender_id === currentUserId ? 'me' : newMsg.sender_role === 'system' ? 'system' : 'tenant',
+      sender: newMsg.sender_role === 'system' ? 'system' : 'tenant',
       time: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isRead: newMsg.is_read || true,
       type: newMsg.type as any,
@@ -231,7 +311,7 @@ const OwnerMessages: React.FC = () => {
         const isCurrent = activeChatId === threadId;
         return {
           ...c,
-          messages: isCurrent ? [...c.messages, formattedMsg] : c.messages,
+          messages: [...c.messages, formattedMsg],
           lastMessage: formattedMsg.text,
           lastMessageTime: formattedMsg.time,
           unreadCount: isCurrent ? 0 : c.unreadCount + 1
@@ -250,6 +330,43 @@ const OwnerMessages: React.FC = () => {
     };
     fetchFaqs();
   }, [showFAQManager]);
+
+  const getIconComponent = (iconName: string) => {
+    const icons: Record<string, any> = {
+      Droplets, Zap, Home, CloudRain, Shield, Smartphone, Sparkles, DollarSign, Wrench, HelpCircle, AlertCircle
+    };
+    return icons[iconName] || Wrench;
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await tenantService.getMaintenanceCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, [showCategoryManager]);
+
+  const handleSaveCategory = async (newCat: any) => {
+    try {
+      await tenantService.addMaintenanceCategory(newCat);
+      const updated = await tenantService.getMaintenanceCategories();
+      setCategories(updated);
+    } catch (err) {
+      console.error('Error saving category:', err);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta categoria?')) {
+      try {
+        await tenantService.deleteMaintenanceCategory(id);
+        const updated = await tenantService.getMaintenanceCategories();
+        setCategories(updated);
+      } catch (err) {
+        console.error('Error deleting category:', err);
+      }
+    }
+  };
 
   const handleSaveFAQ = async () => {
     if (editingFaq) {
@@ -301,8 +418,32 @@ const OwnerMessages: React.FC = () => {
     const chat = chats.find(c => c.id === activeChatId);
     if (!chat) return;
 
+    const messageText = text;
     setInputText('');
-    await messageService.sendMessage(activeChatId, chat.category, text, String(user.id), type);
+
+    // Optimistic update — add message to local state immediately
+    const optimisticMsg: ChatMessage = {
+      id: `temp_${Date.now()}`,
+      text: messageText,
+      sender: type === 'system' ? 'system' : 'me',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isRead: true,
+      type: type,
+      created_at: new Date().toISOString(),
+    };
+
+    setChats(prev => prev.map(c => 
+      c.id === activeChatId 
+        ? { ...c, messages: [...c.messages, optimisticMsg], lastMessage: messageText, lastMessageTime: optimisticMsg.time }
+        : c
+    ));
+
+    // Send to DB in background (non-blocking)
+    try {
+      await messageService.sendMessage(activeChatId, chat.category, messageText, String(user.id), type);
+    } catch (err) {
+      console.error('Error sending message:', err);
+    }
   };
 
   const onSendMessage = (e?: React.FormEvent, overrideText?: string) => {
@@ -329,9 +470,23 @@ const OwnerMessages: React.FC = () => {
 
     setIsStatusLocked(true);
     try {
-      await messageService.updateMaintenanceStatus(chat.dbId, newStatus);
+      if (!chat.ticket?.realId) {
+        console.error('No active ticket ID found for this maintenance chat');
+        return;
+      }
+      await messageService.updateMaintenanceStatus(chat.ticket.realId, newStatus);
+      
+      // Update local state immediately
+      setChats(prev => prev.map(c => 
+        c.id === activeChatId && c.ticket 
+          ? { ...c, ticket: { ...c.ticket, status: newStatus as any } } 
+          : c
+      ));
+
       const statusLabel = newStatus === 'completed' ? 'CONCLUÍDO' : newStatus === 'in_progress' ? 'EM ANDAMENTO' : 'PENDENTE';
-      await handleSendMessage(`O status do chamado foi alterado para: ${statusLabel}`, 'system');
+      const systemText = `O status do chamado foi alterado para: ${statusLabel}`;
+      
+      await handleSendMessage(systemText, 'system');
     } catch (err) {
       console.error(err);
     } finally {
@@ -391,9 +546,22 @@ const OwnerMessages: React.FC = () => {
   };
 
   return (
-    <div className='flex h-screen bg-background-light dark:bg-background-dark overflow-hidden relative'>
+    <div className='flex flex-col h-screen bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
+      <TopBar 
+        title='Central de Mensagens' 
+        subtitle='Comunicação direta com locatários'
+      >
+        <button
+          onClick={() => setShowAnnouncementModal(true)}
+          className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+        >
+          <Megaphone size={18} />
+          <span className='hidden md:inline'>Comunicado Geral</span>
+        </button>
+      </TopBar>
+
       {loading && (
-        <div className='absolute inset-0 z-50 bg-white/80 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center'>
+        <div className='absolute inset-0 z-[60] bg-white/80 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center'>
           <div className='w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4'></div>
           <p className='text-sm font-bold text-slate-900 dark:text-white'>Carregando mensagens...</p>
         </div>
@@ -416,6 +584,7 @@ const OwnerMessages: React.FC = () => {
           filteredChats={filteredChats}
           chats={chats}
           setShowFAQManager={setShowFAQManager}
+          setShowCategoryManager={setShowCategoryManager}
           getCategoryIcon={getCategoryIcon}
           onNewChat={() => setShowNewChatModal(true)}
           scrollRef={scrollRef}
@@ -438,6 +607,8 @@ const OwnerMessages: React.FC = () => {
               setActiveRightTab={setActiveRightTab}
               messagesEndRef={messagesEndRef}
               quickReplies={quickReplies}
+              onAddQuickReply={handleAddQuickReply}
+              onRemoveQuickReply={handleRemoveQuickReply}
               handleSendMessage={onSendMessage}
               inputText={inputText}
               setInputText={setInputText}
@@ -481,21 +652,50 @@ const OwnerMessages: React.FC = () => {
               </p>
             </div>
 
-            <div className='grid grid-cols-2 gap-4 mt-12 w-full max-w-sm'>
-               <div className='p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-left'>
-                  <div className='w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-3'>
-                    <Filter size={16} />
+            <div className='w-full max-w-4xl mt-12'>
+              <div className='flex items-center justify-between mb-6 px-2'>
+                <h3 className='text-[10px] font-black uppercase tracking-[0.3em] text-slate-400'>Tipos de Chamados Ativos</h3>
+                <button 
+                  onClick={() => setShowCategoryManager(true)}
+                  className='flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all text-[10px] font-black uppercase tracking-widest'
+                >
+                  <Plus size={14} /> Adicionar
+                </button>
+              </div>
+
+              <div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
+                {categories.map((cat) => {
+                  const Icon = getIconComponent(cat.icon_name);
+                  return (
+                    <div 
+                      key={cat.id} 
+                      className='group relative p-6 bg-white dark:bg-white/5 rounded-[32px] border border-gray-100 dark:border-white/10 flex flex-col items-center justify-center gap-4 hover:border-primary/40 hover:bg-white/10 transition-all cursor-default'
+                    >
+                      <div className={`p-4 rounded-2xl ${cat.bg_class} ${cat.color_class}`}>
+                        <Icon size={24} strokeWidth={2.5} />
+                      </div>
+                      <span className='text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white'>{cat.name}</span>
+                      
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCategory(cat.id);
+                        }}
+                        className='absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg'
+                        title='Excluir categoria'
+                      >
+                        <Trash2 size={12} strokeWidth={3} />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {categories.length === 0 && (
+                  <div className='col-span-full p-12 text-slate-400 text-xs font-bold uppercase tracking-widest bg-white/5 rounded-[40px] border-2 border-dashed border-white/5 flex items-center justify-center'>
+                    Nenhuma categoria configurada
                   </div>
-                  <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>Filtros Rápidos</p>
-                  <p className='text-xs font-bold text-slate-900 dark:text-white mt-1'>Encontre por categoria</p>
-               </div>
-               <div className='p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-left'>
-                  <div className='w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3'>
-                    <Search size={16} />
-                  </div>
-                  <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>Busca Inteligente</p>
-                  <p className='text-xs font-bold text-slate-900 dark:text-white mt-1'>Busque por imóvel</p>
-               </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -518,6 +718,14 @@ const OwnerMessages: React.FC = () => {
         show={showNewChatModal}
         onClose={() => setShowNewChatModal(false)}
         onSelectTenant={handleSelectTenant}
+      />
+
+      <CategoryManager 
+        show={showCategoryManager}
+        onClose={() => setShowCategoryManager(false)}
+        categories={categories}
+        onSave={handleSaveCategory}
+        onDelete={handleDeleteCategory}
       />
 
       <CreateAnnouncementModal 
