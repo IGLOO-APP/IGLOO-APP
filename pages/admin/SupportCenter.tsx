@@ -33,6 +33,7 @@ import {
   Trash2,
   Edit,
   Save,
+  ShieldCheck,
 } from 'lucide-react';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { faqService } from '../../services/faqService';
@@ -40,7 +41,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
-import { FAQ } from '../../types';
+import { FAQ, User as UserType } from '../../types';
 
 interface Message {
   id: string;
@@ -738,7 +739,7 @@ const SupportCenter: React.FC = () => {
                               startImpersonation({
                                 ...selectedTicket.user,
                                 role: 'owner'
-                              } as User, '/messages');
+                              } as UserType, '/messages');
                             }
                           }}
                           className='w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg transition-all'

@@ -121,10 +121,10 @@ const TenantMaintenance: React.FC = () => {
         timeline.push({
           id: msg.id,
           content: msg.content,
-          sender_role: msg.sender_role,
-          created_at: msg.created_at,
-          type: msg.type || 'text',
-          url: msg.url,
+          sender_role: (msg.sender_role as any) || 'system',
+          created_at: msg.created_at || new Date().toISOString(),
+          type: (msg.type as any) || 'text',
+          url: msg.url || undefined,
         });
       }
 

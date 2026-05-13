@@ -208,6 +208,11 @@ const TenantDashboard: React.FC = () => {
         const data = await tenantService.getById(user.id.toString());
         setTenantData(data);
 
+        if (!data) {
+          setLoading(false);
+          return;
+        }
+
         if (data?.contract?.id) {
           // 2. Fetch Payments
           const payments = await tenantService.getPayments(data.contract.id.toString());

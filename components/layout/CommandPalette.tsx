@@ -76,12 +76,12 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   }, [isOpen, selectedIndex]);
 
   const navigationItems = [
-    { id: 'nav-dashboard', title: 'Painel Geral', subtitle: 'Visão geral do seu patrimônio', icon: LayoutDashboard, path: '/' },
-    { id: 'nav-properties', title: 'Meus Imóveis', subtitle: 'Gestão de ativos e unidades', icon: Building2, path: '/properties' },
-    { id: 'nav-tenants', title: 'Inquilinos', subtitle: 'Base de locatários e contratos', icon: Users, path: '/tenants' },
-    { id: 'nav-messages', title: 'Mensagens', subtitle: 'Central de comunicação', icon: MessageSquare, path: '/messages' },
-    { id: 'nav-financials', title: 'Finanças', subtitle: 'Fluxo de caixa e cobranças', icon: Receipt, path: '/financials' },
-    { id: 'nav-settings', title: 'Configurações', subtitle: 'Perfil e preferências', icon: Settings, path: '/settings' },
+    { id: 'nav-dashboard', title: 'Painel Geral', subtitle: 'Visão geral do seu patrimônio', icon: LayoutDashboard, path: '/', type: 'Página' },
+    { id: 'nav-properties', title: 'Meus Imóveis', subtitle: 'Gestão de ativos e unidades', icon: Building2, path: '/properties', type: 'Página' },
+    { id: 'nav-tenants', title: 'Inquilinos', subtitle: 'Base de locatários e contratos', icon: Users, path: '/tenants', type: 'Página' },
+    { id: 'nav-messages', title: 'Mensagens', subtitle: 'Central de comunicação', icon: MessageSquare, path: '/messages', type: 'Página' },
+    { id: 'nav-financials', title: 'Finanças', subtitle: 'Fluxo de caixa e cobranças', icon: Receipt, path: '/financials', type: 'Página' },
+    { id: 'nav-settings', title: 'Configurações', subtitle: 'Perfil e preferências', icon: Settings, path: '/settings', type: 'Página' },
   ];
 
   const filteredProperties = properties

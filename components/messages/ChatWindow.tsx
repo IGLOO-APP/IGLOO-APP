@@ -20,6 +20,8 @@ interface ChatWindowProps {
   loadMoreMessages: () => void;
   loadingMore: boolean;
   typingUsers: Record<string, boolean>;
+  onAddQuickReply: (text: string) => void;
+  onRemoveQuickReply: (index: number) => void;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({

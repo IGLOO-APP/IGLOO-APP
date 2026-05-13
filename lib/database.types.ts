@@ -383,6 +383,33 @@ export type Database = {
           },
         ]
       }
+      maintenance_categories: {
+        Row: {
+          bg_class: string | null
+          color_class: string | null
+          created_at: string
+          icon_name: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          bg_class?: string | null
+          color_class?: string | null
+          created_at?: string
+          icon_name?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          bg_class?: string | null
+          color_class?: string | null
+          created_at?: string
+          icon_name?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       maintenance_messages: {
         Row: {
           content: string
@@ -392,6 +419,7 @@ export type Database = {
           sender_id: string
           sender_role: string | null
           type: string | null
+          url: string | null
         }
         Insert: {
           content: string
@@ -401,6 +429,7 @@ export type Database = {
           sender_id: string
           sender_role?: string | null
           type?: string | null
+          url?: string | null
         }
         Update: {
           content?: string
@@ -410,6 +439,7 @@ export type Database = {
           sender_id?: string
           sender_role?: string | null
           type?: string | null
+          url?: string | null
         }
         Relationships: [
           {
