@@ -103,7 +103,7 @@ export const ChatSidebar = React.memo(({
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             className={`w-12 h-12 md:w-11 md:h-11 flex items-center justify-center rounded-[20px] md:rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100/50 dark:bg-white/5 text-slate-400 hover:text-slate-600 border border-gray-100 dark:border-white/5'}`}
           >
-            <Filter size={20} md:size={18} />
+            <Filter size={20} className='md:w-[18px] md:h-[18px]' />
           </button>
         </div>
 

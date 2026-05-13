@@ -66,7 +66,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             onClick={() => setActiveChatId(null)}
             className='p-2 -ml-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 md:hidden active:scale-95 transition-all'
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className='md:w-[20px] md:h-[20px]' />
           </button>
 
           <div className='flex items-center gap-3 md:gap-4 flex-1 min-w-0'>
@@ -214,7 +214,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               onClick={() => attachmentInputRef.current?.click()}
               className='p-3 md:p-4 text-slate-400 hover:text-primary transition-all bg-slate-50 dark:bg-white/5 rounded-2xl border-2 border-transparent active:scale-90 active:bg-slate-100'
             >
-              <Paperclip size={20} md:size={22} strokeWidth={2.5} />
+              <Paperclip size={20} strokeWidth={2.5} className='md:w-[22px] md:h-[22px]' />
             </button>
             <input 
               type="file" 
@@ -236,7 +236,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               disabled={!inputText.trim()}
               className='h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-slate-900 dark:bg-white disabled:bg-slate-100 dark:disabled:bg-white/5 text-white dark:text-slate-900 flex items-center justify-center shadow-xl hover:scale-105 active:scale-90 transition-all shrink-0'
             >
-              <Send size={20} md:size={22} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
+              <Send size={20} strokeWidth={2.5} className={`md:w-[22px] md:h-[22px] ${inputText.trim() ? 'ml-0.5' : ''}`} />
             </button>
           </form>
         </div>
