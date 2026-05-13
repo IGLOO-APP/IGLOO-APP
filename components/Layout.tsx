@@ -85,7 +85,7 @@ const Layout: React.FC = () => {
           </div>
         )}
 
-        <div className='flex-1 overflow-y-auto pb-24 md:pb-0 w-full scroll-smooth'>
+        <div className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/messages' ? 'pb-0' : 'pb-20 md:pb-0'}`}>
           <Outlet />
         </div>
 

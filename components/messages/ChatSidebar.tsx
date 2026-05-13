@@ -88,22 +88,22 @@ export const ChatSidebar = React.memo(({
         </div>
 
 
-        <div className='flex gap-2 mb-4'>
+        <div className='flex gap-3 mb-6'>
            <div className='relative flex-1'>
             <input
               type='text'
-              placeholder='Buscar por nome ou imóvel...'
+              placeholder='Buscar conversa...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='w-full h-11 pl-10 pr-4 rounded-2xl bg-slate-100 dark:bg-black/20 border-none text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all'
+              className='w-full h-12 md:h-11 pl-11 pr-4 rounded-[20px] md:rounded-2xl bg-slate-100/50 dark:bg-black/30 border-none text-[13px] md:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all'
             />
-            <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+            <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
           </div>
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className={`w-11 h-11 flex items-center justify-center rounded-2xl transition-all ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 dark:bg-white/5 text-slate-400 hover:text-slate-600 border border-gray-100 dark:border-white/5'}`}
+            className={`w-12 h-12 md:w-11 md:h-11 flex items-center justify-center rounded-[20px] md:rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100/50 dark:bg-white/5 text-slate-400 hover:text-slate-600 border border-gray-100 dark:border-white/5'}`}
           >
-            <Filter size={18} />
+            <Filter size={20} md:size={18} />
           </button>
         </div>
 
@@ -171,21 +171,21 @@ export const ChatSidebar = React.memo(({
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          className={`flex gap-2 overflow-x-auto hide-scrollbar pb-3 cursor-grab active:cursor-grabbing select-none mb-4 ${isDragging ? 'cursor-grabbing' : ''}`}
+          className={`flex gap-2.5 overflow-x-auto hide-scrollbar pb-1 cursor-grab active:cursor-grabbing select-none mb-4 ${isDragging ? 'cursor-grabbing' : ''}`}
         >
           {[
-            { id: 'all', label: 'Tudo', icon: <MessageSquare size={12} /> },
-            { id: 'urgent', label: 'Urgentes', icon: <AlertCircle size={12} /> },
-            { id: 'maintenance', label: 'Chamados', icon: <Clock size={12} /> },
-            { id: 'finance', label: 'Financeiro', icon: <User size={12} /> },
+            { id: 'all', label: 'Tudo', icon: <MessageSquare size={14} /> },
+            { id: 'urgent', label: 'Urgentes', icon: <AlertCircle size={14} /> },
+            { id: 'maintenance', label: 'Manutenção', icon: <Clock size={14} /> },
+            { id: 'finance', label: 'Financeiro', icon: <User size={14} /> },
           ].map((filter) => (
             <button
               key={filter.id}
               onClick={() => setActiveFilter(filter.id)}
-              className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`px-5 py-3 md:px-4 md:py-2 rounded-[18px] md:rounded-xl text-[12px] md:text-[11px] font-black transition-all flex items-center gap-2.5 whitespace-nowrap active:scale-95 ${
                 activeFilter === filter.id
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-                  : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl'
+                  : 'bg-slate-100/50 dark:bg-white/5 text-slate-500 dark:text-slate-400'
               }`}
             >
               {filter.icon} {filter.label}
@@ -195,7 +195,7 @@ export const ChatSidebar = React.memo(({
 
         </div>
 
-      <div className='flex-1 overflow-y-auto custom-scrollbar min-h-0'>
+      <div className='flex-1 overflow-y-auto custom-scrollbar min-h-0 pb-20 md:pb-0'>
         {/* Recommended Contacts Section (Search Mode) */}
         {searchTerm && (
           <div className='mb-2'>

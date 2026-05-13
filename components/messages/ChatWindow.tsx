@@ -144,7 +144,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className='p-4 md:p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
+        <div className='p-4 pb-20 md:pb-8 md:p-8 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
           {/* Quick Replies - Professional Pills with Management */}
           <div className='flex gap-3 overflow-x-auto hide-scrollbar mb-4 md:mb-6 pb-2 items-center'>
             <span className='hidden md:inline-block text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-2 shrink-0'>Sugestões:</span>
@@ -208,13 +208,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             </div>
           </div>
 
-          <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-4 items-end max-w-[1000px] mx-auto'>
+          <form onSubmit={(e) => handleSendMessage(e)} className='flex gap-2 md:gap-4 items-end max-w-[1000px] mx-auto'>
             <button
               type='button'
               onClick={() => attachmentInputRef.current?.click()}
-              className='p-4 text-slate-400 hover:text-primary transition-all hover:bg-slate-50 dark:hover:bg-white/5 rounded-2xl border-2 border-transparent'
+              className='p-3 md:p-4 text-slate-400 hover:text-primary transition-all bg-slate-50 dark:bg-white/5 rounded-2xl border-2 border-transparent active:scale-90 active:bg-slate-100'
             >
-              <Paperclip size={22} strokeWidth={2.5} />
+              <Paperclip size={20} md:size={22} strokeWidth={2.5} />
             </button>
             <input 
               type="file" 
@@ -223,20 +223,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               accept="image/*"
               onChange={handleFileUpload}
             />
-            <div className='flex-1 bg-slate-50 dark:bg-black/40 rounded-[24px] border-2 border-gray-100 dark:border-white/10 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center shadow-inner'>
+            <div className='flex-1 bg-slate-50 dark:bg-black/40 rounded-[22px] md:rounded-[24px] border-2 border-gray-100 dark:border-white/10 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center shadow-inner'>
               <input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder='Escreva sua mensagem...'
-                className='w-full h-14 px-6 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400'
+                placeholder='Mensagem...'
+                className='w-full h-12 md:h-14 px-5 md:px-6 bg-transparent border-none focus:ring-0 text-[13px] md:text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400'
               />
             </div>
             <button
               type='submit'
               disabled={!inputText.trim()}
-              className='h-14 w-14 rounded-2xl bg-slate-900 dark:bg-white disabled:bg-slate-100 dark:disabled:bg-white/5 text-white dark:text-slate-900 flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all shrink-0'
+              className='h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-slate-900 dark:bg-white disabled:bg-slate-100 dark:disabled:bg-white/5 text-white dark:text-slate-900 flex items-center justify-center shadow-xl hover:scale-105 active:scale-90 transition-all shrink-0'
             >
-              <Send size={22} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
+              <Send size={20} md:size={22} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
             </button>
           </form>
         </div>
