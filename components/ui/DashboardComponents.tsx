@@ -33,40 +33,51 @@ export const HeroCard = ({
   color,
   sparkData,
 }: HeroCardProps) => (
-  <div className='bg-white dark:bg-surface-dark p-3 md:p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden'>
+  <div className='h-full bg-white dark:bg-surface-dark p-4 md:p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
     <div
-      className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0`}
+      className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0 pointer-events-none`}
     >
-      <Icon size={60} className='md:hidden' />
       <Icon size={120} className='hidden md:block' />
+      <Icon size={60} className='md:hidden' />
     </div>
-    <div className='flex justify-between items-start mb-2 md:mb-6'>
-      <div
-        className={`p-3 md:p-4 rounded-2xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20`}
-      >
-        <Icon size={24} className={`${color} group-hover:scale-110 transition-transform duration-500`} />
-      </div>
-      {sparkData && (
-        <div className='hidden sm:block pt-2'>
-          <Sparkline data={sparkData} color={trendUp ? '#10b981' : '#ef4444'} />
-        </div>
-      )}
-    </div>
-    <div className="relative z-10">
-      <p className='text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.15em] mb-1 md:mb-2'>
-        {title}
-      </p>
-      <h3 className='text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 md:mb-3'>
-        {value}
-      </h3>
-      <div className='flex flex-wrap items-center gap-1.5 md:gap-3'>
-        <span
-          className={`flex items-center gap-1 text-[9px] md:text-[10px] font-black px-2 py-1 rounded-lg ${trendUp ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+
+    <div className='relative z-10 w-full'>
+      {/* Top Section: Icon & Sparkline */}
+      <div className='flex justify-between items-start mb-6 h-12 md:h-14'>
+        <div
+          className={`p-3 md:p-4 rounded-2xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20 shrink-0`}
         >
-          {trendUp ? <ArrowUp size={10} /> : <ArrowDown size={10} />} {trend}
-        </span>
-        <span className='text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wide opacity-60 line-clamp-1'>{subtext}</span>
+          <Icon size={24} className={`${color} group-hover:scale-110 transition-transform duration-500`} />
+        </div>
+        {sparkData ? (
+          <div className='hidden sm:block pt-1'>
+            <Sparkline data={sparkData} color={trendUp ? '#10b981' : '#ef4444'} />
+          </div>
+        ) : (
+          <div className='hidden sm:block w-24 h-10'></div> // Placeholder to maintain alignment
+        )}
       </div>
+
+      {/* Content Section */}
+      <div className="flex flex-col">
+        <div className="h-8 md:h-10 flex items-start"> {/* Fixed height for title area */}
+          <p className='text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.15em] leading-tight'>
+            {title}
+          </p>
+        </div>
+        <h3 className='text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2 md:mb-4 truncate'>
+          {value}
+        </h3>
+      </div>
+    </div>
+
+    <div className='relative z-10 flex flex-wrap items-center gap-2 md:gap-3 mt-auto'>
+      <span
+        className={`flex items-center gap-1 text-[9px] md:text-[10px] font-black px-2 py-1 rounded-lg ${trendUp ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} whitespace-nowrap`}
+      >
+        {trendUp ? <ArrowUp size={10} /> : <ArrowDown size={10} />} {trend}
+      </span>
+      <span className='text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-wide opacity-60 line-clamp-1'>{subtext}</span>
     </div>
   </div>
 );

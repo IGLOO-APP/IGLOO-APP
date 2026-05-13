@@ -127,7 +127,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       </div>
 
-      <div className='flex-1 flex flex-col min-w-0'>
+      <div className='flex-1 flex flex-col min-w-0 min-h-0'>
         <div className='flex-1 overflow-y-auto p-6 md:p-10 space-y-8 flex flex-col custom-scrollbar'>
           <div className='flex justify-center mb-4'>
             <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-6 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] border border-gray-100 dark:border-white/5'>

@@ -223,7 +223,7 @@ const TenantMaintenance: React.FC = () => {
   };
 
   return (
-    <div className='flex h-[calc(100vh-80px)] w-full overflow-hidden bg-[#050608]'>
+    <div className='flex h-full w-full overflow-hidden bg-[#050608]'>
       
       {/* ── Sidebar: Lista de Chamados (FIXA) ── */}
       <div className='flex w-[320px] h-full flex-col border-r border-white/5 bg-[#0A0B0D] shrink-0 overflow-hidden'>
@@ -279,7 +279,7 @@ const TenantMaintenance: React.FC = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className='flex-1 flex flex-col h-full overflow-hidden bg-[#050608]'>
+      <div className='flex-1 flex flex-col bg-[#050608] relative overflow-hidden h-full min-h-0'>
         
         {/* Chat Header */}
         <div className='h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0A0B0D]/60 backdrop-blur-xl z-20'>

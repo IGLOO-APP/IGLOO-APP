@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, Megaphone, Home, Building2, Users, AlertTriangle, Info, Clock, CheckCircle2, ChevronRight, LayoutTemplate } from 'lucide-react';
+import { X, Send, Megaphone, Home, Building2, Users, User, AlertTriangle, Info, Clock, CheckCircle2, ChevronRight, LayoutTemplate } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
 import { AnnouncementType, AnnouncementTargetType, Property } from '../../types';

@@ -11,8 +11,7 @@ import {
   HelpCircle, 
   ChevronRight, 
   User, 
-  ChevronDown,
-  Megaphone
+  ChevronDown
 } from 'lucide-react';
 import { ChatThread } from '../../services/messageService';
 
@@ -31,17 +30,15 @@ interface ChatSidebarProps {
   setActiveFilter: (filter: any) => void;
   filteredChats: ChatThread[];
   chats: ChatThread[];
-  setShowFAQManager: (show: boolean) => void;
-  setShowCategoryManager: (show: boolean) => void;
   getCategoryIcon: (category: string) => React.ReactNode;
-  onNewChat: () => void;
+  availableTenants: any[];
+  handleSelectTenant: (tenantId: string) => void;
   scrollRef: React.RefObject<HTMLDivElement>;
   handleMouseDown: (e: React.MouseEvent) => void;
   handleMouseLeave: () => void;
   handleMouseUp: () => void;
   handleMouseMove: (e: React.MouseEvent) => void;
   isDragging: boolean;
-  onCommunicate: () => void;
 }
 
 export const ChatSidebar = React.memo(({
@@ -59,17 +56,15 @@ export const ChatSidebar = React.memo(({
   setActiveFilter,
   filteredChats,
   chats,
-  setShowFAQManager,
-  setShowCategoryManager,
   getCategoryIcon,
-  onNewChat,
+  availableTenants,
+  handleSelectTenant,
   scrollRef,
   handleMouseDown,
   handleMouseLeave,
   handleMouseUp,
   handleMouseMove,
   isDragging,
-  onCommunicate,
 }: ChatSidebarProps) => {
   const getAvatarColor = (name: string) => {
     const colors = [
@@ -82,7 +77,7 @@ export const ChatSidebar = React.memo(({
 
   return (
     <div
-      className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+      className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
     >
       <div className='p-6 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
         <div className='flex items-center justify-between mb-6'>
@@ -90,42 +85,8 @@ export const ChatSidebar = React.memo(({
             <h1 className='text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight'>Mensagens</h1>
             <p className='text-xs font-medium text-slate-400'>Central de comunicação</p>
           </div>
-          <button
-            onClick={onNewChat}
-            className='w-11 h-11 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-all'
-          >
-            <Plus size={22} strokeWidth={3} />
-          </button>
         </div>
 
-        {/* Bento Actions - Standard Product Style */}
-        <div className='grid grid-cols-2 gap-3 mb-6'>
-          <button
-            onClick={() => setShowFAQManager(true)}
-            className='p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex flex-col items-start gap-3 hover:border-primary/50 transition-all group'
-          >
-            <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all'>
-              <HelpCircle size={20} strokeWidth={2.5} />
-            </div>
-            <div className='text-left min-w-0'>
-              <p className='text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider'>Gerenciar FAQs</p>
-              <p className='text-[10px] text-slate-500 font-medium truncate'>Base de conhecimento</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setShowCategoryManager(true)}
-            className='p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex flex-col items-start gap-3 hover:border-primary/50 transition-all group'
-          >
-            <div className='w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all'>
-              <Filter size={20} strokeWidth={2.5} />
-            </div>
-            <div className='text-left min-w-0'>
-              <p className='text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider'>Categorias</p>
-              <p className='text-[10px] text-slate-500 font-medium truncate'>Tipos de chamados</p>
-            </div>
-          </button>
-        </div>
 
         <div className='flex gap-2 mb-4'>
            <div className='relative flex-1'>
@@ -232,17 +193,56 @@ export const ChatSidebar = React.memo(({
           ))}
         </div>
 
-        {/* Ajuste 3 — Botão Comunicado Compacto Secundário */}
-        <button
-          onClick={onCommunicate}
-          className='w-full h-11 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-white/10 transition-all active:scale-95 group'
-        >
-          <Megaphone size={16} className='text-primary group-hover:scale-110 transition-transform' />
-          <span className='text-xs font-bold tracking-tight'>Comunicado</span>
-        </button>
-      </div>
+        </div>
 
-      <div className='flex-1 overflow-y-auto custom-scrollbar'>
+      <div className='flex-1 overflow-y-auto custom-scrollbar min-h-0'>
+        {/* Recommended Contacts Section (Search Mode) */}
+        {searchTerm && (
+          <div className='mb-2'>
+            {availableTenants
+              .filter(tenant => {
+                const isAlreadyInChat = chats.some(c => c.tenantName === tenant.name);
+                const matchesSearch = tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                     tenant.email.toLowerCase().includes(searchTerm.toLowerCase());
+                return !isAlreadyInChat && matchesSearch;
+              })
+              .map(tenant => (
+                <div
+                  key={tenant.id}
+                  onClick={() => handleSelectTenant(tenant.id)}
+                  className='px-6 py-4 flex items-center gap-4 cursor-pointer hover:bg-primary/5 border-b border-gray-100 dark:border-white/5 group animate-fadeInLeft'
+                >
+                  <div className={`w-10 h-10 rounded-full ${getAvatarColor(tenant.name)} flex items-center justify-center text-white font-bold text-sm shadow-sm opacity-80 group-hover:opacity-100 transition-all`}>
+                    {tenant.image ? (
+                      <img src={tenant.image} alt='' className='w-full h-full object-cover rounded-full' />
+                    ) : (
+                      <span>{tenant.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center justify-between'>
+                      <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-primary transition-colors'>
+                        {tenant.name}
+                      </h4>
+                      <span className='px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest'>Novo</span>
+                    </div>
+                    <p className='text-[10px] text-slate-400 font-medium truncate'>{tenant.email}</p>
+                  </div>
+                  <div className='w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all'>
+                    <Plus size={14} strokeWidth={3} />
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Existing Chats Section */}
+        {searchTerm && filteredChats.length > 0 && (
+          <div className='px-6 py-3 bg-slate-50 dark:bg-white/[0.02]'>
+            <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]'>Conversas Ativas</span>
+          </div>
+        )}
+
         {filteredChats.map((chat) => (
           <div
             key={chat.id}

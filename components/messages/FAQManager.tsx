@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Edit, Save, X, HelpCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Edit, Save, X, HelpCircle, CheckCircle2, MessageCircle } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { FAQ } from '../../types';
 

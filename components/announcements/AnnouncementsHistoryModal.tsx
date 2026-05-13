@@ -65,6 +65,16 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
     a.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const getTargetLabel = (ann: OwnerAnnouncement) => {
+    switch (ann.target_type) {
+      case 'all': return 'Todos';
+      case 'condominium': return ann.target_value?.name || 'Condomínio';
+      case 'individual': return 'Individual';
+      case 'property': return 'Imóvel';
+      default: return 'Geral';
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -147,8 +157,11 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({ i
                               {isExpired ? 'Expirado' : 'Ativo'}
                             </span>
                           </div>
-                          <div className='flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] text-slate-400 font-bold'>
+                          <div className='flex items-center flex-wrap gap-2 sm:gap-3 text-[8px] sm:text-[10px] text-slate-400 font-bold'>
                             <span className='flex items-center gap-1'><Calendar size={10} /> {new Date(ann.created_at).toLocaleDateString('pt-BR')}</span>
+                            <span className='flex items-center gap-1 text-primary bg-primary/5 px-1.5 py-0.5 rounded uppercase tracking-widest text-[7px] sm:text-[8px] font-black'>
+                              Alvo: {getTargetLabel(ann)}
+                            </span>
                             <button 
                               onClick={() => handleShowAudience(ann)}
                               className={`flex items-center gap-1 hover:text-primary transition-colors ${isSelected ? 'text-primary' : ''}`}

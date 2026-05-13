@@ -30,7 +30,6 @@ import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
 import { FAQManager } from '../components/messages/FAQManager';
 import { CategoryManager } from '../components/messages/CategoryManager';
-import { NewChatModal } from '../components/messages/NewChatModal';
 import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
 import { propertyService } from '../services/propertyService';
 import { useAuth } from '../context/AuthContext';
@@ -59,7 +58,7 @@ const OwnerMessages: React.FC = () => {
   // FAQ Manager State
   const [showFAQManager, setShowFAQManager] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [availableTenants, setAvailableTenants] = useState<Tenant[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
@@ -142,9 +141,13 @@ const OwnerMessages: React.FC = () => {
       if (user) {
         setCurrentUserId(String(user.id));
         await loadChats();
-        const props = await propertyService.getAll();
+        const [props, tenantsData] = await Promise.all([
+          propertyService.getAll(),
+          tenantService.getAll()
+        ]);
         const ownerProps = props.filter(p => p.owner_id === user.id);
         setProperties(ownerProps);
+        setAvailableTenants(tenantsData);
       }
     };
     init();
@@ -505,7 +508,6 @@ const OwnerMessages: React.FC = () => {
       const updatedChats = await loadChats();
 
       setActiveChatId(threadId);
-      setShowNewChatModal(false);
 
       if (!updatedChats.some((c: ChatThread) => c.id === threadId)) {
         setSearchTerm('');
@@ -546,18 +548,36 @@ const OwnerMessages: React.FC = () => {
   };
 
   return (
-    <div className='flex flex-col h-screen bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
+    <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
       <TopBar 
         title='Central de Mensagens' 
         subtitle='Comunicação direta com locatários'
       >
-        <button
-          onClick={() => setShowAnnouncementModal(true)}
-          className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
-        >
-          <Megaphone size={18} />
-          <span className='hidden md:inline'>Comunicado Geral</span>
-        </button>
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={() => setShowFAQManager(true)}
+            className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+          >
+            <HelpCircle size={18} className='text-primary' />
+            <span className='hidden lg:inline'>FAQs</span>
+          </button>
+
+          <button
+            onClick={() => setShowCategoryManager(true)}
+            className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+          >
+            <Filter size={18} className='text-orange-500' />
+            <span className='hidden lg:inline'>Categorias</span>
+          </button>
+
+          <button
+            onClick={() => setShowAnnouncementModal(true)}
+            className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+          >
+            <Megaphone size={18} />
+            <span className='hidden md:inline'>Comunicado</span>
+          </button>
+        </div>
       </TopBar>
 
       {loading && (
@@ -567,7 +587,7 @@ const OwnerMessages: React.FC = () => {
         </div>
       )}
 
-      <div className='flex flex-1 overflow-hidden relative'>
+      <div className='flex flex-1 overflow-hidden relative min-h-0'>
         <ChatSidebar 
           activeChatId={activeChatId}
           setActiveChatId={setActiveChatId}
@@ -583,21 +603,19 @@ const OwnerMessages: React.FC = () => {
           setActiveFilter={setActiveFilter}
           filteredChats={filteredChats}
           chats={chats}
-          setShowFAQManager={setShowFAQManager}
-          setShowCategoryManager={setShowCategoryManager}
           getCategoryIcon={getCategoryIcon}
-          onNewChat={() => setShowNewChatModal(true)}
+          availableTenants={availableTenants}
+          handleSelectTenant={handleSelectTenant}
           scrollRef={scrollRef}
           handleMouseDown={handleMouseDown}
           handleMouseLeave={handleMouseLeave}
           handleMouseUp={handleMouseUp}
           handleMouseMove={handleMouseMove}
           isDragging={isDragging}
-          onCommunicate={() => setShowAnnouncementModal(true)}
         />
 
         {activeChat ? (
-          <div className='flex-1 flex overflow-hidden'>
+          <div className='flex-1 flex overflow-hidden min-h-0 h-full'>
             <ChatWindow 
               activeChat={activeChat}
               setActiveChatId={setActiveChatId}
@@ -712,12 +730,6 @@ const OwnerMessages: React.FC = () => {
         onSave={handleSaveFAQ}
         onDelete={handleDeleteFAQ}
         onToggleStatus={toggleFAQStatus}
-      />
-
-      <NewChatModal 
-        show={showNewChatModal}
-        onClose={() => setShowNewChatModal(false)}
-        onSelectTenant={handleSelectTenant}
       />
 
       <CategoryManager 

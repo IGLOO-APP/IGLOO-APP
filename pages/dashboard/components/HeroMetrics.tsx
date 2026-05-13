@@ -23,7 +23,7 @@ const SPARK_DATA_3 = [80, 85, 82, 88, 90, 95, 92];
 
 export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics }) => {
   return (
-    <section className='grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 md:gap-6'>
+    <section className='grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 md:gap-6 items-stretch'>
       <InfoTooltip 
         title="Patrimônio Total" 
         description="Soma do valor de mercado estimado de todos os seus imóveis cadastrados. Ajuda a entender a evolução do seu equity imobiliário."

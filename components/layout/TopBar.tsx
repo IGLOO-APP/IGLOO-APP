@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme';
+import { Search, Bell } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 import { useSearch } from '../../context/SearchContext';
 
@@ -11,7 +10,6 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => {
-  const { isDark, toggleTheme } = useTheme();
   const { notifications, unreadCount, markAsRead } = useNotification();
   const { toggleSearch } = useSearch();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -31,15 +29,6 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           title='Pesquisa Global (Ctrl+K)'
         >
           <Search size={20} className='group-hover:text-primary transition-colors' />
-        </button>
-
-        {/* Theme Toggle */}
-        <button 
-          onClick={toggleTheme} 
-          className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-all active:scale-95'
-          title={isDark ? 'Modo Claro' : 'Modo Escuro'}
-        >
-          {isDark ? <Sun size={20} className='text-amber-500' /> : <Moon size={20} />}
         </button>
 
         {/* Notifications */}

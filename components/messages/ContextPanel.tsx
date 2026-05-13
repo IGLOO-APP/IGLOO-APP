@@ -23,7 +23,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
 }) => {
   return (
     <div 
-      className={`fixed lg:relative inset-y-0 right-0 w-80 md:w-96 lg:w-80 bg-white dark:bg-background-dark border-l border-gray-100 dark:border-white/5 flex flex-col h-full z-40 lg:z-10 transition-transform duration-300 animate-slideLeft`}
+      className={`fixed lg:relative inset-y-0 right-0 w-80 md:w-96 lg:w-80 bg-white dark:bg-background-dark border-l border-gray-100 dark:border-white/5 flex flex-col h-full z-40 lg:z-10 transition-transform duration-300 animate-slideLeft min-h-0`}
     >
 
       <div className='flex-1 overflow-y-auto p-6 space-y-8'>

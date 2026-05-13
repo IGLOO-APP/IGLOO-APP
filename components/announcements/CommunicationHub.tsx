@@ -83,6 +83,16 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
   const isOwner = user?.role === 'owner';
   
   if (announcements.length === 0 && !isOwner) return null;
+  
+  const getTargetLabel = (ann: OwnerAnnouncement) => {
+    switch (ann.target_type) {
+      case 'all': return 'Todos';
+      case 'condominium': return ann.target_value?.name || 'Condomínio';
+      case 'individual': return 'Individual';
+      case 'property': return 'Imóvel';
+      default: return 'Geral';
+    }
+  };
 
   return (
     <div 
@@ -114,10 +124,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
               <Megaphone className='w-3 h-3 text-primary' />
             </div>
             <div>
-              <p className='text-slate-500 dark:text-slate-400 text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] leading-none'>
+              <p className='text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] leading-none'>
                 Governance Hub
               </p>
-              <h3 className='text-[10px] sm:text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mt-0.5'>
+              <h3 className='text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mt-1'>
                 Comunicações
               </h3>
             </div>
@@ -196,11 +206,21 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                           : 'bg-slate-200 dark:bg-white/10'
                       }`} />
                       <div className='flex-1 border-b border-gray-100 dark:border-white/5 pb-2 group-last/item:border-none'>
-                        <div className='flex justify-between items-center gap-2'>
-                          <h4 className={`text-[10px] sm:text-[11px] font-bold transition-colors line-clamp-1 ${idx === currentIndex ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover/item:text-primary'}`}>
-                            {ann.title}
-                          </h4>
-                          {ann.is_urgent && idx !== currentIndex && <AlertCircle size={10} className='text-red-500/50 shrink-0' />}
+                        <div className='flex flex-col'>
+                          <div className='flex justify-between items-center gap-2'>
+                            <h4 className={`text-xs sm:text-sm font-black transition-colors line-clamp-1 uppercase tracking-tight ${idx === currentIndex ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover/item:text-primary'}`}>
+                              {ann.title}
+                            </h4>
+                            {ann.is_urgent && idx !== currentIndex && <AlertCircle size={12} className='text-red-500/50 shrink-0' />}
+                          </div>
+                          <div className='flex items-center gap-2 mt-0.5'>
+                            <span className='text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-1.5 py-0.5 rounded'>
+                              {getTargetLabel(ann)}
+                            </span>
+                            <span className='text-[8px] sm:text-[9px] font-medium text-slate-400'>
+                              • {new Date(ann.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -219,14 +239,17 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
             {current && (
               <div className='space-y-2 sm:space-y-3 bg-white/80 dark:bg-black/40 backdrop-blur-sm p-3 rounded-2xl border border-gray-100 dark:border-white/5'>
                 <div className='flex items-center gap-2'>
-                  <span className={`px-2 py-0.5 rounded-full text-[6px] sm:text-[7px] font-black uppercase tracking-[0.2em] ${
+                  <span className={`px-2 py-0.5 rounded-full text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] ${
                     current.is_urgent ? 'bg-red-500 text-white' : 'bg-primary/20 text-primary border border-primary/20'
                   }`}>
                     {current.is_urgent ? '⚠️ Urgente' : 'Destaque'}
                   </span>
+                  <span className='text-[7px] sm:text-[8px] font-black text-slate-400 dark:text-white/40 uppercase tracking-widest'>
+                    Alvo: {getTargetLabel(current)}
+                  </span>
                 </div>
-                <h4 className='text-xs sm:text-base font-black text-slate-900 dark:text-white leading-tight'>{current.title}</h4>
-                <p className='text-[9px] sm:text-[10px] font-medium text-slate-500 dark:text-white/50 leading-relaxed line-clamp-3'>
+                <h4 className='text-sm sm:text-lg font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight'>{current.title}</h4>
+                <p className='text-xs sm:text-sm font-medium text-slate-600 dark:text-white/70 leading-relaxed line-clamp-4'>
                   {current.content}
                 </p>
               </div>
