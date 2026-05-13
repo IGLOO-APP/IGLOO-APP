@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Droplets, Zap, Home, CloudRain, Shield, Smartphone, Sparkles, DollarSign, Wrench, Search } from 'lucide-react';
+import { X, Plus, Trash2, Droplets, Zap, Home, CloudRain, Shield, Smartphone, Sparkles, DollarSign, Wrench, Search, Info } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -58,47 +58,66 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     <div className='fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6'>
       <div className='absolute inset-0 bg-black/60 backdrop-blur-md' onClick={onClose} />
       
-      <div className='relative w-full max-w-2xl bg-white dark:bg-[#0A0B0D] rounded-[40px] shadow-2xl border border-white/5 overflow-hidden flex flex-col max-h-[90vh] animate-fadeInUp'>
+      <div className='relative w-full max-w-xl bg-white dark:bg-[#0A0B0D] rounded-[40px] shadow-2xl border border-white/5 overflow-hidden flex flex-col max-h-[90vh] animate-fadeInUp'>
         {/* Header */}
-        <div className='p-8 border-b border-white/5 flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-black text-slate-900 dark:text-white tracking-tighter uppercase'>Gerenciar Categorias</h2>
-            <p className='text-xs font-bold text-slate-500 uppercase tracking-widest mt-1'>Personalize os tipos de chamados de manutenção</p>
+        <div className='p-6 border-b border-white/5 flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
+            <div className='w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500'>
+              <Sparkles size={20} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase'>Gerenciar Categorias</h2>
+              <p className='text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5'>Personalize os tipos de chamados</p>
+            </div>
           </div>
-          <button onClick={onClose} className='p-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-white transition-all'>
-            <X size={20} />
+          <button onClick={onClose} className='p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all'>
+            <X size={18} />
           </button>
         </div>
 
-        <div className='flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8'>
-          {/* Add Form */}
-          {isAdding ? (
-            <div className='p-6 rounded-[32px] bg-primary/5 border border-primary/20 space-y-6 animate-fadeIn'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='space-y-2'>
-                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>Nome da Categoria</label>
-                  <input 
-                    type='text'
-                    value={newCat.name}
-                    onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
-                    placeholder='Ex: Pintura, Jardinagem...'
-                    className='w-full h-12 bg-white dark:bg-black/40 border-none rounded-xl px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/30 transition-all'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>Cor Temática</label>
-                  <div className='flex flex-wrap gap-2'>
-                    {colorOptions.map((opt) => (
-                      <button
-                        key={opt.name}
-                        onClick={() => setSelectedColor(opt)}
-                        className={`w-8 h-8 rounded-full ${opt.bg} border-2 ${selectedColor.name === opt.name ? 'border-primary' : 'border-transparent'} transition-all`}
-                        title={opt.name}
-                      />
-                    ))}
+        <div className='flex-1 overflow-y-auto custom-scrollbar'>
+          {/* Explanation Banner */}
+          <div className='px-6 py-4 bg-orange-500/5 border-b border-orange-500/10 flex items-center gap-4'>
+            <div className='w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0'>
+              <Info size={16} />
+            </div>
+            <div className='flex-1'>
+              <p className='text-[10px] font-black text-orange-500 uppercase tracking-widest'>Para que servem as Categorias?</p>
+              <p className='text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed'>
+                As categorias ajudam a organizar as solicitações dos locatários. Ao classificar um chamado (ex: Elétrica, Hidráulica), você consegue filtrar demandas e gerar relatórios precisos sobre o que mais exige atenção nos seus imóveis.
+              </p>
+            </div>
+          </div>
+
+          <div className='p-6 space-y-6'>
+            {/* Add Form */}
+            {isAdding ? (
+              <div className='p-6 rounded-[32px] bg-primary/5 border border-primary/20 space-y-6 animate-fadeIn'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>Nome da Categoria</label>
+                    <input 
+                      type='text'
+                      value={newCat.name}
+                      onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
+                      placeholder='Ex: Pintura, Jardinagem...'
+                      className='w-full h-12 bg-white dark:bg-black/40 border-none rounded-xl px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/30 transition-all'
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>Cor Temática</label>
+                    <div className='flex flex-wrap gap-2'>
+                      {colorOptions.map((opt) => (
+                        <button
+                          key={opt.name}
+                          onClick={() => setSelectedColor(opt)}
+                          className={`w-8 h-8 rounded-full ${opt.bg} border-2 ${selectedColor.name === opt.name ? 'border-primary' : 'border-transparent'} transition-all`}
+                          title={opt.name}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>Selecione um Ícone</label>
@@ -176,6 +195,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             })}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
