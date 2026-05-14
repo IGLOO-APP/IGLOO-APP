@@ -15,31 +15,31 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
-    <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-6 py-4 flex justify-between items-center transition-colors'>
-      <div className='flex flex-col'>
-        {title && <h1 className='text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase'>{title}</h1>}
-        {subtitle && <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>{subtitle}</p>}
+    <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center transition-colors min-h-[64px]'>
+      <div className='flex flex-col min-w-0 flex-1 mr-2'>
+        {title && <h1 className='text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase truncate'>{title}</h1>}
+        {subtitle && <p className='text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate'>{subtitle}</p>}
       </div>
 
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-1.5 md:gap-3 shrink-0'>
         {/* Global Search Button */}
         <button 
           onClick={toggleSearch}
-          className='w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-all active:scale-95 group'
+          className='w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-all active:scale-95 group'
           title='Pesquisa Global (Ctrl+K)'
         >
-          <Search size={20} className='group-hover:text-primary transition-colors' />
+          <Search size={18} className='md:size-5 group-hover:text-primary transition-colors' />
         </button>
 
         {/* Notifications */}
         <div className='relative'>
           <button 
             onClick={() => setShowNotifications(!showNotifications)} 
-            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 relative ${
+            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 relative ${
               showNotifications ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
             }`}
           >
-            <Bell size={20} />
+            <Bell size={18} className='md:size-5' />
             {unreadCount > 0 && <span className='absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark animate-pulse'></span>}
           </button>
           
@@ -78,13 +78,16 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           )}
         </div>
 
-        {/* Custom Action Buttons (like "Novo Imóvel") */}
-        <div className='flex items-center gap-3 ml-2'>
-          {children}
-        </div>
+        {/* Custom Action Buttons */}
+        {children && (
+          <div className='flex items-center gap-1.5 md:gap-3 ml-1 md:ml-2 overflow-x-auto hide-scrollbar'>
+            {children}
+          </div>
+        )}
       </div>
     </header>
   );
 };
+
 
 export default TopBar;

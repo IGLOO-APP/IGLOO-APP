@@ -407,38 +407,42 @@ const Financials: React.FC = () => {
         title='Lançamentos' 
         subtitle='Fluxo de caixa e gestão'
       >
-        <div className='flex gap-2'>
+        <div className='flex gap-1.5 md:gap-2'>
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className='flex h-11 w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
+            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
             title='Exportar Relatório'
           >
             {isExporting ? (
               <div className='h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent' />
             ) : (
-              <Download size={20} className="group-hover:scale-110 transition-transform" />
+              <Download size={18} className="md:size-5 group-hover:scale-110 transition-transform" />
             )}
           </button>
+          
           <button
             onClick={() => setShowApportImportModal(true)}
-            className='flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
+            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
             title='Conciliação Bancária'
           >
-            <FileUp size={20} className="group-hover:scale-110 transition-transform" />
+            <FileUp size={18} className="md:size-5 group-hover:scale-110 transition-transform" />
           </button>
+
           <button
             onClick={() => setShowApportionment(true)}
-            className='flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
+            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
             title='Rateio de Despesas'
           >
-            <PieChart size={20} className="group-hover:scale-110 transition-transform" />
+            <PieChart size={18} className="md:size-5 group-hover:scale-110 transition-transform" />
           </button>
+
           <button
             onClick={() => setShowAddForm(true)}
-            className='flex h-11 px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-sm active:scale-95'
+            className='flex h-9 md:h-11 px-3 md:px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-xs md:text-sm active:scale-95'
           >
-            <Plus size={18} /> Nova Receita
+            <Plus size={18} /> 
+            <span className='hidden md:inline'>Nova Receita</span>
           </button>
         </div>
       </TopBar>

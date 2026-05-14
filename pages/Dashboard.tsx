@@ -102,10 +102,10 @@ const Dashboard: React.FC = () => {
       >
         <button
           onClick={() => navigate('/properties', { state: { openAdd: true } })}
-          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
         >
-          <Plus size={18} />
-          <span className='hidden md:inline'>Novo Imóvel</span>
+          <Plus size={16} className="md:size-[18px]" />
+          <span className='hidden sm:inline'>Novo Imóvel</span>
         </button>
       </TopBar>
 

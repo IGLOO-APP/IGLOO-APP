@@ -123,10 +123,10 @@ const Contracts: React.FC = () => {
       >
         <button
           onClick={() => setShowWizard(true)}
-          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
         >
-          <Plus size={20} />
-          <span className='hidden md:inline'>Novo Contrato</span>
+          <Plus size={18} className="md:size-5" />
+          <span className='hidden sm:inline'>Novo Contrato</span>
         </button>
       </TopBar>
 

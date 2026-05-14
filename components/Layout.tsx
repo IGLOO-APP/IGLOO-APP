@@ -34,8 +34,8 @@ const adminItems = [
   { path: '/admin/announcements', label: 'Comunicados', icon: MessageSquare },
 ];
 
-const primaryNavItems = navItems.slice(0, 4);
-const secondaryNavItems = navItems.slice(4);
+const primaryNavItems = navItems.slice(0, 5);
+const secondaryNavItems = navItems.slice(5);
 
 const Layout: React.FC = () => {
   const location = useLocation();

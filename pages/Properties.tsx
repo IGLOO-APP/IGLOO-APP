@@ -184,32 +184,32 @@ const Properties: React.FC = () => {
       >
         <button
           onClick={() => setShowAddForm(true)}
-          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
         >
-          <Plus size={18} />
+          <Plus size={16} className="md:size-[18px]" />
           <span className='hidden sm:inline'>Novo Imóvel</span>
         </button>
-        <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700'>
+        <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 md:p-1 border border-slate-200 dark:border-slate-700'>
           <button
             onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            className={`p-1 md:p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
             title='Lista'
           >
-            <List size={20} />
+            <List size={18} className="md:size-5" />
           </button>
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            className={`p-1 md:p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
             title='Grade'
           >
-            <Grid size={20} />
+            <Grid size={18} className="md:size-5" />
           </button>
           <button
             onClick={() => setViewMode('map')}
-            className={`p-1.5 rounded-md transition-all ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+            className={`p-1 md:p-1.5 rounded-md transition-all ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
             title='Mapa'
           >
-            <Map size={20} />
+            <Map size={18} className="md:size-5" />
           </button>
         </div>
       </TopBar>

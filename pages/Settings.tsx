@@ -426,15 +426,20 @@ const Settings: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-95 ${
+          className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-lg transition-all active:scale-95 ${
             saveSuccess
               ? 'bg-emerald-500 text-white shadow-emerald-500/30'
               : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-slate-900/20'
           }`}
         >
-          {isSaving ? 'Salvando...' : saveSuccess ? 'Salvo!' : 'Salvar Alterações'}
-          {!isSaving && !saveSuccess && <Save size={18} />}
-          {saveSuccess && <CheckCircle size={18} />}
+          <span className="hidden sm:inline">
+            {isSaving ? 'Salvando...' : saveSuccess ? 'Salvo!' : 'Salvar Alterações'}
+          </span>
+          <span className="sm:hidden">
+            {isSaving ? '...' : saveSuccess ? 'Salvo' : 'Salvar'}
+          </span>
+          {!isSaving && !saveSuccess && <Save size={16} className="md:size-[18px]" />}
+          {saveSuccess && <CheckCircle size={16} className="md:size-[18px]" />}
         </button>
       </TopBar>
 

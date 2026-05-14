@@ -555,10 +555,11 @@ const OwnerMessages: React.FC = () => {
           title='Central de Mensagens' 
           subtitle='Comunicação direta com locatários'
         >
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-1.5 md:gap-2'>
             <button
               onClick={() => setShowFAQManager(true)}
-              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all active:scale-95'
+              title='Gerenciar FAQs'
             >
               <HelpCircle size={18} className='text-primary' />
               <span className='hidden lg:inline'>FAQs</span>
@@ -566,7 +567,8 @@ const OwnerMessages: React.FC = () => {
 
             <button
               onClick={() => setShowCategoryManager(true)}
-              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm transition-all active:scale-95'
+              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all active:scale-95'
+              title='Gerenciar Categorias'
             >
               <Filter size={18} className='text-orange-500' />
               <span className='hidden lg:inline'>Categorias</span>
@@ -574,10 +576,11 @@ const OwnerMessages: React.FC = () => {
 
             <button
               onClick={() => setShowAnnouncementModal(true)}
-              className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+              className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+              title='Novo Comunicado'
             >
               <Megaphone size={18} />
-              <span className='hidden md:inline'>Comunicado</span>
+              <span className='hidden sm:inline'>Comunicado</span>
             </button>
           </div>
         </TopBar>
