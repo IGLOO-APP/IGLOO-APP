@@ -50,6 +50,7 @@ export const adminService = {
         Proprietário: 'owner',
         Inquilino: 'tenant',
         Administrador: 'admin',
+        Pendente: 'pending',
       };
       query = query.eq('role', roleMap[role] || role.toLowerCase());
     }
@@ -93,6 +94,13 @@ export const adminService = {
 
     if (error) throw error;
     await this.logActivity('update_plan', 'user', userId, { plan });
+  },
+
+  async updateUserRole(userId: string, role: string) {
+    const { error } = await supabase.from('profiles').update({ role }).eq('id', userId);
+
+    if (error) throw error;
+    await this.logActivity('update_role', 'user', userId, { role });
   },
 
   async exportUserData(userId: string) {
@@ -255,7 +263,6 @@ export const adminService = {
 
   async createAdmin(email: string, name: string, adminType: string, permissions: string[]) {
     // In a real app, this would use supabase.auth.admin.inviteUserByEmail
-    // Here we simulate adding to profiles with a pending status
     const { error } = await supabase.from('profiles').insert({
       id: crypto.randomUUID(),
       email,
@@ -264,7 +271,6 @@ export const adminService = {
       admin_type: adminType,
       permissions,
       is_suspended: false,
-      is_pending: true,
       created_at: new Date().toISOString(),
     });
 

@@ -26,6 +26,7 @@ interface UserTableProps {
   onUpdatePlan: (user: User) => void;
   onSuspend: (user: User) => void;
   onUnsuspend: (user: User) => void;
+  onApprove: (user: User) => void;
   onExportData: (user: User) => void;
   onClearFilters: () => void;
 }
@@ -42,6 +43,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   onUpdatePlan,
   onSuspend,
   onUnsuspend,
+  onApprove,
   onExportData,
   onClearFilters,
 }) => {
@@ -135,7 +137,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                             : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
                         }`}
                     >
-                      {u.role === 'admin' ? 'Administrador' : u.role === 'owner' ? 'Proprietário' : 'Inquilino'}
+                      {u.role === 'admin' ? 'Administrador' : u.role === 'owner' ? 'Proprietário' : u.role === 'tenant' ? 'Inquilino' : 'Pendente'}
                     </span>
                   </td>
                   <td className='px-8 py-5'>
@@ -202,6 +204,18 @@ export const UserTable: React.FC<UserTableProps> = ({
                               onClick={() => setActiveDropdown(null)}
                             ></div>
                             <div className={`absolute right-0 ${users.indexOf(u) >= users.length - 2 && users.length > 2 ? 'bottom-full mb-1' : 'top-full mt-1'} w-56 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 py-2 z-20 animate-scaleUp ${users.indexOf(u) >= users.length - 2 && users.length > 2 ? 'origin-bottom-right' : 'origin-top-right'}`}>
+                              {u.role === 'pending' && (
+                                <button
+                                  onClick={() => {
+                                    onApprove(u);
+                                    setActiveDropdown(null);
+                                  }}
+                                  className='w-full text-left px-4 py-2.5 text-sm font-black text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center gap-3'
+                                >
+                                  <UserCheck size={16} />
+                                  Aprovar Proprietário
+                                </button>
+                              )}
                               <button
                                 onClick={() => {
                                   onImpersonate(u);

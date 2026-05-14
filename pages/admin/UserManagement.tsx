@@ -122,6 +122,17 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handleApprove = async (user: User) => {
+    if (!window.confirm(`Deseja aprovar o acesso de ${user.name} como Proprietário?`)) return;
+    try {
+      await adminService.updateUserRole(user.id.toString(), 'owner');
+      showToast('Usuário aprovado com sucesso.');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    } catch (error) {
+      showToast('Erro ao aprovar usuário.', 'error');
+    }
+  };
+
   const handleClearFilters = () => {
     setFilterStatus('Todos');
     setFilterPlan('Todos');
@@ -173,6 +184,7 @@ const UserManagement: React.FC = () => {
         onUpdatePlan={(u) => { setSelectedUser(u); setNewPlan((u as any).plan || 'Free'); setIsPlanModalOpen(true); }}
         onSuspend={(u) => { setSelectedUser(u); setIsSuspendModalOpen(true); }}
         onUnsuspend={handleUnsuspend}
+        onApprove={handleApprove}
         onExportData={async (u) => { await adminService.exportUserData(u.id.toString()); showToast('Dados exportados com sucesso.'); }}
         onClearFilters={handleClearFilters}
       />

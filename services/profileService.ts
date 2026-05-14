@@ -96,6 +96,7 @@ export const profileService = {
       role: isAdminEmail ? 'admin' : (user.user_metadata?.role || 'pending'),
       admin_type: isAdminEmail ? 'super' : null,
       phone: user.user_metadata?.phone || user.phone || null,
+      is_pending: !isAdminEmail && !user.user_metadata?.role,
     };
 
     const { data: created, error: createError } = await supabase

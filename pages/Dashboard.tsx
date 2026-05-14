@@ -34,6 +34,7 @@ import {
   CarouselPrevious,
 } from '../components/ui/carousel';
 import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
+import { OwnerOnboardingWizard } from '../components/layout/OwnerOnboardingWizard';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const Dashboard: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [announcementToDuplicate, setAnnouncementToDuplicate] = useState<any>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { data: dashboardData, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboardData', user?.id],
@@ -54,6 +56,12 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (dashboardData && dashboardData.properties.length === 0 && !sessionStorage.getItem(`onboarding_owner_seen_${user?.id}`)) {
+      setShowOnboarding(true);
+    }
+  }, [dashboardData, user?.id]);
 
   if (isLoading) {
     return (
@@ -96,6 +104,14 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      {showOnboarding && (
+        <OwnerOnboardingWizard 
+          onComplete={() => {
+            setShowOnboarding(false);
+            sessionStorage.setItem(`onboarding_owner_seen_${user?.id}`, 'true');
+          }}
+        />
+      )}
       <TopBar 
         title="Dashboard" 
         subtitle="Visão Geral do Patrimônio"

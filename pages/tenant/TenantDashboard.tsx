@@ -41,6 +41,7 @@ import { supabase } from '../../lib/supabase';
 import { Property, Tenant, SystemAnnouncement } from '../../types';
 import CommunicationHub from '../../components/announcements/CommunicationHub';
 import { announcementService } from '../../services/announcementService';
+import { TenantOnboardingWizard } from '../../components/tenant/TenantOnboardingWizard';
 
 const TenantDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -58,6 +59,8 @@ const TenantDashboard: React.FC = () => {
   const [isDark, setIsDark] = useState(false);
 
   // Inspection State
+  // Onboarding State
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInspection, setShowInspection] = useState(false);
   const [pendingInspection, setPendingInspection] = useState<any | null>(null);
 
@@ -258,6 +261,19 @@ const TenantDashboard: React.FC = () => {
             .maybeSingle();
           
           if (inspRes) setPendingInspection(inspRes);
+
+          // 5. Check if Onboarding is needed
+          const hasPendingContract = data.contract?.status === 'pending_signature';
+          const hasIncompleteProfile = !data.cpf || !data.name;
+          const hasPendingInspection = !!inspRes;
+
+          if (hasPendingContract || hasIncompleteProfile || hasPendingInspection) {
+            // Check if user has already seen onboarding in this session
+            const onboardingSeen = sessionStorage.getItem(`onboarding_seen_${user.id}`);
+            if (!onboardingSeen) {
+              setShowOnboarding(true);
+            }
+          }
         }
 
       } catch (err) {
@@ -349,6 +365,17 @@ const TenantDashboard: React.FC = () => {
 
   return (
     <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 custom-scrollbar'>
+      {showOnboarding && tenantData && (
+        <TenantOnboardingWizard 
+          tenant={tenantData}
+          property={tenantProperty}
+          onComplete={() => {
+            setShowOnboarding(false);
+            sessionStorage.setItem(`onboarding_seen_${user?.id}`, 'true');
+          }}
+        />
+      )}
+
       <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
         <div className='flex items-center gap-4'>
           <button 
