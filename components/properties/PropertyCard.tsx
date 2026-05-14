@@ -74,7 +74,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <article
         onClick={() => !isTenant && onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} aspect-[4/5] ${borderClass} ${className}`}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} aspect-[4/5] ${borderClass} ${className}`}
       >
         {/* Photo Container */}
         <div className='h-full w-full relative overflow-hidden bg-slate-900'>
@@ -124,7 +124,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <article
         onClick={() => !isTenant && onClick(property)}
-        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} ${borderClass} ${className}`}
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} ${borderClass} ${className}`}
       >
         {/* Photo Container */}
         <div className='flex-grow min-h-[160px] w-full relative overflow-hidden bg-slate-900 rounded-t-2xl'>
@@ -213,7 +213,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             {isAvailable && onCreateContract ? (
               <button
                 onClick={(e) => { e.stopPropagation(); onCreateContract(property); }}
-                className='w-full flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active:scale-95'
+                className='w-full flex h-9 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active-tap'
               >
                 <FilePlus2 size={14} /> Criar Contrato
               </button>
@@ -239,7 +239,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   return (
     <article
       onClick={() => !isTenant && onClick(property)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:scale-[0.99]' : 'cursor-default'} ${borderClass} ${className}`}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} ${borderClass} ${className}`}
     >
       {/* ── ZONE SUPERIOR ──────────────────────────────────── */}
       <div className='flex items-stretch'>
@@ -372,7 +372,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {isAvailable && onCreateContract ? (
             <button
               onClick={(e) => { e.stopPropagation(); onCreateContract(property); }}
-              className='flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active:scale-95 whitespace-nowrap'
+              className='flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active-tap whitespace-nowrap'
             >
               <FilePlus2 size={14} /> Criar Contrato
             </button>

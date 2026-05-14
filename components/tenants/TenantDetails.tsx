@@ -300,8 +300,8 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         </div>
 
         {/* 2. Tabs Navigation */}
-        <div className='bg-white dark:bg-surface-dark px-6 border-b border-gray-100 dark:border-white/5 shrink-0'>
-          <div className='flex gap-8'>
+        <div className='bg-white dark:bg-surface-dark px-4 md:px-6 border-b border-gray-100 dark:border-white/5 shrink-0 overflow-x-auto no-scrollbar'>
+          <div className='flex gap-6 md:gap-8'>
             {[
               { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
               { id: 'payments', label: 'Financeiro', icon: DollarSign },
@@ -312,7 +312,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ${
+                className={`flex items-center gap-2 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
                     ? 'border-primary text-primary'
                     : 'border-transparent text-slate-400 hover:text-slate-600'

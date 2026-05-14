@@ -211,7 +211,7 @@ const Tenants: React.FC = () => {
       >
         <button
           onClick={() => setShowAddForm(true)}
-          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active-tap'
         >
           <Plus size={16} className="md:size-[18px]" />
           <span className='hidden sm:inline'>Novo Inquilino</span>
@@ -243,7 +243,7 @@ const Tenants: React.FC = () => {
             <button
               key={filter}
               onClick={() => setStatusFilter(filter as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap active-tap ${
                 statusFilter === filter
                   ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
                   : 'bg-white dark:bg-surface-dark text-slate-500 dark:text-slate-400 border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
@@ -261,7 +261,7 @@ const Tenants: React.FC = () => {
             <div
               key={t.id}
               onClick={() => setSelectedTenantId(t.id.toString())}
-              className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-[24px] border border-gray-100 dark:border-white/5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-pointer overflow-hidden'
+              className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-[24px] border border-gray-100 dark:border-white/5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active-tap transition-all duration-300 cursor-pointer overflow-hidden'
             >
               <div className='p-5 flex items-center gap-5'>
                 {/* Modern Avatar with Pattern */}
@@ -345,21 +345,21 @@ const Tenants: React.FC = () => {
                         e.stopPropagation();
                         window.location.href = `/messages?tenantId=${t.id}`;
                       }}
-                      className='h-8 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 active:scale-95 shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                      className='h-8 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 active-tap shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
                     >
                       <MessageCircle size={12} strokeWidth={2.5} /> Mensagem
                     </button>
                     {(t as any).is_pending ? (
                       <button
                         onClick={(e) => handleWhatsAppInvite(e, t)}
-                        className='h-8 px-4 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 shadow-md shadow-emerald-500/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                        className='h-8 px-4 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 active-tap shadow-md shadow-emerald-500/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
                       >
                         <Phone size={12} strokeWidth={2.5} /> WhatsApp
                       </button>
                     ) : (
                       <button
                         onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
-                        className='h-8 px-4 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary active:scale-95 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                        className='h-8 px-4 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary active-tap transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
                       >
                         <DollarSign size={12} strokeWidth={2.5} /> Cobrar
                       </button>

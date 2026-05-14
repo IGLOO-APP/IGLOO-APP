@@ -25,7 +25,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
         {/* Global Search Button */}
         <button 
           onClick={toggleSearch}
-          className='w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-all active:scale-95 group'
+          className='w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 transition-all active-tap group'
           title='Pesquisa Global (Ctrl+K)'
         >
           <Search size={18} className='md:size-5 group-hover:text-primary transition-colors' />
@@ -35,7 +35,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
         <div className='relative'>
           <button 
             onClick={() => setShowNotifications(!showNotifications)} 
-            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 relative ${
+            className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl transition-all active-tap relative ${
               showNotifications ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
             }`}
           >

@@ -33,7 +33,7 @@ export const HeroCard = ({
   color,
   sparkData,
 }: HeroCardProps) => (
-  <div className='h-full bg-white dark:bg-surface-dark p-3.5 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
+  <div className='h-full bg-white dark:bg-surface-dark p-3.5 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl active-tap transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
     <div
       className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0 pointer-events-none`}
     >
@@ -93,7 +93,7 @@ interface AlertBadgeProps {
 export const AlertBadge = ({ icon: Icon, label, count, color, onClick }: AlertBadgeProps) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-2xl border transition-all duration-300 active:scale-95 shrink-0 ${color} bg-opacity-5 border-opacity-10 hover:bg-opacity-15 hover:border-opacity-20 hover:shadow-lg group/alert`}
+    className={`flex items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 rounded-2xl border transition-all duration-300 active-tap shrink-0 ${color} bg-opacity-5 border-opacity-10 hover:bg-opacity-15 hover:border-opacity-20 hover:shadow-lg group/alert`}
   >
     <div className='relative shrink-0'>
       <div className={`absolute inset-0 rounded-full ${color.replace('text-', 'bg-')} opacity-0 group-hover/alert:opacity-20 animate-ping`} />

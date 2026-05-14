@@ -33,6 +33,14 @@
   body,
   #root {
     height: 100%;
+    overscroll-behavior-y: none; /* Previne o bounce effect indesejado em algumas views */
+  }
+
+  /* Previne o zoom automático em inputs no iOS (mínimo 16px) */
+  @media screen and (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 
   /* Custom Scrollbar for Dark/Light Mode */
@@ -157,14 +165,32 @@
     top: 120%;
   }
 
-  /* Primary Input Focus Style */
-  .auth-input-focus {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* ─── Mobile Utilities ─── */
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
-  .auth-input-focus:focus {
-    box-shadow: 0 0 0 4px rgba(19, 200, 236, 0.15), 0 8px 16px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
+  .active-tap {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.1s;
+  }
+
+  .active-tap:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+
+  /* Safe Area Helpers */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 }
 
