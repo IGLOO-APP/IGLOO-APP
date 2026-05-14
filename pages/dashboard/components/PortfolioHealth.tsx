@@ -25,19 +25,19 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
   const tooltipClass = 'absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-slate-950/90 backdrop-blur-md text-white text-[10px] rounded-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 z-50 shadow-2xl border border-white/10 translate-y-2 group-hover:translate-y-0';
 
   return (
-    <div className='w-full bg-white dark:bg-surface-dark rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm p-2 flex flex-col md:flex-row items-center gap-2 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5 transition-all duration-500'>
+    <div className='w-full bg-white dark:bg-surface-dark rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm p-1.5 md:p-2 flex flex-col md:flex-row items-center gap-1 md:gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5 transition-all duration-500'>
       {/* Yield Médio */}
-      <div className='flex-1 w-full p-4 group relative'>
+      <div className='flex-1 w-full p-3 md:p-4 group relative'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='p-2.5 rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110 duration-300'>
-              <TrendingUp size={18} />
+            <div className='p-2 md:p-2.5 rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110 duration-300'>
+              <TrendingUp size={16} className="md:size-[18px]" />
             </div>
             <div>
-              <p className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5'>Yield Médio</p>
+              <p className='text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5'>Yield Médio</p>
               <div className='flex items-center gap-2'>
-                <p className='text-lg font-black text-slate-900 dark:text-white'>{health?.yield || '0'}%</p>
-                <span className='text-[10px] font-bold text-emerald-500 flex items-center bg-emerald-500/10 px-1.5 py-0.5 rounded'>
+                <p className='text-base md:text-lg font-black text-slate-900 dark:text-white'>{health?.yield || '0'}%</p>
+                <span className='text-[9px] md:text-[10px] font-bold text-emerald-500 flex items-center bg-emerald-500/10 px-1 md:px-1.5 py-0.5 rounded'>
                   +0.2%
                 </span>
               </div>

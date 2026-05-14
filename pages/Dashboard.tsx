@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
         </button>
       </TopBar>
 
-      <div className='p-6 space-y-8 pb-24'>
+      <div className='px-4 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8 pb-24'>
         {/* Top Section: Metrics, Health & Communication Integrated */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
           {/* Main Area (Left) - 9/12 Columns */}

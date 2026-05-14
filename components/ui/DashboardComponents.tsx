@@ -33,7 +33,7 @@ export const HeroCard = ({
   color,
   sparkData,
 }: HeroCardProps) => (
-  <div className='h-full bg-white dark:bg-surface-dark p-4 md:p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
+  <div className='h-full bg-white dark:bg-surface-dark p-3.5 md:p-6 rounded-[24px] md:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
     <div
       className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0 pointer-events-none`}
     >
@@ -43,11 +43,11 @@ export const HeroCard = ({
 
     <div className='relative z-10 w-full'>
       {/* Top Section: Icon & Sparkline */}
-      <div className='flex justify-between items-start mb-6 h-12 md:h-14'>
+      <div className='flex justify-between items-start mb-4 md:mb-6 h-10 md:h-14'>
         <div
-          className={`p-3 md:p-4 rounded-2xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20 shrink-0`}
+          className={`p-2.5 md:p-4 rounded-xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20 shrink-0`}
         >
-          <Icon size={24} className={`${color} group-hover:scale-110 transition-transform duration-500`} />
+          <Icon size={20} className={`md:size-6 ${color} group-hover:scale-110 transition-transform duration-500`} />
         </div>
         {sparkData ? (
           <div className='hidden sm:block pt-1'>
@@ -60,12 +60,12 @@ export const HeroCard = ({
 
       {/* Content Section */}
       <div className="flex flex-col">
-        <div className="h-8 md:h-10 flex items-start"> {/* Fixed height for title area */}
-          <p className='text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.15em] leading-tight'>
+        <div className="h-6 md:h-10 flex items-start"> {/* Reduced fixed height for mobile */}
+          <p className='text-slate-500 dark:text-slate-400 text-[9px] md:text-xs font-black uppercase tracking-[0.15em] leading-tight'>
             {title}
           </p>
         </div>
-        <h3 className='text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2 md:mb-4 truncate'>
+        <h3 className='text-xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 md:mb-4 truncate'>
           {value}
         </h3>
       </div>
