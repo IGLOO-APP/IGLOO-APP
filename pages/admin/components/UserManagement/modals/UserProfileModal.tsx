@@ -1,7 +1,9 @@
 import React from 'react';
 import { ModalWrapper } from '../../../../../components/ui/ModalWrapper';
-import { ShieldAlert, Calendar } from 'lucide-react';
+import { ShieldAlert, Calendar, Loader2 } from 'lucide-react';
 import { User } from '../../../../../types';
+import { useQuery } from '@tanstack/react-query';
+import { adminService } from '../../../../../services/adminService';
 
 interface UserProfileModalProps {
   user: User;
@@ -14,6 +16,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['user-stats', user.id],
+    queryFn: () => adminService.getUserStats(user.id),
+    enabled: isOpen,
+  });
+
   if (!isOpen) return null;
 
   return (
@@ -81,16 +89,28 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <ShieldAlert size={16} className='text-primary' /> Métricas de Uso
           </h4>
           <div className='grid grid-cols-3 gap-4'>
-            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5'>
-              <p className='text-2xl font-black text-slate-900 dark:text-white'>12</p>
+            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              {isLoading ? (
+                <div className="flex justify-center p-2"><Loader2 className="animate-spin text-primary" size={20} /></div>
+              ) : (
+                <p className='text-2xl font-black text-slate-900 dark:text-white'>{stats?.metrics.properties || 0}</p>
+              )}
               <p className='text-[10px] font-bold text-slate-400 uppercase'>Imóveis</p>
             </div>
-            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5'>
-              <p className='text-2xl font-black text-slate-900 dark:text-white'>8</p>
+            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              {isLoading ? (
+                <div className="flex justify-center p-2"><Loader2 className="animate-spin text-primary" size={20} /></div>
+              ) : (
+                <p className='text-2xl font-black text-slate-900 dark:text-white'>{stats?.metrics.tenants || 0}</p>
+              )}
               <p className='text-[10px] font-bold text-slate-400 uppercase'>Inquilinos</p>
             </div>
-            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5'>
-              <p className='text-2xl font-black text-slate-900 dark:text-white'>10</p>
+            <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              {isLoading ? (
+                <div className="flex justify-center p-2"><Loader2 className="animate-spin text-primary" size={20} /></div>
+              ) : (
+                <p className='text-2xl font-black text-slate-900 dark:text-white'>{stats?.metrics.contracts || 0}</p>
+              )}
               <p className='text-[10px] font-bold text-slate-400 uppercase'>Contratos</p>
             </div>
           </div>
@@ -101,26 +121,33 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <Calendar size={16} className='text-primary' /> Últimos Pagamentos do Plano
           </h4>
           <div className='space-y-2'>
-            {[
-              { month: 'Março 2024', val: 'R$ 79,90', status: 'Pago' },
-              { month: 'Fevereiro 2024', val: 'R$ 79,90', status: 'Pago' },
-              { month: 'Janeiro 2024', val: 'R$ 79,90', status: 'Pago' },
-            ].map((pay, i) => (
-              <div
-                key={i}
-                className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-white/5 text-sm'
-              >
-                <span className='font-bold text-slate-700 dark:text-slate-300'>
-                  {pay.month}
-                </span>
-                <div className='flex items-center gap-4'>
-                  <span className='font-medium text-slate-500'>{pay.val}</span>
-                  <span className='text-[10px] font-black text-emerald-500 uppercase'>
-                    {pay.status}
-                  </span>
-                </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center p-8 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                <Loader2 className="animate-spin text-primary mr-2" size={20} />
+                <span className="text-sm text-slate-400 font-medium">Carregando histórico...</span>
               </div>
-            ))}
+            ) : stats?.payments && stats.payments.length > 0 ? (
+              stats.payments.map((pay, i) => (
+                <div
+                  key={i}
+                  className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-white/5 text-sm transition-all hover:bg-slate-100 dark:hover:bg-white/10'
+                >
+                  <span className='font-bold text-slate-700 dark:text-slate-300 uppercase text-[11px] tracking-tight'>
+                    {pay.month}
+                  </span>
+                  <div className='flex items-center gap-4'>
+                    <span className='font-black text-slate-900 dark:text-white'>{pay.val}</span>
+                    <span className='px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/10 text-emerald-500 uppercase'>
+                      {pay.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className='flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10 opacity-60'>
+                <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>Nenhum pagamento registrado</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

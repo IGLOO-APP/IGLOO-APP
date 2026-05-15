@@ -15,10 +15,10 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
-    <header className='sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center transition-colors min-h-[64px]'>
+    <header className='sticky top-0 z-40 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/5 px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center transition-colors min-h-[64px]'>
       <div className='flex flex-col min-w-0 flex-1 mr-2'>
-        {title && <h1 className='text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase truncate'>{title}</h1>}
-        {subtitle && <p className='text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate'>{subtitle}</p>}
+        {title && <h1 className='text-lg md:text-xl font-black text-slate-main dark:text-white tracking-tight uppercase truncate'>{title}</h1>}
+        {subtitle && <p className='text-[9px] md:text-[10px] text-slate-muted font-bold uppercase tracking-widest truncate'>{subtitle}</p>}
       </div>
 
       <div className='flex items-center gap-1.5 md:gap-3 shrink-0'>
@@ -36,7 +36,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           <button 
             onClick={() => setShowNotifications(!showNotifications)} 
             className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-xl transition-all active-tap relative ${
-              showNotifications ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500'
+              showNotifications ? 'bg-primary text-white shadow-cyan-glow' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-muted'
             }`}
           >
             <Bell size={18} className='md:size-5' />
@@ -47,7 +47,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
             <>
               <div className='fixed inset-0 z-30' onClick={() => setShowNotifications(false)}></div>
               <div className='absolute top-12 right-0 w-80 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-100 dark:border-white/5 py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
-                <div className='px-4 py-3 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400'>
+                <div className='px-4 py-3 border-b border-slate-200/60 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-muted'>
                   Notificações
                   {unreadCount > 0 && <span className='bg-primary text-white px-2 py-0.5 rounded-full text-[8px]'>{unreadCount} novas</span>}
                 </div>
@@ -61,8 +61,8 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                       }} 
                       className='px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0 group transition-colors'
                     >
-                      <p className='text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors'>{notif.title}</p>
-                      <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2'>{notif.message}</p>
+                      <p className='text-sm font-bold text-slate-main dark:text-white group-hover:text-primary transition-colors'>{notif.title}</p>
+                      <p className='text-xs text-slate-body dark:text-slate-400 mt-0.5 line-clamp-2'>{notif.message}</p>
                     </div>
                   )) : (
                     <div className='p-12 text-center'>

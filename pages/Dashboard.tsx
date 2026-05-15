@@ -77,8 +77,8 @@ const Dashboard: React.FC = () => {
         <div className='w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-4'>
           <AlertTriangle size={32} />
         </div>
-        <h2 className='text-xl font-bold text-slate-900 dark:text-white mb-2'>Erro ao carregar Dashboard</h2>
-        <p className='text-slate-500 dark:text-slate-400 mb-6 max-w-md'>
+        <h2 className='text-xl font-bold text-slate-main dark:text-white mb-2'>Erro ao carregar Dashboard</h2>
+        <p className='text-slate-body dark:text-slate-400 mb-6 max-w-md'>
           Não conseguimos sincronizar seus dados agora.
         </p>
         <button
@@ -118,7 +118,7 @@ const Dashboard: React.FC = () => {
       >
         <button
           onClick={() => navigate('/properties', { state: { openAdd: true } })}
-          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-hover text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-cyan-glow transition-all active:scale-95'
         >
           <Plus size={16} className="md:size-[18px]" />
           <span className='hidden sm:inline'>Novo Imóvel</span>
@@ -155,8 +155,8 @@ const Dashboard: React.FC = () => {
             <div className='flex justify-between items-end px-1 h-[42px]'>
               <div className='flex items-end gap-6'>
                 <div>
-                  <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>Gestão de Ativos</h2>
-                  <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Patrimônio ativo</p>
+                  <h2 className='text-base font-black text-slate-main dark:text-white uppercase tracking-tight'>Gestão de Ativos</h2>
+                  <p className='text-[10px] text-slate-muted font-bold uppercase tracking-widest'>Patrimônio ativo</p>
                 </div>
                 <button onClick={() => navigate('/properties')} className='text-[10px] font-black text-primary uppercase tracking-widest hover:underline pb-0.5'>Ver todos</button>
               </div>
@@ -187,7 +187,7 @@ const Dashboard: React.FC = () => {
               ) : (
                 <div onClick={() => navigate('/properties', { state: { openAdd: true } })} className="h-48 flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-primary transition-all cursor-pointer group">
                   <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:text-primary transition-all mb-3"><Plus size={24} strokeWidth={3} /></div>
-                  <p className="text-sm font-black text-slate-900 dark:text-white">Cadastrar imóvel</p>
+                  <p className="text-sm font-black text-slate-main dark:text-white">Cadastrar imóvel</p>
                 </div>
               )}
             </div>

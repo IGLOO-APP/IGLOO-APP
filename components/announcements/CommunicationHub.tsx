@@ -105,7 +105,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
         else if (isHovered) setShowPreviews(true);
       }}
     >
-      <div className='bg-white dark:bg-surface-dark h-full rounded-[24px] sm:rounded-[32px] p-3 sm:p-4 border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col relative overflow-hidden'>
+      <div className='bg-white dark:bg-surface-dark h-full rounded-[24px] sm:rounded-[32px] p-3 sm:p-4 border border-slate-200/60 dark:border-white/5 shadow-premium hover:shadow-premium-hover transition-all duration-300 flex flex-col relative overflow-hidden'>
         {/* Progress Bar (Visible on hover) */}
         <div 
           className='absolute top-0 left-0 h-[2px] bg-primary transition-all duration-75 z-30' 
@@ -124,10 +124,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
               <Megaphone className='w-3 h-3 text-primary' />
             </div>
             <div>
-              <p className='text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] leading-none'>
+              <p className='text-slate-muted dark:text-slate-400 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] leading-none'>
                 Governance Hub
               </p>
-              <h3 className='text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mt-1'>
+              <h3 className='text-xs sm:text-sm font-black text-slate-main dark:text-white uppercase tracking-tight leading-none mt-1'>
                 Comunicações
               </h3>
             </div>
@@ -167,10 +167,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                       }}
                     >
                       <div className={`w-2 h-2 rounded-full ${ann.is_urgent ? 'bg-red-500 animate-pulse' : 'bg-primary'}`} />
-                      <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+                      <span className="text-sm sm:text-base font-bold text-slate-main dark:text-white uppercase tracking-tight">
                         {ann.title}
                       </span>
-                      <span className="text-[10px] sm:text-xs text-slate-400 font-medium">
+                      <span className="text-[10px] sm:text-xs text-slate-muted font-medium">
                         • {ann.content.slice(0, 50)}...
                       </span>
                     </div>
@@ -208,7 +208,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                       <div className='flex-1 border-b border-gray-100 dark:border-white/5 pb-2 group-last/item:border-none'>
                         <div className='flex flex-col'>
                           <div className='flex justify-between items-center gap-2'>
-                            <h4 className={`text-xs sm:text-sm font-black transition-colors line-clamp-1 uppercase tracking-tight ${idx === currentIndex ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 group-hover/item:text-primary'}`}>
+                            <h4 className={`text-xs sm:text-sm font-black transition-colors line-clamp-1 uppercase tracking-tight ${idx === currentIndex ? 'text-slate-main dark:text-white' : 'text-slate-body dark:text-slate-400 group-hover/item:text-primary'}`}>
                               {ann.title}
                             </h4>
                             {ann.is_urgent && idx !== currentIndex && <AlertCircle size={12} className='text-red-500/50 shrink-0' />}
@@ -217,7 +217,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                             <span className='text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-widest bg-primary/5 px-1.5 py-0.5 rounded'>
                               {getTargetLabel(ann)}
                             </span>
-                            <span className='text-[8px] sm:text-[9px] font-medium text-slate-400'>
+                            <span className='text-[8px] sm:text-[9px] font-medium text-slate-muted'>
                               • {new Date(ann.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                             </span>
                           </div>
@@ -248,8 +248,8 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
                     Alvo: {getTargetLabel(current)}
                   </span>
                 </div>
-                <h4 className='text-sm sm:text-lg font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight'>{current.title}</h4>
-                <p className='text-xs sm:text-sm font-medium text-slate-600 dark:text-white/70 leading-relaxed line-clamp-4'>
+                <h4 className='text-sm sm:text-lg font-black text-slate-main dark:text-white leading-tight uppercase tracking-tight'>{current.title}</h4>
+                <p className='text-xs sm:text-sm font-medium text-slate-body dark:text-white/70 leading-relaxed line-clamp-4'>
                   {current.content}
                 </p>
               </div>
@@ -261,7 +261,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({ onNewAnnouncement, 
         <div className='pt-2 border-t border-gray-100 dark:border-white/5 mt-auto flex justify-between items-center relative z-20'>
           <button 
             onClick={() => setShowHistoryModal(true)}
-            className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] hover:text-primary transition-colors flex items-center gap-2'
+            className='text-[9px] font-black text-slate-muted uppercase tracking-[0.2em] hover:text-primary transition-colors flex items-center gap-2'
           >
             <History size={12} />
             Histórico

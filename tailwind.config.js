@@ -10,13 +10,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#13c8ec',
-        'primary-dark': '#0ea5c3',
-        'background-light': '#f0f4f8',
+        primary: {
+          DEFAULT: '#13c8ec',
+          dark: '#0ea5c3',
+          light: '#e0f7fa',
+          hover: '#0fb1d1',
+        },
+        'background-light': '#f8fafc', // Slate 50 - cleaner look
         'background-dark': '#0b1011',
         'surface-light': '#ffffff',
         'surface-dark': '#141b1d',
         'surface-dark-hover': '#1c2528',
+        'slate-main': '#0f172a', // Deep navy-slate
+        'slate-body': '#475569', // Medium slate
+        'slate-muted': '#94a3b8', // Light slate
+      },
+      boxShadow: {
+        'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 4px 10px -5px rgba(0, 0, 0, 0.02)',
+        'premium-hover': '0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.04)',
+        'cyan-glow': '0 0 20px rgba(19, 200, 236, 0.15)',
       },
       fontFamily: {
         sans: ['Manrope', 'sans-serif'],

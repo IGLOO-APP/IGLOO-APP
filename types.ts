@@ -15,6 +15,14 @@ export interface User {
   property_id?: string;
   phone?: string;
   avatar_url?: string;
+  created_at?: string;
+  last_login_at?: string;
+  plan?: string;
+  metrics?: {
+    properties: number;
+    tenants: number;
+    contracts: number;
+  };
 }
 
 export interface Tenant {

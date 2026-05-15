@@ -66,17 +66,17 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
       {children}
       {isVisible && (
         <div 
-          className={`absolute z-[100] w-[260px] p-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl shadow-2xl pointer-events-none animate-fadeIn left-1/2 -translate-x-1/2 transition-all duration-300 ${
+          className={`absolute z-[100] w-[220px] p-3 bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white rounded-xl shadow-2xl pointer-events-none animate-fadeIn left-1/2 -translate-x-1/2 transition-all duration-300 ${
             placement === 'top' 
-              ? 'bottom-full mb-3' 
-              : 'top-full mt-3'
+              ? 'bottom-full mb-2' 
+              : 'top-full mt-2'
           }`}
         >
           <div className="relative z-10">
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-1 text-slate-300">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.15em] mb-1 text-slate-300">
               {title}
             </h4>
-            <p className="text-[12px] leading-relaxed text-slate-400 font-medium">
+            <p className="text-[11px] leading-snug text-slate-400 font-medium">
               {description}
             </p>
           </div>

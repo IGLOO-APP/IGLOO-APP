@@ -36,7 +36,7 @@ export const adminService = {
       } else if (status === 'Ativo') {
         query = query.eq('is_suspended', false);
       } else if (status === 'Inativo') {
-        query = query.eq('is_suspended', false).is('last_login', null);
+        query = query.eq('is_suspended', false).is('last_login_at', null);
       }
       // Trial logic would depend on subscription dates, simplified here
     }
@@ -74,7 +74,42 @@ export const adminService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return { users: data as User[], total: count };
+
+    const users = data as User[];
+
+    // Fetch counts for the current page of users
+    const userIds = users.map(u => u.id);
+    
+    // Properties Count
+    const { data: propData } = await supabase
+      .from('properties')
+      .select('owner_id')
+      .in('owner_id', userIds);
+
+    // Contracts Count
+    const { data: contractData } = await supabase
+      .from('contracts')
+      .select('owner_id, tenant_id')
+      .in('owner_id', userIds);
+
+    // Map metrics back to users
+    const usersWithMetrics = users.map(user => {
+      const userProps = propData?.filter(p => p.owner_id === user.id) || [];
+      const userContracts = contractData?.filter(c => c.owner_id === user.id) || [];
+      // Tenants are unique tenant_ids in contracts of this owner
+      const uniqueTenants = new Set(userContracts.map(c => c.tenant_id).filter(Boolean));
+
+      return {
+        ...user,
+        metrics: {
+          properties: userProps.length,
+          tenants: uniqueTenants.size,
+          contracts: userContracts.length
+        }
+      };
+    });
+
+    return { users: usersWithMetrics, total: count };
   },
 
   async getRecentUsers(limit = 5) {
@@ -104,11 +139,27 @@ export const adminService = {
   },
 
   async exportUserData(userId: string) {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (error) throw error;
+    const { data: profile, error: pError } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (pError) throw pError;
+
+    // Fetch related data for a full export
+    const { data: properties } = await supabase.from('properties').select('*').eq('owner_id', userId);
+    const { data: contracts } = await supabase.from('contracts').select('*').eq('owner_id', userId);
+    const { data: payments } = await supabase.from('payments').select('*, contracts!inner(owner_id)').eq('contracts.owner_id', userId);
 
     await this.logActivity('export_data', 'user', userId);
-    return data;
+
+    return {
+      profile,
+      metrics: {
+        total_properties: properties?.length || 0,
+        total_contracts: contracts?.length || 0,
+      },
+      properties: properties || [],
+      contracts: contracts || [],
+      payments: payments || [],
+      exported_at: new Date().toISOString(),
+    };
   },
 
   async suspendUser(userId: string, reason: string, notes: string, notifyUser: boolean) {
@@ -607,5 +658,69 @@ export const adminService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async getUserStats(userId: string) {
+    try {
+      // 1. Count Properties
+      const { count: propertiesCount } = await supabase
+        .from('properties')
+        .select('*', { count: 'exact', head: true })
+        .eq('owner_id', userId);
+
+      // 2. Count Contracts (where property owner is this user)
+      // This is a bit more complex, we might need a join or just count contracts for properties of this owner
+      const { data: ownerProperties } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('owner_id', userId);
+      
+      const propertyIds = ownerProperties?.map(p => p.id) || [];
+      
+      let contractsCount = 0;
+      let tenantsCount = 0;
+
+      if (propertyIds.length > 0) {
+        const { count: cCount } = await supabase
+          .from('contracts')
+          .select('*', { count: 'exact', head: true })
+          .in('property_id', propertyIds);
+        contractsCount = cCount || 0;
+
+        const { count: tCount } = await supabase
+          .from('contracts')
+          .select('tenant_id', { count: 'exact', head: true })
+          .in('property_id', propertyIds)
+          .not('tenant_id', 'is', null);
+        tenantsCount = tCount || 0;
+      }
+
+      // 3. Get Recent Payments
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      return {
+        metrics: {
+          properties: propertiesCount || 0,
+          tenants: tenantsCount || 0,
+          contracts: contractsCount || 0,
+        },
+        payments: payments?.map(p => ({
+          month: new Date(p.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+          val: `R$ ${p.amount}`,
+          status: p.status === 'paid' ? 'Pago' : 'Pendente'
+        })) || []
+      };
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      return {
+        metrics: { properties: 0, tenants: 0, contracts: 0 },
+        payments: []
+      };
+    }
   },
 };

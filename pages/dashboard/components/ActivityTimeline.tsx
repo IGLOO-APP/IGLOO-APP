@@ -7,17 +7,17 @@ interface ActivityTimelineProps {
 
 export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }) => {
   return (
-    <div className='w-full h-full bg-white dark:bg-surface-dark p-6 md:p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm flex flex-col'>
+    <div className='w-full h-full bg-white dark:bg-surface-dark p-6 md:p-8 rounded-[32px] border border-slate-200/60 dark:border-white/5 shadow-premium flex flex-col'>
       <div className='flex justify-between items-center mb-8'>
         <div className='flex items-center gap-3'>
           <div className='p-2.5 rounded-2xl bg-slate-50 dark:bg-white/5 text-slate-400'>
             <Calendar size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h3 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-tight'>
+            <h3 className='text-base font-black text-slate-main dark:text-white uppercase tracking-tight'>
               Próximos Dias
             </h3>
-            <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>Agenda de Ativos</p>
+            <p className='text-[10px] text-slate-muted font-bold uppercase tracking-widest'>Agenda de Ativos</p>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }
 
               <div className='pb-10 flex-1 transition-all'>
                 <div className='flex items-center justify-between gap-2 mb-1.5'>
-                  <p className='text-sm font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight uppercase'>
+                  <p className='text-sm font-black text-slate-main dark:text-slate-100 leading-tight tracking-tight uppercase'>
                     {act.title}
                   </p>
                   <ChevronRight size={14} className='text-slate-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all' />
@@ -78,7 +78,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }
                   }`}>
                     {isToday ? 'Hoje' : isTomorrow ? 'Amanhã' : act.date}
                   </span>
-                  <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                  <span className='text-[10px] font-bold text-slate-muted uppercase tracking-widest'>
                     {act.time}
                   </span>
                 </div>
@@ -90,7 +90,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }
             <div className='w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-200 mx-auto mb-4'>
               <Calendar size={24} strokeWidth={1} />
             </div>
-            <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>
+            <p className='text-[10px] font-black uppercase tracking-widest text-slate-muted'>
               Nenhum compromisso agendado
             </p>
           </div>
@@ -98,7 +98,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }
       </div>
 
       <div className='mt-4'>
-        <button className='w-full py-3 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest border border-slate-100 dark:border-white/5 hover:bg-slate-100 transition-all active:scale-95'>
+        <button className='w-full py-3 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-body dark:text-slate-400 font-bold text-[10px] uppercase tracking-widest border border-slate-100 dark:border-white/5 hover:bg-slate-100 transition-all active:scale-95'>
           Ver Agenda Completa
         </button>
       </div>

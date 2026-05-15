@@ -188,7 +188,21 @@ const UserManagement: React.FC = () => {
         onSuspend={(u) => { setSelectedUser(u); setIsSuspendModalOpen(true); }}
         onUnsuspend={handleUnsuspend}
         onApprove={handleApprove}
-        onExportData={async (u) => { await adminService.exportUserData(u.id.toString()); showToast('Dados exportados com sucesso.'); }}
+        onExportData={async (u) => {
+          try {
+            const data = await adminService.exportUserData(u.id.toString());
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `export_${u.name.replace(/\s+/g, '_')}_${u.id.substring(0, 5)}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast('Dados exportados com sucesso.');
+          } catch (error) {
+            showToast('Erro ao exportar dados.', 'error');
+          }
+        }}
         onClearFilters={handleClearFilters}
       />
 

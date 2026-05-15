@@ -65,6 +65,9 @@ export const UserTable: React.FC<UserTableProps> = ({
                 Plano
               </th>
               <th className='px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest'>
+                Uso
+              </th>
+              <th className='px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest'>
                 Status
               </th>
               <th className='px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest'>
@@ -148,6 +151,30 @@ export const UserTable: React.FC<UserTableProps> = ({
                     ) : (
                       <span className='text-[10px] font-black px-2.5 py-1 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 dark:text-slate-400 uppercase tracking-widest'>
                         {(u as any).plan || 'Free'}
+                      </span>
+                    )}
+                  </td>
+                  <td className='px-8 py-5'>
+                    {u.role === 'owner' ? (
+                      <div className='flex items-center gap-3'>
+                        <div className='flex flex-col items-center' title={`${u.metrics?.properties || 0} Imóveis`}>
+                          <span className='text-[10px] font-black text-slate-900 dark:text-white'>{u.metrics?.properties || 0}</span>
+                          <span className='text-[8px] font-bold text-slate-400 uppercase tracking-tighter'>Imov</span>
+                        </div>
+                        <div className='w-px h-4 bg-gray-100 dark:bg-white/5'></div>
+                        <div className='flex flex-col items-center' title={`${u.metrics?.tenants || 0} Inquilinos`}>
+                          <span className='text-[10px] font-black text-slate-900 dark:text-white'>{u.metrics?.tenants || 0}</span>
+                          <span className='text-[8px] font-bold text-slate-400 uppercase tracking-tighter'>Inqu</span>
+                        </div>
+                        <div className='w-px h-4 bg-gray-100 dark:bg-white/5'></div>
+                        <div className='flex flex-col items-center' title={`${u.metrics?.contracts || 0} Contratos`}>
+                          <span className='text-[10px] font-black text-slate-900 dark:text-white'>{u.metrics?.contracts || 0}</span>
+                          <span className='text-[8px] font-bold text-slate-400 uppercase tracking-tighter'>Cont</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className='text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest'>
+                        N/A
                       </span>
                     )}
                   </td>

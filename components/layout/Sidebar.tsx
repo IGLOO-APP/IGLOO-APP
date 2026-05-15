@@ -43,8 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               to={item.path}
               className={({ isActive }) =>
                 `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${isActive
-                  ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-white/5'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-primary/5 dark:bg-white/10 text-slate-main dark:text-white shadow-premium ring-1 ring-primary/10 dark:ring-white/5'
+                  : 'text-slate-body dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-main dark:hover:text-white'
                 }`
               }
             >
@@ -70,8 +70,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 to={item.path}
                 className={({ isActive }) =>
                   `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${isActive
-                    ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-200 dark:ring-amber-500/20'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-amber-500/10 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-premium ring-1 ring-amber-500/20 dark:ring-amber-500/20'
+                    : 'text-slate-body dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-main dark:hover:text-white'
                   }`
                 }
               >
@@ -96,8 +96,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <UserButton appearance={{ elements: { userButtonAvatarBox: 'w-10 h-10 rounded-xl', userButtonTrigger: 'pointer-events-none' } }} />
           </div>
           <div className='flex flex-col min-w-0'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-200 truncate'>{user?.name || 'Carregando...'}</span>
-            <span className='text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize'>
+            <span className='text-sm font-bold text-slate-main dark:text-slate-200 truncate'>{user?.name || 'Carregando...'}</span>
+            <span className='text-[10px] font-medium text-slate-body dark:text-slate-400 capitalize'>
               {user?.role === 'owner' ? 'Proprietário' : user?.role === 'admin' ? 'Administrador' : 'Inquilino'}
             </span>
           </div>
