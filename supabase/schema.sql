@@ -231,7 +231,7 @@ returns boolean as $$
 begin
   return exists (
     select 1 from public.profiles
-    where id = auth.uid()
+    where id = (auth.jwt() ->> 'sub')::text
     and role = 'admin'
   );
 end;
@@ -239,14 +239,14 @@ $$ language plpgsql security definer;
 
 -- Profiles Policies
 create policy "Users can view own profile" on public.profiles
-  for select using (auth.uid() = id or is_admin());
+  for select using ((auth.jwt() ->> 'sub')::text = id or is_admin());
 
 create policy "Users can create own profile" on public.profiles
-  for insert with check (auth.uid() = id);
+  for insert with check ((auth.jwt() ->> 'sub')::text = id);
 
 create policy "Users can update own profile" on public.profiles
-  for update using (auth.uid() = id or is_admin())
-  with check (auth.uid() = id or is_admin());
+  for update using ((auth.jwt() ->> 'sub')::text = id or is_admin())
+  with check ((auth.jwt() ->> 'sub')::text = id or is_admin());
 
 create policy "Admins can update any profile" on public.profiles
   for update using (is_admin())
@@ -254,26 +254,26 @@ create policy "Admins can update any profile" on public.profiles
 
 -- Properties Policies
 create policy "Owners can view their properties" on public.properties
-  for select using (auth.uid() = owner_id or is_admin());
+  for select using ((auth.jwt() ->> 'sub')::text = owner_id or is_admin());
 
 create policy "Owners can managed their properties" on public.properties
-  for all using (auth.uid() = owner_id or is_admin());
+  for all using ((auth.jwt() ->> 'sub')::text = owner_id or is_admin());
 
 create policy "Tenants can view rented properties" on public.properties
   for select using (
     exists (
       select 1 from public.contracts
       where contracts.property_id = properties.id
-      and contracts.tenant_id = auth.uid()
+      and contracts.tenant_id = (auth.jwt() ->> 'sub')::text
     )
   );
 
 -- Contracts Policies
 create policy "Users involved can view contracts" on public.contracts
-  for select using (auth.uid() = owner_id or auth.uid() = tenant_id or is_admin());
+  for select using ((auth.jwt() ->> 'sub')::text = owner_id or (auth.jwt() ->> 'sub')::text = tenant_id or is_admin());
 
 create policy "Owners can manage contracts" on public.contracts
-  for all using (auth.uid() = owner_id or is_admin());
+  for all using ((auth.jwt() ->> 'sub')::text = owner_id or is_admin());
 
 -- Admin Activity Log Policies (Only Admins)
 create policy "Admins can view logs" on public.admin_activity_log
