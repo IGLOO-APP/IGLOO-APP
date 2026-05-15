@@ -10,6 +10,7 @@ import { UserFilters } from './components/UserManagement/UserFilters';
 import { UserTable } from './components/UserManagement/UserTable';
 import { UserProfileModal } from './components/UserManagement/modals/UserProfileModal';
 import { UserPlanModal } from './components/UserManagement/modals/UserPlanModal';
+import { AddOwnerModal } from './components/UserManagement/modals/AddOwnerModal';
 import SuspendUserModal from '../../components/admin/modals/SuspendUserModal';
 
 const UserManagement: React.FC = () => {
@@ -31,6 +32,7 @@ const UserManagement: React.FC = () => {
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [isAddOwnerModalOpen, setIsAddOwnerModalOpen] = useState(false);
   const [newPlan, setNewPlan] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -170,6 +172,7 @@ const UserManagement: React.FC = () => {
         setFilterPeriod={setFilterPeriod}
         onClearFilters={handleClearFilters}
         onExportCSV={handleExportCSV}
+        onAddOwner={() => setIsAddOwnerModalOpen(true)}
       />
 
       <UserTable
@@ -211,7 +214,27 @@ const UserManagement: React.FC = () => {
             onClose={() => setIsSuspendModalOpen(false)}
             onSuspend={handleConfirmSuspend}
           />
+          <AddOwnerModal
+            isOpen={isAddOwnerModalOpen}
+            onClose={() => setIsAddOwnerModalOpen(false)}
+            onSuccess={() => {
+              showToast('Proprietário adicionado com sucesso!');
+              queryClient.invalidateQueries({ queryKey: ['users'] });
+            }}
+          />
         </>
+      )}
+
+      {/* Fallback para quando nenhum usuário está selecionado mas o modal de adicionar está aberto */}
+      {!selectedUser && isAddOwnerModalOpen && (
+        <AddOwnerModal
+          isOpen={isAddOwnerModalOpen}
+          onClose={() => setIsAddOwnerModalOpen(false)}
+          onSuccess={() => {
+            showToast('Proprietário adicionado com sucesso!');
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+          }}
+        />
       )}
     </div>
   );

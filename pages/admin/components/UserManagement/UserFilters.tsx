@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, UserPlus } from 'lucide-react';
 
 interface UserFiltersProps {
   searchTerm: string;
@@ -14,6 +14,7 @@ interface UserFiltersProps {
   setFilterPeriod: (val: string) => void;
   onClearFilters: () => void;
   onExportCSV: () => void;
+  onAddOwner: () => void;
 }
 
 export const UserFilters: React.FC<UserFiltersProps> = ({
@@ -29,6 +30,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   setFilterPeriod,
   onClearFilters,
   onExportCSV,
+  onAddOwner,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -96,12 +98,21 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
           />
         </div>
 
-        <button
-          onClick={onExportCSV}
-          className='px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all active:scale-95'
-        >
-          Exportar CSV
-        </button>
+        <div className='flex gap-3'>
+          <button
+            onClick={onExportCSV}
+            className='px-6 py-3 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95'
+          >
+            Exportar CSV
+          </button>
+          <button
+            onClick={onAddOwner}
+            className='px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all active:scale-95 flex items-center gap-2'
+          >
+            <UserPlus size={18} />
+            Adicionar Proprietário
+          </button>
+        </div>
       </div>
 
       <div className='flex flex-wrap items-center gap-3'>

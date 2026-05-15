@@ -278,6 +278,26 @@ export const adminService = {
     await this.logActivity('invite_admin', 'system', email, { adminType, permissions });
   },
 
+  async createOwner(email: string, name: string, phone: string) {
+    // Cria um perfil "placeholder" no Supabase. 
+    // Quando o usuário fizer login via Clerk com este e-mail, 
+    // o profileService.ensureProfile fará o "claim" deste perfil.
+    const { data, error } = await supabase.from('profiles').insert({
+      id: crypto.randomUUID(), // ID temporário
+      email,
+      name,
+      phone,
+      role: 'owner',
+      is_suspended: false,
+      created_at: new Date().toISOString(),
+    }).select().single();
+
+    if (error) throw error;
+    
+    await this.logActivity('manual_create_owner', 'user', data.id, { email, name });
+    return data;
+  },
+
   async removeAdmin(userId: string) {
     // Revert to tenant instead of deleting? Requirement says "voltar a ser um usuário comum (Tenant)"
     const { error } = await supabase
