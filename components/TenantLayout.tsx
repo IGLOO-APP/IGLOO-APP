@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
 import { Home, Receipt, User, LogOut, Moon, Sun, LifeBuoy, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
@@ -8,6 +8,8 @@ import { UserButton } from '@clerk/clerk-react';
 const TenantLayout: React.FC = () => {
   const { logout, user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
+  const isMaintenanceRoute = location.pathname === '/tenant/maintenance';
 
   const navItems = [
     { path: '/tenant', label: 'Início', icon: Home },
@@ -104,8 +106,8 @@ const TenantLayout: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className='flex-1 overflow-y-auto flex flex-col relative h-full w-full custom-scrollbar'>
-        <div className='flex-1 w-full relative'>
+      <main className={`flex-1 ${isMaintenanceRoute ? 'overflow-hidden' : 'overflow-y-auto'} flex flex-col relative h-full w-full custom-scrollbar`}>
+        <div className={`flex-1 w-full relative ${isMaintenanceRoute ? 'h-full min-h-0 overflow-hidden' : ''}`}>
           <Outlet />
         </div>
 

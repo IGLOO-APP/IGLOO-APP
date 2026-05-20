@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Bell } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
 import { useSearch } from '../../context/SearchContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface TopBarProps {
   title?: string;
@@ -12,6 +13,7 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => {
   const { notifications, unreadCount, markAsRead } = useNotification();
   const { toggleSearch } = useSearch();
+  const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (

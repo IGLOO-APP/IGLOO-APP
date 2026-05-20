@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, FileText, Paperclip, Send, X, Plus } from 'lucide-react';
+import { ChevronLeft, FileText, Paperclip, Send, X, Plus, Shield } from 'lucide-react';
 import { ChatThread, ChatMessage } from '../../services/messageService';
 import { MessageBubble } from './MessageBubble';
 
@@ -71,13 +71,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
           <div className='flex items-center gap-3 md:gap-4 flex-1 min-w-0'>
             {/* Professional Header Avatar */}
-            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg shadow-black/5 shrink-0 border border-white/10`}>
-              {activeChat.tenantAvatar ? (
-                <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-2xl' />
-              ) : (
-                <span>{activeChat.tenantName.charAt(0)}</span>
-              )}
-            </div>
+            {activeChat.category === 'support' ? (
+              <div className='w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg border border-cyan-400/30 ring-2 ring-cyan-500/20 shrink-0'>
+                <Shield size={22} className='text-white animate-pulse' />
+              </div>
+            ) : (
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl ${getAvatarColor(activeChat.tenantName)} flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg shadow-black/5 shrink-0 border border-white/10`}>
+                {activeChat.tenantAvatar ? (
+                  <img src={activeChat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-2xl' />
+                ) : (
+                  <span>{activeChat.tenantName.charAt(0)}</span>
+                )}
+              </div>
+            )}
 
             <div className='flex flex-col min-w-0'>
               <div className='flex items-center gap-2'>
@@ -85,7 +91,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   {activeChat.tenantName}
                 </h2>
                 <span className='hidden sm:inline-flex px-1.5 py-0.5 rounded bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[7px] md:text-[8px] font-black uppercase tracking-widest shrink-0'>
-                   #{activeChat.id.slice(0, 8)}
+                   {activeChat.category === 'support' ? activeChat.ticket?.id : `#${activeChat.id.slice(0, 8)}`}
                 </span>
               </div>
               <div className='flex items-center gap-1.5 mt-1 md:mt-1.5'>
@@ -96,10 +102,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 <span className={`px-2 py-0.5 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-wider truncate ${
                   activeChat.category === 'maintenance' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
                   activeChat.category === 'finance' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
+                  activeChat.category === 'support' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20' :
                   'bg-primary/10 text-primary'
                 }`}>
                   {activeChat.category === 'maintenance' ? 'Manutenção' : 
-                   activeChat.category === 'finance' ? 'Financeiro' : 'Geral'}
+                   activeChat.category === 'finance' ? 'Financeiro' : 
+                   activeChat.category === 'support' ? '🛡️ Suporte' : 'Geral'}
                 </span>
               </div>
               

@@ -22,6 +22,11 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
   return (
     <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeIn px-2`}>
       <div className={`max-w-[88%] md:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+        {!isMe && msg.isSupport && (
+          <div className='flex items-center gap-1 mb-1.5 px-1 text-[9px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-400'>
+            <span>🛡️ Suporte Autorizado</span>
+          </div>
+        )}
         <div
           className={`px-5 py-3.5 shadow-lg relative group transition-all ${
             isMe

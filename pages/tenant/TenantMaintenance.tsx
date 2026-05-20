@@ -42,10 +42,11 @@ interface UnifiedMessage {
   ticketTitle?: string;
   ticketStatus?: string;
   ticketId?: string;
+  requestId?: string;
 }
 
 const TenantMaintenance: React.FC = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, tokenReady } = useAuth();
   const queryClient = useQueryClient();
   const [inputText, setInputText] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -125,6 +126,7 @@ const TenantMaintenance: React.FC = () => {
           created_at: msg.created_at || new Date().toISOString(),
           type: (msg.type as any) || 'text',
           url: msg.url || undefined,
+          requestId: msg.request_id,
         });
       }
 
@@ -135,6 +137,19 @@ const TenantMaintenance: React.FC = () => {
   });
 
   const activeTicket = requests.find((r: any) => ['pending', 'in_progress', 'open'].includes(r.status)) || pendingTicket;
+  
+  const activeTicketMessages = activeTicket 
+    ? allMessages.filter((m: any) => m.requestId === activeTicket.id || m.ticketId === activeTicket.id)
+    : [];
+  
+  const hasOwnerResponse = activeTicketMessages.some(
+    (m: any) => m.sender_role === 'owner' || m.sender_role === 'admin'
+  );
+
+  const shouldDisableInput = 
+    (isCreating && !newCategory) || 
+    (!isCreating && !activeTicket) ||
+    (!isCreating && activeTicket && !hasOwnerResponse);
   
   const filteredRequests = requests.filter(r => {
     const isClosed = ['completed', 'resolved'].includes(r.status);
@@ -230,9 +245,6 @@ const TenantMaintenance: React.FC = () => {
         <div className='p-6 space-y-6 shrink-0'>
           <div className='flex items-center justify-between'>
             <h1 className='text-xl font-black text-white tracking-tighter'>Atendimentos</h1>
-            <button onClick={() => setIsCreating(true)} className='p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all'>
-              <Plus size={18} />
-            </button>
           </div>
 
           <div className='flex p-1 bg-white/5 rounded-xl'>
@@ -362,6 +374,52 @@ const TenantMaintenance: React.FC = () => {
             );
           })}
 
+          {allMessages.length === 0 && !isCreating && (
+            <div className='flex flex-col items-center justify-center min-h-[350px] my-auto text-center animate-fadeIn'>
+              <div className='w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6 shadow-2xl'>
+                <Wrench size={28} className='text-slate-500' />
+              </div>
+              <h3 className='text-lg font-black text-white uppercase tracking-tight mb-2'>Nenhum Chamado Ativo</h3>
+              <p className='text-xs font-medium text-slate-500 max-w-sm leading-relaxed mb-6'>
+                Você não possui nenhum chamado de manutenção em aberto no momento. Precisa de ajuda com alguma coisa no seu imóvel?
+              </p>
+              <button
+                onClick={() => {
+                  setIsCreating(true);
+                  setCreationStep('category');
+                }}
+                className='px-6 py-3.5 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20 flex items-center gap-2'
+              >
+                <Plus size={16} strokeWidth={3} />
+                Abrir Novo Chamado
+              </button>
+            </div>
+          )}
+
+          {allMessages.length > 0 && !activeTicket && !isCreating && (
+            <div className='max-w-md mx-auto bg-white/[0.02] border border-white/5 rounded-3xl p-6 text-center shadow-xl space-y-4 my-8 animate-fadeIn'>
+              <div className='w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto'>
+                <Wrench size={20} className='text-slate-400' />
+              </div>
+              <div>
+                <h4 className='text-sm font-black text-white uppercase tracking-wider'>Todos os chamados concluídos</h4>
+                <p className='text-[11px] text-slate-500 font-medium mt-1 leading-relaxed'>
+                  Você não possui nenhum chamado ativo. Caso precise de alguma nova manutenção, abra um novo chamado abaixo.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsCreating(true);
+                  setCreationStep('category');
+                }}
+                className='w-full py-3 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/10 flex items-center justify-center gap-2'
+              >
+                <Plus size={14} strokeWidth={3} />
+                Abrir Novo Chamado
+              </button>
+            </div>
+          )}
+
           {/* Fluxo de Criação Inline */}
           {isCreating && (
             <div className='flex flex-col gap-6 max-w-lg mx-auto animate-fadeIn py-4'>
@@ -402,7 +460,7 @@ const TenantMaintenance: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className='p-6 bg-[#0A0B0D] border-t border-white/5'>
+        <div className='p-6 pb-24 md:pb-6 bg-[#0A0B0D] border-t border-white/5 shrink-0'>
           <form 
             onSubmit={(e) => {
               e.preventDefault();
@@ -422,19 +480,21 @@ const TenantMaintenance: React.FC = () => {
               type='text' 
               value={inputText} 
               onChange={(e) => setInputText(e.target.value)}
-              disabled={(isCreating && !newCategory) || (!isCreating && !activeTicket)}
+              disabled={shouldDisableInput}
               placeholder={
                 isCreating 
                   ? 'Descreva o problema e aperte Enter...' 
-                  : activeTicket 
-                    ? 'Escreva uma mensagem...' 
-                    : 'Nenhum chamado ativo'
+                  : !activeTicket 
+                    ? 'Nenhum chamado ativo'
+                    : !hasOwnerResponse 
+                      ? 'Aguardando resposta do proprietário...'
+                      : 'Escreva uma mensagem...'
               }
               className='w-full h-14 pl-14 pr-20 bg-white/5 border border-white/5 rounded-2xl text-sm font-medium text-white placeholder-slate-700 focus:ring-1 focus:ring-primary/40 focus:bg-white/[0.07] transition-all' 
             />
             <button 
               type='submit'
-              disabled={!inputText.trim() || createTicketMutation.isPending || sendMessageMutation.isPending}
+              disabled={shouldDisableInput || !inputText.trim() || createTicketMutation.isPending || sendMessageMutation.isPending}
               className='absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-30'
             >
               {createTicketMutation.isPending || sendMessageMutation.isPending ? <Loader2 className='animate-spin' size={18} /> : <Send size={18} />}

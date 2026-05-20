@@ -638,6 +638,29 @@ export const adminService = {
       .eq('id', ticketId);
 
     if (error) throw error;
+
+    let systemContent = '';
+    if (status === 'Resolvido') {
+      systemContent = 'Chamado resolvido pelo administrador';
+    } else if (status === 'Fechado') {
+      systemContent = 'Chamado encerrado pelo administrador';
+    } else if (status === 'Pendente') {
+      systemContent = 'Chamado reaberto para atendimento';
+    } else if (status === 'Em Andamento') {
+      systemContent = 'Chamado em andamento';
+    }
+
+    if (systemContent) {
+      await supabase
+        .from('support_messages')
+        .insert({
+          ticket_id: ticketId,
+          sender_id: null,
+          sender_role: 'system',
+          content: systemContent,
+          is_read: true
+        });
+    }
   },
 
   async assignTicket(ticketId: string, adminId: string | null) {
@@ -650,14 +673,37 @@ export const adminService = {
   },
 
   async createTicket(ticket: { owner_id: string; subject: string; description: string; category: string; priority: string }) {
-    const { data, error } = await supabase
+    // 1. Criar o chamado na tabela support_tickets (sem a coluna description)
+    const { data: ticketData, error: ticketError } = await supabase
       .from('support_tickets')
-      .insert([ticket])
+      .insert({
+        user_id: ticket.owner_id,
+        subject: ticket.subject,
+        category: ticket.category,
+        priority: ticket.priority as any,
+        status: 'Aberto'
+      })
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (ticketError) throw ticketError;
+
+    // 2. Inserir a descrição do chamado como a primeira mensagem em support_messages
+    const { error: msgError } = await supabase
+      .from('support_messages')
+      .insert({
+        ticket_id: ticketData.id,
+        sender_id: ticket.owner_id,
+        sender_role: 'user',
+        content: ticket.description,
+        is_read: false
+      });
+
+    if (msgError) {
+      console.error('Error creating first support message in adminService:', msgError);
+    }
+
+    return ticketData;
   },
 
   async getUserStats(userId: string) {

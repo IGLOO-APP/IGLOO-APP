@@ -464,26 +464,6 @@ const SupportCenter: React.FC = () => {
                   <Lock size={12} className='text-slate-400' />
                   <span className='text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]'>AES-256</span>
                 </div>
-                <div className='flex gap-1.5 ml-2'>
-                  <button
-                    onClick={() => {
-                      setShowDetailsPanel(true);
-                      setActiveRightTab('owner');
-                    }}
-                    className={`p-2.5 rounded-xl transition-all ${showDetailsPanel && activeRightTab === 'owner' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
-                  >
-                    <LayoutDashboard size={18} strokeWidth={2.5} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDetailsPanel(!showDetailsPanel);
-                      setActiveRightTab('ticket');
-                    }}
-                    className={`p-2.5 rounded-xl transition-all ${showDetailsPanel && activeRightTab === 'ticket' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-slate-600'}`}
-                  >
-                    <FileText size={18} strokeWidth={2.5} />
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -675,6 +655,28 @@ const SupportCenter: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
+                      {selectedTicket.status !== 'Resolvido' && selectedTicket.status !== 'Fechado' ? (
+                        <div className='pt-4 border-t border-gray-100 dark:border-white/5'>
+                          <button
+                            onClick={() => handleStatusChange('Resolvido')}
+                            className='w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]'
+                          >
+                            <CheckCircle2 size={14} strokeWidth={2.5} />
+                            Encerrar Chamado
+                          </button>
+                        </div>
+                      ) : (
+                        <div className='pt-4 border-t border-gray-100 dark:border-white/5'>
+                          <button
+                            onClick={() => handleStatusChange('Pendente')}
+                            className='w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-[11px] font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all'
+                          >
+                            <History size={14} />
+                            Reabrir Chamado
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className='p-4 space-y-5'>

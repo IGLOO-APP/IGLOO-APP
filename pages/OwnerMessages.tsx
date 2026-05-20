@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { faqService } from '../services/faqService';
 import { messageService } from '../services/messageService';
+import { supportService } from '../services/supportService';
+import { CreateTicketModal } from '../components/support/CreateTicketModal';
 import { FAQ, Property, Tenant, SystemAnnouncement } from '../types';
 import { ChatThread, ChatMessage } from '../services/messageService';
 import { 
@@ -46,9 +48,10 @@ const OwnerMessages: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general' | 'urgent'>(
+  const [activeFilter, setActiveFilter] = useState<'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support'>(
     'all'
   );
+  const [showCreateSupportModal, setShowCreateSupportModal] = useState(false);
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [activeRightTab, setActiveRightTab] = useState<'ticket' | 'tenant'>('ticket');
   const [chats, setChats] = useState<ChatThread[]>([]);
@@ -166,10 +169,92 @@ const OwnerMessages: React.FC = () => {
 
   const loadChats = async () => {
     setLoading(true);
-    const data = await messageService.getChats();
-    setChats(data);
-    setLoading(false);
-    return data;
+    try {
+      const tenantChats = await messageService.getChats();
+      let supportThreads: ChatThread[] = [];
+      if (user) {
+        const supportTickets = await supportService.getTickets(user.id);
+        
+        if (supportTickets.length > 0) {
+          const sortedTickets = [...supportTickets].sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          
+          const activeTicket = sortedTickets.find(t => t.status !== 'Fechado' && t.status !== 'Resolvido') || sortedTickets[0];
+
+          const allTicketMessages = await Promise.all(
+            supportTickets.map(async (t) => {
+              const messages = await supportService.getTicketMessages(t.id);
+              return messages.map(m => ({ ...m, ticketSubject: t.subject, ticketId: t.id }));
+            })
+          );
+          
+          const aggregatedMessages = allTicketMessages.flat().sort((a, b) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+
+          const lastMsg = aggregatedMessages[aggregatedMessages.length - 1];
+          const unreadCount = aggregatedMessages.filter(m => m.sender_role === 'admin' && !m.is_read).length;
+
+          const unifiedThread: ChatThread = {
+            id: 'support_unified',
+            dbId: activeTicket.id,
+            tenantName: 'Suporte Igloo',
+            tenantAvatar: undefined,
+            tenantEmail: 'suporte@igloo.com.br',
+            tenantPhone: '',
+            property: 'Central de Suporte Operacional',
+            lastMessage: lastMsg ? lastMsg.content : 'Conversa de suporte iniciada',
+            lastMessageTime: lastMsg 
+              ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : new Date(activeTicket.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            unreadCount: unreadCount,
+            category: 'support',
+            messages: [],
+            hasMore: false,
+            ticket: {
+              id: `#SUP-${activeTicket.id.slice(0, 4).toUpperCase()}`,
+              title: activeTicket.subject,
+              category: activeTicket.category || 'Geral',
+              description: '',
+              status: (activeTicket.status === 'Resolvido' || activeTicket.status === 'Fechado' ? 'completed' : activeTicket.status === 'Em Andamento' ? 'in_progress' : 'pending') as any,
+              priority: (activeTicket.priority === 'Urgente' ? 'urgent' : activeTicket.priority === 'Alta' ? 'high' : activeTicket.priority === 'Média' ? 'medium' : 'low') as any,
+              images: [],
+              realId: activeTicket.id
+            }
+          };
+          
+          supportThreads = [unifiedThread];
+        } else {
+          const virtualUnifiedThread: ChatThread = {
+            id: 'support_unified',
+            dbId: 'virtual',
+            tenantName: 'Suporte Igloo',
+            tenantAvatar: undefined,
+            tenantEmail: 'suporte@igloo.com.br',
+            tenantPhone: '',
+            property: 'Central de Suporte Operacional',
+            lastMessage: 'Comece uma conversa com o suporte...',
+            lastMessageTime: '',
+            unreadCount: 0,
+            category: 'support',
+            messages: [],
+            hasMore: false,
+            ticket: undefined
+          };
+          supportThreads = [virtualUnifiedThread];
+        }
+      }
+
+      const combined = [...supportThreads, ...tenantChats];
+      setChats(combined);
+      return combined;
+    } catch (err) {
+      console.error('Error loading chats:', err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 2. Fetch messages for active chat (always reload on chat switch)
@@ -196,12 +281,48 @@ const OwnerMessages: React.FC = () => {
   }, [activeChatId]);
 
   const loadMessages = async (threadId: string, category: string) => {
-    const msgs = await messageService.getMessages(threadId, category);
-    setChats(prev => prev.map(c => c.id === threadId ? { 
-      ...c, 
-      messages: msgs,
-      hasMore: msgs.length >= 20 
-    } : c));
+    if (category === 'support') {
+      if (!user) return;
+      try {
+        const supportTickets = await supportService.getTickets(user.id);
+        const allTicketMessages = await Promise.all(
+          supportTickets.map(async (t) => {
+            const messages = await supportService.getTicketMessages(t.id);
+            return messages.map(m => ({ ...m, ticketSubject: t.subject }));
+          })
+        );
+        
+        const aggregatedMessages = allTicketMessages.flat().sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+
+        const chatMsgs: ChatMessage[] = aggregatedMessages.map(m => ({
+          id: m.id,
+          text: m.content,
+          sender: (m.sender_role === 'user' ? 'me' : m.sender_role === 'system' ? 'system' : 'tenant') as any,
+          time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isRead: m.is_read || true,
+          type: 'text',
+          created_at: m.created_at,
+          isSupport: true
+        }));
+
+        setChats(prev => prev.map(c => c.id === threadId ? { 
+          ...c, 
+          messages: chatMsgs,
+          hasMore: false 
+        } : c));
+      } catch (err) {
+        console.error('Error loading support messages:', err);
+      }
+    } else {
+      const msgs = await messageService.getMessages(threadId, category);
+      setChats(prev => prev.map(c => c.id === threadId ? { 
+        ...c, 
+        messages: msgs,
+        hasMore: msgs.length >= 20 
+      } : c));
+    }
   };
 
   const loadMoreMessages = async () => {
@@ -293,6 +414,20 @@ const OwnerMessages: React.FC = () => {
           handleNewIncomingMessage(`tenant_${conv.tenant_id}`, newMsg, 'general');
         }
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_messages' }, async (payload) => {
+        const newMsg = payload.new as any;
+        if (newMsg.sender_id === currentUserId) return;
+
+        const { data: ticket } = await supabase
+          .from('support_tickets')
+          .select('user_id')
+          .eq('id', newMsg.ticket_id)
+          .maybeSingle();
+
+        if (ticket?.user_id === currentUserId) {
+          handleNewIncomingMessage('support_unified', newMsg, 'support');
+        }
+      })
       .subscribe();
 
     return () => { globalSub.unsubscribe(); };
@@ -302,10 +437,11 @@ const OwnerMessages: React.FC = () => {
     const formattedMsg: ChatMessage = {
       id: newMsg.id,
       text: newMsg.content,
-      sender: newMsg.sender_role === 'system' ? 'system' : 'tenant',
+      sender: newMsg.sender_role === 'system' ? 'system' : (newMsg.sender_role === 'user' ? 'me' : 'tenant'),
       time: new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isRead: newMsg.is_read || true,
       type: newMsg.type as any,
+      isSupport: category === 'support'
     };
 
     setChats(prev => prev.map(c => {
@@ -405,7 +541,15 @@ const OwnerMessages: React.FC = () => {
   // Handle Mark as Read
   useEffect(() => {
     if (activeChatId) {
-      messageService.markAsRead(activeChatId);
+      const chat = chats.find(c => c.id === activeChatId);
+      if (chat?.category === 'support') {
+        const ticketId = chat.dbId;
+        if (ticketId && ticketId !== 'virtual') {
+          supportService.markMessagesAsRead(ticketId);
+        }
+      } else {
+        messageService.markAsRead(activeChatId);
+      }
       setChats(prev => prev.map(c => c.id === activeChatId ? { ...c, unreadCount: 0 } : c));
     }
   }, [activeChatId]);
@@ -433,6 +577,7 @@ const OwnerMessages: React.FC = () => {
       isRead: true,
       type: type,
       created_at: new Date().toISOString(),
+      isSupport: chat.category === 'support'
     };
 
     setChats(prev => prev.map(c => 
@@ -443,9 +588,70 @@ const OwnerMessages: React.FC = () => {
 
     // Send to DB in background (non-blocking)
     try {
-      await messageService.sendMessage(activeChatId, chat.category, messageText, String(user.id), type);
+      if (chat.category === 'support') {
+        let ticketId = chat.dbId;
+        if (ticketId === 'virtual') {
+          const newTicket = await supportService.createTicket({
+            user_id: user.id,
+            subject: 'Novo Atendimento',
+            description: messageText,
+            category: 'Geral',
+            priority: 'Média'
+          });
+          ticketId = newTicket.id;
+          await loadChats();
+        } else {
+          if (chat.ticket?.status === 'completed') {
+            await supabase
+              .from('support_tickets')
+              .update({ status: 'Pendente' })
+              .eq('id', ticketId);
+
+            // Inserir mensagem de sistema/auditoria no histórico
+            await supabase
+              .from('support_messages')
+              .insert({
+                ticket_id: ticketId,
+                sender_id: null,
+                sender_role: 'system',
+                content: 'Chamado reaberto para atendimento',
+                is_read: true
+              });
+          }
+          await supportService.sendTicketMessage(ticketId, String(user.id), messageText);
+        }
+        await loadMessages('support_unified', 'support');
+        await loadChats();
+      } else {
+        await messageService.sendMessage(activeChatId, chat.category, messageText, String(user.id), type);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
+    }
+  };
+
+  const handleCreateSupportSubmit = async (ticketData: {
+    subject: string;
+    description: string;
+    category: string;
+    priority: string;
+  }) => {
+    if (!user) return;
+    try {
+      const created = await supportService.createTicket({
+        user_id: user.id,
+        subject: ticketData.subject,
+        description: ticketData.description,
+        category: ticketData.category,
+        priority: ticketData.priority
+      });
+
+      // Reload chats and set active support ticket chat
+      await loadChats();
+      setActiveChatId('support_unified');
+      setActiveFilter('support');
+    } catch (err) {
+      console.error('Error creating support ticket:', err);
     }
   };
 
@@ -618,6 +824,7 @@ const OwnerMessages: React.FC = () => {
           handleMouseUp={handleMouseUp}
           handleMouseMove={handleMouseMove}
           isDragging={isDragging}
+          setIsCreateSupportOpen={setShowCreateSupportModal}
         />
 
         {activeChat ? (
@@ -673,7 +880,7 @@ const OwnerMessages: React.FC = () => {
               </div>
             </div>
             
-            <div className='max-w-md space-y-4'>
+            <div className='max-w-md space-y-6 flex flex-col items-center'>
               <h2 className='text-2xl font-black text-slate-900 dark:text-white tracking-tighter'>
                 Central de Mensagens Igloo
               </h2>
@@ -681,6 +888,13 @@ const OwnerMessages: React.FC = () => {
                 Gerencie todos os seus chamados de manutenção, dúvidas financeiras e conversas gerais em um só lugar. 
                 <span className='block mt-2 font-bold text-slate-900 dark:text-slate-300'>Selecione um chat ao lado para começar.</span>
               </p>
+              <button
+                onClick={() => setShowCreateSupportModal(true)}
+                className='px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2'
+              >
+                <Shield size={16} className='animate-pulse' />
+                Precisa de ajuda? Abrir Chamado no Suporte
+              </button>
             </div>
 
             <div className='w-full max-w-4xl mt-12'>
@@ -760,6 +974,12 @@ const OwnerMessages: React.FC = () => {
         onSuccess={() => {
           setShowAnnouncementModal(false);
         }}
+      />
+
+      <CreateTicketModal 
+        isOpen={showCreateSupportModal}
+        onClose={() => setShowCreateSupportModal(false)}
+        onSubmit={handleCreateSupportSubmit}
       />
     </div>
   );

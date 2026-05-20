@@ -13,9 +13,11 @@ import {
   FileText,
   MapPin,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  Shield
 } from 'lucide-react';
 import { ChatThread } from '../../services/messageService';
+import { supabase } from '../../lib/supabase';
 
 interface ContextPanelProps {
   activeChat: ChatThread;
@@ -40,6 +42,38 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
   const formatCurrency = (value?: number) => {
     if (!value) return 'N/A';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  const handleCloseSupportTicket = async () => {
+    if (!activeChat.ticket?.realId) return;
+    setIsStatusLocked(true);
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ status: 'Fechado' })
+        .eq('id', activeChat.ticket.realId);
+      
+      if (error) throw error;
+
+      // Inserir mensagem de sistema/auditoria no histórico
+      await supabase
+        .from('support_messages')
+        .insert({
+          ticket_id: activeChat.ticket.realId,
+          sender_id: null,
+          sender_role: 'system',
+          content: 'Chamado encerrado pelo proprietário',
+          is_read: true
+        });
+
+      alert('Chamado de suporte fechado com sucesso!');
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao fechar chamado de suporte.');
+    } finally {
+      setIsStatusLocked(false);
+    }
   };
 
   return (
@@ -70,7 +104,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
           }`}
         >
-          {activeChat.category === 'maintenance' ? 'Chamado' : activeChat.category === 'finance' ? 'Finanças' : 'Geral'}
+          {activeChat.category === 'maintenance' ? 'Chamado' : activeChat.category === 'finance' ? 'Finanças' : activeChat.category === 'support' ? 'Suporte' : 'Geral'}
           {activeRightTab === 'ticket' && (
             <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary' />
           )}
@@ -83,7 +117,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
           }`}
         >
-          Inquilino
+          {activeChat.category === 'support' ? 'Atendimento' : 'Inquilino'}
           {activeRightTab === 'tenant' && (
             <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary' />
           )}
@@ -94,7 +128,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
         {activeRightTab === 'ticket' ? (
           <>
             {/* Ticket Section */}
-            {activeChat.category === 'maintenance' && activeChat.ticket ? (
+            {(activeChat.category === 'maintenance' || activeChat.category === 'support') && activeChat.ticket ? (
               <div className='space-y-6 animate-fadeIn'>
                 <div className='space-y-4'>
                   <div className='flex items-center justify-between'>
@@ -117,7 +151,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                     {['pending', 'in_progress', 'completed'].map((status) => (
                       <button
                         key={status}
-                        disabled={isStatusLocked}
+                        disabled={isStatusLocked || activeChat.category === 'support'}
                         onClick={() => onStatusChange(status as any)}
                         className={`h-1.5 rounded-full transition-all ${
                           activeChat.ticket!.status === status || 
@@ -135,7 +169,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                 <div className='p-5 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5'>
                   <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2'>{activeChat.ticket.title}</h4>
                   <p className='text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mb-4'>
-                    {activeChat.ticket.description || 'Sem descrição detalhada fornecida.'}
+                    {activeChat.ticket.description || 'Chamado de suporte registrado no sistema.'}
                   </p>
                   <div className='flex items-center gap-3'>
                     <div className='flex items-center gap-1 px-2 py-1 bg-white dark:bg-black/20 rounded-lg border border-slate-100 dark:border-white/5'>
@@ -144,7 +178,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                     </div>
                     <div className='flex items-center gap-1 px-2 py-1 bg-white dark:bg-black/20 rounded-lg border border-slate-100 dark:border-white/5'>
                       <Clock size={10} className='text-slate-400' />
-                      <span className='text-[8px] font-black text-slate-500 uppercase'>Aberto 2d</span>
+                      <span className='text-[8px] font-black text-slate-500 uppercase'>Aberto Recém</span>
                     </div>
                   </div>
                 </div>
@@ -153,8 +187,12 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                   <button 
                     disabled={isStatusLocked}
                     onClick={() => {
-                      if (window.confirm('Deseja marcar este chamado como resolvido?')) {
-                        onStatusChange('completed');
+                      if (window.confirm('Deseja fechar este chamado de suporte?')) {
+                        if (activeChat.category === 'support') {
+                          handleCloseSupportTicket();
+                        } else {
+                          onStatusChange('completed');
+                        }
                       }
                     }}
                     className='w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10 flex items-center justify-center gap-2'
@@ -234,6 +272,36 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               </div>
             </div>
           </>
+        ) : activeChat.category === 'support' ? (
+          <div className='space-y-6 animate-fadeIn'>
+            <div className='p-6 bg-cyan-500/5 rounded-3xl border border-cyan-500/10 flex flex-col items-center text-center'>
+              <div className='w-16 h-16 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 mb-4'>
+                <Shield size={28} />
+              </div>
+              <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2'>
+                Suporte Oficial Igloo
+              </h4>
+              <p className='text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mb-4'>
+                Nossa equipe de especialistas operacionais está pronta para te atender.
+              </p>
+              <div className='w-full p-4 bg-white dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 text-left'>
+                <div className='flex items-center gap-3'>
+                  <Clock size={14} className='text-cyan-500 shrink-0' />
+                  <div>
+                    <p className='text-[9px] font-black uppercase text-slate-950 dark:text-white leading-none'>Tempo de Resposta</p>
+                    <p className='text-[10px] text-slate-400 font-bold uppercase mt-0.5'>Máximo de 2 horas</p>
+                  </div>
+                </div>
+                <div className='flex items-center gap-3'>
+                  <Calendar size={14} className='text-blue-500 shrink-0' />
+                  <div>
+                    <p className='text-[9px] font-black uppercase text-slate-950 dark:text-white leading-none'>Horário de Atendimento</p>
+                    <p className='text-[10px] text-slate-400 font-bold uppercase mt-0.5'>Seg a Sex, 08h às 18h</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           /* Tenant & Property Section */
           <div className='space-y-8 animate-fadeIn'>

@@ -11,7 +11,8 @@ import {
   HelpCircle, 
   ChevronRight, 
   User, 
-  ChevronDown
+  ChevronDown,
+  Shield
 } from 'lucide-react';
 import { ChatThread } from '../../services/messageService';
 
@@ -39,6 +40,7 @@ interface ChatSidebarProps {
   handleMouseUp: () => void;
   handleMouseMove: (e: React.MouseEvent) => void;
   isDragging: boolean;
+  setIsCreateSupportOpen?: (open: boolean) => void;
 }
 
 export const ChatSidebar = React.memo(({
@@ -65,6 +67,7 @@ export const ChatSidebar = React.memo(({
   handleMouseUp,
   handleMouseMove,
   isDragging,
+  setIsCreateSupportOpen,
 }: ChatSidebarProps) => {
   const getAvatarColor = (name: string) => {
     const colors = [
@@ -175,6 +178,7 @@ export const ChatSidebar = React.memo(({
         >
           {[
             { id: 'all', label: 'Tudo', icon: <MessageSquare size={14} /> },
+            { id: 'support', label: 'Suporte', icon: <Shield size={14} /> },
             { id: 'urgent', label: 'Urgentes', icon: <AlertCircle size={14} /> },
             { id: 'maintenance', label: 'Manutenção', icon: <Clock size={14} /> },
             { id: 'finance', label: 'Financeiro', icon: <User size={14} /> },
@@ -192,6 +196,18 @@ export const ChatSidebar = React.memo(({
             </button>
           ))}
         </div>
+
+        {activeFilter === 'support' && setIsCreateSupportOpen && (
+          <div className='px-1 mb-2'>
+            <button
+              onClick={() => setIsCreateSupportOpen(true)}
+              className='w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 active:scale-95'
+            >
+              <Plus size={14} strokeWidth={3} />
+              Novo Chamado
+            </button>
+          </div>
+        )}
 
         </div>
 
@@ -264,13 +280,19 @@ export const ChatSidebar = React.memo(({
             
             {/* Avatar Profissional com Iniciais — Ajuste 2 */}
             <div className='relative shrink-0 mt-1'>
-              <div className={`w-12 h-12 rounded-full ${getAvatarColor(chat.tenantName)} flex items-center justify-center text-white font-bold text-lg shadow-sm border border-white/20`}>
-                {chat.tenantAvatar ? (
-                  <img src={chat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-full' />
-                ) : (
-                  <span>{chat.tenantName.charAt(0)}</span>
-                )}
-              </div>
+              {chat.category === 'support' ? (
+                <div className='w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg border border-cyan-400/30 ring-2 ring-cyan-500/20'>
+                  <Shield size={20} className='text-white animate-pulse' />
+                </div>
+              ) : (
+                <div className={`w-12 h-12 rounded-full ${getAvatarColor(chat.tenantName)} flex items-center justify-center text-white font-bold text-lg shadow-sm border border-white/20`}>
+                  {chat.tenantAvatar ? (
+                    <img src={chat.tenantAvatar} alt='' className='w-full h-full object-cover rounded-full' />
+                  ) : (
+                    <span>{chat.tenantName.charAt(0)}</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className='flex-1 min-w-0'>
@@ -288,9 +310,10 @@ export const ChatSidebar = React.memo(({
                 <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider ${
                   chat.category === 'maintenance' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
                   chat.category === 'finance' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                  chat.category === 'support' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20' :
                   'bg-primary/10 text-primary'
                 }`}>
-                   {chat.category === 'maintenance' ? 'Manutenção' : chat.category === 'finance' ? 'Financeiro' : 'Geral'}
+                   {chat.category === 'maintenance' ? 'Manutenção' : chat.category === 'finance' ? 'Financeiro' : chat.category === 'support' ? '🛡️ Suporte' : 'Geral'}
                 </span>
                 <p className='text-[10px] font-medium text-slate-400 truncate'>
                   {chat.property}

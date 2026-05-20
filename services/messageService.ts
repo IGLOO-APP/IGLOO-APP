@@ -8,6 +8,7 @@ export interface ChatMessage {
   isRead: boolean;
   type?: 'text' | 'image' | 'status_update' | 'system';
   created_at?: string;
+  isSupport?: boolean;
 }
 
 export interface ChatThread {
@@ -24,7 +25,7 @@ export interface ChatThread {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
-  category: 'maintenance' | 'finance' | 'general';
+  category: 'maintenance' | 'finance' | 'general' | 'support';
   paymentDay?: number;
   ticket?: {
     id: string;
