@@ -3,7 +3,7 @@ import { ResponsiveContainer, LineChart, Line } from 'recharts';
 import { ArrowUp, ArrowDown, ChevronRight, LucideIcon } from 'lucide-react';
 
 export const Sparkline = ({ data, color }: { data: number[]; color: string }) => (
-  <div className='h-10 w-24'>
+  <div className='h-8 w-16 sm:h-10 sm:w-20 md:w-24 xl:w-16 xl:h-8 2xl:w-24 2xl:h-10'>
     <ResponsiveContainer width='100%' height='100%'>
       <LineChart data={data.map((val, i) => ({ i, val }))}>
         <Line type='monotone' dataKey='val' stroke={color} strokeWidth={2} dot={false} />
@@ -33,7 +33,7 @@ export const HeroCard = ({
   color,
   sparkData,
 }: HeroCardProps) => (
-  <div className='h-full bg-white dark:bg-surface-dark p-3.5 md:p-6 rounded-[24px] md:rounded-[32px] border border-slate-200/60 dark:border-white/5 shadow-premium hover:shadow-premium-hover active-tap transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
+  <div className='h-full bg-white dark:bg-surface-dark p-3.5 sm:p-4 lg:p-5 xl:p-4 2xl:p-6 rounded-[24px] md:rounded-[32px] border border-slate-200/60 dark:border-white/5 shadow-premium hover:shadow-premium-hover active-tap transition-all duration-500 group relative overflow-hidden flex flex-col justify-between'>
     <div
       className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-15 transition-opacity duration-500 ${color} rotate-12 group-hover:rotate-0 pointer-events-none`}
     >
@@ -43,18 +43,18 @@ export const HeroCard = ({
 
     <div className='relative z-10 w-full'>
       {/* Top Section: Icon & Sparkline */}
-      <div className='flex justify-between items-start mb-4 md:mb-6 h-10 md:h-14'>
+      <div className='flex justify-between items-start mb-3 sm:mb-4 lg:mb-6 h-10 sm:h-12 lg:h-14'>
         <div
-          className={`p-2.5 md:p-4 rounded-xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20 shrink-0`}
+          className={`p-2 sm:p-2.5 lg:p-3.5 xl:p-2.5 2xl:p-4 rounded-xl ${color.replace('text-', 'bg-').replace('500', '100')} dark:bg-white/5 transition-colors duration-500 group-hover:bg-primary/20 shrink-0`}
         >
-          <Icon size={20} className={`md:size-6 ${color} group-hover:scale-110 transition-transform duration-500`} />
+          <Icon size={20} className={`w-5 h-5 lg:w-6 lg:h-6 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6 ${color} group-hover:scale-110 transition-transform duration-500`} />
         </div>
         {sparkData ? (
-          <div className='hidden sm:block pt-1'>
+          <div className='hidden sm:block pt-1 shrink-0'>
             <Sparkline data={sparkData} color={trendUp ? '#10b981' : '#ef4444'} />
           </div>
         ) : (
-          <div className='hidden sm:block w-24 h-10'></div> // Placeholder to maintain alignment
+          <div className='hidden sm:block shrink-0 w-16 sm:w-20 md:w-24 xl:w-16 2xl:w-24 h-8 sm:h-10'></div> // Placeholder to maintain alignment
         )}
       </div>
 
@@ -65,7 +65,7 @@ export const HeroCard = ({
             {title}
           </p>
         </div>
-        <h3 className='text-xl md:text-4xl font-black text-slate-main dark:text-white tracking-tighter mb-1 md:mb-4 truncate'>
+        <h3 className='text-xl sm:text-2xl md:text-3xl xl:text-2xl 2xl:text-4xl font-black text-slate-main dark:text-white tracking-tighter mb-1 md:mb-4 truncate'>
           {value}
         </h3>
       </div>
