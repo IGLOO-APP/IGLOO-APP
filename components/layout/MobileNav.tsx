@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { MoreHorizontal, X } from 'lucide-react';
+import { MoreHorizontal, X, Moon, Sun, LogOut } from 'lucide-react';
 
 interface MobileNavProps {
   primaryNavItems: any[];
@@ -9,6 +9,9 @@ interface MobileNavProps {
   showMoreMenu: boolean;
   setShowMoreMenu: (show: boolean) => void;
   isSecondaryActive: boolean;
+  isDark: boolean;
+  toggleTheme: () => void;
+  logout: () => void;
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({
@@ -17,6 +20,9 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   showMoreMenu,
   setShowMoreMenu,
   isSecondaryActive,
+  isDark,
+  toggleTheme,
+  logout,
 }) => {
   const location = useLocation();
 
@@ -83,6 +89,28 @@ export const MobileNav: React.FC<MobileNavProps> = ({
                       </NavLink>
                     );
                   })}
+
+                  {/* Theme Toggle Button */}
+                  <button
+                    onClick={toggleTheme}
+                    className='flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-left cursor-pointer'
+                  >
+                    <div className='p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-amber-500 dark:text-amber-400'>
+                      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </div>
+                    <span className='text-sm font-bold'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
+                  </button>
+
+                  {/* Sair (Logout) Button */}
+                  <button
+                    onClick={logout}
+                    className='flex items-center gap-3 w-full px-4 py-3 rounded-2xl text-slate-600 dark:text-slate-350 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-650 dark:hover:text-red-400 transition-all text-left cursor-pointer'
+                  >
+                    <div className='p-2 rounded-xl bg-slate-100 dark:bg-white/5'>
+                      <LogOut size={18} />
+                    </div>
+                    <span className='text-sm font-bold'>Sair</span>
+                  </button>
                 </div>
 
                 {/* Profile/Clerk Section at bottom of menu */}

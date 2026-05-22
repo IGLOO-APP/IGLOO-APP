@@ -263,18 +263,18 @@ const Tenants: React.FC = () => {
               onClick={() => setSelectedTenantId(t.id.toString())}
               className='group relative flex flex-col bg-white dark:bg-surface-dark rounded-[24px] border border-gray-100 dark:border-white/5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active-tap transition-all duration-300 cursor-pointer overflow-hidden'
             >
-              <div className='p-5 flex items-center gap-5'>
+              <div className='p-4 sm:p-5 flex items-start sm:items-center gap-4'>
                 {/* Modern Avatar with Pattern */}
                 <div className='relative shrink-0'>
                   {t.image ? (
                     <div
-                      className='h-14 w-14 rounded-2xl bg-cover bg-center grayscale-[0.3] group-hover:grayscale-0 transition-all border-2 border-white dark:border-white/5 shadow-md'
+                      className='h-12 w-12 rounded-xl bg-cover bg-center grayscale-[0.3] group-hover:grayscale-0 transition-all border border-slate-200 dark:border-white/10 shadow-sm'
                       style={{ backgroundImage: `url(${t.image})` }}
                     ></div>
                   ) : (
-                    <div className='h-14 w-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-white/5 dark:to-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-black text-xl shadow-inner relative overflow-hidden'>
+                    <div className='h-12 w-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-white/5 dark:to-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-lg shadow-inner relative overflow-hidden'>
                        <div className="absolute inset-0 opacity-10 pointer-events-none">
-                         <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '12px 12px' }}></div>
+                         <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '10px 10px' }}></div>
                        </div>
                       {t.name[0]}
                     </div>
@@ -283,8 +283,8 @@ const Tenants: React.FC = () => {
  
                 {/* Info Section */}
                 <div className='flex-1 min-w-0'>
-                  <div className='flex items-center justify-between mb-1.5'>
-                    <h3 className='text-slate-900 dark:text-white text-lg font-black truncate tracking-tight'>
+                  <div className='flex flex-wrap items-center justify-between gap-2 mb-1.5'>
+                    <h3 className='text-slate-900 dark:text-white text-base font-extrabold truncate tracking-tight'>
                       {t.name}
                     </h3>
                     
@@ -296,26 +296,35 @@ const Tenants: React.FC = () => {
                       const isPending = status.type === 'Pendente';
 
                       return (
-                        <div className='flex items-center gap-2'>
-                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] shadow-sm ${
+                        <div className='flex items-center gap-1.5'>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border shadow-sm ${
                             isLate 
-                              ? 'bg-rose-500 text-white' 
+                              ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-450 dark:border-rose-500/30' 
                               : isUpcoming
-                              ? 'bg-amber-500 text-white'
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30'
                               : isPending
-                              ? 'bg-slate-400 text-white'
-                              : 'bg-emerald-500 text-white'
+                              ? 'bg-slate-500/10 text-slate-600 border-slate-500/20 dark:bg-white/5 dark:text-slate-400 dark:border-white/10'
+                              : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-450 dark:border-emerald-500/30'
                           }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              isLate 
+                                ? 'bg-rose-500 animate-pulse' 
+                                : isUpcoming
+                                ? 'bg-amber-500 animate-pulse'
+                                : isPending
+                                ? 'bg-slate-400'
+                                : 'bg-emerald-500 animate-pulse'
+                            }`} />
                             {status.label}
                           </span>
                           {isPending && (
                             <div className="group/help relative">
                               <span 
-                                className='flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-white/20 text-[9px] font-black text-slate-400 dark:text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all'
+                                className='flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 dark:border-white/20 text-[9px] font-bold text-slate-400 dark:text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all cursor-help'
                               >
                                 ?
                               </span>
-                              <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-900 text-white text-[9px] font-bold rounded-lg opacity-0 group-hover/help:opacity-100 pointer-events-none transition-all z-20 shadow-xl">
+                              <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-900 text-white text-[9px] font-medium rounded-lg opacity-0 group-hover/help:opacity-100 pointer-events-none transition-all z-20 shadow-xl">
                                 Convite enviado, aguardando ativação do locatário.
                               </div>
                             </div>
@@ -325,50 +334,53 @@ const Tenants: React.FC = () => {
                     })()}
                   </div>
  
-                  <div className='flex items-center gap-3'>
-                    <div className='flex items-center gap-1 text-slate-400 dark:text-slate-500'>
-                      <Building2 size={12} strokeWidth={2.5} />
-                      <p className='text-[10px] font-black uppercase tracking-wider truncate max-w-[120px]'>
-                        {t.property || (t as any).contract?.property?.name || 'NÃO VINCULADO'}
-                      </p>
+                  {/* Property & Rent Sub-Card */}
+                  <div className='mt-3 p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-between gap-4'>
+                    <div className='flex items-center gap-2 min-w-0'>
+                      <Building2 size={14} className='text-slate-400 dark:text-slate-500 shrink-0' />
+                      <span className='text-xs font-semibold text-slate-650 dark:text-slate-400 truncate'>
+                        {t.property || (t as any).contract?.property?.name || 'Não vinculado'}
+                      </span>
                     </div>
-                    <span className='text-slate-300 dark:text-slate-800 font-black'>•</span>
-                    <p className='text-slate-900 dark:text-white text-xs font-black tracking-tight'>
-                      R$ {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
+                    <div className='shrink-0 text-right'>
+                      <span className='text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest block leading-none mb-1'>Aluguel</span>
+                      <span className='text-slate-900 dark:text-white text-xs sm:text-sm font-extrabold tracking-tight'>
+                        R$ {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
                   </div>
  
                   {/* Clean Actions Area */}
-                  <div className='flex gap-2 mt-5'>
+                  <div className='flex flex-wrap sm:flex-nowrap gap-2 mt-4'>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         window.location.href = `/messages?tenantId=${t.id}`;
                       }}
-                      className='h-8 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 active-tap shadow-md shadow-slate-900/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                      className='flex-1 sm:flex-initial h-9 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:opacity-90 active-tap shadow-sm transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider'
                     >
-                      <MessageCircle size={12} strokeWidth={2.5} /> Mensagem
+                      <MessageCircle size={14} /> Mensagem
                     </button>
                     {(t as any).is_pending ? (
                       <button
                         onClick={(e) => handleWhatsAppInvite(e, t)}
-                        className='h-8 px-4 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 active-tap shadow-md shadow-emerald-500/10 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                        className='flex-1 sm:flex-initial h-9 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white active-tap shadow-sm transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider'
                       >
-                        <Phone size={12} strokeWidth={2.5} /> WhatsApp
+                        <Phone size={14} /> WhatsApp
                       </button>
                     ) : (
                       <button
                         onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
-                        className='h-8 px-4 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:border-primary/50 hover:text-primary active-tap transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest'
+                        className='flex-1 sm:flex-initial h-9 px-4 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-primary/50 hover:text-primary active-tap transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider'
                       >
-                        <DollarSign size={12} strokeWidth={2.5} /> Cobrar
+                        <DollarSign size={14} /> Cobrar
                       </button>
                     )}
                   </div>
                 </div>
  
                 {/* Navigation Indicator */}
-                <div className='shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all'>
+                <div className='hidden md:block shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all'>
                   <ChevronRight className='text-primary' size={24} strokeWidth={3} />
                 </div>
               </div>

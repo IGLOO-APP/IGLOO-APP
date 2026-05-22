@@ -95,6 +95,9 @@ const Layout: React.FC = () => {
           showMoreMenu={showMoreMenu}
           setShowMoreMenu={setShowMoreMenu}
           isSecondaryActive={isSecondaryActive}
+          isDark={isDark}
+          toggleTheme={toggleTheme}
+          logout={logout}
         />
       </main>
     </div>
