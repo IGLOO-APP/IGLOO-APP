@@ -27,3 +27,32 @@ export const formatCurrency = (value: number) => {
     currency: 'BRL',
   }).format(value);
 };
+
+export const getRemainingContractTime = (endDateStr: string): string => {
+  if (!endDateStr) return '';
+  
+  // Try direct parsing first
+  let dateParsed = new Date(endDateStr);
+  
+  // If invalid and contains slashes, reverse DD/MM/YYYY to YYYY-MM-DD
+  if (isNaN(dateParsed.getTime()) && endDateStr.includes('/')) {
+    dateParsed = new Date(endDateStr.split('/').reverse().join('-'));
+  }
+  
+  if (isNaN(dateParsed.getTime())) return '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const diffTime = dateParsed.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'Vencido';
+  if (diffDays === 0) return 'Vence hoje';
+  
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths >= 1) {
+    return `Restam ${diffMonths} ${diffMonths === 1 ? 'mês' : 'meses'}`;
+  }
+  return `Restam ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
+};

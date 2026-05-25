@@ -494,7 +494,16 @@ const TenantTabContent: React.FC<{ property: Property, onClose: () => void }> = 
   const getDaysInProperty = () => {
     if (!contract?.start_date) return 'Data não disponível';
     try {
-      const start = new Date(contract.start_date.split('/').reverse().join('-'));
+      const startStr = contract.start_date;
+      let start = new Date(startStr);
+      if (isNaN(start.getTime()) && startStr.includes('/')) {
+        start = new Date(startStr.split('/').reverse().join('-'));
+      }
+      
+      if (isNaN(start.getTime())) {
+        return 'Período Ativo';
+      }
+
       const now = new Date();
       const diffTime = Math.abs(now.getTime() - start.getTime());
       const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));

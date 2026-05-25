@@ -42,6 +42,7 @@ import { Property, Tenant, SystemAnnouncement } from '../../types';
 import CommunicationHub from '../../components/announcements/CommunicationHub';
 import { announcementService } from '../../services/announcementService';
 import { TenantOnboardingWizard } from '../../components/tenant/TenantOnboardingWizard';
+import { getRemainingContractTime } from '../../utils/formatters';
 
 const TenantDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -560,17 +561,15 @@ const TenantDashboard: React.FC = () => {
               </div>
             </div>
 
-            {validity.diffDays < 0 ? (
-              <span className='px-3 py-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-black uppercase tracking-tighter'>
-                Vencido
-              </span>
-            ) : validity.diffDays < 30 ? (
-              <span className='px-3 py-1 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-[10px] font-black uppercase tracking-tighter'>
-                Vence em {validity.diffDays} dias
-              </span>
-            ) : (
-              <span className='px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] font-black uppercase tracking-tighter'>
-                Ativo
+            {tenantData?.contract && (
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                validity.diffDays < 0
+                  ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                  : validity.diffDays < 30
+                  ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                  : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+              }`}>
+                {getRemainingContractTime(tenantData.contract.end_date)}
               </span>
             )}
           </div>

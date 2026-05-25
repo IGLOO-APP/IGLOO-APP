@@ -41,7 +41,7 @@ import { useQuery } from '@tanstack/react-query';
 import { tenantService } from '../../services/tenantService';
 import { calculateTenantFinancials } from '../../utils/financialCalculations';
 import { Loader2, ShieldAlert, CheckCircle, Info } from 'lucide-react';
-import { formatPhone } from '../../utils/formatters';
+import { formatPhone, getRemainingContractTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { tenantConfigService } from '../../services/tenantConfigService';
 
@@ -262,9 +262,9 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   )}
                   {tenant.contract && (
                     <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
-                      <Calendar size={12} className='text-slate-400 shrink-0' />
+                      <Clock size={12} className='text-slate-400 shrink-0' />
                       <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400'>
-                        até {new Date(tenant.contract.end_date).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                        {getRemainingContractTime(tenant.contract.end_date)}
                       </span>
                     </div>
                   )}

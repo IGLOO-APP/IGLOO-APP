@@ -41,13 +41,21 @@ function getTimeLabel(property: Property): { label: string; sub: string } {
   }
 
   if (property.contract?.start_date) {
-    const start = new Date(property.contract.start_date);
-    const now = new Date();
-    const diffMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+    const startStr = property.contract.start_date;
+    let start = new Date(startStr);
     
-    if (diffMonths === 0) return { label: 'Recente', sub: 'alugado' };
-    if (diffMonths === 1) return { label: '1 mês', sub: 'alugado' };
-    return { label: `${diffMonths} meses`, sub: 'alugado' };
+    if (isNaN(start.getTime()) && startStr.includes('/')) {
+      start = new Date(startStr.split('/').reverse().join('-'));
+    }
+
+    if (!isNaN(start.getTime())) {
+      const now = new Date();
+      const diffMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+      
+      if (diffMonths <= 0) return { label: 'Recente', sub: 'alugado' };
+      if (diffMonths === 1) return { label: '1 mês', sub: 'alugado' };
+      return { label: `${diffMonths} meses`, sub: 'alugado' };
+    }
   }
 
   return { label: '8 meses', sub: 'alugado' };
@@ -127,7 +135,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         className={`group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark shadow-sm ring-1 ring-gray-100 dark:ring-gray-800 transition-all duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} ${borderClass} ${className}`}
       >
         {/* Photo Container */}
-        <div className='flex-grow min-h-[160px] w-full relative overflow-hidden bg-slate-900 rounded-t-2xl'>
+        <div className='h-44 w-full shrink-0 relative overflow-hidden bg-slate-900 rounded-t-2xl'>
           {property.image ? (
             <div
               className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
@@ -168,13 +176,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         </div>
 
         {/* Content */}
-        <div className='flex flex-col flex-1 p-4 gap-3'>
-          {/* Name + address */}
-          <div>
+        <div className='flex flex-col flex-1 p-4 gap-3 justify-between'>
+          {/* Name + address with fixed height constraints */}
+          <div className='min-h-[4.5rem] flex flex-col justify-start'>
             <h3 className='text-base font-bold text-slate-900 dark:text-white leading-tight line-clamp-1'>
               {property.name}
             </h3>
-            <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1'>
+            <p className='text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2' title={property.address}>
               {property.address}
             </p>
           </div>
