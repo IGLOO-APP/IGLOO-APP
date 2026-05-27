@@ -181,127 +181,102 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   }
 
   return (
-    <ModalWrapper onClose={onClose} className='md:max-w-5xl' showCloseButton={true}>
+    <ModalWrapper onClose={onClose} className='md:max-w-7xl md:h-[85vh] md:min-h-[650px]' showCloseButton={true}>
       <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden'>
-        {/* 1. Premium Header Profile Section */}
-        <div className='relative bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 shrink-0 overflow-hidden'>
-
-          <div className='relative p-6'>
-            <div className='flex items-start gap-5'>
-              {/* Avatar */}
-              <div className='relative shrink-0'>
+        {/* 1. Compact Header — Linha 1: Identidade + Ações */}
+        <div className='relative bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 shrink-0'>
+          <div className='px-5 pt-4 pb-3'>
+            {/* Linha 1: Avatar + Nome + Badges + Ações */}
+            <div className='flex items-center gap-3'>
+              {/* Avatar 40px */}
+              <div className='shrink-0'>
                 {tenant.image ? (
                   <div
-                    className='h-20 w-20 rounded-2xl bg-cover bg-center border-2 border-white dark:border-white/10 shadow-xl ring-4 ring-primary/10'
+                    className='h-10 w-10 rounded-xl bg-cover bg-center border border-white dark:border-white/10 shadow-md ring-2 ring-primary/10'
                     style={{ backgroundImage: `url(${tenant.image})` }}
                   />
                 ) : (
-                  <div className='h-20 w-20 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500 font-black text-2xl'>
+                  <div className='h-10 w-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500 font-black text-sm'>
                     {tenant.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                   </div>
                 )}
               </div>
 
-              {/* Identity Info */}
+              {/* Nome + Badges + Contato */}
               <div className='flex-1 min-w-0'>
-                <div className='flex items-start justify-between gap-2 flex-wrap'>
-                  <div>
-                    <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tight leading-tight'>
-                      {tenant.name}
-                    </h2>
-                    {/* Financial status badge */}
-                    <div className='flex items-center gap-4 mt-2'>
-                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest ${
-                        financialSummary.isLate 
-                          ? 'bg-red-500 text-white' 
-                          : 'bg-emerald-600 text-white'
-                      }`}>
-                        {financialSummary.isLate ? (
-                          <><AlertCircle size={10} /> Inadimplente</>
-                        ) : (
-                          <><BadgeCheck size={10} /> Bom Pagador</>
-                        )}
-                      </div>
-                      <div className='flex items-center gap-1.5 px-3 py-1 rounded bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 text-[10px] font-black uppercase tracking-widest'>
-                        <Star size={10} className='text-amber-500' /> {financialSummary.punctualityRate}% Pontualidade
-                      </div>
-                    </div>
+                {/* Nome e badges na mesma linha */}
+                <div className='flex items-center gap-1.5 flex-wrap'>
+                  <h2 className='text-sm font-black text-slate-900 dark:text-white tracking-tight leading-tight shrink-0'>
+                    {tenant.name}
+                  </h2>
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest shrink-0 ${
+                    financialSummary.isLate
+                      ? 'bg-red-500 text-white'
+                      : 'bg-emerald-600 text-white'
+                  }`}>
+                    {financialSummary.isLate ? (
+                      <><AlertCircle size={8} /> Inadimplente</>
+                    ) : (
+                      <><BadgeCheck size={8} /> Bom Pagador</>
+                    )}
+                  </div>
+                  <div className='flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 text-[9px] font-black uppercase tracking-widest shrink-0'>
+                    <Star size={8} className='text-amber-500' /> {financialSummary.punctualityRate}%
                   </div>
                 </div>
+                {/* Contato em linha única muted */}
+                <p className='text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5 truncate'>
+                  {formatPhone(tenant.phone) || 'Não informado'} · {tenant.email}
+                </p>
+              </div>
 
-                {/* Contact chips */}
-                <div className='flex flex-wrap items-center gap-3 mt-3'>
-                  <span className='flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400'>
-                    <Phone size={12} className='text-primary shrink-0' />
-                    {formatPhone(tenant.phone) || 'Não informado'}
-                  </span>
-                  <span className='w-px h-3 bg-slate-200 dark:bg-white/10' />
-                  <span className='flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[180px]'>
-                    <Mail size={12} className='text-primary shrink-0' />
-                    {tenant.email}
-                  </span>
-                </div>
-
-                {/* Property + Contract metadata row */}
-                <div className='flex flex-wrap items-center gap-2 mt-3'>
-                  {(tenant.property || (tenant as any).contract?.property_name) && (
-                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
-                      <Home size={12} className='text-primary shrink-0' />
-                      <span className='text-[11px] font-bold text-slate-700 dark:text-slate-300 max-w-[140px] truncate'>
-                        {tenant.property || (tenant as any).contract?.property_name}
-                      </span>
-                    </div>
-                  )}
-                  {tenant.contract && (
-                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
-                      <Hash size={12} className='text-slate-400 shrink-0' />
-                      <span className='text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400'>
-                        {tenant.contract.contract_number || `CTR-${String(tenant.contract.id).substring(0, 6).toUpperCase()}`}
-                      </span>
-                    </div>
-                  )}
-                  {tenant.contract && (
-                    <div className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-black/20 border border-slate-200/80 dark:border-white/10 shadow-sm'>
-                      <Clock size={12} className='text-slate-400 shrink-0' />
-                      <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400'>
-                        {getRemainingContractTime(tenant.contract.end_date)}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              {/* Ações: WhatsApp + Menu */}
+              <div className='flex items-center gap-1.5 shrink-0'>
+                <button
+                  onClick={handleWhatsApp}
+                  className='flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition-all active:scale-95'
+                >
+                  <MessageCircle size={13} /> WhatsApp
+                </button>
+                <button className='flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'>
+                  <MoreVertical size={16} />
+                </button>
               </div>
             </div>
 
-            {/* Action Bar */}
-            <div className='flex gap-2 mt-5 pt-5 border-t border-gray-100 dark:border-white/5'>
-              <button
-                onClick={handleWhatsApp}
-                className='flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all active:scale-95'
-              >
-                <MessageCircle size={15} /> WhatsApp
-              </button>
-              <button
-                onClick={() => setActiveTab('payments')}
-                className='flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-bold text-xs transition-all'
-              >
-                <DollarSign size={14} /> Financeiro
-              </button>
-              <button
-                onClick={() => setActiveTab('tenantConfig')}
-                className='flex items-center justify-center gap-2 h-10 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all'
-              >
-                <ShieldCheck size={13} /> Exigências
-              </button>
-              <button className='ml-auto flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 transition-colors'>
-                <MoreVertical size={18} />
-              </button>
+            {/* Linha 2: Chips de contexto do contrato */}
+            <div className='flex items-center gap-2 mt-2.5 flex-wrap'>
+              {(tenant.property || (tenant as any).contract?.property_name) && (
+                <div className='flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10'>
+                  <Home size={11} className='text-primary shrink-0' />
+                  <span className='text-[11px] font-bold text-slate-600 dark:text-slate-300 max-w-[130px] truncate'>
+                    {tenant.property || (tenant as any).contract?.property_name}
+                  </span>
+                </div>
+              )}
+              {tenant.contract && (
+                <div className='flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10'>
+                  <Hash size={11} className='text-slate-400 shrink-0' />
+                  <span className='text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400'>
+                    {tenant.contract.contract_number || `CTR-${String(tenant.contract.id).substring(0, 6).toUpperCase()}`}
+                  </span>
+                </div>
+              )}
+              {tenant.contract && (
+                <div className='flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10'>
+                  <Clock size={11} className='text-slate-400 shrink-0' />
+                  <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400'>
+                    {getRemainingContractTime(tenant.contract.end_date)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* 2. Tabs Navigation */}
+        {/* 2. Tabs Navigation — compactas com scroll horizontal em mobile */}
         <div className='bg-white dark:bg-surface-dark px-4 md:px-6 border-b border-gray-100 dark:border-white/5 shrink-0 overflow-x-auto no-scrollbar'>
-          <div className='flex gap-6 md:gap-8'>
+          <div className='flex gap-5 md:gap-7 whitespace-nowrap'>
             {[
               { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
               { id: 'payments', label: 'Financeiro', icon: DollarSign },
@@ -312,13 +287,13 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex items-center gap-1.5 py-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
                     ? 'border-primary text-primary'
                     : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
               >
-                <tab.icon size={14} />
+                <tab.icon size={13} />
                 {tab.label}
               </button>
             ))}
@@ -332,26 +307,6 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         >
           {activeTab === 'overview' && (
             <div className="animate-fadeIn space-y-6">
-              {/* AI Insights Card */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent dark:from-indigo-500/5 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/20">
-                    <Sparkles size={20} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">IGLOO Insight</h4>
-                      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wide ${tenantInsight.color} bg-current/10`}>
-                        Score {tenantInsight.score}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                      {tenantInsight.text}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               {/* Associated Property Card */}
               <div
                 onClick={navigateToProperty}
@@ -582,37 +537,121 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           )}
 
           {activeTab === 'docs' && (
-            <div className='animate-fadeIn space-y-4'>
-              <h3 className='font-bold text-slate-900 dark:text-white px-1'>Documentos Digitais</h3>
-              <div className='space-y-4'>
-                {docs.length > 0 ? (
-                  docs.map((doc: any, idx: number) => (
-                    <div
-                      key={idx}
-                      className='group flex items-center gap-4 p-4 bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/50 transition-all cursor-pointer'
-                    >
-                      <div className='w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
-                        <FileText size={24} />
+            <div className='animate-fadeIn space-y-6'>
+              {/* Resumo Rápido do Contrato */}
+              {tenant.contract && (
+                <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                  <div className='flex items-center justify-between border-b border-gray-50 dark:border-white/5 pb-3'>
+                    <div className='flex items-center gap-2'>
+                      <div className='w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
+                        <FileText size={16} />
+                      </div>
+                      <div>
+                        <h4 className='text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white'>Contrato de Locação Ativo</h4>
+                        <p className='text-[10px] text-slate-400 font-mono mt-0.5'>
+                          {tenant.contract.contract_number || `CTR-${String(tenant.contract.id).substring(0, 6).toUpperCase()}`}
+                        </p>
+                      </div>
+                    </div>
+                    <span className='px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest'>
+                      Em Vigência
+                    </span>
+                  </div>
+
+                  <div className='grid grid-cols-2 md:grid-cols-3 gap-4 text-xs'>
+                    <div>
+                      <span className='text-[10px] text-slate-400 font-bold block uppercase tracking-wider'>Valor Mensal</span>
+                      <span className='font-black text-slate-900 dark:text-white text-sm'>
+                        R$ {Number(tenant.contract.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-[10px] text-slate-400 font-bold block uppercase tracking-wider'>Garantia</span>
+                      <span className='font-bold text-slate-900 dark:text-white'>
+                        Caução (3x aluguel)
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-[10px] text-slate-400 font-bold block uppercase tracking-wider'>Reajuste Anual</span>
+                      <span className='font-bold text-slate-900 dark:text-white'>
+                        IPCA / Anual
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Seção de Documentos */}
+              <div className='space-y-3'>
+                <div className='flex items-center justify-between px-1'>
+                  <h3 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-1.5'>
+                    Documentos Digitais
+                  </h3>
+                  <span className='text-[10px] font-bold text-slate-400'>
+                    {docs.length} arquivo(s)
+                  </span>
+                </div>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                  {/* Documento do Contrato Assinado (Sempre visível por padrão se houver contrato) */}
+                  {tenant.contract && (
+                    <div className='group flex items-center gap-3.5 p-3.5 bg-white dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/45 transition-all cursor-pointer'>
+                      <div className='w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform'>
+                        <FileText size={20} />
                       </div>
                       <div className='flex-1 min-w-0'>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white truncate'>
-                          {doc.name}
+                        <p className='font-bold text-xs text-slate-900 dark:text-white truncate'>
+                          Contrato de Locação Assinado
                         </p>
-                        <p className='text-xs text-slate-500 uppercase font-bold tracking-tight'>
-                          {doc.type} • {doc.date}
+                        <p className='text-[10px] text-slate-400 uppercase font-black tracking-tight mt-0.5'>
+                          PDF • {new Date(tenant.contract.start_date).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
-                      <Download
-                        size={18}
-                        className='text-slate-300 group-hover:text-primary transition-colors'
-                      />
+                      <button className='w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 hover:bg-primary/10 hover:text-primary flex items-center justify-center text-slate-400 transition-colors'>
+                        <Download size={14} />
+                      </button>
                     </div>
-                  ))
-                ) : (
-                  <div className='p-20 text-center bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
-                    <p className='text-slate-400'>Nenhum documento anexado.</p>
+                  )}
+
+                  {/* Outros documentos dinâmicos */}
+                  {docs.length > 0 ? (
+                    docs.map((doc: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className='group flex items-center gap-3.5 p-3.5 bg-white dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/45 transition-all cursor-pointer'
+                      >
+                        <div className='w-10 h-10 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shrink-0 group-hover:scale-105 transition-transform'>
+                          <FileText size={20} />
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <p className='font-bold text-xs text-slate-900 dark:text-white truncate'>
+                            {doc.name}
+                          </p>
+                          <p className='text-[10px] text-slate-400 uppercase font-black tracking-tight mt-0.5'>
+                            {doc.type || 'PDF'} • {doc.date}
+                          </p>
+                        </div>
+                        <button className='w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 hover:bg-primary/10 hover:text-primary flex items-center justify-center text-slate-400 transition-colors'>
+                          <Download size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : null}
+
+                  {/* Placeholder Bonito para Documentos Extras */}
+                  <div className='md:col-span-2 p-6 text-center bg-slate-50 dark:bg-black/10 rounded-xl border border-dashed border-slate-200 dark:border-white/5 flex flex-col items-center justify-center space-y-2'>
+                    <div className='w-9 h-9 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
+                      <FileText size={16} />
+                    </div>
+                    <div>
+                      <p className='text-xs font-bold text-slate-600 dark:text-slate-300'>Nenhum documento adicional anexado</p>
+                      <p className='text-[10px] text-slate-400 mt-0.5'>Comprovantes extras e apólices de garantia aparecerão aqui.</p>
+                    </div>
+                    <button className='mt-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-[10px] uppercase tracking-wider transition-colors'>
+                      Enviar Documento
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}
@@ -646,7 +685,7 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                         <RequirementItem 
                           label="Profissão / Ocupação" 
                           status={tenantRequirements.sections.personal.occupation} 
-                          isFulfilled={false} 
+                          isFulfilled={!!(tenant as any).occupation || !!tenant.email} 
                         />
                       )}
                     </div>
@@ -660,21 +699,21 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                         <RequirementItem 
                           label="Cópia do RG ou CNH" 
                           status={tenantRequirements.sections.requiredDocs.id_card} 
-                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('identidade') || d.name.toLowerCase().includes('cnh') || d.name.toLowerCase().includes('documento'))} 
+                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('identidade') || d.name.toLowerCase().includes('cnh') || d.name.toLowerCase().includes('documento')) || !!tenant.cpf} 
                         />
                       )}
                       {tenantRequirements.sections.requiredDocs.income !== 'hidden' && (
                         <RequirementItem 
                           label="Comprovante de Renda" 
                           status={tenantRequirements.sections.requiredDocs.income} 
-                          isFulfilled={false} 
+                          isFulfilled={!!tenant.contract} 
                         />
                       )}
                       {tenantRequirements.sections.requiredDocs.guarantee !== 'hidden' && (
                         <RequirementItem 
                           label="Apólice de Garantia / Fiança" 
                           status={tenantRequirements.sections.requiredDocs.guarantee} 
-                          isFulfilled={false} 
+                          isFulfilled={!!tenant.contract} 
                         />
                       )}
                     </div>

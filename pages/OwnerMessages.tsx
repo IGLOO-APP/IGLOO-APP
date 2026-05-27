@@ -756,37 +756,37 @@ const OwnerMessages: React.FC = () => {
   return (
     <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
       {/* Header - Hidden on mobile when chat is active to maximize space */}
-      <div className={`${activeChatId ? 'hidden md:block' : 'block'}`}>
+      <div className={`${activeChatId ? 'hidden md:block' : 'block'} shrink-0`}>
         <TopBar 
           title='Central de Mensagens' 
           subtitle='Comunicação direta com locatários'
         >
-          <div className='flex items-center gap-1.5 md:gap-2'>
+          <div className='flex items-center gap-1.5 md:gap-2 flex-wrap sm:flex-nowrap shrink-0'>
             <button
               onClick={() => setShowFAQManager(true)}
-              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all active:scale-95'
+              className='flex items-center justify-center gap-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 shrink-0'
               title='Gerenciar FAQs'
             >
-              <HelpCircle size={18} className='text-primary' />
-              <span className='hidden lg:inline'>FAQs</span>
+              <HelpCircle size={14} className='text-primary' />
+              <span>FAQs</span>
             </button>
 
             <button
               onClick={() => setShowCategoryManager(true)}
-              className='flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all active:scale-95'
+              className='flex items-center justify-center gap-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 shrink-0'
               title='Gerenciar Categorias'
             >
-              <Filter size={18} className='text-orange-500' />
-              <span className='hidden lg:inline'>Categorias</span>
+              <Filter size={14} className='text-orange-500' />
+              <span>Categorias</span>
             </button>
 
             <button
               onClick={() => setShowAnnouncementModal(true)}
-              className='flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95'
+              className='flex items-center justify-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-md shadow-indigo-500/20 transition-all active:scale-95 shrink-0'
               title='Novo Comunicado'
             >
-              <Megaphone size={18} />
-              <span className='hidden sm:inline'>Comunicado</span>
+              <Megaphone size={14} />
+              <span>Comunicado</span>
             </button>
           </div>
         </TopBar>
@@ -871,29 +871,21 @@ const OwnerMessages: React.FC = () => {
           </div>
         ) : (
           <div className='hidden md:flex flex-1 flex-col items-center justify-center p-12 text-center bg-slate-50 dark:bg-black/20'>
-            <div className='relative'>
-              <div className='w-24 h-24 bg-white dark:bg-surface-dark rounded-[32px] shadow-2xl flex items-center justify-center mb-8 text-slate-200 dark:text-white/10 ring-1 ring-black/5 dark:ring-white/5'>
-                <MessageSquare size={48} strokeWidth={1.5} />
-              </div>
-              <div className='absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg animate-bounce'>
-                <Plus size={16} strokeWidth={3} />
-              </div>
-            </div>
             
-            <div className='max-w-md space-y-6 flex flex-col items-center'>
-              <h2 className='text-2xl font-black text-slate-900 dark:text-white tracking-tighter'>
+            <div className='max-w-md space-y-4 flex flex-col items-center'>
+              <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tighter'>
                 Central de Mensagens Igloo
               </h2>
-              <p className='text-sm text-slate-500 dark:text-slate-400 leading-relaxed'>
-                Gerencie todos os seus chamados de manutenção, dúvidas financeiras e conversas gerais em um só lugar. 
-                <span className='block mt-2 font-bold text-slate-900 dark:text-slate-300'>Selecione um chat ao lado para começar.</span>
+              <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed'>
+                Gerencie todos os seus chamados de manutenção, dúvidas financeiras e conversas gerais em um só lugar.
+                <span className='block mt-1 font-bold text-slate-700 dark:text-slate-300'>Selecione um chat ao lado para começar.</span>
               </p>
               <button
                 onClick={() => setShowCreateSupportModal(true)}
-                className='px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2'
+                className='mt-3 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-[10px] uppercase tracking-wider transition-all hover:scale-[1.01] active:scale-95 flex items-center gap-1.5'
               >
-                <Shield size={16} className='animate-pulse' />
-                Precisa de ajuda? Abrir Chamado no Suporte
+                <Shield size={13} className='text-primary' />
+                Precisa de ajuda? Suporte Técnico
               </button>
             </div>
 
