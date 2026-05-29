@@ -272,22 +272,22 @@ const Tenants: React.FC = () => {
               <div
                 key={t.id}
                 onClick={() => setSelectedTenantId(t.id.toString())}
-                className='group relative flex flex-col sm:flex-row sm:items-center justify-between bg-[#0A0B0D] hover:bg-[#0E0F12] rounded-xl border border-white/5 hover:border-primary/20 p-4 gap-4 transition-all duration-300 cursor-pointer overflow-hidden active-tap'
+                className='group relative flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-surface-dark-hover rounded-2xl border border-gray-200/50 dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 p-4 gap-4 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm hover:shadow-md active-tap'
               >
                 {/* Bloco Esquerdo: Avatar + Nome & Imóvel */}
                 <div className='flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-1/3'>
                   {t.image ? (
                     <div
-                      className='h-10 w-10 rounded-lg bg-cover bg-center border border-white/10 shadow-sm shrink-0 grayscale-[0.2] group-hover:grayscale-0 transition-all'
+                      className='h-10 w-10 rounded-lg bg-cover bg-center border border-slate-200/60 dark:border-white/10 shadow-sm shrink-0 grayscale-[0.2] group-hover:grayscale-0 transition-all'
                       style={{ backgroundImage: `url(${t.image})` }}
                     />
                   ) : (
-                    <div className='h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center text-slate-400 font-extrabold text-sm border border-white/10 shrink-0'>
+                    <div className='h-10 w-10 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-sm border border-slate-200 dark:border-white/10 shrink-0'>
                       {t.name[0]}
                     </div>
                   )}
                   <div className='min-w-0'>
-                    <h3 className='text-white text-sm font-bold truncate leading-tight group-hover:text-primary transition-colors'>
+                    <h3 className='text-slate-900 dark:text-white text-sm font-bold truncate leading-tight group-hover:text-primary transition-colors'>
                       {t.name}
                     </h3>
                     <p className='text-xs text-slate-500 truncate mt-0.5'>
@@ -296,10 +296,10 @@ const Tenants: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Bloco Central: Aluguel + Status + Score + Tempo Contrato */}
-                <div className='flex flex-wrap items-center gap-3 sm:justify-center flex-1'>
+                {/* Bloco Central: Aluguel + Status + Tempo Contrato */}
+                <div className='flex flex-wrap items-center gap-3 sm:justify-center flex-1 min-w-0'>
                   {/* Aluguel */}
-                  <span className='text-white text-sm font-extrabold tracking-tight shrink-0'>
+                  <span className='text-slate-900 dark:text-white text-sm font-extrabold tracking-tight shrink-0'>
                     R$ {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
 
@@ -310,7 +310,7 @@ const Tenants: React.FC = () => {
                       : isUpcoming
                       ? 'bg-amber-500/10 text-amber-550 border-amber-500/20'
                       : isPending
-                      ? 'bg-white/5 text-slate-450 border-white/10'
+                      ? 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-white/5 dark:text-slate-400 dark:border-white/10'
                       : 'bg-emerald-500/10 text-emerald-550 border-emerald-500/20'
                   }`}>
                     <span className={`w-1 h-1 rounded-full ${
@@ -319,20 +319,15 @@ const Tenants: React.FC = () => {
                         : isUpcoming
                         ? 'bg-amber-500 animate-pulse'
                         : isPending
-                        ? 'bg-slate-400'
+                        ? 'bg-slate-400 dark:bg-slate-500'
                         : 'bg-emerald-500 animate-pulse'
                     }`} />
                     {statusText}
                   </span>
 
-                  {/* Score */}
-                  <span className='inline-flex items-center gap-1 text-[9px] font-black uppercase text-amber-550 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20 shrink-0'>
-                    <Star size={8} className='fill-amber-500' /> {t.score || 95}% Score
-                  </span>
-
                   {/* Tempo de Contrato */}
                   {t.contract?.end_date && (
-                    <span className='inline-flex items-center gap-1 text-[9px] font-black uppercase text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20 shrink-0'>
+                    <span className='inline-flex items-center gap-1 text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 shrink-0'>
                       {getRemainingContractTime(t.contract.end_date)}
                     </span>
                   )}
@@ -345,9 +340,9 @@ const Tenants: React.FC = () => {
                     <button
                       onClick={(e) => handleWhatsAppInvite(e, t)}
                       title="WhatsApp"
-                      className='h-8 w-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-500 flex items-center justify-center transition-all'
+                      className='h-9 w-9 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-500 flex items-center justify-center transition-all duration-300 active:scale-95'
                     >
-                      <Phone size={14} />
+                      <Phone size={16} />
                     </button>
                   ) : (
                     <button
@@ -356,31 +351,11 @@ const Tenants: React.FC = () => {
                         window.location.href = `/messages?tenantId=${t.id}`;
                       }}
                       title="Chat"
-                      className='h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 flex items-center justify-center transition-all'
+                      className='h-9 w-9 rounded-xl bg-slate-50 hover:bg-primary/5 dark:bg-white/5 dark:hover:bg-primary/10 border border-slate-200/60 dark:border-white/10 hover:border-primary/30 dark:hover:border-primary/30 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary flex items-center justify-center transition-all duration-300 active:scale-95'
                     >
-                      <MessageCircle size={14} />
+                      <MessageCircle size={16} />
                     </button>
                   )}
-
-                  {/* Cobrar Button (only if not pending) */}
-                  {!(t as any).is_pending && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setBillingTenant(t); }}
-                      title="Cobrar"
-                      className='h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 flex items-center justify-center transition-all'
-                    >
-                      <DollarSign size={14} />
-                    </button>
-                  )}
-
-                  {/* Perfil / Detalhes Button */}
-                  <button
-                    onClick={() => setSelectedTenantId(t.id.toString())}
-                    title="Ver Perfil"
-                    className='h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary flex items-center justify-center transition-all'
-                  >
-                    <User size={14} />
-                  </button>
                 </div>
               </div>
             );

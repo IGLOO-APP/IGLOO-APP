@@ -26,30 +26,22 @@ CLÁUSULA QUARTA - DOS ENCARGOS
 Além do aluguel, o LOCATÁRIO é responsável pelo pagamento de:
 a) Taxas de condomínio e IPTU ({{valor_condominio}} e {{valor_iptu}});
 b) Consumo de energia, água e gás;
-c) Seguro contra incêndio do imóvel.
+c) Seguro contra incêndio do imóvel;
+d) Taxa de Rateio Fixa mensal de R$ {{valor_taxa_rateio}} destinada à manutenção de áreas comuns, internet coletiva e demais serviços compartilhados (se aplicável).
 
 CLÁUSULA QUINTA - DA GARANTIA (CAUÇÃO)
 O LOCATÁRIO deposita, neste ato, a título de caução, a importância de R$ {{valor_caucao}}, equivalente a no máximo 03 (três) meses de aluguel.
 Parágrafo Único: O valor será devolvido ao final da locação, devidamente corrigido pelos índices da caderneta de poupança, após a vistoria de saída e quitação de todos os débitos.
 
 CLÁUSULA SEXTA - DA MULTA RESCISÓRIA
-A infração de qualquer das cláusulas deste contrato sujeitará a parte infratora ao pagamento de multa equivalente a 03 (três) meses de aluguel vigente à época da infração, paga de forma proporcional ao tempo restante do contrato, conforme previsto no Art. 4º da Lei 8.245/91.
+A infração de qualquer das cláusulas deste contrato sujeitará a parte infratora ao pagamento de multa equivalente a {{multa_rescisoria_meses}} meses de aluguel vigente à época da infração, paga de forma proporcional ao tempo restante do contrato, conforme previsto no Art. 4º da Lei 8.245/91.
+Parágrafo Único: A desocupação antes do período mínimo de {{periodo_lockin}} meses sujeitará o LOCATÁRIO ao pagamento integral da multa rescisória, sem qualquer tipo de proporcionalidade.
 
 CLÁUSULA SÉTIMA - DA DESTINAÇÃO E BENFEITORIAS
 O imóvel destina-se exclusivamente para fins residenciais. Qualquer alteração estrutural ou benfeitoria necessita de prévia autorização por escrito do LOCADOR. Benfeitorias úteis ou necessárias não serão indenizáveis, salvo ajuste prévio.
 
 CLÁUSULA OITAVA - DO FORO
 As partes elegem o Foro da Comarca de {{cidade_contrato}} para dirimir quaisquer dúvidas ou litígios oriundos deste contrato, renunciando a qualquer outro por mais privilegiado que seja.
-
-E, por estarem assim justos e contratados, as partes assinam o presente contrato.
-
-{{cidade_contrato}}, {{data_hoje}}.
-
-_______________________________________
-{{nome_proprietario}} (LOCADOR)
-
-_______________________________________
-{{nome_inquilino}} (LOCATÁRIO)
 `;
 
 export const KITNET_RULES_TEMPLATE = `

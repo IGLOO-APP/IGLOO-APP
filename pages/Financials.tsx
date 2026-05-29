@@ -59,6 +59,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { TopBar } from '../components/layout/TopBar';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { ReceiptPDFTemplate } from '../components/pdf/ReceiptPDFTemplate';
 
 
 
@@ -741,6 +743,36 @@ const Financials: React.FC = () => {
                       >
                         <Eye size={14} />
                       </button>
+                    )}
+                    {tx.status === 'paid' && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <PDFDownloadLink
+                          document={
+                            <ReceiptPDFTemplate
+                              transaction={{
+                                id: tx.id,
+                                title: tx.title,
+                                amount: Number(tx.amount),
+                                date: tx.date,
+                                category: tx.category,
+                                propertyName: properties.find(p => p.id === tx.property_id)?.name || 'Sem Imóvel',
+                              }}
+                              tenantName={contracts.find(c => c.property === properties.find(p => p.id === tx.property_id)?.name)?.tenant_name || 'Inquilino'}
+                            />
+                          }
+                          fileName={`Recibo_${tx.title.replace(/\s+/g, '_')}_${tx.date}.pdf`}
+                          className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors flex items-center justify-center'
+                          title='Baixar Recibo PDF'
+                        >
+                          {({ loading }) => (
+                            loading ? (
+                              <div className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent' />
+                            ) : (
+                              <Download size={14} />
+                            )
+                          )}
+                        </PDFDownloadLink>
+                      </div>
                     )}
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${tx.status === 'paid' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'}`}
