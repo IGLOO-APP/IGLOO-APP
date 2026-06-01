@@ -49,6 +49,7 @@ import { KITNET_CONTRACT_TEMPLATE } from '../../utils/contractTemplates';
 import { generateFilledContract } from '../../utils/contractGenerator';
 import { propertyService } from '../../services/propertyService';
 import { tenantService } from '../../services/tenantService';
+import { adminService } from '../../services/adminService';
 import { Property, Tenant } from '../../types';
 import { PDFViewer } from '@react-pdf/renderer';
 import { ContractPDFTemplate } from '../pdf/ContractPDFTemplate';
@@ -391,12 +392,25 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
 
   // Auto-generate contract text when entering Step 5
   useEffect(() => {
-    if (currentStep === 5 && contractPages.length === 1 && contractPages[0] === '') {
-      const generated = generateFilledContract(KITNET_CONTRACT_TEMPLATE, getContractDataMap());
-      // Apply pagination logic here
-      const pagedContent = paginateContractText(generated);
-      setContractPages(pagedContent);
-    }
+    const loadAndFillContract = async () => {
+      if (currentStep === 5 && contractPages.length === 1 && contractPages[0] === '') {
+        let templateContent = KITNET_CONTRACT_TEMPLATE;
+        try {
+          const dbTemplate = await adminService.getContractTemplate('kitnet_contract');
+          if (dbTemplate && dbTemplate.content) {
+            templateContent = dbTemplate.content;
+          }
+        } catch (error) {
+          console.warn('Error loading dynamic template, falling back to static template:', error);
+        }
+
+        const generated = generateFilledContract(templateContent, getContractDataMap());
+        // Apply pagination logic here
+        const pagedContent = paginateContractText(generated);
+        setContractPages(pagedContent);
+      }
+    };
+    loadAndFillContract();
   }, [currentStep, formData]);
 
   // Auto-resize textareas on content change or step change

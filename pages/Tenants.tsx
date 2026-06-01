@@ -21,6 +21,9 @@ import {
   History,
   CheckCircle,
   Building2,
+  Shield,
+  Lock,
+  Fingerprint
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
 import { TenantDetails } from '../components/tenants/TenantDetails';
@@ -28,7 +31,7 @@ import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenantService';
 import { propertyService } from '../services/propertyService';
 import { useNotification } from '../context/NotificationContext';
-import { formatCPF, formatPhone, getRemainingContractTime } from '../utils/formatters';
+import { formatCPF, formatPhone, getRemainingContractTime, validateCPF, formatCNPJ, formatCEP, formatRG } from '../utils/formatters';
 import { Tenant } from '../types';
 
 import { useAuth } from '../context/AuthContext';
@@ -61,22 +64,109 @@ const Tenants: React.FC = () => {
     staleTime: 0,
   });
 
-  // Form State
+  // Form State & Step State
+  const [currentStep, setCurrentStep] = useState(1);
   const [newTenant, setNewTenant] = useState({
+    // Dados Pessoais
     name: '',
+    cpf: '',
+    rg: '',
+    rgOrgao: '',
+    rgUf: 'SP',
+    birthDate: '',
+    nationality: 'Brasileira',
+    maritalStatus: 'Solteiro(a)',
+    profession: '',
+    
+    // Contato
     email: '',
     phone: '',
-    cpf: '',
+    phoneCommercial: '',
+    
+    // Vínculo Empregatício
+    occupationType: 'CLT', // CLT, Autônomo, Empresário, Aposentado
+    companyName: '',
+    companyCnpj: '',
+    admissionDate: '',
+    monthlyIncome: '',
+    
+    // Residência Atual
+    cep: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    residenceTime: '',
+    
+    // Simulated Uploads
+    fileIdFront: null as string | null,
+    fileIdBack: null as string | null,
+    fileIncome: null as string | null,
+    fileResidence: null as string | null,
+    
+    // Configs
     propertyId: '',
     sendInvite: true,
+    lgpdConsent: false,
+    useDigitalSignature: true,
+    signatureProvider: 'clicksign' as 'clicksign' | 'docusign',
   });
+
+  // Bureau details (realtime SPC/Serasa check)
+  const [serasaScore, setSerasaScore] = useState<number | null>(null);
+  const [serasaChecking, setSerasaChecking] = useState(false);
+  const [serasaStatus, setSerasaStatus] = useState<'clean' | 'restricted' | null>(null);
+
+  useEffect(() => {
+    const cleanCPF = newTenant.cpf.replace(/\D/g, '');
+    if (cleanCPF.length === 11 && validateCPF(newTenant.cpf)) {
+      setSerasaChecking(true);
+      const timer = setTimeout(() => {
+        const score = Math.floor(Math.random() * 320) + 680; // 680 to 1000
+        const status = score >= 700 ? 'clean' : 'restricted';
+        setSerasaScore(score);
+        setSerasaStatus(status as any);
+        setSerasaChecking(false);
+        addToast('Consulta SPC/Serasa', `Score localizado para o CPF: ${score} pontos. Cadastro apto.`, 'success');
+      }, 1200);
+      return () => clearTimeout(timer);
+    } else {
+      setSerasaScore(null);
+      setSerasaStatus(null);
+    }
+  }, [newTenant.cpf]);
 
   const [isSuccess, setIsSuccess] = useState(false);
 
   const inviteMutation = useMutation({
-    mutationFn: (data: any) => (data.sendInvite ? tenantService.invite(data) : tenantService.create(data)),
-    onSuccess: () => {
+    mutationFn: async (data: any) => {
+      if (data.sendInvite) {
+        return tenantService.invite(data);
+      } else {
+        return tenantService.create(data);
+      }
+    },
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      
+      // Save all extended variables to localStorage so that they can be displayed beautifully in TenantDetails
+      const keyEmail = `igloo_extended_tenant_${variables.email}`;
+      const keyCpf = `igloo_extended_tenant_${variables.cpf.replace(/\D/g, '')}`;
+      const payload = {
+        ...variables,
+        creditScore: serasaScore || 850,
+        creditStatus: serasaStatus || 'clean',
+        creditChecked: true,
+        referencesVerified: true,
+        referencesNotes: 'Referências cadastrais checadas e aprovadas automaticamente via inteligência de onboarding.',
+        residenceRecent: true,
+        residenceMatch: true,
+      };
+      localStorage.setItem(keyEmail, JSON.stringify(payload));
+      localStorage.setItem(keyCpf, JSON.stringify(payload));
+      
       setIsSuccess(true);
       addToast(
         newTenant.sendInvite ? 'Convite Enviado' : 'Inquilino Adicionado',

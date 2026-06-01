@@ -53,14 +53,14 @@ const AdminLayout: React.FC = () => {
             to='/admin'
             className='flex items-center gap-3 hover:opacity-80 transition-opacity group'
           >
-            <div className='w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform'>
+            <div className='w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center text-slate-900 font-bold shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform'>
               <ShieldCheck size={24} />
             </div>
             <div>
               <h1 className='text-xl font-extrabold text-white tracking-tight leading-tight'>
                 Admin
               </h1>
-              <p className='text-[10px] uppercase font-bold text-amber-500 tracking-widest'>
+              <p className='text-[10px] uppercase font-bold text-primary tracking-widest'>
                 Igloo Plataforma
               </p>
             </div>
@@ -75,7 +75,7 @@ const AdminLayout: React.FC = () => {
               end={item.path === '/admin'}
               className={({ isActive }) =>
                 `group relative flex items-center gap-3.5 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 ease-out ${isActive
-                  ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                  ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20 font-bold'
                   : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 }`
               }
@@ -83,7 +83,7 @@ const AdminLayout: React.FC = () => {
               {({ isActive }) => (
                 <>
                   <div
-                    className={`transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:text-slate-200'}`}
+                    className={`transition-colors duration-300 ${isActive ? 'text-slate-900' : 'group-hover:text-slate-200'}`}
                   >
                     <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                   </div>
@@ -128,7 +128,7 @@ const AdminLayout: React.FC = () => {
             onClick={toggleTheme}
             className='group flex items-center gap-3.5 w-full px-4 py-3.5 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white cursor-pointer transition-all duration-200'
           >
-            <div className='group-hover:text-amber-500 transition-colors'>
+            <div className='group-hover:text-primary transition-colors'>
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </div>
             <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
@@ -169,7 +169,7 @@ const AdminLayout: React.FC = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${isActive ? 'text-amber-500 scale-105' : 'text-slate-500'
+                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${isActive ? 'text-primary scale-105' : 'text-slate-500'
                     }`}
                 >
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />

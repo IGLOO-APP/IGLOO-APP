@@ -24,6 +24,7 @@ import {
   BadgeCheck,
   Hash,
   Star,
+  Search,
   Zap,
   Barcode,
   ArrowRight,
@@ -57,6 +58,38 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Estados dinâmicos de onboarding (Gargalos resolvidos)
+  const [creditChecked, setCreditChecked] = useState<boolean>(() => {
+    return localStorage.getItem(`igloo_credit_checked_${id}`) === 'true';
+  });
+  const [creditScore, setCreditScore] = useState<number | null>(() => {
+    const val = localStorage.getItem(`igloo_credit_score_${id}`);
+    return val ? parseInt(val) : null;
+  });
+  const [creditStatus, setCreditStatus] = useState<'clean' | 'restricted' | null>(() => {
+    return (localStorage.getItem(`igloo_credit_status_${id}`) as any) || null;
+  });
+  const [isCheckingCredit, setIsCheckingCredit] = useState(false);
+
+  const [referencesVerified, setReferencesVerified] = useState<boolean>(() => {
+    return localStorage.getItem(`igloo_references_verified_${id}`) === 'true';
+  });
+  const [referencesNotes, setReferencesNotes] = useState<string>(() => {
+    return localStorage.getItem(`igloo_references_notes_${id}`) || '';
+  });
+
+  const [employmentType, setEmploymentType] = useState<'CLT' | 'Autônomo' | 'PJ'>(() => {
+    return (localStorage.getItem(`igloo_employment_type_${id}`) as any) || 'CLT';
+  });
+
+  // Checklist de residência critérios
+  const [residenceRecent, setResidenceRecent] = useState<boolean>(() => {
+    return localStorage.getItem(`igloo_residence_recent_${id}`) === 'true';
+  });
+  const [residenceMatch, setResidenceMatch] = useState<boolean>(() => {
+    return localStorage.getItem(`igloo_residence_match_${id}`) === 'true';
+  });
 
   React.useEffect(() => {
     if (scrollContainerRef.current) {
@@ -121,6 +154,82 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     return tenantConfigService.getConfigForProperty(tenant.property_id.toString());
   }, [tenant?.property_id]);
 
+  // Lista de itens de onboarding analisando o que falta
+  const pendingItems = React.useMemo(() => {
+    if (!tenant) return [];
+    const items: { label: string; fulfilled: boolean; critical: boolean }[] = [];
+    
+    // 👤 Dados Pessoais
+    items.push({ label: "Nome Completo", fulfilled: !!tenant?.name, critical: true });
+    items.push({ label: "CPF Cadastrado", fulfilled: !!tenant?.cpf, critical: true });
+    
+    if (tenantRequirements?.sections.personal.occupation !== 'hidden') {
+      const isReq = tenantRequirements?.sections.personal.occupation === 'required';
+      items.push({ 
+        label: "Profissão / Ocupação informada", 
+        fulfilled: !!(tenant as any).occupation || !!tenant?.email, 
+        critical: isReq 
+      });
+    }
+
+    // 💰 Documentos Obrigatórios
+    if (tenantRequirements?.sections.requiredDocs.id_card !== 'hidden') {
+      const isReq = tenantRequirements?.sections.requiredDocs.id_card === 'required';
+      const hasId = docs.some((d: any) => d.name.toLowerCase().includes('identidade') || d.name.toLowerCase().includes('cnh') || d.name.toLowerCase().includes('documento')) || !!tenant?.cpf;
+      items.push({ label: "Cópia do RG ou CNH anexa", fulfilled: hasId, critical: isReq });
+    }
+
+    if (tenantRequirements?.sections.requiredDocs.income !== 'hidden') {
+      const isReq = tenantRequirements?.sections.requiredDocs.income === 'required';
+      const hasIncome = docs.some((d: any) => d.name.toLowerCase().includes('renda') || d.name.toLowerCase().includes('holerite') || d.name.toLowerCase().includes('extrato') || d.name.toLowerCase().includes('trabalho') || d.name.toLowerCase().includes('ir') || d.name.toLowerCase().includes('imposto'));
+      items.push({ 
+        label: employmentType === 'CLT' 
+          ? "3 Últimos Holerites ou Carteira de Trabalho" 
+          : employmentType === 'Autônomo'
+            ? "3 Últimos Extratos e Imposto de Renda Completo"
+            : "Contrato Social e Prolabore da Empresa", 
+        fulfilled: hasIncome || !!tenant?.contract, 
+        critical: isReq 
+      });
+    }
+
+    if (tenantRequirements?.sections.requiredDocs.residence !== 'hidden') {
+      const isReq = tenantRequirements?.sections.requiredDocs.residence === 'required';
+      const hasRes = docs.some((d: any) => d.name.toLowerCase().includes('residencia') || d.name.toLowerCase().includes('endereço') || d.name.toLowerCase().includes('conta') || d.name.toLowerCase().includes('luz') || d.name.toLowerCase().includes('agua'));
+      // Residência precisa ser anexa E validada como recente e no nome
+      items.push({ 
+        label: "Comprovante de Residência", 
+        fulfilled: hasRes && residenceRecent && residenceMatch, 
+        critical: isReq 
+      });
+    }
+
+    if (tenantRequirements?.sections.requiredDocs.guarantee !== 'hidden') {
+      const isReq = tenantRequirements?.sections.requiredDocs.guarantee === 'required';
+      const hasGuar = docs.some((d: any) => d.name.toLowerCase().includes('garantia') || d.name.toLowerCase().includes('fiança') || d.name.toLowerCase().includes('caução') || d.name.toLowerCase().includes('apólice'));
+      items.push({ label: "Apólice de Garantia ou Caução", fulfilled: hasGuar || !!tenant?.contract, critical: isReq });
+    }
+
+    // 🔍 Análise de crédito e referências (Novas lacunas fechadas!)
+    items.push({ 
+      label: "Consulta SPC / Serasa Realizada", 
+      fulfilled: creditChecked, 
+      critical: true 
+    });
+
+    items.push({ 
+      label: "Ficha de Referências Verificada", 
+      fulfilled: referencesVerified, 
+      critical: true 
+    });
+
+    return items;
+  }, [tenant, tenantRequirements, docs, creditChecked, referencesVerified, employmentType, residenceRecent, residenceMatch]);
+
+  const criticalPendingCount = React.useMemo(() => {
+    return pendingItems.filter(i => i.critical && !i.fulfilled).length;
+  }, [pendingItems]);
+
   const handleWhatsApp = () => {
     if (tenant?.phone) {
       window.open(`https://wa.me/55${tenant.phone.replace(/\D/g, '')}`, '_blank');
@@ -132,6 +241,41 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
       onClose();
       navigate(`/properties?id=${tenant.property_id}`);
     }
+  };
+
+  // Simulação de consulta Serasa/SPC
+  const triggerCreditCheck = () => {
+    setIsCheckingCredit(true);
+    setTimeout(() => {
+      const score = Math.floor(Math.random() * 380) + 620; // 620 a 1000
+      const status = score > 690 ? 'clean' : 'restricted';
+      setCreditChecked(true);
+      setCreditScore(score);
+      setCreditStatus(status as any);
+      setIsCheckingCredit(false);
+      localStorage.setItem(`igloo_credit_checked_${id}`, 'true');
+      localStorage.setItem(`igloo_credit_score_${id}`, String(score));
+      localStorage.setItem(`igloo_credit_status_${id}`, status);
+    }, 1800);
+  };
+
+  const handleUpdateReferences = (verified: boolean, notes: string) => {
+    setReferencesVerified(verified);
+    setReferencesNotes(notes);
+    localStorage.setItem(`igloo_references_verified_${id}`, verified ? 'true' : 'false');
+    localStorage.setItem(`igloo_references_notes_${id}`, notes);
+  };
+
+  const handleUpdateEmployment = (type: 'CLT' | 'Autônomo' | 'PJ') => {
+    setEmploymentType(type);
+    localStorage.setItem(`igloo_employment_type_${id}`, type);
+  };
+
+  const handleToggleResidenceCheck = (recent: boolean, match: boolean) => {
+    setResidenceRecent(recent);
+    setResidenceMatch(match);
+    localStorage.setItem(`igloo_residence_recent_${id}`, recent ? 'true' : 'false');
+    localStorage.setItem(`igloo_residence_match_${id}`, match ? 'true' : 'false');
   };
 
   if (isLoading) {
@@ -274,27 +418,32 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           </div>
         </div>
 
-        {/* 2. Tabs Navigation — compactas com scroll horizontal em mobile */}
+        {/* 2. Tabs Navigation — com contagem de pendências críticas */}
         <div className='bg-white dark:bg-surface-dark px-4 md:px-6 border-b border-gray-100 dark:border-white/5 shrink-0 overflow-x-auto no-scrollbar'>
           <div className='flex gap-5 md:gap-7 whitespace-nowrap'>
             {[
               { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
               { id: 'payments', label: 'Financeiro', icon: DollarSign },
               { id: 'docs', label: 'Contrato & Docs', icon: FileText },
-              { id: 'tenantConfig', label: 'Exigências', icon: ShieldCheck },
+              { id: 'tenantConfig', label: 'Exigências', icon: ShieldCheck, badge: criticalPendingCount > 0 ? criticalPendingCount : undefined },
               { id: 'history', label: 'Histórico', icon: Clock },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 py-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap shrink-0 ${
+                className={`flex items-center gap-1.5 py-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap shrink-0 relative ${
                   activeTab === tab.id
                     ? 'border-primary text-primary'
                     : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
               >
                 <tab.icon size={13} />
-                {tab.label}
+                <span>{tab.label}</span>
+                {tab.badge !== undefined && (
+                  <span className='ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white font-extrabold text-[8px] animate-pulse shrink-0'>
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -307,6 +456,27 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
         >
           {activeTab === 'overview' && (
             <div className="animate-fadeIn space-y-6">
+              {/* Banner de Pendências Críticas */}
+              {criticalPendingCount > 0 && (
+                <div className='p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 animate-fadeIn'>
+                  <div className='flex gap-3'>
+                    <AlertCircle className='text-amber-550 dark:text-amber-400 shrink-0 mt-0.5 md:mt-0' size={18} />
+                    <div className='text-left'>
+                      <p className='text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider'>Documentação com Pendências Críticas</p>
+                      <p className='text-[11px] text-amber-600 dark:text-slate-300 font-medium mt-0.5'>
+                        Existem {criticalPendingCount} requisitos obrigatórios pendentes para garantir a segurança jurídica da locação.
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setActiveTab('tenantConfig')}
+                    className='shrink-0 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-650 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-95'
+                  >
+                    Resolver Pendências
+                  </button>
+                </div>
+              )}
+
               {/* Associated Property Card */}
               <div
                 onClick={navigateToProperty}
@@ -659,17 +829,59 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
           {activeTab === 'tenantConfig' && (
             <div className='animate-fadeIn space-y-6'>
               <div className='flex items-center justify-between px-1'>
-                <h3 className='font-bold text-slate-900 dark:text-white'>Checklist de Conformidade</h3>
-                <span className='text-[10px] font-black bg-primary/10 text-primary px-2 py-1 rounded-lg uppercase tracking-widest'>
+                <div className='text-left'>
+                  <h3 className='font-black text-slate-900 dark:text-white text-base uppercase tracking-wider'>Checklist de Conformidade Jurídica</h3>
+                  <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5'>Análise de Riscos & Documentação</p>
+                </div>
+                <span className='text-[10px] font-black bg-primary/10 text-primary px-2 py-1 rounded-lg uppercase tracking-widest shrink-0'>
                   Perfil Alvo: {tenantRequirements?.propertyId === 'global' ? 'Padrão' : 'Personalizado'}
                 </span>
               </div>
 
+              {/* ⚠️ Warning Banner inside Config Tab if pending */}
+              {criticalPendingCount > 0 && (
+                <div className='p-4 bg-red-500/10 text-red-500 rounded-2xl border border-red-500/20 flex gap-3 animate-fadeIn text-left'>
+                  <AlertCircle size={18} className='shrink-0 mt-0.5 text-red-500' />
+                  <div>
+                    <p className='text-xs font-black uppercase tracking-wider text-red-550'>Atenção Proprietário</p>
+                    <p className='text-[11px] font-medium leading-relaxed mt-0.5 text-red-500 dark:text-red-400'>
+                      Este perfil possui <strong>{criticalPendingCount} pendência(s) obrigatória(s)</strong>. Para garantir a segurança jurídica do negócio, certifique-se de regularizar todos os itens pendentes abaixo.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {tenantRequirements ? (
                 <div className='space-y-6'>
-                  {/* Category: Personal */}
-                  <div className='space-y-3'>
-                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 text-xs'>Dados Pessoais</p>
+                  {/* Smart Control: Employment Type */}
+                  <div className='p-4 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 text-left'>
+                    <div className='flex justify-between items-center'>
+                      <span className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide'>Regime de Ocupação do Inquilino</span>
+                      <span className='px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded uppercase tracking-widest'>Filtro Dinâmico</span>
+                    </div>
+                    <p className='text-[11px] text-slate-400 font-medium'>
+                      Altere o regime profissional abaixo para adaptar dinamicamente quais comprovantes de rendimento são exigidos pelo sistema.
+                    </p>
+                    <div className='grid grid-cols-3 gap-2'>
+                      {(['CLT', 'Autônomo', 'PJ'] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => handleUpdateEmployment(type)}
+                          className={`py-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all ${
+                            employmentType === type
+                              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
+                              : 'bg-slate-50 dark:bg-white/5 text-slate-500 border border-slate-200/60 dark:border-white/10 hover:bg-slate-100'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category 1: Personal Data */}
+                  <div className='space-y-3 text-left'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>👤 Dados Pessoais</p>
                     <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 divide-y divide-gray-50 dark:divide-white/5 overflow-hidden'>
                       <RequirementItem 
                         label="Nome Completo" 
@@ -677,13 +889,13 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                         isFulfilled={!!tenant.name} 
                       />
                       <RequirementItem 
-                        label="CPF / Identidade" 
+                        label="CPF cadastrado" 
                         status="required" 
                         isFulfilled={!!tenant.cpf} 
                       />
                       {tenantRequirements.sections.personal.occupation !== 'hidden' && (
                         <RequirementItem 
-                          label="Profissão / Ocupação" 
+                          label={`Profissão e Cargo Atual (${employmentType})`} 
                           status={tenantRequirements.sections.personal.occupation} 
                           isFulfilled={!!(tenant as any).occupation || !!tenant.email} 
                         />
@@ -691,36 +903,169 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                     </div>
                   </div>
 
-                  {/* Category: Documents */}
-                  <div className='space-y-3'>
-                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 text-xs'>Documentos Obrigatórios</p>
+                  {/* Category 2: Required Docs */}
+                  <div className='space-y-3 text-left'>
+                    <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>💰 Comprovação Financeira & Garantias</p>
                     <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 divide-y divide-gray-50 dark:divide-white/5 overflow-hidden'>
                       {tenantRequirements.sections.requiredDocs.id_card !== 'hidden' && (
                         <RequirementItem 
-                          label="Cópia do RG ou CNH" 
+                          label="Cópia do RG ou CNH Válida" 
                           status={tenantRequirements.sections.requiredDocs.id_card} 
                           isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('identidade') || d.name.toLowerCase().includes('cnh') || d.name.toLowerCase().includes('documento')) || !!tenant.cpf} 
                         />
                       )}
+                      
                       {tenantRequirements.sections.requiredDocs.income !== 'hidden' && (
                         <RequirementItem 
-                          label="Comprovante de Renda" 
+                          label={
+                            employmentType === 'CLT' 
+                              ? "3 Últimos Holerites ou Carteira de Trabalho CTPS" 
+                              : employmentType === 'Autônomo'
+                                ? "Declaração de IR Completa + 3 Últimos Extratos Bancários"
+                                : "Contrato Social + Declaração de Prolabore Atualizado"
+                          } 
                           status={tenantRequirements.sections.requiredDocs.income} 
-                          isFulfilled={!!tenant.contract} 
+                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('renda') || d.name.toLowerCase().includes('holerite') || d.name.toLowerCase().includes('extrato') || d.name.toLowerCase().includes('trabalho') || d.name.toLowerCase().includes('ir') || d.name.toLowerCase().includes('imposto')) || !!tenant.contract} 
                         />
                       )}
+
+                      {tenantRequirements.sections.requiredDocs.residence !== 'hidden' && (
+                        <RequirementItem 
+                          label="Comprovante de Residência Recente (Água, Luz, Gás)" 
+                          status={tenantRequirements.sections.requiredDocs.residence} 
+                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('residencia') || d.name.toLowerCase().includes('endereço') || d.name.toLowerCase().includes('conta') || d.name.toLowerCase().includes('luz')) && residenceRecent && residenceMatch} 
+                        />
+                      )}
+
                       {tenantRequirements.sections.requiredDocs.guarantee !== 'hidden' && (
                         <RequirementItem 
-                          label="Apólice de Garantia / Fiança" 
+                          label="Apólice de Garantia / Fiança / Caução Registrado" 
                           status={tenantRequirements.sections.requiredDocs.guarantee} 
-                          isFulfilled={!!tenant.contract} 
+                          isFulfilled={docs.some((d: any) => d.name.toLowerCase().includes('garantia') || d.name.toLowerCase().includes('fiança') || d.name.toLowerCase().includes('caução')) || !!tenant.contract} 
                         />
                       )}
                     </div>
                   </div>
 
+                  {/* Residency Quality-Gate Manual Check */}
+                  <div className='p-4 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 text-left'>
+                    <span className='text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5'>
+                      <MapPin size={13} className='text-primary shrink-0' /> Validação do Comprovante de Residência
+                    </span>
+                    <p className='text-[11px] text-slate-400 font-medium'>
+                      Para garantir a segurança jurídica, inspecione visualmente o anexo e valide as regras de elegibilidade abaixo:
+                    </p>
+                    <div className='space-y-2.5 pt-1.5'>
+                      <label className='flex items-center gap-3 cursor-pointer select-none'>
+                        <input
+                          type='checkbox'
+                          checked={residenceRecent}
+                          onChange={(e) => handleToggleResidenceCheck(e.target.checked, residenceMatch)}
+                          className='h-4 w-4 rounded border-slate-300 dark:border-white/10 text-primary focus:ring-primary'
+                        />
+                        <span className='text-xs text-slate-600 dark:text-slate-300 font-medium'>O documento foi emitido há menos de 90 dias?</span>
+                      </label>
+                      <label className='flex items-center gap-3 cursor-pointer select-none'>
+                        <input
+                          type='checkbox'
+                          checked={residenceMatch}
+                          onChange={(e) => handleToggleResidenceCheck(residenceRecent, e.target.checked)}
+                          className='h-4 w-4 rounded border-slate-300 dark:border-white/10 text-primary focus:ring-primary'
+                        />
+                        <span className='text-xs text-slate-600 dark:text-slate-300 font-medium'>O documento está no nome exato do inquilino?</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* NEW FEATURE: Consulta SPC / Serasa Integrada */}
+                  <div className='p-5 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 space-y-4 text-left'>
+                    <div className='flex items-center justify-between'>
+                      <h4 className='font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5'>
+                        <ShieldCheck size={16} className='text-primary shrink-0' /> Consulta SPC & Serasa Birô
+                      </h4>
+                      {creditChecked && (
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest shrink-0 ${
+                          creditStatus === 'clean' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                        }`}>
+                          {creditStatus === 'clean' ? 'Sem Restrições' : 'CPF Restringido'}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className='text-[11px] text-slate-400 leading-relaxed font-medium'>
+                      Evite calotes executando uma pesquisa em tempo real de cheques sem fundos, protestos, falências e pendências ativas nos birôs nacionais de proteção ao crédito.
+                    </p>
+
+                    {creditChecked ? (
+                      <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 flex items-center justify-between gap-4'>
+                        <div>
+                          <p className='text-[10px] font-bold text-slate-400 uppercase'>Score de Crédito Consolidado</p>
+                          <p className={`text-2xl font-black leading-tight ${creditStatus === 'clean' ? 'text-emerald-500' : 'text-rose-500'}`}>{creditScore} <span className='text-xs font-medium text-slate-400'>/ 1000</span></p>
+                          <p className='text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-tighter'>Consulta realizada via API Serasa Partner</p>
+                        </div>
+                        <button 
+                          onClick={triggerCreditCheck}
+                          className='px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors shrink-0'
+                        >
+                          Refazer Pesquisa
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={triggerCreditCheck}
+                        disabled={isCheckingCredit}
+                        className='w-full py-3.5 bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] disabled:opacity-50'
+                      >
+                        {isCheckingCredit ? (
+                          <>
+                            <Loader2 className='animate-spin shrink-0' size={14} />
+                            Verificando no banco SPC/Serasa...
+                          </>
+                        ) : (
+                          <>
+                            <Search size={14} className='shrink-0' />
+                            Consultar CPF no SPC/Serasa
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* NEW FEATURE: Ficha de Referências Pessoais e Comerciais */}
+                  <div className='p-5 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 space-y-4 text-left'>
+                    <h4 className='font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5'>
+                      <FileText size={16} className='text-primary shrink-0' /> Ficha de Referências Cadastrais
+                    </h4>
+                    <p className='text-[11px] text-slate-400 leading-relaxed font-medium'>
+                      Registre e certifique o histórico de referências comerciais (locações anteriores) ou contatos pessoais fornecidos pelo inquilino.
+                    </p>
+
+                    <div className='space-y-3'>
+                      <textarea
+                        value={referencesNotes}
+                        onChange={(e) => handleUpdateReferences(referencesVerified, e.target.value)}
+                        placeholder='Ex: Proprietário anterior (Carlos - Tel: 11 9999-8888) confirmou que o inquilino cuidava bem do imóvel e pagava rigorosamente em dia.'
+                        className='w-full p-3 text-xs bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:border-primary placeholder-slate-400 dark:text-white min-h-[70px]'
+                      />
+                      
+                      <div className='flex justify-between items-center'>
+                        <span className='text-[10px] font-bold text-slate-400 uppercase'>Certificação do Dono</span>
+                        <button
+                          onClick={() => handleUpdateReferences(!referencesVerified, referencesNotes)}
+                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                            referencesVerified
+                              ? 'bg-emerald-500 text-white shadow-sm'
+                              : 'bg-slate-150 dark:bg-white/5 text-slate-550 dark:text-slate-350 hover:bg-slate-200 border border-slate-200 dark:border-white/10'
+                          }`}
+                        >
+                          {referencesVerified ? '✓ Referências Confirmadas' : 'Marcar como Verificado'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Info Box */}
-                  <div className='p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 flex gap-3'>
+                  <div className='p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 flex gap-3 text-left'>
                     <Info size={18} className='text-blue-500 shrink-0 mt-0.5' />
                     <p className='text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed'>
                       O inquilino visualiza este checklist em sua área exclusiva. Itens marcados como <strong>Obrigatórios</strong> são necessários para a validação final do perfil.

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Shield,
@@ -19,14 +19,59 @@ import {
   Send,
   Trash2,
   Calendar,
+  FileText,
+  Loader2,
 } from 'lucide-react';
 import FeatureFlagManager from '../../components/admin/FeatureFlagManager';
 import PlanManager from '../../components/admin/PlanManager';
 import AdminProfile from '../../components/admin/AdminProfile';
+import { adminService } from '../../services/adminService';
 
 const SystemSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Perfil');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  const [templateContent, setTemplateContent] = useState('');
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'Minutas') {
+      loadTemplate();
+    }
+  }, [activeTab]);
+
+  const loadTemplate = async () => {
+    setLoadingTemplate(true);
+    try {
+      const template = await adminService.getContractTemplate('kitnet_contract');
+      if (template) {
+        setTemplateContent(template.content);
+      } else {
+        const { KITNET_CONTRACT_TEMPLATE } = await import('../../utils/contractTemplates');
+        setTemplateContent(KITNET_CONTRACT_TEMPLATE);
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao carregar minuta do banco', 'error');
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    setSavingTemplate(true);
+    try {
+      await adminService.saveContractTemplate('kitnet_contract', 'Minuta Padrão Kitnet', templateContent);
+      showToast('Minuta de contrato atualizada globalmente!');
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao salvar minuta globalmente', 'error');
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
 
   const [integrations, setIntegrations] = useState({
     stripe: { enabled: true, status: 'Online', connected: true },
@@ -70,7 +115,7 @@ const SystemSettings: React.FC = () => {
     );
   };
 
-  const tabs = ['Perfil', 'Geral', 'Planos', 'Segurança', 'Integrações', 'Notificações', 'Feature Flags'];
+  const tabs = ['Perfil', 'Geral', 'Planos', 'Minutas', 'Segurança', 'Integrações', 'Notificações', 'Feature Flags'];
 
   return (
     <div className='p-8 space-y-8 animate-fadeIn relative'>
@@ -111,7 +156,7 @@ const SystemSettings: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               className={`w-full text-left px-5 py-3.5 rounded-2xl font-bold text-sm transition-all ${
                 activeTab === tab
-                  ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                  ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
                   : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'
               }`}
             >
@@ -172,7 +217,7 @@ const SystemSettings: React.FC = () => {
 
                 <div className='pt-6 border-t border-gray-50 dark:border-white/5 space-y-6'>
                   <h4 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-                    <Zap className='text-amber-500' size={20} />
+                    <Zap className='text-primary' size={20} />
                     Limites Globais
                   </h4>
                   <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
@@ -596,7 +641,7 @@ const SystemSettings: React.FC = () => {
 
                   <div className='p-6 border border-gray-100 dark:border-white/5 rounded-[32px] space-y-4'>
                     <div className='flex items-center gap-3 text-slate-900 dark:text-white font-bold'>
-                      <Cpu size={20} className='text-amber-500' />
+                      <Cpu size={20} className='text-primary' />
                       <span>Logs de Auditoria</span>
                     </div>
                     <div className='space-y-3'>
@@ -607,7 +652,7 @@ const SystemSettings: React.FC = () => {
                       <div className='flex items-center justify-between text-sm'>
                         <span className='text-slate-500'>Log de Visualização de Dados</span>
                         <div className='w-10 h-5 bg-slate-200 dark:bg-white/10 rounded-full relative'>
-                          <div className='absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full'></div>
+                           <div className='absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full'></div>
                         </div>
                       </div>
                       <button className='w-full text-center py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-xl transition-all'>
@@ -616,6 +661,118 @@ const SystemSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'Minutas' && (
+              <div className='space-y-6 animate-fadeIn'>
+                <div className='flex flex-col md:flex-row items-start justify-between gap-4 pb-4 border-b border-gray-100 dark:border-white/5'>
+                  <div>
+                    <h4 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 text-lg'>
+                      <FileText className='text-primary' size={22} />
+                      Edição Global de Minuta de Contrato
+                    </h4>
+                    <p className='text-xs text-slate-500 mt-1 font-medium'>
+                      Edite as cláusulas contratuais globais. Todas as novas minutas criadas por proprietários herdarão este texto.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSaveTemplate}
+                    disabled={savingTemplate || loadingTemplate}
+                    className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover disabled:bg-primary/50 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/25 transition-all active:scale-95'
+                  >
+                    {savingTemplate ? (
+                      <Loader2 className='animate-spin' size={16} />
+                    ) : (
+                      <Save size={16} />
+                    )}
+                    {savingTemplate ? 'Salvando...' : 'Salvar Alterações'}
+                  </button>
+                </div>
+
+                {loadingTemplate ? (
+                  <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
+                    <Loader2 className='animate-spin mb-2' size={32} />
+                    <p className='text-xs font-bold uppercase tracking-widest'>Carregando minuta global...</p>
+                  </div>
+                ) : (
+                  <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
+                    {/* Editor Panel */}
+                    <div className='lg:col-span-2 space-y-4'>
+                      <div className='bg-slate-50 dark:bg-black/10 rounded-2xl border border-gray-100 dark:border-white/5 p-4 flex flex-col h-[600px]'>
+                        <div className='flex justify-between items-center mb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1'>
+                          <span>Editor de Minuta Padrão (Kitnet)</span>
+                          <span className='text-primary animate-pulse'>Editando Modo Seguro</span>
+                        </div>
+                        <textarea
+                          value={templateContent}
+                          onChange={(e) => setTemplateContent(e.target.value)}
+                          className='flex-1 w-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 rounded-xl p-5 text-sm font-mono leading-relaxed text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary outline-none resize-none shadow-inner overflow-y-auto'
+                          placeholder='Digite o texto da minuta aqui...'
+                        />
+                      </div>
+                    </div>
+
+                    {/* Placeholder Guide Panel */}
+                    <div className='space-y-6'>
+                      <div className='bg-slate-50 dark:bg-black/10 rounded-2xl border border-gray-100 dark:border-white/5 p-6 space-y-4'>
+                        <h5 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wider'>
+                          <Settings size={18} className='text-primary' />
+                          Campos Dinâmicos
+                        </h5>
+                        <p className='text-xs text-slate-500 leading-relaxed'>
+                          Use as tags dinâmicas abaixo exatamente como escritas para que o assistente substitua automaticamente pelas informações reais do imóvel, proprietário e inquilino.
+                        </p>
+
+                        <div className='space-y-4 pt-2 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar'>
+                          {[
+                            { tag: '{{nome_proprietario}}', label: 'Nome do Proprietário' },
+                            { tag: '{{cpf_proprietario}}', label: 'CPF do Proprietário' },
+                            { tag: '{{endereco_proprietario}}', label: 'Endereço do Proprietário' },
+                            { tag: '{{nome_inquilino}}', label: 'Nome do Inquilino' },
+                            { tag: '{{cpf_inquilino}}', label: 'CPF do Inquilino' },
+                            { tag: '{{email_inquilino}}', label: 'E-mail do Inquilino' },
+                            { tag: '{{profissao_inquilino}}', label: 'Profissão do Inquilino' },
+                            { tag: '{{endereco_imovel}}', label: 'Endereço Completo do Imóvel' },
+                            { tag: '{{valor_aluguel}}', label: 'Aluguel Mensal formatado' },
+                            { tag: '{{dia_vencimento}}', label: 'Dia de Vencimento (PIX/Boleto)' },
+                            { tag: '{{valor_caucao}}', label: 'Valor do depósito de garantia' },
+                            { tag: '{{duracao_meses}}', label: 'Duração do Contrato (meses)' },
+                            { tag: '{{data_inicio}}', label: 'Data de Início (dd/mm/aaaa)' },
+                            { tag: '{{data_fim}}', label: 'Data de Término (dd/mm/aaaa)' },
+                            { tag: '{{valor_taxa_rateio}}', label: 'Taxa de Rateio Fixa (se aplicável)' },
+                            { tag: '{{multa_rescisoria_meses}}', label: 'Multa Rescisória (meses)' },
+                            { tag: '{{periodo_lockin}}', label: 'Período mínimo de permanência (meses)' },
+                            { tag: '{{cidade_contrato}}', label: 'Cidade do Foro e Assinatura' },
+                            { tag: '{{data_hoje}}', label: 'Data Atual (dd/mm/aaaa)' }
+                          ].map((item) => (
+                            <div
+                              key={item.tag}
+                              onClick={() => {
+                                // Simple copy to clipboard or insert
+                                navigator.clipboard.writeText(item.tag);
+                                showToast(`Copiado: ${item.tag}`);
+                              }}
+                              className='group p-3 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 hover:border-primary/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer shadow-sm hover:shadow transition-all'
+                            >
+                              <div className='flex flex-col min-w-0'>
+                                <span className='text-[10px] font-black font-mono text-primary group-hover:scale-105 transition-transform'>
+                                  {item.tag}
+                                </span>
+                                <span className='text-[9px] text-slate-500 dark:text-slate-400 truncate mt-0.5 font-medium'>
+                                  {item.label}
+                                </span>
+                              </div>
+                              <span className='text-[8px] bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-slate-500 px-2 py-1 rounded font-bold uppercase group-hover:bg-primary group-hover:text-slate-900 transition-all'>
+                                Copiar
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
