@@ -36,6 +36,54 @@ import { Tenant } from '../types';
 
 import { useAuth } from '../context/AuthContext';
 
+const INITIAL_TENANT_STATE = {
+  // Dados Pessoais
+  name: '',
+  cpf: '',
+  rg: '',
+  rgOrgao: '',
+  rgUf: 'SP',
+  birthDate: '',
+  nationality: 'Brasileira',
+  maritalStatus: 'Solteiro(a)',
+  profession: '',
+  
+  // Contato
+  email: '',
+  phone: '',
+  phoneCommercial: '',
+  
+  // Vínculo Empregatício
+  occupationType: 'CLT', // CLT, Autônomo, Empresário, Aposentado
+  companyName: '',
+  companyCnpj: '',
+  admissionDate: '',
+  monthlyIncome: '',
+  
+  // Residência Atual
+  cep: '',
+  street: '',
+  number: '',
+  complement: '',
+  neighborhood: '',
+  city: '',
+  state: '',
+  residenceTime: '',
+  
+  // Simulated Uploads
+  fileIdFront: null as string | null,
+  fileIdBack: null as string | null,
+  fileIncome: null as string | null,
+  fileResidence: null as string | null,
+  
+  // Configs
+  propertyId: '',
+  sendInvite: true,
+  lgpdConsent: false,
+  useDigitalSignature: true,
+  signatureProvider: 'clicksign' as 'clicksign' | 'docusign',
+};
+
 const Tenants: React.FC = () => {
   const { user, tokenReady } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -66,53 +114,7 @@ const Tenants: React.FC = () => {
 
   // Form State & Step State
   const [currentStep, setCurrentStep] = useState(1);
-  const [newTenant, setNewTenant] = useState({
-    // Dados Pessoais
-    name: '',
-    cpf: '',
-    rg: '',
-    rgOrgao: '',
-    rgUf: 'SP',
-    birthDate: '',
-    nationality: 'Brasileira',
-    maritalStatus: 'Solteiro(a)',
-    profession: '',
-    
-    // Contato
-    email: '',
-    phone: '',
-    phoneCommercial: '',
-    
-    // Vínculo Empregatício
-    occupationType: 'CLT', // CLT, Autônomo, Empresário, Aposentado
-    companyName: '',
-    companyCnpj: '',
-    admissionDate: '',
-    monthlyIncome: '',
-    
-    // Residência Atual
-    cep: '',
-    street: '',
-    number: '',
-    complement: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-    residenceTime: '',
-    
-    // Simulated Uploads
-    fileIdFront: null as string | null,
-    fileIdBack: null as string | null,
-    fileIncome: null as string | null,
-    fileResidence: null as string | null,
-    
-    // Configs
-    propertyId: '',
-    sendInvite: true,
-    lgpdConsent: false,
-    useDigitalSignature: true,
-    signatureProvider: 'clicksign' as 'clicksign' | 'docusign',
-  });
+  const [newTenant, setNewTenant] = useState(INITIAL_TENANT_STATE);
 
   // Bureau details (realtime SPC/Serasa check)
   const [serasaScore, setSerasaScore] = useState<number | null>(null);
@@ -468,7 +470,7 @@ const Tenants: React.FC = () => {
                 onClick={() => {
                   setShowAddForm(false);
                   setIsSuccess(false);
-                  setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
+                  setNewTenant(INITIAL_TENANT_STATE);
                 }}
                 className='text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-slate-800 dark:hover:text-white transition-colors px-2'
               >
@@ -516,7 +518,7 @@ const Tenants: React.FC = () => {
                     onClick={() => {
                       setShowAddForm(false);
                       setIsSuccess(false);
-                      setNewTenant({ name: '', email: '', phone: '', cpf: '', propertyId: '', sendInvite: true });
+                      setNewTenant(INITIAL_TENANT_STATE);
                     }}
                     className='w-full py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-all'
                   >

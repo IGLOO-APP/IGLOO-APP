@@ -772,7 +772,7 @@ export const adminService = {
 
   // --- Contract Templates ---
   async getContractTemplate(id: string): Promise<{ id: string; name: string; content: string } | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('contract_templates')
       .select('*')
       .eq('id', id)
@@ -786,7 +786,7 @@ export const adminService = {
   },
 
   async saveContractTemplate(id: string, name: string, content: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('contract_templates')
       .upsert({ id, name, content, updated_at: new Date().toISOString() });
 
