@@ -611,6 +611,7 @@ export type Database = {
           trial_end_date: string | null
           trial_started_at: string | null
           updated_at: string
+          has_completed_onboarding: boolean | null
         }
         Insert: {
           admin_type?: string | null
@@ -636,6 +637,7 @@ export type Database = {
           trial_end_date?: string | null
           trial_started_at?: string | null
           updated_at?: string
+          has_completed_onboarding?: boolean | null
         }
         Update: {
           admin_type?: string | null
@@ -661,6 +663,7 @@ export type Database = {
           trial_end_date?: string | null
           trial_started_at?: string | null
           updated_at?: string
+          has_completed_onboarding?: boolean | null
         }
         Relationships: []
       }

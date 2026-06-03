@@ -113,6 +113,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           is_suspended: (profile as any).is_suspended,
           avatar: clerkUser.imageUrl || (profile as any).avatar_url,
           property_id: (profile as any).property_id,
+          has_completed_onboarding: (profile as any).has_completed_onboarding,
         } as User;
         setUser(userData);
         // Registra o admin ID para auditoria nos logs de atividade

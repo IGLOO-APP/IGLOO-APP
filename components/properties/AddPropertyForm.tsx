@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { motion } from 'framer-motion';
 import {
   MapPin,
   ChevronDown,
@@ -18,9 +19,15 @@ import {
   Image as ImageIcon,
   Search,
   Plus,
+  Droplets,
+  Zap,
+  Gauge,
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
+import { storageService } from '../../services/storageService';
+import { useNotification } from '../../context/NotificationContext';
 
+// ─── Zod Schema ───────────────────────────────────────────────────────────────
 const propertySchema = z.object({
   nickname: z.string().min(3, 'O apelido deve ter pelo menos 3 caracteres'),
   type: z.string().min(1, 'Selecione o tipo de imóvel'),
@@ -41,20 +48,124 @@ const propertySchema = z.object({
   description: z.string().optional(),
   coverImage: z.string().nullable().optional(),
   galleryImages: z.array(z.string()).optional(),
+  // ── Medidores ──────────────────────────────────────────────────────────────
+  waterReadingInitial: z
+    .number({ error: 'Informe um número válido' })
+    .nonnegative('Deve ser positivo')
+    .optional(),
+  electricityReadingInitial: z
+    .number({ error: 'Informe um número válido' })
+    .nonnegative('Deve ser positivo')
+    .optional(),
+  waterMeterPhoto: z.string().url().optional().or(z.literal('')),
+  electricityMeterPhoto: z.string().url().optional().or(z.literal('')),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
 
 interface AddPropertyFormProps {
   onClose: () => void;
-  onSave: (data: PropertyFormData) => void;
+  onSave: (data: any) => void;
   initialData?: any;
 }
 
+// ─── Meter Photo Upload Widget ─────────────────────────────────────────────────
+interface MeterPhotoUploadProps {
+  label: string;
+  icon: React.ReactNode;
+  accentClass: string;
+  preview: string | null;
+  onFile: (file: File) => void;
+  onClear: () => void;
+  uploading?: boolean;
+}
+
+const MeterPhotoUpload: React.FC<MeterPhotoUploadProps> = ({
+  label,
+  icon,
+  accentClass,
+  preview,
+  onFile,
+  onClear,
+  uploading = false,
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onFile(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 ${accentClass}`}>
+        {icon}
+        {label}
+      </label>
+      <div
+        onClick={() => !uploading && inputRef.current?.click()}
+        className={`relative w-full h-36 rounded-2xl border-2 border-dashed transition-all cursor-pointer overflow-hidden group ${
+          preview
+            ? 'border-transparent'
+            : `border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:border-primary hover:bg-primary/5`
+        }`}
+      >
+        {preview ? (
+          <>
+            <img src={preview} alt="Preview medidor" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <UploadCloud size={22} className="text-white" />
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 z-10"
+            >
+              <X size={12} />
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400 group-hover:text-primary transition-colors gap-2">
+            {uploading ? (
+              <Loader2 size={22} className="animate-spin text-primary" />
+            ) : (
+              <>
+                {icon}
+                <span className="text-[10px] font-bold text-center px-4">
+                  Clique para anexar foto do medidor
+                </span>
+              </>
+            )}
+          </div>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          className="hidden"
+          accept="image/*"
+          onChange={handleChange}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSave, initialData }) => {
+  const { addToast } = useNotification();
+
   const [loadingCep, setLoadingCep] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(initialData?.coverImage || null);
   const [galleryImages, setGalleryImages] = useState<string[]>(initialData?.galleryImages || []);
+
+  // ── Meter photo state ────────────────────────────────────────────────────────
+  const [waterMeterFile, setWaterMeterFile] = useState<File | null>(null);
+  const [waterMeterPreview, setWaterMeterPreview] = useState<string | null>(null);
+  const [electricityMeterFile, setElectricityMeterFile] = useState<File | null>(null);
+  const [electricityMeterPreview, setElectricityMeterPreview] = useState<string | null>(null);
+  const [uploadingWater, setUploadingWater] = useState(false);
+  const [uploadingElectricity, setUploadingElectricity] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,7 +182,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
       bedrooms: initialData?.bedrooms ?? 1,
       bathrooms: initialData?.bathrooms ?? 1,
       parking: initialData?.parking ?? 0,
-      ...initialData
+      ...initialData,
     },
   });
 
@@ -79,6 +190,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
   const bathrooms = watch('bathrooms');
   const parking = watch('parking');
 
+  // ── Helpers ──────────────────────────────────────────────────────────────────
   const handleCounter = (field: 'bedrooms' | 'bathrooms' | 'parking', operation: 'inc' | 'dec') => {
     const currentValue = Number(getValues(field)) || 0;
     const newValue = operation === 'inc' ? currentValue + 1 : Math.max(0, currentValue - 1);
@@ -89,9 +201,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCoverImage(reader.result as string);
-      };
+      reader.onloadend = () => { setCoverImage(reader.result as string); };
       reader.readAsDataURL(file);
     }
   };
@@ -111,38 +221,43 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
     setGalleryImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const formatCEP = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{5})(\d)/, '$1-$2')
-      .slice(0, 9);
+  // ── Meter photo handlers ──────────────────────────────────────────────────────
+  const handleMeterFile = (
+    file: File,
+    setFile: React.Dispatch<React.SetStateAction<File | null>>,
+    setPreview: React.Dispatch<React.SetStateAction<string | null>>,
+  ) => {
+    setFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
+
+  // ── CEP / currency ────────────────────────────────────────────────────────────
+  const formatCEP = (value: string) =>
+    value.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2').slice(0, 9);
 
   const formatCurrency = (value: string) => {
     const cleanValue = value.replace(/\D/g, '');
     const numberValue = Number(cleanValue) / 100;
-    return numberValue.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
+    return numberValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCEP(e.target.value);
-    setValue('cep', formatted);
+    setValue('cep', formatCEP(e.target.value));
   };
 
-  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'rentValue' | 'condoValue' | 'iptuValue') => {
-    const value = e.target.value;
-    const formatted = formatCurrency(value);
-    setValue(field, formatted);
+  const handleCurrencyChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'rentValue' | 'condoValue' | 'iptuValue',
+  ) => {
+    setValue(field, formatCurrency(e.target.value));
   };
 
   const fetchCep = async () => {
     const cep = getValues('cep');
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) return;
-
     setLoadingCep(true);
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
@@ -153,19 +268,51 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
         setValue('city', data.localidade);
         setValue('state', data.uf);
       }
-    } catch (error) {
+    } catch {
       console.error('Erro ao buscar CEP');
     } finally {
       setLoadingCep(false);
     }
   };
 
-  const onSubmit = (data: PropertyFormData) => {
-    // Convert formatted currency back to numbers for the API
+  // ── Submit ────────────────────────────────────────────────────────────────────
+  const onSubmit = async (data: PropertyFormData) => {
     const parseCurrency = (val?: string) => {
       if (!val) return 0;
       return Number(val.replace(/\D/g, '')) / 100;
     };
+
+    // Upload meter photos (non-blocking on individual failure)
+    let waterMeterPhotoUrl: string | null = null;
+    let electricityMeterPhotoUrl: string | null = null;
+
+    if (waterMeterFile) {
+      setUploadingWater(true);
+      try {
+        const ext = waterMeterFile.name.split('.').pop();
+        const fileName = `water/${crypto.randomUUID()}.${ext}`;
+        waterMeterPhotoUrl = await storageService.uploadFile('property-meters', fileName, waterMeterFile);
+        if (!waterMeterPhotoUrl) throw new Error('URL nula');
+      } catch {
+        addToast('Aviso', 'Não foi possível enviar a foto do medidor de água. Os dados numéricos serão salvos.', 'error');
+      } finally {
+        setUploadingWater(false);
+      }
+    }
+
+    if (electricityMeterFile) {
+      setUploadingElectricity(true);
+      try {
+        const ext = electricityMeterFile.name.split('.').pop();
+        const fileName = `electricity/${crypto.randomUUID()}.${ext}`;
+        electricityMeterPhotoUrl = await storageService.uploadFile('property-meters', fileName, electricityMeterFile);
+        if (!electricityMeterPhotoUrl) throw new Error('URL nula');
+      } catch {
+        addToast('Aviso', 'Não foi possível enviar a foto do medidor de luz. Os dados numéricos serão salvos.', 'error');
+      } finally {
+        setUploadingElectricity(false);
+      }
+    }
 
     const payload = {
       ...data,
@@ -173,11 +320,18 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
       condoValue: data.condoValue ? parseCurrency(data.condoValue).toString() : undefined,
       iptuValue: data.iptuValue ? parseCurrency(data.iptuValue).toString() : undefined,
       coverImage,
-      galleryImages
+      galleryImages,
+      // snake_case mapping for DB
+      water_reading_initial: data.waterReadingInitial ?? null,
+      electricity_reading_initial: data.electricityReadingInitial ?? null,
+      water_meter_photo_url: waterMeterPhotoUrl,
+      electricity_meter_photo_url: electricityMeterPhotoUrl,
     };
+
     onSave(payload as any);
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <ModalWrapper
       onClose={onClose}
@@ -241,7 +395,6 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                 Fotos dos Ambientes
               </label>
               <div className='grid grid-cols-3 sm:grid-cols-4 gap-2'>
-                {/* Existing Gallery Images */}
                 {galleryImages.map((img, idx) => (
                   <div key={idx} className='relative aspect-square rounded-xl overflow-hidden group border border-slate-200 dark:border-white/10'>
                     <img src={img} alt={`Environment ${idx}`} className='w-full h-full object-cover' />
@@ -254,8 +407,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     </button>
                   </div>
                 ))}
-                
-                {/* Dynamic Upload Slots based on Counters */}
+
                 {Array.from({ length: bedrooms }).map((_, i) => (
                   <button
                     key={`bed-slot-${i}`}
@@ -280,7 +432,6 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                   </button>
                 ))}
 
-                {/* Common Area Slots */}
                 <button
                   type='button'
                   onClick={() => galleryInputRef.current?.click()}
@@ -331,19 +482,14 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                       {...register('type')}
                       className={`w-full appearance-none px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border ${errors.type ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:text-white`}
                     >
-                      <option value='' disabled>
-                        Selecione
-                      </option>
+                      <option value='' disabled>Selecione</option>
                       <option value='Apartamento'>Apartamento</option>
                       <option value='Kitnet'>Kitnet</option>
                       <option value='Studio'>Studio</option>
                       <option value='Casa'>Casa</option>
                       <option value='Comercial'>Sala Comercial</option>
                     </select>
-                    <ChevronDown
-                      className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
-                      size={20}
-                    />
+                    <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' size={20} />
                   </div>
                   {errors.type && (
                     <p className='text-xs text-red-500 font-medium'>{errors.type.message}</p>
@@ -354,7 +500,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
 
             <hr className='border-slate-100 dark:border-white/5' />
 
-            {/* 3. Localização (CEP Integration) */}
+            {/* 3. Localização */}
             <section>
               <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2'>
                 <MapPin size={14} /> Localização
@@ -362,9 +508,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               <div className='space-y-4'>
                 <div className='flex flex-col md:flex-row gap-4'>
                   <div className='w-full md:w-40 space-y-2'>
-                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                      CEP
-                    </label>
+                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>CEP</label>
                     <div className='relative'>
                       <input
                         {...register('cep')}
@@ -387,9 +531,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     )}
                   </div>
                   <div className='flex-1 space-y-2'>
-                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                      Endereço
-                    </label>
+                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>Endereço</label>
                     <input
                       {...register('street')}
                       className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border ${errors.street ? 'border-red-500' : 'border-slate-200 dark:border-white/5'} outline-none dark:text-white`}
@@ -415,9 +557,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     )}
                   </div>
                   <div className='md:col-span-1 space-y-2'>
-                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                      Complemento
-                    </label>
+                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>Complemento</label>
                     <input
                       {...register('complement')}
                       className='w-full px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:text-white'
@@ -425,17 +565,13 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                     />
                   </div>
                   <div className='md:col-span-2 space-y-2'>
-                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                      Bairro
-                    </label>
+                    <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>Bairro</label>
                     <input
                       {...register('neighborhood')}
                       className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border ${errors.neighborhood ? 'border-red-500' : 'border-slate-200 dark:border-white/5'} outline-none dark:text-white`}
                     />
                     {errors.neighborhood && (
-                      <p className='text-xs text-red-500 font-medium'>
-                        {errors.neighborhood.message}
-                      </p>
+                      <p className='text-xs text-red-500 font-medium'>{errors.neighborhood.message}</p>
                     )}
                   </div>
                 </div>
@@ -457,9 +593,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               </div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <div className='space-y-2'>
-                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                    Área (m²)
-                  </label>
+                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>Área (m²)</label>
                   <input
                     {...register('area')}
                     type='number'
@@ -468,7 +602,6 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                   />
                 </div>
 
-                {/* Counters */}
                 {[
                   { label: 'Quartos', field: 'bedrooms', icon: BedDouble, value: bedrooms },
                   { label: 'Banheiros', field: 'bathrooms', icon: Bath, value: bathrooms },
@@ -515,13 +648,9 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               </h3>
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
                 <div className='space-y-2'>
-                  <label className='text-sm font-bold text-emerald-600 dark:text-emerald-400'>
-                    Aluguel
-                  </label>
+                  <label className='text-sm font-bold text-emerald-600 dark:text-emerald-400'>Aluguel</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>
-                      R$
-                    </span>
+                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>R$</span>
                     <input
                       {...register('rentValue')}
                       onChange={(e) => handleCurrencyChange(e, 'rentValue')}
@@ -534,13 +663,9 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                   )}
                 </div>
                 <div className='space-y-2'>
-                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                    Condomínio
-                  </label>
+                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>Condomínio</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>
-                      R$
-                    </span>
+                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>R$</span>
                     <input
                       {...register('condoValue')}
                       onChange={(e) => handleCurrencyChange(e, 'condoValue')}
@@ -550,13 +675,9 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
                   </div>
                 </div>
                 <div className='space-y-2'>
-                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
-                    IPTU (Mensal)
-                  </label>
+                  <label className='text-sm font-semibold text-slate-700 dark:text-slate-300'>IPTU (Mensal)</label>
                   <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>
-                      R$
-                    </span>
+                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs'>R$</span>
                     <input
                       {...register('iptuValue')}
                       onChange={(e) => handleCurrencyChange(e, 'iptuValue')}
@@ -568,10 +689,119 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
               </div>
             </section>
 
+            <hr className='border-slate-100 dark:border-white/5' />
+
+            {/* 6. Medidores & Consumo — Framer Motion fade-in + slide-up */}
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut', delay: 0.15 }}
+            >
+              {/* Header */}
+              <div className='flex items-center justify-between mb-5'>
+                <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2'>
+                  <Gauge size={14} /> Medidores &amp; Consumo
+                </h3>
+                <span className='px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-800/40'>
+                  Leitura Inicial
+                </span>
+              </div>
+
+              {/* Leitura Numérica */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6'>
+                {/* Água */}
+                <div className='space-y-2'>
+                  <label className='text-xs font-black uppercase tracking-widest flex items-center gap-1.5 text-sky-600 dark:text-sky-400'>
+                    <Droplets size={13} /> Leitura de Água (m³)
+                  </label>
+                  <div className='relative'>
+                    <Droplets
+                      size={16}
+                      className='absolute left-3 top-1/2 -translate-y-1/2 text-sky-400 pointer-events-none'
+                    />
+                    <input
+                      {...register('waterReadingInitial', { valueAsNumber: true })}
+                      type='number'
+                      step='0.001'
+                      min='0'
+                      className={`w-full pl-9 pr-4 py-3 rounded-xl bg-sky-50 dark:bg-sky-900/10 border ${
+                        errors.waterReadingInitial
+                          ? 'border-red-500'
+                          : 'border-sky-100 dark:border-sky-900/30'
+                      } outline-none focus:ring-2 focus:ring-sky-400/40 focus:border-sky-400 transition-all dark:text-white font-mono`}
+                      placeholder='0,000'
+                    />
+                  </div>
+                  {errors.waterReadingInitial && (
+                    <p className='text-xs text-red-500 font-medium'>{errors.waterReadingInitial.message}</p>
+                  )}
+                </div>
+
+                {/* Luz */}
+                <div className='space-y-2'>
+                  <label className='text-xs font-black uppercase tracking-widest flex items-center gap-1.5 text-amber-600 dark:text-amber-400'>
+                    <Zap size={13} /> Leitura de Luz (kWh)
+                  </label>
+                  <div className='relative'>
+                    <Zap
+                      size={16}
+                      className='absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none'
+                    />
+                    <input
+                      {...register('electricityReadingInitial', { valueAsNumber: true })}
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      className={`w-full pl-9 pr-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border ${
+                        errors.electricityReadingInitial
+                          ? 'border-red-500'
+                          : 'border-amber-100 dark:border-amber-900/30'
+                      } outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all dark:text-white font-mono`}
+                      placeholder='0,00'
+                    />
+                  </div>
+                  {errors.electricityReadingInitial && (
+                    <p className='text-xs text-red-500 font-medium'>{errors.electricityReadingInitial.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Fotos dos Medidores */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <MeterPhotoUpload
+                  label='Foto — Medidor de Água'
+                  icon={<Droplets size={13} />}
+                  accentClass='text-sky-600 dark:text-sky-400'
+                  preview={waterMeterPreview}
+                  uploading={uploadingWater}
+                  onFile={(file) => handleMeterFile(file, setWaterMeterFile, setWaterMeterPreview)}
+                  onClear={() => { setWaterMeterFile(null); setWaterMeterPreview(null); }}
+                />
+                <MeterPhotoUpload
+                  label='Foto — Medidor de Luz'
+                  icon={<Zap size={13} />}
+                  accentClass='text-amber-600 dark:text-amber-400'
+                  preview={electricityMeterPreview}
+                  uploading={uploadingElectricity}
+                  onFile={(file) => handleMeterFile(file, setElectricityMeterFile, setElectricityMeterPreview)}
+                  onClear={() => { setElectricityMeterFile(null); setElectricityMeterPreview(null); }}
+                />
+              </div>
+
+              {/* Disclaimer */}
+              <div className='mt-4 p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex items-start gap-2 text-slate-500 dark:text-slate-400'>
+                <div className='w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0'></div>
+                <p className='text-[10px] font-medium leading-relaxed'>
+                  As leituras iniciais são essenciais para o cálculo automático de rateio de consumo. As fotos comprobatórias eliminam disputas entre proprietário e inquilino na entrada do imóvel.
+                </p>
+              </div>
+            </motion.section>
+
             <div className='h-4'></div>
           </div>
         </div>
 
+        {/* Footer */}
         <div className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20 flex gap-3'>
           <button
             type='button'
@@ -590,10 +820,7 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({ onClose, onSav
             ) : (
               <>
                 {initialData ? 'Salvar Alterações' : 'Cadastrar Imóvel'}
-                <ArrowRight
-                  className='ml-2 group-hover:translate-x-1 transition-transform'
-                  size={18}
-                />
+                <ArrowRight className='ml-2 group-hover:translate-x-1 transition-transform' size={18} />
               </>
             )}
           </button>

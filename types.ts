@@ -18,6 +18,7 @@ export interface User {
   created_at?: string;
   last_login_at?: string;
   plan?: string;
+  has_completed_onboarding?: boolean;
   metrics?: {
     properties: number;
     tenants: number;

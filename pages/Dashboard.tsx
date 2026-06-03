@@ -58,10 +58,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardData && dashboardData.properties.length === 0 && !sessionStorage.getItem(`onboarding_owner_seen_${user?.id}`)) {
+    if (dashboardData && dashboardData.properties.length === 0 && !user?.has_completed_onboarding) {
       setShowOnboarding(true);
     }
-  }, [dashboardData, user?.id]);
+  }, [dashboardData, user]);
 
   if (isLoading) {
     return (
@@ -108,7 +108,9 @@ const Dashboard: React.FC = () => {
         <OwnerOnboardingWizard 
           onComplete={() => {
             setShowOnboarding(false);
-            sessionStorage.setItem(`onboarding_owner_seen_${user?.id}`, 'true');
+            if (user) {
+              user.has_completed_onboarding = true;
+            }
           }}
         />
       )}
