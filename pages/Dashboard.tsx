@@ -44,6 +44,9 @@ const Dashboard: React.FC = () => {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [announcementToDuplicate, setAnnouncementToDuplicate] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // Local guard so the wizard doesn't re-open in the same session
+  // after the user completes it (the auth refresh will confirm later)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   const { data: dashboardData, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboardData', user?.id],
@@ -58,10 +61,15 @@ const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardData && dashboardData.properties.length === 0 && !user?.has_completed_onboarding) {
+    if (
+      dashboardData &&
+      dashboardData.properties.length === 0 &&
+      !user?.has_completed_onboarding &&
+      !onboardingDismissed
+    ) {
       setShowOnboarding(true);
     }
-  }, [dashboardData, user]);
+  }, [dashboardData, user, onboardingDismissed]);
 
   if (isLoading) {
     return (
@@ -105,12 +113,10 @@ const Dashboard: React.FC = () => {
   return (
     <div className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       {showOnboarding && (
-        <OwnerOnboardingWizard 
+      <OwnerOnboardingWizard
           onComplete={() => {
             setShowOnboarding(false);
-            if (user) {
-              user.has_completed_onboarding = true;
-            }
+            setOnboardingDismissed(true);
           }}
         />
       )}

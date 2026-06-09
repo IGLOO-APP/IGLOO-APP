@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Phone,
@@ -54,6 +55,7 @@ import { formatPhone, getRemainingContractTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { tenantConfigService } from '../../services/tenantConfigService';
 import { supabase } from '../../lib/supabase';
+import { useNotification } from '../../context/NotificationContext';
 
 interface TenantDetailsProps {
   id: string;
@@ -67,6 +69,10 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { addToast } = useNotification();
+
+  // Track which step is currently being approved (for per-button loading state)
+  const [approvingStep, setApprovingStep] = useState<string | null>(null);
 
   // Estados dinâmicos de onboarding (Gargalos resolvidos)
   const [creditChecked, setCreditChecked] = useState<boolean>(() => {
@@ -238,6 +244,82 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
       console.error('Error releasing keys:', err);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  /**
+   * handleApproveStep — one-click approval from the "Etapas Validadas" list.
+   * Maps each step label to the correct Supabase field, advances the pipeline
+   * stage, writes audit flags to localStorage, and fires an addToast confirmation.
+   */
+  const handleApproveStep = async (stepKey: 'profile' | 'documents' | 'contract' | 'inspection') => {
+    const email = tenantEmailRef.current;
+    if (!email || approvingStep) return;
+    setApprovingStep(stepKey);
+    try {
+      type ProfileUpdate = Record<string, string | boolean | null>;
+      let payload: ProfileUpdate = {};
+      let nextStage: string | null = null;
+      let toastLabel = '';
+
+      switch (stepKey) {
+        case 'profile':
+          payload = {
+            onboarding_profile_status: 'approved',
+            onboarding_stage: 'documents',
+            onboarding_profile_rejected_reason: null,
+          };
+          nextStage = 'documents';
+          toastLabel = 'Dados Cadastrais';
+          // Audit flags — unblocks Step 2 for tenant
+          localStorage.setItem(`igloo_references_verified_${id}`, 'true');
+          setReferencesVerified(true);
+          break;
+        case 'documents':
+          payload = {
+            onboarding_documents_status: 'approved',
+            onboarding_stage: 'contract',
+            onboarding_documents_rejected_reason: null,
+          };
+          nextStage = 'contract';
+          toastLabel = 'Documentos Enviados';
+          break;
+        case 'contract':
+          payload = {
+            onboarding_contract_status: 'approved',
+            onboarding_stage: 'inspection',
+          };
+          nextStage = 'inspection';
+          toastLabel = 'Contrato Assinado';
+          break;
+        case 'inspection':
+          payload = {
+            onboarding_inspection_status: 'approved',
+            onboarding_stage: 'keys',
+          };
+          nextStage = 'keys';
+          toastLabel = 'Vistoria de Entrada';
+          break;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('email', email);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      addToast(
+        '✅ Etapa Aprovada',
+        `"${toastLabel}" foi homologada com sucesso. ${nextStage ? 'Próxima fase liberada para o inquilino.' : ''}`,
+        'success'
+      );
+    } catch (err) {
+      console.error(`Error approving step ${stepKey}:`, err);
+      addToast('Erro ao aprovar', 'Não foi possível salvar a aprovação. Tente novamente.', 'error');
+    } finally {
+      setApprovingStep(null);
     }
   };
 
@@ -1336,24 +1418,77 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                           </div>
                         </div>
 
-                        {/* Checklist de etapas concluídas */}
-                        <div className='space-y-1.5'>
+                        {/* ✅ ETAPAS VALIDADAS — botões de aprovação inline */}
+                        <div className='space-y-2'>
                           <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>✅ Etapas Validadas</p>
-                          {[
-                            { label: 'Dados Cadastrais', status: tenant.onboarding_profile_status },
-                            { label: 'Documentos Enviados', status: tenant.onboarding_documents_status },
-                            { label: 'Contrato Assinado', status: tenant.contract?.status === 'active' ? 'approved' : (tenant.onboarding_contract_status || 'pending') },
-                            { label: 'Vistoria de Entrada', status: tenant.onboarding_inspection_status },
-                          ].map(item => (
-                            <div key={item.label} className='flex items-center justify-between px-3 py-1.5 bg-white/5 rounded-lg border border-white/5'>
-                              <span className='text-[10px] font-bold text-slate-300'>{item.label}</span>
-                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
-                                item.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
-                              }`}>
-                                {item.status === 'approved' ? '✓ Aprovado' : 'Pendente'}
-                              </span>
-                            </div>
-                          ))}
+                          {([
+                            { label: 'Dados Cadastrais',   stepKey: 'profile'    as const, status: tenant.onboarding_profile_status },
+                            { label: 'Documentos Enviados', stepKey: 'documents'  as const, status: tenant.onboarding_documents_status },
+                            { label: 'Contrato Assinado',  stepKey: 'contract'   as const, status: tenant.contract?.status === 'active' ? 'approved' : (tenant.onboarding_contract_status || 'pending') },
+                            { label: 'Vistoria de Entrada', stepKey: 'inspection' as const, status: tenant.onboarding_inspection_status },
+                          ] as { label: string; stepKey: 'profile' | 'documents' | 'contract' | 'inspection'; status: string | undefined }[]).map((item, idx) => {
+                            const isApproved = item.status === 'approved';
+                            // Only the FIRST pending step gets the pulse ring
+                            const items = [
+                              tenant.onboarding_profile_status,
+                              tenant.onboarding_documents_status,
+                              tenant.contract?.status === 'active' ? 'approved' : (tenant.onboarding_contract_status || 'pending'),
+                              tenant.onboarding_inspection_status,
+                            ];
+                            const firstPendingIdx = items.findIndex(s => s !== 'approved');
+                            const isFirstPending = !isApproved && idx === firstPendingIdx;
+                            const isLoading = approvingStep === item.stepKey;
+
+                            return (
+                              <div
+                                key={item.label}
+                                className='flex items-center justify-between px-3 py-2 bg-white/5 rounded-lg border border-white/5'
+                              >
+                                <span className='text-[10px] font-bold text-slate-300 flex-1 mr-3'>{item.label}</span>
+
+                                <AnimatePresence mode='wait' initial={false}>
+                                  {isApproved ? (
+                                    <motion.span
+                                      key='approved'
+                                      initial={{ scale: 0.6, opacity: 0 }}
+                                      animate={{ scale: 1,   opacity: 1 }}
+                                      exit={{   scale: 0.6, opacity: 0 }}
+                                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                                      className='inline-flex items-center gap-1 text-[9px] font-black uppercase px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 shrink-0'
+                                    >
+                                      <ShieldCheck size={10} /> Aprovado
+                                    </motion.span>
+                                  ) : (
+                                    <motion.button
+                                      key='pending'
+                                      initial={{ scale: 0.9, opacity: 0 }}
+                                      animate={{ scale: 1,   opacity: 1 }}
+                                      exit={{   scale: 0.9, opacity: 0 }}
+                                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                                      onClick={() => handleApproveStep(item.stepKey)}
+                                      disabled={isLoading}
+                                      aria-label={`Aprovar ${item.label}`}
+                                      className={[
+                                        'group relative inline-flex items-center gap-1.5 text-[9px] font-black uppercase',
+                                        'px-2.5 py-1 rounded-md transition-all active:scale-95 shrink-0',
+                                        'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+                                        'hover:bg-amber-500/25 hover:border-amber-500/60 hover:text-amber-300',
+                                        'disabled:opacity-60 disabled:cursor-not-allowed',
+                                        isFirstPending ? 'ring-2 ring-amber-500/40 animate-pulse' : '',
+                                      ].join(' ')}
+                                    >
+                                      {isLoading ? (
+                                        <Loader2 size={10} className='animate-spin shrink-0' />
+                                      ) : (
+                                        <ArrowRight size={10} className='shrink-0 group-hover:translate-x-0.5 transition-transform' />
+                                      )}
+                                      {isLoading ? 'Aprovando…' : 'Aprovar'}
+                                    </motion.button>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            );
+                          })}
                         </div>
 
                         <button

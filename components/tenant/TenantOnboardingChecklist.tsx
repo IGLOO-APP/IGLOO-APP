@@ -27,6 +27,7 @@ import {
 import { Tenant } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { storageService } from '../../services/storageService';
 
 interface TenantOnboardingChecklistProps {
   tenant: Tenant;
@@ -254,12 +255,25 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
     setLoading(true);
     setErrorMsg(null);
     try {
-      // Mock doc URLs using naming conventions
+      // Upload both files to Supabase Storage bucket "tenant-documents"
+      const timestamp = Date.now();
+      const rgPath   = `${tenant.id}/${timestamp}_rg_${rgFile.name}`;
+      const incPath  = `${tenant.id}/${timestamp}_income_${incomeFile.name}`;
+
+      const [rgUrl, incomeUrl] = await Promise.all([
+        storageService.uploadFile('tenant-documents', rgPath, rgFile),
+        storageService.uploadFile('tenant-documents', incPath, incomeFile),
+      ]);
+
+      if (!rgUrl || !incomeUrl) {
+        throw new Error('Falha no upload para o storage. Verifique as permissões do bucket.');
+      }
+
       const docUrls = {
-        rg_name: rgFile.name,
-        rg_url: `https://igloo-mock-docs.s3.amazonaws.com/${tenant.id}/rg_${rgFile.name}`,
+        rg_name:    rgFile.name,
+        rg_url:     rgUrl,
         income_name: incomeFile.name,
-        income_url: `https://igloo-mock-docs.s3.amazonaws.com/${tenant.id}/income_${incomeFile.name}`
+        income_url:  incomeUrl,
       };
 
       const { error } = await supabase
@@ -279,19 +293,19 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
             property_id: tenant.property_id,
             name: `RG/CNH - ${tenant.name}`,
             category: 'Jurídico',
-            type: 'PDF',
+            type: rgFile.type.includes('pdf') ? 'PDF' : 'Imagem',
             size: `${(rgFile.size / 1024 / 1024).toFixed(2)} MB`,
             status: 'Pendente',
-            url: docUrls.rg_url
+            url: rgUrl
           },
           {
             property_id: tenant.property_id,
             name: `Comp. Renda - ${tenant.name}`,
             category: 'Financeiro',
-            type: 'PDF',
+            type: incomeFile.type.includes('pdf') ? 'PDF' : 'Imagem',
             size: `${(incomeFile.size / 1024 / 1024).toFixed(2)} MB`,
             status: 'Pendente',
-            url: docUrls.income_url
+            url: incomeUrl
           }
         ]);
       }
@@ -300,7 +314,7 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
       onStepComplete();
     } catch (err: any) {
       console.error('Error submitting documents:', err);
-      setErrorMsg('Erro ao enviar documentos. Tente novamente.');
+      setErrorMsg(err?.message || 'Erro ao enviar documentos. Tente novamente.');
     } finally {
       setLoading(false);
     }
