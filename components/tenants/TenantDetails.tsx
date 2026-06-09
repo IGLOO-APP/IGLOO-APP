@@ -34,17 +34,26 @@ import {
   Settings2,
   Sparkles,
   Wrench,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Lock,
+  Key,
+  XCircle,
+  Loader2,
+  ShieldAlert,
+  CheckCircle,
+  Info,
+  Upload,
+  ClipboardCheck
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { TenantProfileConfigPanel } from '../properties/TenantProfileConfigPanel';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { tenantService } from '../../services/tenantService';
 import { calculateTenantFinancials } from '../../utils/financialCalculations';
-import { Loader2, ShieldAlert, CheckCircle, Info } from 'lucide-react';
 import { formatPhone, getRemainingContractTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { tenantConfigService } from '../../services/tenantConfigService';
+import { supabase } from '../../lib/supabase';
 
 interface TenantDetailsProps {
   id: string;
@@ -82,6 +91,155 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
   const [employmentType, setEmploymentType] = useState<'CLT' | 'Autônomo' | 'PJ'>(() => {
     return (localStorage.getItem(`igloo_employment_type_${id}`) as any) || 'CLT';
   });
+
+  // Onboarding approval states
+  const [profileReason, setProfileReason] = useState('');
+  const [showProfileReject, setShowProfileReject] = useState(false);
+  const [docsReason, setDocsReason] = useState('');
+  const [showDocsReject, setShowDocsReject] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Ref to hold the tenant email for use in handlers (defined before useQuery)
+  const tenantEmailRef = React.useRef<string>('');
+
+  const queryClient = useQueryClient();
+
+  const handleApproveProfile = async () => {
+    const email = tenantEmailRef.current;
+    if (!email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_profile_status: 'approved',
+          onboarding_stage: 'documents',
+          onboarding_profile_rejected_reason: null
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      setShowProfileReject(false);
+      setProfileReason('');
+    } catch (err) {
+      console.error('Error approving profile:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectProfile = async () => {
+    const email = tenantEmailRef.current;
+    if (!profileReason.trim() || !email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_profile_status: 'rejected',
+          onboarding_profile_rejected_reason: profileReason
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      setShowProfileReject(false);
+      setProfileReason('');
+    } catch (err) {
+      console.error('Error rejecting profile:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveDocs = async () => {
+    const email = tenantEmailRef.current;
+    if (!email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_documents_status: 'approved',
+          onboarding_stage: 'contract',
+          onboarding_documents_rejected_reason: null
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      setShowDocsReject(false);
+      setDocsReason('');
+    } catch (err) {
+      console.error('Error approving docs:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectDocs = async () => {
+    const email = tenantEmailRef.current;
+    if (!docsReason.trim() || !email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_documents_status: 'rejected',
+          onboarding_documents_rejected_reason: docsReason
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      setShowDocsReject(false);
+      setDocsReason('');
+    } catch (err) {
+      console.error('Error rejecting docs:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveInspection = async () => {
+    const email = tenantEmailRef.current;
+    if (!email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_inspection_status: 'approved',
+          onboarding_stage: 'keys'
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+    } catch (err) {
+      console.error('Error approving inspection:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReleaseKeys = async () => {
+    const email = tenantEmailRef.current;
+    if (!email) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_stage: 'completed',
+          has_completed_onboarding: true,
+          is_pending: false
+        })
+        .eq('email', email);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+    } catch (err) {
+      console.error('Error releasing keys:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Checklist de residência critérios
   const [residenceRecent, setResidenceRecent] = useState<boolean>(() => {
@@ -121,6 +279,13 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
     queryFn: () => tenantService.getDocuments(id.toString()),
     enabled: !!id,
   });
+
+  // Keep ref in sync so handlers always have the current tenant email
+  React.useEffect(() => {
+    if (tenant?.email) {
+      tenantEmailRef.current = tenant.email;
+    }
+  }, [tenant?.email]);
 
   const financialSummary = calculateTenantFinancials(payments);
 
@@ -837,6 +1002,382 @@ export const TenantDetails: React.FC<TenantDetailsProps> = ({ id, onClose }) => 
                   Perfil Alvo: {tenantRequirements?.propertyId === 'global' ? 'Padrão' : 'Personalizado'}
                 </span>
               </div>
+
+              {/* 🚀 PAINEL DE HOMOLOGAÇÃO DE ONBOARDING */}
+              {tenant.onboarding_stage !== 'completed' && (
+                <div className='p-6 bg-slate-950 dark:bg-black/40 text-white rounded-2xl border border-slate-800 dark:border-white/5 space-y-6 text-left shadow-lg relative overflow-hidden'>
+                  {/* Glassmorphic background glow */}
+                  <div className='absolute top-0 right-0 w-48 h-48 bg-primary/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none' />
+
+                  <div className='flex items-center justify-between border-b border-white/10 pb-4 relative z-10'>
+                    <div>
+                      <h4 className='text-xs font-black uppercase tracking-wider flex items-center gap-2'>
+                        <Sparkles size={14} className='text-amber-400 shrink-0 animate-pulse' />
+                        Painel de Homologação de Onboarding
+                      </h4>
+                      <p className='text-[10px] text-slate-400 font-bold uppercase mt-1'>
+                        Acompanhe e valide o progresso de integração do inquilino
+                      </p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest shrink-0 ${
+                      tenant.onboarding_stage === 'completed'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    }`}>
+                      Fase Atual: {
+                        tenant.onboarding_stage === 'profile' ? 'Dados Cadastrais' :
+                        tenant.onboarding_stage === 'documents' ? 'Envio de Documentos' :
+                        tenant.onboarding_stage === 'contract' ? 'Contrato de Locação' :
+                        tenant.onboarding_stage === 'inspection' ? 'Vistoria de Entrada' :
+                        tenant.onboarding_stage === 'keys' ? 'Liberação das Chaves' :
+                        tenant.onboarding_stage === 'completed' ? 'Concluído' : 'Início'
+                      }
+                    </span>
+                  </div>
+
+                  {/* Pipeline de Passos Sequenciais */}
+                  <div className='grid grid-cols-5 gap-2 relative z-10'>
+                    {[
+                      { step: 'profile', label: 'Dados', status: tenant.onboarding_profile_status },
+                      { step: 'documents', label: 'Documentos', status: tenant.onboarding_documents_status },
+                      { step: 'contract', label: 'Contrato', status: tenant.onboarding_contract_status || (tenant.contract?.status === 'active' ? 'approved' : 'pending') },
+                      { step: 'inspection', label: 'Vistoria', status: tenant.onboarding_inspection_status },
+                      { step: 'keys', label: 'Chaves', status: tenant.onboarding_stage === 'completed' ? 'approved' : 'pending' }
+                    ].map((item, idx) => {
+                      const isCompleted = item.status === 'approved';
+                      const isSubmitted = item.status === 'submitted';
+                      const isRejected = item.status === 'rejected';
+                      const isActive = tenant.onboarding_stage === item.step;
+
+                      let borderClass = 'border-white/10 text-slate-500';
+                      let bgClass = 'bg-white/5';
+                      if (isCompleted) {
+                        borderClass = 'border-emerald-500/50 text-emerald-400';
+                        bgClass = 'bg-emerald-500/10';
+                      } else if (isSubmitted) {
+                        borderClass = 'border-amber-500/50 text-amber-400 animate-pulse';
+                        bgClass = 'bg-amber-500/10';
+                      } else if (isRejected) {
+                        borderClass = 'border-rose-500/50 text-rose-400';
+                        bgClass = 'bg-rose-500/10';
+                      } else if (isActive) {
+                        borderClass = 'border-primary/50 text-primary';
+                        bgClass = 'bg-primary/10';
+                      }
+
+                      return (
+                        <div key={item.step} className={`p-2.5 rounded-xl border ${borderClass} ${bgClass} text-center flex flex-col items-center justify-center space-y-1`}>
+                          <span className='text-[8px] font-black text-slate-400 uppercase tracking-widest'>Passo 0{idx + 1}</span>
+                          <span className='text-[10px] font-bold tracking-tight truncate w-full'>{item.label}</span>
+                          <span className='text-[9px] font-extrabold uppercase mt-1'>
+                            {isCompleted ? '✓ OK' :
+                             isSubmitted ? 'Análise' :
+                             isRejected ? 'Erro' : 'Pendente'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Área de Ação Dinâmica baseada no passo atual */}
+                  <div className='bg-white/5 rounded-xl p-4 border border-white/10 relative z-10 space-y-4'>
+                    {/* PASSO 1: DADOS CADASTRAIS */}
+                    {tenant.onboarding_stage === 'profile' && (
+                      <div className='space-y-4'>
+                        <div className='flex items-center gap-2 text-amber-400'>
+                          <User size={16} />
+                          <span className='text-xs font-black uppercase tracking-wider'>Passo 1: Dados Cadastrais do Inquilino</span>
+                        </div>
+
+                        {/* Always show the tenant's data in styled cards */}
+                        <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                          {[
+                            { label: 'Nome Completo', value: tenant.name, icon: '👤' },
+                            { label: 'CPF', value: tenant.cpf, icon: '🪪', mono: true },
+                            { label: 'Celular / WhatsApp', value: formatPhone(tenant.phone), icon: '📱' },
+                            { label: 'E-mail', value: tenant.email, icon: '✉️' },
+                          ].map(field => (
+                            <div key={field.label} className='p-3 bg-white/5 rounded-xl border border-white/10 space-y-1'>
+                              <p className='text-[9px] text-slate-400 uppercase font-black tracking-widest'>{field.icon} {field.label}</p>
+                              <p className={`text-sm font-bold text-white leading-tight ${field.mono ? 'font-mono' : ''}`}>
+                                {field.value || <span className='text-slate-500 text-xs italic font-normal'>Não informado</span>}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {tenant.onboarding_profile_status === 'submitted' ? (
+                          <div className='space-y-3'>
+                            <div className='flex items-center gap-2 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg'>
+                              <span className='h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0' />
+                              <p className='text-xs text-amber-300 font-bold'>Aguardando sua revisão e aprovação dos dados acima</p>
+                            </div>
+
+                            {showProfileReject ? (
+                              <div className='space-y-2.5 animate-fadeIn'>
+                                <label className='block text-[10px] font-bold text-slate-400 uppercase'>Motivo da Rejeição</label>
+                                <textarea
+                                  value={profileReason}
+                                  onChange={(e) => setProfileReason(e.target.value)}
+                                  placeholder='Ex: Nome incompleto ou CPF com dígito inválido. Por favor, corrija e envie novamente.'
+                                  className='w-full p-2.5 text-xs bg-slate-900 border border-white/10 rounded-lg focus:outline-none focus:border-rose-500 text-white min-h-[60px]'
+                                />
+                                <div className='flex gap-2 justify-end'>
+                                  <button onClick={() => setShowProfileReject(false)} className='px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider'>
+                                    Cancelar
+                                  </button>
+                                  <button onClick={handleRejectProfile} disabled={actionLoading || !profileReason.trim()} className='px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider text-white'>
+                                    Confirmar Rejeição
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className='flex gap-2 justify-end pt-1'>
+                                <button onClick={() => setShowProfileReject(true)} className='px-4 py-2 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs font-bold uppercase tracking-wider'>
+                                  Rejeitar Dados
+                                </button>
+                                <button onClick={handleApproveProfile} disabled={actionLoading} className='px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-xs font-bold uppercase tracking-wider text-white shadow-md'>
+                                  {actionLoading ? 'Aprovando...' : 'Aprovar & Avançar →'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : tenant.onboarding_profile_status === 'rejected' ? (
+                          <div className='p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl space-y-1'>
+                            <p className='text-xs text-rose-400 font-bold'>Dados Rejeitados — aguardando correção do inquilino</p>
+                            {tenant.onboarding_profile_rejected_reason && (
+                              <p className='text-[10px] text-rose-300 font-mono'>Motivo: {tenant.onboarding_profile_rejected_reason}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className='text-xs text-slate-400 font-medium'>Aguardando o inquilino preencher e enviar os dados cadastrais.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* PASSO 2: ENVIO DE DOCUMENTOS */}
+                    {tenant.onboarding_stage === 'documents' && (
+                      <div className='space-y-3'>
+                        <div className='flex items-center gap-2 text-amber-400'>
+                          <Upload size={16} />
+                          <span className='text-xs font-black uppercase tracking-wider'>Passo 2: Análise de Documentação</span>
+                        </div>
+
+                        {tenant.onboarding_documents_status === 'submitted' ? (
+                          <div className='space-y-4'>
+                            <p className='text-xs text-slate-300 leading-relaxed font-medium'>
+                              O inquilino anexou os comprovantes exigidos. Clique para fazer o download e auditar a legitimidade dos arquivos.
+                            </p>
+                            
+                            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                              {tenant.onboarding_documents_urls?.rg_url && (
+                                <a
+                                  href={tenant.onboarding_documents_urls.rg_url}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  className='p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5 flex items-center justify-between text-left transition-colors'
+                                >
+                                  <div className='truncate pr-2'>
+                                    <p className='text-[8px] text-slate-400 uppercase font-bold'>RG ou CNH Válida</p>
+                                    <p className='text-xs font-bold text-white truncate'>{tenant.onboarding_documents_urls.rg_name || 'rg_cnh.pdf'}</p>
+                                  </div>
+                                  <Download size={14} className='text-slate-400 shrink-0' />
+                                </a>
+                              )}
+                              {tenant.onboarding_documents_urls?.income_url && (
+                                <a
+                                  href={tenant.onboarding_documents_urls.income_url}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  className='p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5 flex items-center justify-between text-left transition-colors'
+                                >
+                                  <div className='truncate pr-2'>
+                                    <p className='text-[8px] text-slate-400 uppercase font-bold'>Comprovante de Renda</p>
+                                    <p className='text-xs font-bold text-white truncate'>{tenant.onboarding_documents_urls.income_name || 'comprovante_renda.pdf'}</p>
+                                  </div>
+                                  <Download size={14} className='text-slate-400 shrink-0' />
+                                </a>
+                              )}
+                            </div>
+
+                            {showDocsReject ? (
+                              <div className='space-y-2.5 animate-fadeIn'>
+                                <label className='block text-[10px] font-bold text-slate-400 uppercase'>Motivo da Rejeição</label>
+                                <textarea
+                                  value={docsReason}
+                                  onChange={(e) => setDocsReason(e.target.value)}
+                                  placeholder='Ex: O comprovante de renda está ilegível ou expirado. Por favor, envie o documento original em formato PDF.'
+                                  className='w-full p-2.5 text-xs bg-slate-900 border border-white/10 rounded-lg focus:outline-none focus:border-rose-500 text-white min-h-[60px]'
+                                />
+                                <div className='flex gap-2 justify-end'>
+                                  <button
+                                    onClick={() => setShowDocsReject(false)}
+                                    className='px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-wider'
+                                  >
+                                    Cancelar
+                                  </button>
+                                  <button
+                                    onClick={handleRejectDocs}
+                                    disabled={actionLoading || !docsReason.trim()}
+                                    className='px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider text-white'
+                                  >
+                                    Confirmar Rejeição
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className='flex gap-2 justify-end'>
+                                <button
+                                  onClick={() => setShowDocsReject(true)}
+                                  className='px-4 py-2 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs font-bold uppercase tracking-wider'
+                                >
+                                  Rejeitar Docs
+                                </button>
+                                <button
+                                  onClick={handleApproveDocs}
+                                  disabled={actionLoading}
+                                  className='px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-xs font-bold uppercase tracking-wider text-white shadow-md'
+                                >
+                                  Homologar & Avançar
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : tenant.onboarding_documents_status === 'rejected' ? (
+                          <div>
+                            <p className='text-xs text-rose-400 font-bold'>Documentos Rejeitados pelo Proprietário</p>
+                            <p className='text-[11px] text-slate-300 mt-1'>
+                              Aguardando que o inquilino envie novas cópias e comprovantes válidos.
+                            </p>
+                            {tenant.onboarding_documents_rejected_reason && (
+                              <div className='mt-2 p-2 bg-rose-500/10 border border-rose-500/20 rounded-lg text-[10px] text-rose-350 font-mono'>
+                                Motivo: {tenant.onboarding_documents_rejected_reason}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className='text-xs text-slate-350 leading-relaxed font-medium'>
+                            Aguardando o envio dos documentos pelo inquilino (RG/CNH + Comprovante de Renda).
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* PASSO 3: CONTRATO DE LOCAÇÃO */}
+                    {tenant.onboarding_stage === 'contract' && (
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2 text-amber-400'>
+                          <FileText size={16} />
+                          <span className='text-xs font-black uppercase tracking-wider'>Passo 3: Contrato de Locação</span>
+                        </div>
+                        <p className='text-xs text-slate-300 leading-relaxed font-medium'>
+                          O contrato de locação foi disponibilizado e está aguardando a assinatura eletrônica por ambas as partes.
+                        </p>
+                        <div className='flex items-center gap-2 mt-2 p-2 bg-white/5 rounded-lg border border-white/5 text-[10px] font-bold text-slate-350'>
+                          <span className='h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0' />
+                          Status do Contrato: {tenant.contract?.status === 'active' ? 'Assinado' : 'Pendente de Assinatura'}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PASSO 4: LAUDO DE VISTORIA */}
+                    {tenant.onboarding_stage === 'inspection' && (
+                      <div className='space-y-2'>
+                        <div className='flex items-center gap-2 text-amber-400'>
+                          <ClipboardCheck size={16} />
+                          <span className='text-xs font-black uppercase tracking-wider'>Passo 4: Laudo de Vistoria de Entrada</span>
+                        </div>
+                        <p className='text-xs text-slate-350 leading-relaxed font-medium'>
+                          A vistoria foi gerada e o inquilino precisa revisar e concordar com o laudo de entrada antes da entrega física das chaves.
+                        </p>
+                        <div className='flex items-center justify-between mt-2 pt-1'>
+                          <div className='flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5 text-[10px] font-bold text-slate-300'>
+                            <span className='h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0' />
+                            Laudo: {tenant.onboarding_inspection_status === 'approved' ? 'Aprovado pelo Inquilino' : 'Pendente'}
+                          </div>
+                          {tenant.onboarding_inspection_status !== 'approved' && (
+                            <button
+                              onClick={handleApproveInspection}
+                              disabled={actionLoading}
+                              className='px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white shadow-md transition-all active:scale-95'
+                            >
+                              Ignorar & Forçar Aprovação
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PASSO 5: ENTREGA DAS CHAVES */}
+                    {tenant.onboarding_stage === 'keys' && (
+                      <div className='space-y-4'>
+                        <div className='flex items-center gap-2 text-emerald-400'>
+                          <Key size={16} className='animate-bounce' />
+                          <span className='text-xs font-black uppercase tracking-wider'>Passo 5: Revisão Final & Liberação das Chaves</span>
+                        </div>
+
+                        {/* Resumo completo do perfil do inquilino */}
+                        <div className='space-y-2'>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>📋 Resumo do Inquilino Aprovado</p>
+                          <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
+                            {[
+                              { label: 'Nome', value: tenant.name, icon: '👤' },
+                              { label: 'CPF', value: tenant.cpf, icon: '🪪', mono: true },
+                              { label: 'Celular', value: formatPhone(tenant.phone), icon: '📱' },
+                              { label: 'E-mail', value: tenant.email, icon: '✉️' },
+                            ].map(field => (
+                              <div key={field.label} className='p-2.5 bg-white/5 rounded-lg border border-white/10 space-y-0.5'>
+                                <p className='text-[8px] text-slate-400 uppercase font-black tracking-widest'>{field.icon} {field.label}</p>
+                                <p className={`text-xs font-bold text-white truncate leading-tight ${(field as any).mono ? 'font-mono' : ''}`}>
+                                  {field.value || <span className='text-slate-500 italic font-normal'>—</span>}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Checklist de etapas concluídas */}
+                        <div className='space-y-1.5'>
+                          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>✅ Etapas Validadas</p>
+                          {[
+                            { label: 'Dados Cadastrais', status: tenant.onboarding_profile_status },
+                            { label: 'Documentos Enviados', status: tenant.onboarding_documents_status },
+                            { label: 'Contrato Assinado', status: tenant.contract?.status === 'active' ? 'approved' : (tenant.onboarding_contract_status || 'pending') },
+                            { label: 'Vistoria de Entrada', status: tenant.onboarding_inspection_status },
+                          ].map(item => (
+                            <div key={item.label} className='flex items-center justify-between px-3 py-1.5 bg-white/5 rounded-lg border border-white/5'>
+                              <span className='text-[10px] font-bold text-slate-300'>{item.label}</span>
+                              <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                                item.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                              }`}>
+                                {item.status === 'approved' ? '✓ Aprovado' : 'Pendente'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={handleReleaseKeys}
+                          disabled={actionLoading}
+                          className='w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/40 active:scale-[0.98] disabled:opacity-50'
+                        >
+                          {actionLoading ? (
+                            <>
+                              <Loader2 className='animate-spin shrink-0' size={14} />
+                              Liberando Chaves...
+                            </>
+                          ) : (
+                            <>
+                              <Key size={14} className='shrink-0' />
+                              Liberar Chaves & Concluir Locação
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* ⚠️ Warning Banner inside Config Tab if pending */}
               {criticalPendingCount > 0 && (

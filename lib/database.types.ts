@@ -612,6 +612,14 @@ export type Database = {
           trial_started_at: string | null
           updated_at: string
           has_completed_onboarding: boolean | null
+          onboarding_stage: string | null
+          onboarding_profile_status: string | null
+          onboarding_documents_status: string | null
+          onboarding_contract_status: string | null
+          onboarding_inspection_status: string | null
+          onboarding_profile_rejected_reason: string | null
+          onboarding_documents_rejected_reason: string | null
+          onboarding_documents_urls: Json | null
         }
         Insert: {
           admin_type?: string | null
@@ -638,6 +646,14 @@ export type Database = {
           trial_started_at?: string | null
           updated_at?: string
           has_completed_onboarding?: boolean | null
+          onboarding_stage?: string | null
+          onboarding_profile_status?: string | null
+          onboarding_documents_status?: string | null
+          onboarding_contract_status?: string | null
+          onboarding_inspection_status?: string | null
+          onboarding_profile_rejected_reason?: string | null
+          onboarding_documents_rejected_reason?: string | null
+          onboarding_documents_urls?: Json | null
         }
         Update: {
           admin_type?: string | null
@@ -664,6 +680,14 @@ export type Database = {
           trial_started_at?: string | null
           updated_at?: string
           has_completed_onboarding?: boolean | null
+          onboarding_stage?: string | null
+          onboarding_profile_status?: string | null
+          onboarding_documents_status?: string | null
+          onboarding_contract_status?: string | null
+          onboarding_inspection_status?: string | null
+          onboarding_profile_rejected_reason?: string | null
+          onboarding_documents_rejected_reason?: string | null
+          onboarding_documents_urls?: Json | null
         }
         Relationships: []
       }

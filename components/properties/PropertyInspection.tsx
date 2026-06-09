@@ -213,6 +213,32 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
     r.items.some((i) => i.tenantFeedback?.status === 'contested')
   );
 
+  const handleFinalize = async () => {
+    if (!selectedInspection) return;
+    
+    // Determine status
+    let finalStatus = 'Finalizado';
+    if (!isOwnerMode && hasContestations) {
+      finalStatus = 'Divergência';
+    }
+    
+    setIsLoading(true);
+    const { error } = await supabase
+      .from('inspections')
+      .update({ status: finalStatus })
+      .eq('id', selectedInspection.id);
+      
+    setIsLoading(false);
+    if (error) {
+      console.error('Error finalizing inspection:', error);
+      alert('Erro ao finalizar vistoria. Tente novamente.');
+      return;
+    }
+    
+    alert(isOwnerMode ? 'Resoluções finalizadas com sucesso!' : 'Revisão da vistoria enviada com sucesso!');
+    onClose();
+  };
+
   return (
     <ModalWrapper onClose={onClose} className='md:max-w-5xl' showCloseButton={true}>
       <div className='flex-1 overflow-hidden flex flex-col h-full bg-background-light dark:bg-background-dark relative'>
@@ -332,7 +358,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
                               {item.name}
                             </h4>
                             <p className='text-xs text-slate-500 dark:text-slate-400'>
-                              Vistoria Técnica:{' '}
+                              Vistoria Técnico:{' '}
                               <span className='font-bold uppercase'>
                                 {item.status === 'damaged' ? 'Avaria / Dano' : 'Em ordem'}
                               </span>
@@ -406,7 +432,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
 
                         {/* Actions / Details Area */}
                         <div className='flex flex-col justify-between h-full'>
-                          {/* Inspector Note */}
+                           {/* Inspector Note */}
                           <div className='bg-slate-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-white/5 mb-3'>
                             <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>
                               Apontamento do Vistoriador
@@ -523,8 +549,16 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
                   ? 'Ações irreversíveis após finalização.'
                   : 'Ao finalizar, o laudo será enviado para análise.'}
               </div>
-              <button className='w-full md:w-auto h-12 px-8 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2'>
-                {isOwnerMode ? 'Finalizar Resoluções' : 'Enviar Revisão'} <CheckCircle size={18} />
+              <button 
+                onClick={handleFinalize}
+                disabled={isLoading}
+                className='w-full md:w-auto h-12 px-8 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50'
+              >
+                {isLoading ? (
+                  <>Carregando...</>
+                ) : (
+                  <>{isOwnerMode ? 'Finalizar Resoluções' : 'Enviar Revisão'} <CheckCircle size={18} /></>
+                )}
               </button>
             </div>
           </div>

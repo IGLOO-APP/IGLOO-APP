@@ -59,12 +59,21 @@ const TenantProfile: React.FC = () => {
     email: user?.email || 'inquilino@exemplo.com',
     phone: '(11) 99876-5432',
     cpf: '123.456.789-00',
+    rg: '12.345.678-9',
     birthDate: '1990-05-15',
     maritalStatus: 'Solteiro(a)',
+    residentsCount: '2',
+    hasPets: 'Sim',
+    pets: '1 Cachorro (Porte Pequeno)',
     occupation: 'Desenvolvedor de Software',
+    employer: 'Tech Solutions Ltda',
+    monthlyIncome: 'R$ 8.500,00',
+    employmentType: 'CLT', // CLT, Autônomo, PJ, Aposentado
+    cep: '01310-100',
+    address: 'Av. Paulista, 1000, Apto 121 - São Paulo, SP',
+    residenceTime: '2 anos',
     vehiclePlate: '',
     residents: 'Eu e minha esposa',
-    pets: '1 Cachorro (Porte Pequeno)',
     emergencyName: 'Maria Silva',
     emergencyPhone: '(11) 99999-9999',
     avatar:
@@ -83,9 +92,12 @@ const TenantProfile: React.FC = () => {
   });
 
   const [documents, setDocuments] = useState<any>({
-    rg: { status: 'approved', date: '10/01/2024' },
+    rgFrente: { status: 'approved', date: '10/01/2024' },
+    rgVerso: { status: 'approved', date: '10/01/2024' },
+    cpfDoc: { status: 'approved', date: '10/01/2024' },
     income: { status: 'pending', date: null },
     residence: { status: 'review', date: '01/03/2024' },
+    selfie: { status: 'pending', date: null },
     guarantee: { status: 'pending', date: null },
   });
 
@@ -165,12 +177,18 @@ const TenantProfile: React.FC = () => {
       });
 
     // Documents (Configurable)
-    if (config.sections.requiredDocs.id_card === 'required' && documents.rg.status === 'pending')
-      items.push({ id: 'id_card', label: 'RG ou CNH', tab: 'documents' });
+    if (config.sections.requiredDocs.id_card === 'required' && documents.rgFrente.status === 'pending')
+      items.push({ id: 'rgFrente', label: 'RG ou CNH (Frente)', tab: 'documents' });
+    if (config.sections.requiredDocs.id_card === 'required' && documents.rgVerso.status === 'pending')
+      items.push({ id: 'rgVerso', label: 'RG ou CNH (Verso)', tab: 'documents' });
+    if (documents.cpfDoc.status === 'pending')
+      items.push({ id: 'cpfDoc', label: 'Documento CPF', tab: 'documents' });
     if (config.sections.requiredDocs.income === 'required' && documents.income.status === 'pending')
       items.push({ id: 'income', label: 'Comprovante de Renda', tab: 'documents' });
     if (config.sections.requiredDocs.residence === 'required' && documents.residence.status === 'pending')
       items.push({ id: 'residence', label: 'Comp. de Residência', tab: 'documents' });
+    if (documents.selfie.status === 'pending')
+      items.push({ id: 'selfie', label: 'Selfie com Documento', tab: 'documents' });
     if (config.sections.requiredDocs.guarantee === 'required' && documents.guarantee.status === 'pending')
       items.push({ id: 'guarantee', label: 'Apólice / Garantia', tab: 'documents' });
 
@@ -197,9 +215,11 @@ const TenantProfile: React.FC = () => {
     if (config.sections.residential.pets === 'required') count++;
     if (config.sections.residential.residents === 'required') count++;
     if (config.sections.emergency.status === 'required') count++;
-    if (config.sections.requiredDocs.id_card === 'required') count++;
+    if (config.sections.requiredDocs.id_card === 'required') count += 2; // Frente e Verso
+    count += 1; // CPF Document
     if (config.sections.requiredDocs.income === 'required') count++;
     if (config.sections.requiredDocs.residence === 'required') count++;
+    count += 1; // Selfie
     if (config.sections.requiredDocs.guarantee === 'required') count++;
     
     // Custom required docs
@@ -433,7 +453,7 @@ const TenantProfile: React.FC = () => {
                   </div>
                   <div className='space-y-2'>
                     <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                      Telefone
+                      Telefone / Celular
                     </label>
                     <input
                       type='text'
@@ -455,20 +475,30 @@ const TenantProfile: React.FC = () => {
                       className={getFieldClass(profileData.cpf)}
                     />
                   </div>
-                  {config.sections.personal.occupation !== 'hidden' && (
-                    <div className='space-y-2'>
-                      <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                        Profissão
-                      </label>
-                      <input
-                        type='text'
-                        value={profileData.occupation}
-                        readOnly={!isEditing}
-                        onChange={(e) => setProfileData({ ...profileData, occupation: e.target.value })}
-                        className={getFieldClass(profileData.occupation)}
-                      />
-                    </div>
-                  )}
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      RG / CNH
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.rg}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, rg: e.target.value })}
+                      className={getFieldClass(profileData.rg)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Data de Nascimento
+                    </label>
+                    <input
+                      type='date'
+                      value={profileData.birthDate}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, birthDate: e.target.value })}
+                      className={getFieldClass(profileData.birthDate)}
+                    />
+                  </div>
                   <div className='space-y-2'>
                     <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                       Estado Civil
@@ -485,66 +515,159 @@ const TenantProfile: React.FC = () => {
                       <option>Viúvo(a)</option>
                     </select>
                   </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Nº de Ocupantes (Moradores)
+                    </label>
+                    <input
+                      type='number'
+                      value={profileData.residentsCount}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, residentsCount: e.target.value })}
+                      className={getFieldClass(profileData.residentsCount)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Tem animais?
+                    </label>
+                    <select
+                      disabled={!isEditing}
+                      value={profileData.hasPets}
+                      onChange={(e) => setProfileData({ ...profileData, hasPets: e.target.value })}
+                      className={getFieldClass(profileData.hasPets)}
+                    >
+                      <option>Sim</option>
+                      <option>Não</option>
+                    </select>
+                  </div>
+                  {profileData.hasPets === 'Sim' && (
+                    <div className='space-y-2'>
+                      <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                        Especificação dos Animais
+                      </label>
+                      <input
+                        type='text'
+                        value={profileData.pets}
+                        readOnly={!isEditing}
+                        onChange={(e) => setProfileData({ ...profileData, pets: e.target.value })}
+                        className={getFieldClass(profileData.pets)}
+                      />
+                    </div>
+                  )}
                 </div>
               </section>
 
-              {/* Residential Info */}
-              {(config.sections.residential.vehicle !== 'hidden' || 
-                config.sections.residential.pets !== 'hidden' || 
-                config.sections.residential.residents !== 'hidden') && (
-                <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-                  <div className='absolute top-0 left-0 w-1 h-full bg-emerald-500'></div>
-                  <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-                    <Car size={18} className='text-emerald-500' /> 
-                    Dados Residenciais
-                  </h3>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                    {config.sections.residential.vehicle !== 'hidden' && (
-                      <div className='space-y-2'>
-                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                          Placa do Veículo
-                        </label>
-                        <input
-                          type='text'
-                          value={profileData.vehiclePlate}
-                          readOnly={!isEditing}
-                          placeholder='Ex: ABC-1234'
-                          onChange={(e) => setProfileData({ ...profileData, vehiclePlate: e.target.value })}
-                          className={getFieldClass(profileData.vehiclePlate)}
-                        />
-                      </div>
-                    )}
-                    {config.sections.residential.residents !== 'hidden' && (
-                      <div className='space-y-2'>
-                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                          Moradores
-                        </label>
-                        <input
-                          type='text'
-                          value={profileData.residents}
-                          readOnly={!isEditing}
-                          onChange={(e) => setProfileData({ ...profileData, residents: e.target.value })}
-                          className={getFieldClass(profileData.residents)}
-                        />
-                      </div>
-                    )}
-                    {config.sections.residential.pets !== 'hidden' && (
-                      <div className='md:col-span-2 space-y-2'>
-                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                          Animais de Estimação
-                        </label>
-                        <input
-                          type='text'
-                          value={profileData.pets}
-                          readOnly={!isEditing}
-                          onChange={(e) => setProfileData({ ...profileData, pets: e.target.value })}
-                          className={getFieldClass(profileData.pets)}
-                        />
-                      </div>
-                    )}
+              {/* Endereço Atual */}
+              <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
+                <div className='absolute top-0 left-0 w-1 h-full bg-emerald-500'></div>
+                <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                  <Car size={18} className='text-emerald-500' /> 
+                  Endereço Atual
+                </h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      CEP
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.cep}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, cep: e.target.value })}
+                      className={getFieldClass(profileData.cep)}
+                    />
                   </div>
-                </section>
-              )}
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Endereço Completo
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.address}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                      className={getFieldClass(profileData.address)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Tempo de Residência
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.residenceTime}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, residenceTime: e.target.value })}
+                      className={getFieldClass(profileData.residenceTime)}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Renda e Profissão */}
+              <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
+                <div className='absolute top-0 left-0 w-1 h-full bg-purple-500'></div>
+                <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                  <Briefcase size={18} className='text-purple-500' /> 
+                  Renda e Profissão
+                </h3>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Profissão / Empregador
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.employer}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, employer: e.target.value })}
+                      className={getFieldClass(profileData.employer)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Cargo / Ocupação
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.occupation}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, occupation: e.target.value })}
+                      className={getFieldClass(profileData.occupation)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Renda Mensal
+                    </label>
+                    <input
+                      type='text'
+                      value={profileData.monthlyIncome}
+                      readOnly={!isEditing}
+                      onChange={(e) => setProfileData({ ...profileData, monthlyIncome: e.target.value })}
+                      className={getFieldClass(profileData.monthlyIncome)}
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                      Tipo de Vínculo
+                    </label>
+                    <select
+                      disabled={!isEditing}
+                      value={profileData.employmentType}
+                      onChange={(e) => setProfileData({ ...profileData, employmentType: e.target.value })}
+                      className={getFieldClass(profileData.employmentType)}
+                    >
+                      <option>CLT</option>
+                      <option>Autônomo</option>
+                      <option>Empresário / PJ</option>
+                      <option>Aposentado / Pensionista</option>
+                      <option>Outros</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
 
               {/* Emergency Contact */}
               {config.sections.emergency.status !== 'hidden' && (
@@ -665,10 +788,13 @@ const TenantProfile: React.FC = () => {
               </h3>
               <div className='grid gap-4'>
                 {[
-                  { id: 'id_card', label: 'RG ou CNH', desc: 'Frente e Verso', status: config.sections.requiredDocs.id_card },
-                  { id: 'income', label: 'Comprovante de Renda', desc: 'Holerite ou Extrato', status: config.sections.requiredDocs.income },
-                  { id: 'residence', label: 'Comp. de Residência', desc: 'Conta de luz/água', status: config.sections.requiredDocs.residence },
-                  { id: 'guarantee', label: 'Apólice / Garantia', desc: 'Doc. do seguro fiança', status: config.sections.requiredDocs.guarantee },
+                  { id: 'rgFrente', label: 'RG ou CNH (Frente)', desc: 'Frente do documento com foto', status: config.sections.requiredDocs.id_card },
+                  { id: 'rgVerso', label: 'RG ou CNH (Verso)', desc: 'Verso do documento', status: config.sections.requiredDocs.id_card },
+                  { id: 'cpfDoc', label: 'CPF', desc: 'Comprovante ou cartão de CPF', status: 'required' },
+                  { id: 'income', label: 'Comprovante de Renda', desc: 'Holerite ou Extrato bancário', status: config.sections.requiredDocs.income },
+                  { id: 'residence', label: 'Comp. de Residência', desc: 'Conta de luz/água recente', status: config.sections.requiredDocs.residence },
+                  { id: 'selfie', label: 'Selfie com Documento', desc: 'Selfie segurando o documento ao lado do rosto', status: 'required' },
+                  { id: 'guarantee', label: 'Apólice / Garantia', desc: 'Doc. do seguro fiança ou garantia', status: config.sections.requiredDocs.guarantee },
                 ].filter(doc => doc.status !== 'hidden').map((doc) => {
                   const docState = documents[doc.id] || { status: 'pending', date: null };
                   return (

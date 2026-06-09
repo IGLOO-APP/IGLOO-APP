@@ -772,7 +772,8 @@ export const adminService = {
 
   // --- Contract Templates ---
   async getContractTemplate(id: string): Promise<{ id: string; name: string; content: string } | null> {
-    const { data, error } = await (supabase as any)
+    const client: any = supabase;
+    const { data, error } = await client
       .from('contract_templates')
       .select('*')
       .eq('id', id)
@@ -782,11 +783,12 @@ export const adminService = {
       console.warn('Error fetching contract template:', error);
       return null;
     }
-    return data;
+    return data as { id: string; name: string; content: string } | null;
   },
 
   async saveContractTemplate(id: string, name: string, content: string): Promise<void> {
-    const { error } = await (supabase as any)
+    const client: any = supabase;
+    const { error } = await client
       .from('contract_templates')
       .upsert({ id, name, content, updated_at: new Date().toISOString() });
 

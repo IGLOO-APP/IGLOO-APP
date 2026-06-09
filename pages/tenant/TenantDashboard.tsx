@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ModalWrapper } from '../../components/ui/ModalWrapper';
 import { PropertyInspection } from '../../components/properties/PropertyInspection';
 import { PropertyCard } from '../../components/properties/PropertyCard';
@@ -41,11 +41,25 @@ import { supabase } from '../../lib/supabase';
 import { Property, Tenant, SystemAnnouncement } from '../../types';
 import CommunicationHub from '../../components/announcements/CommunicationHub';
 import { announcementService } from '../../services/announcementService';
-import { TenantOnboardingWizard } from '../../components/tenant/TenantOnboardingWizard';
+import { TenantOnboardingChecklist } from '../../components/tenant/TenantOnboardingChecklist';
 import { getRemainingContractTime } from '../../utils/formatters';
 
 const TenantDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const { 
+    isOnboardingRequired, 
+    loadingOnboarding, 
+    refetchOnboarding,
+    pendingInspection: contextPendingInspection,
+    tenantData: contextTenantData
+  } = useOutletContext<{
+    isOnboardingRequired: boolean;
+    loadingOnboarding: boolean;
+    tenantData: any;
+    pendingInspection: any;
+    refetchOnboarding: () => Promise<void>;
+  }>();
+
   const { notifications, unreadCount, markAsRead, markAllAsRead, triggerTestNotification } =
     useNotification();
   const navigate = useNavigate();
@@ -65,23 +79,25 @@ const TenantDashboard: React.FC = () => {
   const [showInspection, setShowInspection] = useState(false);
   const [pendingInspection, setPendingInspection] = useState<any | null>(null);
 
+  const currentTenant = contextTenantData || tenantData;
+
   // Use the fetched tenant property instead of mock
-  const tenantProperty: Property | null = tenantData ? {
-    id: tenantData.property_id || '',
-    name: tenantData.property || 'Seu Imóvel',
-    address: tenantData.property_address || '',
+  const tenantProperty: Property | null = currentTenant ? {
+    id: currentTenant.property_id || '',
+    name: currentTenant.property || 'Seu Imóvel',
+    address: currentTenant.property_address || '',
     status: 'ALUGADO',
-    price: `R$ ${tenantData.contract?.monthly_value?.toLocaleString('pt-BR') || '0,00'}`,
-    numeric_price: tenantData.contract?.monthly_value,
-    area: tenantData.property_details?.area ? `${tenantData.property_details.area}m²` : '-- m²',
-    bedrooms: tenantData.property_details?.bedrooms || 0,
-    bathrooms: tenantData.property_details?.bathrooms || 0,
-    parking: tenantData.property_details?.parking || 0,
-    image: tenantData.property_image || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=300',
-    tenant: tenantData,
-    contract: tenantData.contract ? {
-      ...tenantData.contract,
-      value: `R$ ${tenantData.contract.monthly_value.toLocaleString('pt-BR')}`
+    price: `R$ ${currentTenant.contract?.monthly_value?.toLocaleString('pt-BR') || '0,00'}`,
+    numeric_price: currentTenant.contract?.monthly_value,
+    area: currentTenant.property_details?.area ? `${currentTenant.property_details.area}m²` : '-- m²',
+    bedrooms: currentTenant.property_details?.bedrooms || 0,
+    bathrooms: currentTenant.property_details?.bathrooms || 0,
+    parking: currentTenant.property_details?.parking || 0,
+    image: currentTenant.property_image || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=300',
+    tenant: currentTenant,
+    contract: currentTenant.contract ? {
+      ...currentTenant.contract,
+      value: `R$ ${currentTenant.contract.monthly_value.toLocaleString('pt-BR')}`
     } as any : null
   } : null;
 
@@ -364,18 +380,34 @@ const TenantDashboard: React.FC = () => {
     );
   }
 
+  if (isOnboardingRequired) {
+    return (
+      <div className="h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 py-6 custom-scrollbar">
+        {currentTenant && (
+          <TenantOnboardingChecklist
+            tenant={currentTenant}
+            pendingInspection={contextPendingInspection || pendingInspection}
+            onStepComplete={refetchOnboarding}
+            onOpenInspection={() => setShowInspection(true)}
+          />
+        )}
+        {showInspection && tenantProperty && (
+          <PropertyInspection
+            property={tenantProperty}
+            onClose={() => {
+              setShowInspection(false);
+              refetchOnboarding();
+            }}
+            initialView='detail'
+            isTenant={true}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 custom-scrollbar'>
-      {showOnboarding && tenantData && (
-        <TenantOnboardingWizard 
-          tenant={tenantData}
-          property={tenantProperty}
-          onComplete={() => {
-            setShowOnboarding(false);
-            sessionStorage.setItem(`onboarding_seen_${user?.id}`, 'true');
-          }}
-        />
-      )}
 
       <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
         <div className='flex items-center gap-4'>

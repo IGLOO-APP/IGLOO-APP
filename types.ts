@@ -63,6 +63,20 @@ export interface Tenant {
     parking?: number;
     price?: string;
   };
+  onboarding_stage?: string;
+  has_completed_onboarding?: boolean;
+  onboarding_profile_status?: string;
+  onboarding_documents_status?: string;
+  onboarding_contract_status?: string;
+  onboarding_inspection_status?: string;
+  onboarding_profile_rejected_reason?: string;
+  onboarding_documents_rejected_reason?: string;
+  onboarding_documents_urls?: {
+    rg_url?: string;
+    rg_name?: string;
+    income_url?: string;
+    income_name?: string;
+  };
 }
 
 export interface SignatureAudit {

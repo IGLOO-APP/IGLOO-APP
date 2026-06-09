@@ -79,6 +79,15 @@ export const mapTenant = (t: any): Tenant => {
           end_date: activeContract.end_date || '',
         }
       : undefined,
+    onboarding_stage: t.onboarding_stage,
+    has_completed_onboarding: t.has_completed_onboarding,
+    onboarding_profile_status: t.onboarding_profile_status,
+    onboarding_documents_status: t.onboarding_documents_status,
+    onboarding_contract_status: t.onboarding_contract_status,
+    onboarding_inspection_status: t.onboarding_inspection_status,
+    onboarding_profile_rejected_reason: t.onboarding_profile_rejected_reason,
+    onboarding_documents_rejected_reason: t.onboarding_documents_rejected_reason,
+    onboarding_documents_urls: t.onboarding_documents_urls,
   };
 };
 

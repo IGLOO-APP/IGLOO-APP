@@ -470,7 +470,7 @@ const Tenants: React.FC = () => {
                 onClick={() => {
                   setShowAddForm(false);
                   setIsSuccess(false);
-                  setNewTenant(INITIAL_TENANT_STATE);
+                  setNewTenant(INITIAL_TENANT_STATE as any);
                 }}
                 className='text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-slate-800 dark:hover:text-white transition-colors px-2'
               >
@@ -518,7 +518,7 @@ const Tenants: React.FC = () => {
                     onClick={() => {
                       setShowAddForm(false);
                       setIsSuccess(false);
-                      setNewTenant(INITIAL_TENANT_STATE);
+                      setNewTenant(INITIAL_TENANT_STATE as any);
                     }}
                     className='w-full py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-all'
                   >
