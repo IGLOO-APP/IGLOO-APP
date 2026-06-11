@@ -25,6 +25,7 @@ import PWAPrompt from './components/PWAPrompt';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Properties = lazy(() => import('./pages/Properties'));
 const Tenants = lazy(() => import('./pages/Tenants'));
+const TenantDetailsPage = lazy(() => import('./pages/TenantDetailsPage'));
 const Contracts = lazy(() => import('./pages/Contracts'));
 const Financials = lazy(() => import('./pages/Financials'));
 const Login = lazy(() => import('./pages/Login'));
@@ -157,6 +158,7 @@ const router = createBrowserRouter([
             element: <Properties />,
           },
           { path: 'tenants', element: <Tenants /> },
+          { path: 'tenants/:id', element: <TenantDetailsPage /> },
           { path: 'messages', element: <OwnerMessages /> },
           { path: 'profile', element: <OwnerProfile /> },
           { path: 'contracts', element: <Contracts /> },

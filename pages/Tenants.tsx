@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -26,7 +26,6 @@ import {
   Fingerprint
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
-import { TenantDetails } from '../components/tenants/TenantDetails';
 import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenantService';
 import { propertyService } from '../services/propertyService';
@@ -95,6 +94,7 @@ const Tenants: React.FC = () => {
     'Todos'
   );
   const location = useLocation();
+  const navigate = useNavigate();
 
   const queryClient = useQueryClient();
   const { data: tenants = [], isLoading } = useQuery({
@@ -193,10 +193,7 @@ const Tenants: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const idParam = params.get('id');
     if (idParam) {
-      setSelectedTenantId(idParam);
-      // Remove ID from URL to avoid reopening on refresh if not intended
-      // but keep it if we want persistent links. Usually, it's better to keep it
-      // so the user can share the link.
+      navigate(`/tenants/${idParam}`, { replace: true });
     }
   }, [location]);
 
@@ -363,7 +360,7 @@ const Tenants: React.FC = () => {
             return (
               <div
                 key={t.id}
-                onClick={() => setSelectedTenantId(t.id.toString())}
+                onClick={() => navigate(`/tenants/${t.id}`)}
                 className='group relative flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-surface-dark-hover rounded-2xl border border-gray-200/50 dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 p-4 gap-4 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm hover:shadow-md active-tap'
               >
                 {/* Bloco Esquerdo: Avatar + Nome & Imóvel */}
@@ -669,11 +666,6 @@ const Tenants: React.FC = () => {
             )}
           </div>
         </div>
-      )}
-
-      {/* Tenant Detail Dashboard */}
-      {selectedTenantId && (
-        <TenantDetails id={selectedTenantId} onClose={() => setSelectedTenantId(null)} />
       )}
 
       {/* Smart Billing Modal */}

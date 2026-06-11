@@ -12,11 +12,8 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { useNavigate } from 'react-router-dom';
-import * as ReactJoyride from 'react-joyride';
-const Joyride = (ReactJoyride.default ?? ReactJoyride) as typeof ReactJoyride.default;
-type Step = ReactJoyride.Step;
-type CallBackProps = ReactJoyride.CallBackProps;
-const STATUS = ReactJoyride.STATUS;
+import { Joyride, STATUS } from 'react-joyride';
+type JoyrideEventData = { action: string; index: number; status: string; type: string };
 import { useAuth } from '../../context/AuthContext';
 import { profileService } from '../../services/profileService';
 import { formatCPF, formatCNPJ } from '../../utils/formatters';
@@ -29,22 +26,22 @@ type OnboardingStep = 'welcome' | 'property' | 'financial' | 'vetting' | 'done';
 
 type PixKeyType = 'CPF' | 'CNPJ' | 'Email' | 'Phone' | 'Random';
 
-// Strictly-typed Joyride steps using the library's Step interface
-const joyrideSteps: Step[] = [
+// Steps — options like disableBeacon and spotlightClicks are per-step via Partial<Options>
+const joyrideSteps = [
   {
     target: '.step-property-action',
     content:
       'Comece cadastrando sua primeira unidade. É aqui que a gestão do seu patrimônio começa!',
     spotlightClicks: true,
     disableBeacon: true,
-    placement: 'bottom',
+    placement: 'bottom' as const,
   },
   {
     target: '.step-pix-input',
     content:
       'Configure seu PIX. Geramos o QR Code automaticamente para seus inquilinos pagarem direto na sua conta.',
     disableBeacon: true,
-    placement: 'bottom',
+    placement: 'bottom' as const,
   },
 ];
 
@@ -93,8 +90,7 @@ export const OwnerOnboardingWizard: React.FC<OwnerOnboardingWizardProps> = ({
     }, 300);
   };
 
-  // Strictly-typed Joyride callback
-  const handleJoyrideCallback = (data: CallBackProps) => {
+  const handleJoyrideCallback = (data: JoyrideEventData) => {
     const { action, index, status, type } = data;
 
     if (type === 'step:after') {
@@ -154,15 +150,14 @@ export const OwnerOnboardingWizard: React.FC<OwnerOnboardingWizardProps> = ({
         steps={joyrideSteps}
         run={runJoyride}
         stepIndex={joyrideStepIndex}
-        callback={handleJoyrideCallback}
+        onEvent={handleJoyrideCallback}
         continuous={true}
-        showProgress={true}
-        showSkipButton={false}
+        options={{
+          zIndex: 10000,
+          primaryColor: '#0f172a',
+          showProgress: true,
+        }}
         styles={{
-          options: {
-            zIndex: 10000,
-            primaryColor: '#0f172a',
-          },
           tooltip: {
             borderRadius: '1.25rem',
             padding: '1.25rem',
@@ -171,10 +166,7 @@ export const OwnerOnboardingWizard: React.FC<OwnerOnboardingWizardProps> = ({
           tooltipContainer: {
             textAlign: 'left',
           },
-          tooltipTitle: {
-            fontWeight: 900,
-          },
-          buttonNext: {
+          buttonPrimary: {
             backgroundColor: '#0f172a',
             borderRadius: '0.75rem',
             fontWeight: 800,
