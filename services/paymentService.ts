@@ -8,7 +8,7 @@ function mapPaymentRecord(data: Record<string, unknown>): PaymentRecord {
     due_date: data.due_date as string,
     paid_date: data.paid_date as string | null,
     amount: data.amount as number,
-    status: (data.status as string) ?? 'pending',
+    status: (data.status as any) ?? 'pending',
     payment_method: data.payment_method as string | null,
     notes: data.notes as string | null,
     contracts: data.contracts as { owner_id: string; property_id: string } | undefined,
