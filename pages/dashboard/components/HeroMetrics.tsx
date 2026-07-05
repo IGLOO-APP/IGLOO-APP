@@ -1,0 +1,79 @@
+import React from 'react';
+import { TrendingUp, DollarSign, Home, Activity } from 'lucide-react';
+import { HeroCard } from '../../../components/ui/DashboardComponents';
+
+interface HeroMetricsProps {
+  metrics: {
+    totalWealth: string;
+    mrr: string;
+    occupancyRate: number;
+    avgRoi: string;
+    trends: {
+      wealth: string;
+      mrr: string;
+      occupancy: string;
+      roi: string;
+    };
+  };
+}
+
+const SPARK_DATA_1 = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
+const SPARK_DATA_3 = [80, 85, 82, 88, 90, 95, 92];
+
+export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics }) => {
+  return (
+    <section className='grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 items-stretch'>
+      <HeroCard
+        title='Patrimônio Total'
+        value={metrics.totalWealth}
+        subtext='vs. mês anterior'
+        trend={metrics.trends.wealth}
+        trendUp={true}
+        icon={TrendingUp}
+        color='text-indigo-500'
+        sparkData={SPARK_DATA_3}
+        tooltip='Soma do valor de mercado estimado de todos os seus imóveis cadastrados. Ajuda a entender a evolução do seu equity imobiliário.'
+      />
+
+      <HeroCard
+        title='Receita Recorrente (MRR)'
+        value={metrics.mrr}
+        subtext='vs. mês anterior'
+        trend={metrics.trends.mrr}
+        trendUp={true}
+        icon={DollarSign}
+        color='text-emerald-500'
+        sparkData={SPARK_DATA_1}
+        tooltip='Monthly Recurring Revenue. É a soma de todos os aluguéis ativos no mês atual. Representa a previsibilidade do seu fluxo de caixa.'
+      />
+
+      <HeroCard
+        title='Taxa de Ocupação'
+        value={`${metrics.occupancyRate}%`}
+        subtext={
+          metrics.occupancyRate < 80 
+            ? 'Vacância crítica — agir agora' 
+            : 'Carteira saudável'
+        }
+        trend={metrics.trends.occupancy}
+        trendUp={metrics.occupancyRate >= 80}
+        icon={Home}
+        color={metrics.occupancyRate < 80 ? 'text-red-500' : 'text-emerald-500'}
+        variant={metrics.occupancyRate < 80 ? 'critical' : 'default'}
+        tooltip='Percentual de imóveis alugados em relação ao total da sua carteira. Acima de 90% é considerado excelente.'
+      />
+
+      <HeroCard
+        title='ROI Médio Anual'
+        value={metrics.avgRoi === '0%' || !metrics.avgRoi ? '--' : metrics.avgRoi}
+        subtext={metrics.avgRoi === '0%' ? 'Sem imóveis alugados' : 'Acima da inflação'}
+        trend={metrics.trends.roi}
+        trendUp={true}
+        icon={Activity}
+        color={metrics.avgRoi === '0%' ? 'text-slate-400' : 'text-cyan-500'}
+        variant={metrics.avgRoi === '0%' || !metrics.avgRoi ? 'muted' : 'default'}
+        tooltip='Retorno sobre Investimento anualizado. Calcula quanto o aluguel rende em relação ao valor de mercado do imóvel (Yield anual).'
+      />
+    </section>
+  );
+};

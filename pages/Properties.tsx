@@ -1,0 +1,445 @@
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Search, Plus, Map, List, Grid, Filter, Loader2, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Property } from '../types';
+import { PropertyCard } from '../components/properties/PropertyCard';
+import { AddPropertyForm } from '../components/properties/AddPropertyForm';
+import { PropertyMapView } from '../components/properties/PropertyMapView';
+import { propertyService } from '../services/propertyService';
+import { TopBar } from '../components/layout/TopBar';
+
+import { useAuth } from '../context/AuthContext';
+
+const Properties: React.FC = () => {
+  const { user, tokenReady } = useAuth();
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'map'>('list');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // Filters State
+  const [activeFilter, setActiveFilter] = useState('Todos');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Advanced Filters State
+  const [filterBedrooms, setFilterBedrooms] = useState<number | null>(null);
+  const [filterBathrooms, setFilterBathrooms] = useState<number | null>(null);
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [minArea, setMinArea] = useState<string>('');
+
+  const { data: properties = [], isLoading: loading } = useQuery({
+    queryKey: ['properties', user?.id],
+    queryFn: () => propertyService.getAll(),
+    enabled: !!user && tokenReady,
+    staleTime: 0,
+  });
+
+  useEffect(() => {
+    if (location.state && (location.state as any).openAdd) {
+      setShowAddForm(true);
+      window.history.replaceState({}, document.title);
+    }
+
+    const params = new URLSearchParams(location.search);
+    const idParam = params.get('id');
+    if (idParam && properties.length > 0) {
+      navigate(`/properties/${idParam}`, { replace: true });
+    }
+  }, [location, properties]);
+
+  const handleSaveProperty = async (data: any) => {
+    if (!user) return;
+
+    try {
+      await propertyService.create({
+        owner_id: String(user.id),
+        name: data.nickname,
+        address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+        status: 'DISPONÍVEL',
+        price: parseFloat(data.rentValue) || 0,
+        area: parseFloat(data.area) || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        parking: data.parking || 0,
+        image_url: data.coverImage || null,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+      setShowAddForm(false);
+    } catch (err: any) {
+      console.error('Erro ao criar imóvel:', err);
+      // O tratamento global no serviço já logou o erro, aqui apenas notificamos o usuário de forma amigável
+      alert(
+        `Não foi possível salvar o imóvel: ${err.message}. Verifique sua conexão e tente novamente.`
+      );
+    }
+  };
+
+  const handleUpdateProperty = async (data: any) => {
+    if (!editingProperty) return;
+
+    try {
+      await propertyService.update(String(editingProperty.id), {
+        name: data.nickname,
+        address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+        price: parseFloat(data.rentValue) || 0,
+        area: parseFloat(data.area) || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        parking: data.parking || 0,
+        image_url: data.coverImage || null,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+      setEditingProperty(null);
+    } catch (err: any) {
+      console.error('Erro ao atualizar imóvel:', err);
+      alert(`Erro ao atualizar imóvel: ${err.message}`);
+    }
+  };
+
+  const handleEditProperty = (id: string | number) => {
+    const property = properties.find((p) => p.id === id);
+    if (property) {
+      setEditingProperty(property);
+    }
+  };
+
+  const handleDeleteProperty = async (id: string | number) => {
+    if (window.confirm('Tem certeza que deseja excluir este imóvel?')) {
+      try {
+        await propertyService.delete(String(id));
+        await queryClient.invalidateQueries({ queryKey: ['properties'] });
+      } catch (err) {
+        console.error('Erro ao excluir imóvel:', err);
+        alert('Erro ao excluir imóvel. Tente novamente.');
+      }
+    }
+  };
+
+  const handleCreateContract = (property: Property) => {
+    navigate('/contracts', { state: { preSelectedProperty: property.name } });
+  };
+
+  const filteredProperties = React.useMemo(() => {
+    return properties.filter((prop) => {
+      const matchesSearch =
+        prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prop.address.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (activeFilter !== 'Todos') {
+        if (activeFilter === 'Disponível' && prop.status !== 'DISPONÍVEL') return false;
+        if (activeFilter === 'Alugado' && prop.status !== 'ALUGADO') return false;
+      }
+
+      const matchesBedrooms =
+        filterBedrooms === null || (prop.bedrooms && prop.bedrooms >= filterBedrooms);
+      const matchesBathrooms =
+        filterBathrooms === null || (prop.bathrooms && prop.bathrooms >= filterBathrooms);
+
+      const priceNum = parseFloat(prop.price?.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
+      const matchesMinPrice = !minPrice || priceNum >= parseFloat(minPrice);
+      const matchesMaxPrice = !maxPrice || priceNum <= parseFloat(maxPrice);
+
+      const areaNum = parseFloat(prop.area?.replace(/\D/g, '') || '0');
+      const matchesMinArea = !minArea || areaNum >= parseFloat(minArea);
+
+      return (
+        matchesBedrooms && matchesBathrooms && matchesMinPrice && matchesMaxPrice && matchesMinArea
+      );
+    });
+  }, [
+    properties,
+    searchTerm,
+    activeFilter,
+    filterBedrooms,
+    filterBathrooms,
+    minPrice,
+    maxPrice,
+    minArea,
+  ]);
+
+  const clearFilters = () => {
+    setFilterBedrooms(null);
+    setFilterBathrooms(null);
+    setMinPrice('');
+    setMaxPrice('');
+    setMinArea('');
+    setActiveFilter('Todos');
+  };
+
+  return (
+    <div
+      className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-md mx-auto md:max-w-4xl' : ''}`}
+    >
+      {viewMode !== 'map' && (
+        <TopBar title='Meus Ativos' subtitle='Gestão de propriedades'>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active-tap'
+          >
+            <Plus size={16} className='md:size-[18px]' />
+            <span className='hidden sm:inline'>Novo Imóvel</span>
+          </button>
+          <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 md:p-1 border border-slate-200 dark:border-slate-700'>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+              title='Lista'
+            >
+              <List size={18} className='md:size-5' />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+              title='Grade'
+            >
+              <Grid size={18} className='md:size-5' />
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+              title='Mapa'
+            >
+              <Map size={18} className='md:size-5' />
+            </button>
+          </div>
+        </TopBar>
+      )}
+
+      {viewMode !== 'map' ? (
+        <>
+          <div className='px-6 py-4'>
+            <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
+              <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Total</p>
+                <p className='text-3xl font-bold text-slate-900 dark:text-white'>
+                  {properties.length}
+                </p>
+              </div>
+              <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
+                  Alugados
+                </p>
+                <p className='text-3xl font-bold text-slate-900 dark:text-white'>
+                  {properties.filter((p) => p.status === 'ALUGADO').length}
+                </p>
+              </div>
+              <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
+                  Livres
+                </p>
+                <p className='text-3xl font-bold text-slate-900 dark:text-white'>
+                  {properties.filter((p) => p.status === 'DISPONÍVEL').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className='px-6 pb-4 space-y-3'>
+            <div className='flex gap-2'>
+              <div className='relative flex-1'>
+                <div className='absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400'>
+                  <Search size={20} />
+                </div>
+                <input
+                  type='text'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className='block w-full rounded-xl border-none bg-white dark:bg-surface-dark py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-800 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all'
+                  placeholder='Buscar por apelido ou endereço...'
+                />
+              </div>
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors active-tap ${
+                  showAdvancedFilters
+                    ? 'bg-primary/10 border-primary text-primary'
+                    : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'
+                }`}
+              >
+                <Filter size={20} />
+              </button>
+            </div>
+
+            {/* Collapsible Advanced Filters */}
+            {showAdvancedFilters && (
+              <div className='animate-slideUp p-6 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 shadow-md space-y-6'>
+                <div className='flex justify-between items-center'>
+                  <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>
+                    Filtros Avançados
+                  </h4>
+                  <button
+                    onClick={clearFilters}
+                    className='text-xs font-bold text-primary hover:underline'
+                  >
+                    Limpar Tudo
+                  </button>
+                </div>
+
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                      Dormitórios & Banheiros
+                    </label>
+                    <div className='flex flex-col gap-2'>
+                      <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
+                        {[1, 2, 3, 4].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => setFilterBedrooms(n)}
+                            className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBedrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                          >
+                            {n}
+                            {n === 4 ? '+' : ''}
+                          </button>
+                        ))}
+                      </div>
+                      <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
+                        {[1, 2, 3].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => setFilterBathrooms(n)}
+                            className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBathrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                          >
+                            {n}
+                            {n === 3 ? '+' : ''}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                      Faixa de Aluguel (R$)
+                    </label>
+                    <div className='flex items-center gap-2'>
+                      <input
+                        type='number'
+                        placeholder='Min'
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                      />
+                      <span className='text-slate-300'>-</span>
+                      <input
+                        type='number'
+                        placeholder='Max'
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                      />
+                    </div>
+                  </div>
+
+                  <div className='space-y-3'>
+                    <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                      Área Mínima (m²)
+                    </label>
+                    <input
+                      type='number'
+                      placeholder='Ex: 50'
+                      value={minArea}
+                      onChange={(e) => setMinArea(e.target.value)}
+                      className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className='flex gap-2 overflow-x-auto hide-scrollbar pt-1'>
+              {['Todos', 'Disponível', 'Alugado'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold active-tap ${
+                    activeFilter === filter
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                      : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className='flex-1 overflow-y-auto px-6 pb-24'>
+            {loading ? (
+              <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
+                <Loader2 className='animate-spin mb-2' size={32} />
+                <p>Carregando imóveis...</p>
+              </div>
+            ) : filteredProperties.length > 0 ? (
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-2 md:grid-cols-3 gap-4 pt-4'
+                    : 'space-y-4 pt-4'
+                }
+              >
+                {filteredProperties.map((prop) => (
+                  <PropertyCard
+                    key={prop.id}
+                    property={prop}
+                    onClick={(p) => navigate(`/properties/${p.id}`)}
+                    onEdit={handleEditProperty}
+                    onDelete={handleDeleteProperty}
+                    onCreateContract={handleCreateContract}
+                    viewMode={viewMode === 'grid' ? 'grid' : 'list'}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className='flex flex-col items-center justify-center py-10 text-center pt-4'>
+                <div className='bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3'>
+                  <Search className='text-gray-400' size={32} />
+                </div>
+                <p className='text-slate-900 dark:text-white font-bold'>Nenhum imóvel encontrado</p>
+                <p className='text-slate-500 dark:text-slate-400 text-sm'>
+                  Tente mudar os filtros ou a busca.
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <PropertyMapView properties={properties} onBack={() => setViewMode('list')} />
+      )}
+
+      {showAddForm && (
+        <AddPropertyForm onClose={() => setShowAddForm(false)} onSave={handleSaveProperty} />
+      )}
+
+      {editingProperty && (
+        <AddPropertyForm
+          onClose={() => setEditingProperty(null)}
+          onSave={handleUpdateProperty}
+          initialData={{
+            nickname: editingProperty.name,
+            rentValue: editingProperty.price,
+            area: editingProperty.area?.replace(/\D/g, ''),
+            bedrooms: editingProperty.bedrooms || 0,
+            bathrooms: editingProperty.bathrooms || 0,
+            parking: editingProperty.parking || 0,
+            coverImage: editingProperty.image,
+            galleryImages: editingProperty.galleryImages || [],
+            // street, number etc simplified for mock
+            street: editingProperty.address.split(',')[0],
+            number: editingProperty.address.split(',')[1]?.split('-')[0]?.trim() || '',
+            neighborhood: editingProperty.address.split('-')[1]?.trim() || '',
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Properties;

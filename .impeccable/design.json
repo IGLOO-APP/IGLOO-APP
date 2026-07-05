@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-11T11:20:00Z",
+  "title": "Design System: IGLOO Design System",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Glacier Cyan",
+        "canonical": "oklch(81.5% 0.162 201.2)",
+        "tonalRamp": ["#074f5e", "#0a6f83", "#0d8fa9", "#10afd0", "#13c8ec", "#42d3f0", "#71def4", "#e0f7fa"]
+      },
+      "background-light": {
+        "role": "neutral",
+        "displayName": "Frost White",
+        "canonical": "oklch(98.4% 0.004 220.0)",
+        "tonalRamp": ["#0f172a", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9", "#f8fafc"]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Igloo Interior",
+        "canonical": "oklch(18.5% 0.012 210.0)",
+        "tonalRamp": ["#050808", "#0b1011", "#141b1d", "#1c2528", "#2c3b40", "#455d64", "#77969f", "#c7d4d7"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Metric",
+        "purpose": "Hero stats, prominent currency readings, and main counts."
+      },
+      "body": {
+        "displayName": "Interface Body",
+        "purpose": "Standard table items, descriptions, labels, and text fields."
+      }
+    },
+    "shadows": [
+      {
+        "name": "premium",
+        "value": "0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 4px 10px -5px rgba(0, 0, 0, 0.02)",
+        "purpose": "Soft elevation for property and financial dashboard cards."
+      },
+      {
+        "name": "cyan-glow",
+        "value": "0 0 20px rgba(19, 200, 236, 0.15)",
+        "purpose": "Select focus indicator for interactive buttons and fields."
+      }
+    ],
+    "motion": [
+      {
+        "name": "active-tap",
+        "value": "scale(0.96)",
+        "purpose": "Immediate tactile reaction on click/press."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Standard action trigger for dashboard submissions.",
+      "html": "<button class=\"ds-btn-primary\">Confirmar Ação</button>",
+      "css": ".ds-btn-primary { background: #13c8ec; color: #0f172a; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #0fb1d1; } .ds-btn-primary:active { transform: scale(0.96); opacity: 0.8; }"
+    },
+    {
+      "name": "Dashboard Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Metric container with rounded layout and soft shadow.",
+      "html": "<div class=\"ds-dashboard-card\"><h4 class=\"ds-card-title\">TOTAL RECEBIDO</h4><p class=\"ds-card-value\">R$ 24.500,00</p></div>",
+      "css": ".ds-dashboard-card { background: #ffffff; padding: 24px; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: 24px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 4px 10px -5px rgba(0, 0, 0, 0.02); font-family: 'Manrope', sans-serif; transition: all 500ms; } .ds-dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.04); } .ds-card-title { font-size: 11px; font-weight: 900; letter-spacing: 0.15em; color: #94a3b8; text-transform: uppercase; margin: 0 0 8px 0; } .ds-card-value { font-size: 28px; font-weight: 900; letter-spacing: -0.04em; color: #0f172a; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Arctic Vault",
+    "overview": "The Arctic Vault is a visual metaphor that guides the user interface of IGLOO. It projects security, clarity, and precision through a cool-toned palette, glassmorphic textures, and smooth transitions. The interface feels solid, secure, and reassuring, like a modern digital vault designed to handle critical financial and property details.",
+    "keyCharacteristics": [
+      "Cool-Toned Professionalism",
+      "Tactile Softness",
+      "Glassmorphism & Layering",
+      "Active Responsiveness"
+    ],
+    "rules": [
+      {
+        "name": "The Glacier Accent Rule",
+        "body": "The primary color (#13c8ec) must be used on ≤10% of any given screen. Its role is strictly functional: to draw attention to primary actions, states, or key highlights.",
+        "section": "colors"
+      },
+      {
+        "name": "The Interaction Lift Rule",
+        "body": "Shadows are light and ambient at rest. Upon hover, cards lift physically (translateY(-2px)) and their shadow becomes softer and more diffused to indicate clickability.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use large rounded corners (24px to 32px) on main dashboard panels.",
+      "Do ensure text on Glacier Cyan accents has high contrast (e.g. Slate Main #0f172a).",
+      "Do implement a scaling click reaction (active-tap) on all interactive cards."
+    ],
+    "donts": [
+      "Don't use warm, saturated cream, sand, or beige backgrounds.",
+      "Don't use raw, solid black or bright blue borders; use translucent slate-200/60 or white/5 instead.",
+      "Don't pair competing display fonts; maintain Manrope as the single family."
+    ]
+  }
+}

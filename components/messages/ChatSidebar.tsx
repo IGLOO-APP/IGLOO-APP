@@ -1,0 +1,399 @@
+import React from 'react';
+import {
+  Search,
+  Filter,
+  MessageSquare,
+  Clock,
+  AlertCircle,
+  Plus,
+  User,
+  ChevronDown,
+  Shield,
+} from 'lucide-react';
+import { ChatThread } from '../../services/messageService';
+
+interface ChatSidebarProps {
+  activeChatId: string | null;
+  setActiveChatId: (id: string | null) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  showAdvancedFilters: boolean;
+  setShowAdvancedFilters: (show: boolean) => void;
+  priorityFilter: string;
+  setPriorityFilter: (priority: string) => void;
+  propertyFilter: string;
+  setPropertyFilter: (property: string) => void;
+  activeFilter: 'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support';
+  setActiveFilter: (filter: 'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support') => void;
+  filteredChats: ChatThread[];
+  chats: ChatThread[];
+  getCategoryIcon: (category: string) => React.ReactNode;
+  availableTenants: { id: string; name: string; avatar_url?: string; email?: string }[];
+  handleSelectTenant: (tenantId: string) => void;
+  scrollRef: React.RefObject<HTMLDivElement>;
+  handleMouseDown: (e: React.MouseEvent) => void;
+  handleMouseLeave: () => void;
+  handleMouseUp: () => void;
+  handleMouseMove: (e: React.MouseEvent) => void;
+  isDragging: boolean;
+  setIsCreateSupportOpen?: (open: boolean) => void;
+}
+
+export const ChatSidebar = React.memo(
+  ({
+    activeChatId,
+    setActiveChatId,
+    searchTerm,
+    setSearchTerm,
+    showAdvancedFilters,
+    setShowAdvancedFilters,
+    priorityFilter,
+    setPriorityFilter,
+    propertyFilter,
+    setPropertyFilter,
+    activeFilter,
+    setActiveFilter,
+    filteredChats,
+    chats,
+    availableTenants,
+    handleSelectTenant,
+    scrollRef,
+    handleMouseDown,
+    handleMouseLeave,
+    handleMouseUp,
+    handleMouseMove,
+    isDragging,
+    setIsCreateSupportOpen,
+  }: ChatSidebarProps) => {
+    const getAvatarColor = (name: string) => {
+      const colors = [
+        'bg-blue-500',
+        'bg-emerald-500',
+        'bg-violet-500',
+        'bg-amber-500',
+        'bg-rose-500',
+        'bg-cyan-500',
+        'bg-indigo-500',
+        'bg-orange-500',
+      ];
+      const index = name.charCodeAt(0) % colors.length;
+      return colors[index];
+    };
+
+    return (
+      <div
+        className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+      >
+        <div className='p-4 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
+          <div className='flex items-center justify-between mb-3'>
+            <div className='flex flex-col'>
+              <h1 className='text-lg md:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
+                Mensagens
+              </h1>
+              <p className='text-[10px] font-medium text-slate-400'>Central de comunicação</p>
+            </div>
+          </div>
+
+          <div className='flex gap-2 mb-3'>
+            <div className='relative flex-1'>
+              <input
+                type='text'
+                placeholder='Buscar conversa...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='w-full h-10 pl-10 pr-3 rounded-2xl bg-slate-100/50 dark:bg-black/30 border-none text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all'
+              />
+              <Search
+                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400'
+                size={15}
+              />
+            </div>
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100/50 dark:bg-white/5 text-slate-400 hover:text-slate-600 border border-gray-100 dark:border-white/5'}`}
+            >
+              <Filter size={16} />
+            </button>
+          </div>
+
+          {showAdvancedFilters && (
+            <div className='p-3 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 space-y-3 animate-slideDown mb-3'>
+              <div className='space-y-1.5'>
+                <label className='text-[9px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Prioridade
+                </label>
+                <div className='relative'>
+                  <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    className='w-full pl-3 pr-9 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='all' className='dark:bg-slate-800'>
+                      Todas as Prioridades
+                    </option>
+                    <option value='urgent' className='dark:bg-slate-800'>
+                      Urgente
+                    </option>
+                    <option value='high' className='dark:bg-slate-800'>
+                      Alta
+                    </option>
+                    <option value='medium' className='dark:bg-slate-800'>
+                      Média
+                    </option>
+                    <option value='low' className='dark:bg-slate-800'>
+                      Baixa
+                    </option>
+                  </select>
+                  <ChevronDown
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                    size={12}
+                  />
+                </div>
+              </div>
+
+              <div className='space-y-1.5'>
+                <label className='text-[9px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                  Imóvel
+                </label>
+                <div className='relative'>
+                  <select
+                    value={propertyFilter}
+                    onChange={(e) => setPropertyFilter(e.target.value)}
+                    className='w-full pl-3 pr-9 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    style={{ colorScheme: 'dark' }}
+                  >
+                    <option value='all' className='dark:bg-slate-800'>
+                      Todos os Imóveis
+                    </option>
+                    {Array.from(new Set(chats.map((c) => c.property))).map((prop) => (
+                      <option key={prop} value={prop} className='dark:bg-slate-800'>
+                        {prop}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                    size={12}
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setPriorityFilter('all');
+                  setPropertyFilter('all');
+                  setActiveFilter('all');
+                  setSearchTerm('');
+                }}
+                className='w-full py-2 text-[9px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-widest'
+              >
+                Limpar Filtros
+              </button>
+            </div>
+          )}
+
+          {/* Categories Navigation */}
+          <div
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            className={`flex gap-1.5 overflow-x-auto hide-scrollbar pb-0.5 cursor-grab active:cursor-grabbing select-none mb-3 ${isDragging ? 'cursor-grabbing' : ''}`}
+          >
+            {([
+              { id: 'all' as const, label: 'Tudo', icon: <MessageSquare size={12} /> },
+              { id: 'support' as const, label: 'Suporte', icon: <Shield size={12} /> },
+              { id: 'urgent' as const, label: 'Urgentes', icon: <AlertCircle size={12} /> },
+              { id: 'maintenance' as const, label: 'Manutenção', icon: <Clock size={12} /> },
+              { id: 'finance' as const, label: 'Financeiro', icon: <User size={12} /> },
+            ]).map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setActiveFilter(filter.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  activeFilter === filter.id
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
+                    : 'bg-slate-100/50 dark:bg-white/5 text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {filter.icon} {filter.label}
+              </button>
+            ))}
+          </div>
+
+          {activeFilter === 'support' && setIsCreateSupportOpen && (
+            <div className='px-1 mb-1.5'>
+              <button
+                onClick={() => setIsCreateSupportOpen(true)}
+                className='w-full py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-1.5 active:scale-95'
+              >
+                <Plus size={12} strokeWidth={3} />
+                Novo Chamado
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className='flex-1 overflow-y-auto custom-scrollbar min-h-0 pb-20 md:pb-0'>
+          {/* Recommended Contacts Section (Search Mode) */}
+          {searchTerm && (
+            <div className='mb-1.5'>
+              {availableTenants
+                .filter((tenant) => {
+                  const isAlreadyInChat = chats.some((c) => c.tenantName === tenant.name);
+                  const matchesSearch =
+                    tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (tenant.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+                  return !isAlreadyInChat && matchesSearch;
+                })
+                .map((tenant) => (
+                  <div
+                    key={tenant.id}
+                    onClick={() => handleSelectTenant(tenant.id)}
+                    className='px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-primary/5 border-b border-gray-100 dark:border-white/5 group'
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full ${getAvatarColor(tenant.name)} flex items-center justify-center text-white font-bold text-xs shadow-sm opacity-80 group-hover:opacity-100 transition-all`}
+                    >
+                      {tenant.avatar_url ? (
+                        <img
+                          src={tenant.avatar_url}
+                          alt=''
+                          className='w-full h-full object-cover rounded-full'
+                        />
+                      ) : (
+                        <span>{tenant.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center justify-between'>
+                        <h4 className='text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-primary transition-colors'>
+                          {tenant.name}
+                        </h4>
+                        <span className='px-1 py-0.5 rounded bg-primary/10 text-primary text-[7px] font-black uppercase tracking-widest'>
+                          Novo
+                        </span>
+                      </div>
+                      <p className='text-[9px] text-slate-400 font-medium truncate'>
+                        {tenant.email}
+                      </p>
+                    </div>
+                    <div className='w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all'>
+                      <Plus size={11} strokeWidth={3} />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* Existing Chats Section */}
+          {searchTerm && filteredChats.length > 0 && (
+            <div className='px-4 py-2 bg-slate-50 dark:bg-white/[0.02]'>
+              <span className='text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]'>
+                Conversas Ativas
+              </span>
+            </div>
+          )}
+
+          {filteredChats.map((chat) => (
+            <div
+              key={chat.id}
+              onClick={() => setActiveChatId(chat.id)}
+              className={`group px-4 py-3 flex items-start gap-3 cursor-pointer transition-all relative border-b border-gray-100 dark:border-white/5 ${
+                activeChatId === chat.id
+                  ? 'bg-slate-50 dark:bg-white/5'
+                  : 'hover:bg-gray-50 dark:hover:bg-white/[0.02]'
+              }`}
+            >
+              {/* Indicador de não lido */}
+              {chat.unreadCount > 0 && (
+                <div className='absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.6)]'></div>
+              )}
+
+              {activeChatId === chat.id && (
+                <div className='absolute left-0 top-0 bottom-0 w-0.5 bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]'></div>
+              )}
+
+              {/* Avatar Profissional com Iniciais */}
+              <div className='relative shrink-0'>
+                {chat.category === 'support' ? (
+                  <div className='w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md border border-cyan-400/30 ring-2 ring-cyan-500/20'>
+                    <Shield size={16} className='text-white animate-pulse' />
+                  </div>
+                ) : (
+                  <div
+                    className={`w-10 h-10 rounded-full ${getAvatarColor(chat.tenantName)} flex items-center justify-center text-white font-bold text-base shadow-sm border border-white/20`}
+                  >
+                    {chat.tenantAvatar ? (
+                      <img
+                        src={chat.tenantAvatar}
+                        alt=''
+                        className='w-full h-full object-cover rounded-full'
+                      />
+                    ) : (
+                      <span>{chat.tenantName.charAt(0)}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className='flex-1 min-w-0'>
+                <div className='flex justify-between items-baseline mb-0.5'>
+                  <h3
+                    className={`text-xs truncate tracking-tight ${chat.unreadCount > 0 ? 'font-bold text-slate-900 dark:text-white' : 'font-semibold text-slate-700 dark:text-slate-300'}`}
+                  >
+                    {chat.tenantName}
+                  </h3>
+                  <span className='text-[9px] text-slate-400 font-medium opacity-80'>
+                    {chat.lastMessageTime === 'AGORA' ? 'Recém' : chat.lastMessageTime}
+                  </span>
+                </div>
+
+                {/* Labels Legíveis */}
+                <div className='flex items-center gap-1.5 mb-1'>
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider ${
+                      chat.category === 'maintenance'
+                        ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                        : chat.category === 'finance'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                          : chat.category === 'support'
+                            ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                            : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    {chat.category === 'maintenance'
+                      ? 'Manutenção'
+                      : chat.category === 'finance'
+                        ? 'Financeiro'
+                        : chat.category === 'support'
+                          ? '🛡️ Suporte'
+                          : 'Geral'}
+                  </span>
+                  <p className='text-[9px] font-medium text-slate-400 truncate'>{chat.property}</p>
+                </div>
+
+                <div className='flex justify-between items-end gap-2'>
+                  <div className='flex-1 min-w-0'>
+                    <p
+                      className={`text-[11px] leading-snug truncate ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+                    >
+                      {chat.lastMessage}
+                    </p>
+                  </div>
+                  {chat.unreadCount > 0 && (
+                    <div className='px-1.5 py-0.5 min-w-[16px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[8px] font-black flex items-center justify-center rounded shadow-md'>
+                      {chat.unreadCount}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+);
