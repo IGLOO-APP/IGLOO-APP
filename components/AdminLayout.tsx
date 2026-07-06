@@ -6,9 +6,6 @@ import {
   CreditCard,
   LifeBuoy,
   Settings,
-  Moon,
-  Sun,
-  LogOut,
   ShieldCheck,
   UserCog,
   Megaphone,
@@ -17,7 +14,6 @@ import {
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../hooks/useTheme';
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,8 +29,7 @@ const adminNavItems = [
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
-  const { logout, user } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
   const filteredNavItems = adminNavItems.filter((item) => {
     if (item.path === '/admin/team') {
@@ -123,25 +118,6 @@ const AdminLayout: React.FC = () => {
               </span>
             </div>
           </Link>
-
-          <button
-            onClick={toggleTheme}
-            className='group flex items-center gap-3.5 w-full px-4 py-3.5 rounded-2xl text-slate-400 hover:bg-white/5 hover:text-white cursor-pointer transition-all duration-200'
-          >
-            <div className='group-hover:text-primary transition-colors'>
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </div>
-            <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
-          </button>
-          <button
-            onClick={logout}
-            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-400 hover:bg-red-500/10 hover:text-red-500 cursor-pointer transition-all duration-200'
-          >
-            <div className='group-hover:scale-110 transition-transform'>
-              <LogOut size={20} />
-            </div>
-            <span className='font-medium text-sm'>Sair</span>
-          </button>
         </div>
       </aside>
 
@@ -180,13 +156,6 @@ const AdminLayout: React.FC = () => {
                 </NavLink>
               );
             })}
-            <button
-              onClick={logout}
-              className='flex flex-col items-center justify-center w-16 gap-1 text-slate-500 hover:text-red-400'
-            >
-              <LogOut size={22} />
-              <span className='text-[10px] font-medium'>Sair</span>
-            </button>
           </div>
         </nav>
       </main>

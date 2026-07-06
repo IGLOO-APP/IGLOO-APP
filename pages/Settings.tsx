@@ -15,7 +15,9 @@ import {
   Activity,
   DollarSign,
   Wrench,
+  LogOut,
 } from 'lucide-react';
+import { useClerk } from '@clerk/clerk-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
 import { TopBar } from '../components/layout/TopBar';
 import { TenantProfileConfigPanel } from '../components/properties/TenantProfileConfigPanel';
@@ -29,6 +31,7 @@ import { subscriptionService } from '../services/subscriptionService';
 
 const Settings: React.FC = () => {
   const h = useSettings();
+  const { signOut } = useClerk();
 
   const tabs = [
     {
@@ -209,7 +212,6 @@ const Settings: React.FC = () => {
         )}
         {h.activeTab === 'notifications' && (
           <div className='animate-fadeIn space-y-6 max-w-2xl'>
-            {/* Canais de Envio */}
             <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
               <div className='flex items-center gap-3 mb-6'>
                 <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
@@ -279,8 +281,6 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Eventos */}
             <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
               <div className='flex items-center gap-3 mb-6'>
                 <div className='w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center'>
@@ -354,7 +354,7 @@ const Settings: React.FC = () => {
                       <Wrench size={18} />
                     </div>
                     <div>
-                      <p className='font-bold text-sm text-slate-900 dark:text-white'>Manuten��o</p>
+                      <p className='font-bold text-sm text-slate-900 dark:text-white'>Manutenção</p>
                       <p className='text-xs text-slate-500'>
                         Solicitacoes de reparo dos inquilinos
                       </p>
@@ -394,6 +394,16 @@ const Settings: React.FC = () => {
             <TenantProfileConfigPanel propertyId='global' />
           </div>
         )}
+        
+        {/* Botão Sair - Localizado no final do container de abas */}
+        <div className='px-4 md:px-8 pb-8'>
+          <button
+            onClick={() => signOut()}
+            className='w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors'
+          >
+            <LogOut size={18} /> Sair da Conta
+          </button>
+        </div>
       </div>
 
       <PlansModal

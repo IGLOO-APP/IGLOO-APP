@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Bell, Building2, Users, LayoutDashboard, Receipt, MessageSquare, Settings, X, ArrowRight } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Search, Bell, Building2, Users, LayoutDashboard, Receipt, MessageSquare, Settings, X, ArrowRight, ArrowLeft, Moon, Sun } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotification } from '../../context/NotificationContext';
 import { propertyService } from '../../services/propertyService';
 import { tenantService } from '../../services/tenantService';
+import { useTheme } from '../../hooks/useTheme';
 
 interface TopBarProps {
   title?: string;
@@ -22,7 +23,11 @@ const navItems = [
 ];
 
 export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => {
+  const { isDark, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/';
   const { notifications, unreadCount, markAsRead } = useNotification();
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -104,7 +109,17 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
   return (
     <header className='sticky top-0 z-40 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[80px]'>
-      <div className='flex flex-col min-w-0 flex-1 mr-2'>
+      <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
+        {!isDashboard && (
+        <button
+          onClick={() => navigate('/')}
+          className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 transition-all shrink-0'
+          aria-label='Voltar ao início'
+        >
+          <ArrowLeft size={20} />
+        </button>
+        )}
+        <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => navigate('/')}>
         {title && (
           <h1 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate'>
             {title}
@@ -115,6 +130,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
             {subtitle}
           </p>
         )}
+      </div>
       </div>
 
       <div className='flex items-center gap-1.5 md:gap-3 shrink-0' ref={searchRef}>
@@ -224,8 +240,17 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           )}
         </div>
 
+        {/* Theme Toggle Mobile */}
+        <button
+          onClick={toggleTheme}
+          className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 transition-all active-tap'
+        >
+          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         {/* Notifications */}
         <div className='relative'>
+
           <button
             onClick={() => setShowNotifications(!showNotifications)}
               className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active-tap relative ${

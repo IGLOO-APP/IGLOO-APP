@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, AlertCircle, ShieldCheck, Info } from 'lucide-react';
+import { TrendingUp, AlertCircle, ShieldCheck } from 'lucide-react';
 import { formatCurrency } from '../../../utils/formatters';
 
 interface PortfolioHealthProps {
@@ -21,22 +21,43 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
   const isHealthyVacancy = parseVal(health?.vacancy) === 0;
   const isHealthyDelinquency = parseVal(health?.delinquency) === 0;
 
-  const tooltipClass =
-    'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-slate-900/95 backdrop-blur-md text-white text-[10px] rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 z-50 shadow-2xl border border-white/10 translate-y-2 group-hover:translate-y-0';
+  const TooltipTrigger = ({ title, description }: { title: string; description: string }) => (
+    <div className='relative shrink-0 group/tooltip'>
+      <div className='w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[7px] font-bold leading-none cursor-help'>
+        ?
+      </div>
+      <div
+        className='absolute z-[100] w-52 p-2.5 bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white rounded-xl shadow-2xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-all duration-300 translate-y-1 group-hover/tooltip:translate-y-0'
+        style={{ bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)' }}
+      >
+        <p className='text-[9px] font-black uppercase tracking-[0.15em] mb-1 text-slate-300'>
+          {title}
+        </p>
+        <p className='text-[10px] leading-snug text-slate-400 font-medium'>{description}</p>
+        <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95' />
+      </div>
+    </div>
+  );
 
   return (
     <div className='w-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-[32px] shadow-sm flex flex-col md:flex-row items-center gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5 transition-all duration-500'>
       {/* Yield Médio */}
-      <div className='flex-1 w-full p-3 group relative'>
+      <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2.5'>
-            <div className='p-2 rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110 duration-300'>
+            <div className='p-2 rounded-xl bg-primary/10 text-primary transition-transform hover:scale-110 duration-300'>
               <TrendingUp size={15} />
             </div>
             <div>
-              <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5'>
-                Yield Médio
-              </p>
+              <div className='flex items-center gap-1.5 mb-0.5'>
+                <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                  Yield Médio
+                </p>
+                <TooltipTrigger
+                  title='Análise de Yield'
+                  description='Retorno anual médio da carteira. Calculado como (Receita Anual / Valor Patrimonial) × 100.'
+                />
+              </div>
               <div className='flex items-center gap-1.5'>
                 <p className='text-base font-black text-slate-900 dark:text-white'>
                   {health?.yield || '0'}%
@@ -47,35 +68,27 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
               </div>
             </div>
           </div>
-          <div className='text-[9px] font-bold text-slate-400 opacity-0 group-hover:opacity-100 transition-all duration-500 cursor-help flex items-center gap-1 -translate-x-2 group-hover:translate-x-0'>
-            <Info size={11} />
-            vs. meta 6%
-          </div>
-        </div>
-
-        <div className={tooltipClass}>
-          <p className='font-black uppercase tracking-[0.15em] mb-1 border-b border-white/5 pb-1 text-primary'>
-            Análise de Yield
-          </p>
-          <p className='text-slate-300 leading-snug font-medium'>
-            Retorno anual médio da carteira. Calculado como (Receita Anual / Valor Patrimonial) × 100.
-          </p>
-          <div className='absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-950/90' />
         </div>
       </div>
 
       {/* Vacância Financeira */}
-      <div className='flex-1 w-full p-3 group relative'>
+      <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center gap-2.5'>
           <div
-            className={`p-2 rounded-xl transition-all duration-300 group-hover:scale-110 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+            className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
           >
             <AlertCircle size={16} />
           </div>
           <div>
-            <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5'>
-              Vacância Financeira
-            </p>
+            <div className='flex items-center gap-1.5 mb-0.5'>
+              <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                Vacância Financeira
+              </p>
+              <TooltipTrigger
+                title='Cálculo de Vacância'
+                description='Percentual da receita potencial perdida por imóveis vagos.'
+              />
+            </div>
             {isHealthyVacancy ? (
               <p className='text-[11px] font-black text-emerald-500 uppercase tracking-tight'>
                 Carteira 100% ocupada
@@ -87,30 +100,26 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
             )}
           </div>
         </div>
-
-        <div className={tooltipClass}>
-          <p className='font-black uppercase tracking-[0.15em] mb-1 border-b border-white/5 pb-1 text-amber-400'>
-            Cálculo de Vacância
-          </p>
-          <p className='text-slate-300 leading-snug font-medium'>
-            Percentual da receita potencial perdida por imóveis vagos.
-          </p>
-          <div className='absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-950/90' />
-        </div>
       </div>
 
       {/* Inadimplência */}
-      <div className='flex-1 w-full p-3 group relative'>
+      <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center gap-2.5'>
           <div
-            className={`p-2 rounded-xl transition-all duration-300 group-hover:scale-110 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+            className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
           >
             <ShieldCheck size={16} />
           </div>
           <div>
-            <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5'>
-              Inadimplência
-            </p>
+            <div className='flex items-center gap-1.5 mb-0.5'>
+              <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                Inadimplência
+              </p>
+              <TooltipTrigger
+                title='Inadimplência Real'
+                description='Percentual do valor total em aberto sobre a receita esperada do mês.'
+              />
+            </div>
             {isHealthyDelinquency ? (
               <p className='text-[11px] font-black text-emerald-500 uppercase tracking-tight'>
                 Sem inadimplência
@@ -124,16 +133,6 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
               </div>
             )}
           </div>
-        </div>
-
-        <div className={tooltipClass}>
-          <p className='font-black uppercase tracking-[0.15em] mb-1 border-b border-white/5 pb-1 text-red-500'>
-            Inadimplência Real
-          </p>
-          <p className='text-slate-300 leading-snug font-medium'>
-            Percentual do valor total em aberto sobre a receita esperada do mês.
-          </p>
-          <div className='absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-950/90' />
         </div>
       </div>
     </div>

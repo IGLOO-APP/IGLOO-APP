@@ -46,11 +46,10 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
               key={item.id}
               onClick={() => onChange(item.id)}
               className={cn(
-                'relative cursor-pointer flex items-center justify-center gap-2',
-                // Mobile: equal flex, icon only. Desktop: shrink-0 with padding for label
+                'relative cursor-pointer flex flex-col items-center justify-center gap-0.5',
                 'flex-1 md:flex-none md:shrink-0',
-                'text-[11px] font-black uppercase tracking-wider',
-                'px-3 md:px-5 py-2.5 rounded-full transition-colors duration-200',
+                'text-[9px] font-black uppercase tracking-wider',
+                'px-4 py-2 rounded-full transition-colors duration-200 min-w-[56px]',
                 isActive
                   ? 'text-slate-900 dark:text-white'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -60,7 +59,7 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
               {isActive && (
                 <motion.span
                   layoutId='glass-lamp'
-                  className='absolute inset-0 rounded-full bg-white dark:bg-white/10 border border-slate-200/80 dark:border-white/10 shadow-sm -z-10'
+                  className='absolute inset-0 rounded-full bg-white dark:bg-white/10 border border-slate-200/80 dark:border-white/10 shadow-sm'
                   initial={false}
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
@@ -74,20 +73,17 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
                   initial={false}
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 >
-                  {/* Diffused halo */}
                   <span className='absolute -top-1 left-[calc(50%-28px)] w-14 h-4 rounded-full blur-md bg-primary/20 dark:bg-primary/30' />
                   <span className='absolute top-0 left-[calc(50%-16px)] w-8 h-3 rounded-full blur-md bg-primary/20 dark:bg-primary/30' />
                 </motion.span>
               )}
 
-              <Icon size={14} className='shrink-0' />
-
-              {/* Label: hidden on mobile, visible on md+ */}
-              <span className='hidden md:inline-block'>{item.label}</span>
+              <Icon size={20} className='shrink-0 relative z-10' />
+              <span className='relative z-10'>{item.label}</span>
 
               {/* Badge dot */}
               {item.badge !== undefined && item.badge > 0 && (
-                <span className='relative flex h-2 w-2 ml-0.5'>
+                <span className='absolute -top-0.5 -right-0.5 flex h-2 w-2'>
                   <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75' />
                   <span className='relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' />
                 </span>

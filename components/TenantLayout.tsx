@@ -4,23 +4,18 @@ import {
   Home,
   Receipt,
   User,
-  LogOut,
-  Moon,
-  Sun,
   LifeBuoy,
   Settings as SettingsIcon,
   Lock,
   Zap,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../hooks/useTheme';
 import { UserButton } from '@clerk/clerk-react';
 import { tenantService } from '../services/tenantService';
 import { supabase } from '../lib/supabase';
 
 const TenantLayout: React.FC = () => {
-  const { logout, user } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isMaintenanceRoute = location.pathname === '/tenant/maintenance';
@@ -273,26 +268,6 @@ const TenantLayout: React.FC = () => {
               </span>
             </div>
           </Link>
-
-          <button
-            onClick={toggleTheme}
-            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-200'
-          >
-            <div className='group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors'>
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </div>
-            <span className='font-medium text-sm'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
-          </button>
-
-          <button
-            onClick={logout}
-            className='group flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 cursor-pointer'
-          >
-            <div className='group-hover:scale-110 transition-transform'>
-              <LogOut size={20} />
-            </div>
-            <span className='font-medium text-sm'>Sair</span>
-          </button>
         </div>
       </aside>
 
@@ -390,16 +365,6 @@ const TenantLayout: React.FC = () => {
               );
             })}
 
-            {/* Logout button */}
-            <button
-              onClick={async () => await logout()}
-              className='flex flex-col items-center justify-center w-14 gap-1 text-slate-400 dark:text-slate-500 hover:text-red-400 transition-colors active:scale-90'
-            >
-              <div className='w-10 h-10 rounded-2xl flex items-center justify-center'>
-                <LogOut size={21} strokeWidth={1.8} />
-              </div>
-              <span className='text-[9px] font-black leading-none'>Sair</span>
-            </button>
           </div>
         </nav>
       </main>

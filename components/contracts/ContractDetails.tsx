@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Contract } from '../../types';
 import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
@@ -23,6 +24,8 @@ import {
   ExternalLink,
   FilePlus,
   Eye,
+  FileSearch,
+  ScrollText,
 } from 'lucide-react';
 
 interface ContractDetailsProps {
@@ -36,7 +39,7 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
   onClose,
   onUpdate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'document' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'document' | 'history' | 'audit'>('overview');
   const [isSigning, setIsSigning] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
@@ -146,26 +149,55 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className='px-6 border-b border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-black/20'>
-          <div className='flex gap-6'>
+        {/* Tabs — Glassmorphism pill */}
+        <div className='w-full flex justify-center px-4 py-3 bg-slate-50 dark:bg-black/20 border-b border-gray-200 dark:border-white/5'>
+          <div
+            className='flex items-center gap-1 py-1 px-1 rounded-full overflow-hidden bg-white/30 dark:bg-white/5 border border-black/[0.06] dark:border-white/10 shadow-sm'
+            style={{
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            }}
+          >
             {[
-              { id: 'overview', label: 'Visão Geral' },
-              { id: 'document', label: 'Documento Original' },
-              { id: 'history', label: 'Histórico & Auditoria' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-3 text-sm font-bold border-b-2 transition-all ${
-                  activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+              { id: 'overview', label: 'Visão Geral', icon: FileText },
+              { id: 'document', label: 'Documento Original', icon: ScrollText },
+              { id: 'history', label: 'Histórico', icon: History },
+              { id: 'audit', label: 'Auditoria', icon: FileSearch },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className='relative cursor-pointer flex items-center justify-center gap-2 px-4 py-2 rounded-full transition-colors duration-200 text-[11px] font-black uppercase tracking-wider'
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId='contract-glass-lamp'
+                      className='absolute inset-0 rounded-full bg-white dark:bg-white/10 border border-slate-200/80 dark:border-white/10 shadow-sm'
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  {isActive && (
+                    <motion.span
+                      layoutId='contract-glass-glow'
+                      className='pointer-events-none absolute top-0 left-[calc(50%-16px)] w-8 h-[3px] rounded-full bg-primary/60 dark:bg-primary/80'
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    >
+                      <span className='absolute -top-1 left-[calc(50%-22px)] w-12 h-4 rounded-full blur-md bg-primary/20 dark:bg-primary/30' />
+                      <span className='absolute top-0 left-[calc(50%-12px)] w-6 h-3 rounded-full blur-md bg-primary/20 dark:bg-primary/30' />
+                    </motion.span>
+                  )}
+                  <Icon size={14} className={`shrink-0 ${isActive ? 'text-primary' : 'text-slate-400'}`} />
+                  <span className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -504,7 +536,6 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
               <div className='relative pl-8 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
                 {contract.history.map((event: any) => (
                   <div key={event.id} className='relative group'>
-                    {/* Timeline Dot with Icon */}
                     <div className='absolute -left-[27px] top-0 w-8 h-8 rounded-full bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/10 flex items-center justify-center ring-4 ring-white dark:ring-surface-dark group-hover:scale-110 transition-transform'>
                       {event.action === 'created' && (
                         <FilePlus size={14} className='text-blue-500' />
@@ -553,6 +584,102 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'audit' && (
+            <div className='space-y-6 animate-fadeIn py-4'>
+              <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
+                <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2'>
+                  <PenTool size={18} className='text-primary' /> Timeline de Assinatura
+                </h3>
+
+                <div className='relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
+                  {contract.signers && contract.signers.length > 0 ? (
+                    contract.signers.map((signer: any, idx: number) => (
+                      <div key={signer.id || idx} className='relative'>
+                        <div
+                          className={`absolute -left-[19px] top-1 w-4 h-4 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-surface-dark ${
+                            signer.status === 'signed'
+                              ? 'bg-emerald-500'
+                              : signer.status === 'viewed'
+                                ? 'bg-blue-500'
+                                : 'bg-slate-200 dark:bg-white/10'
+                          }`}
+                        >
+                          {signer.status === 'signed' ? (
+                            <CheckCircle size={10} className='text-white' />
+                          ) : signer.status === 'viewed' ? (
+                            <Clock size={10} className='text-white' />
+                          ) : (
+                            <div className='w-1.5 h-1.5 rounded-full bg-slate-400' />
+                          )}
+                        </div>
+                        <div className='flex justify-between items-start'>
+                          <div>
+                            <p className='text-xs font-bold dark:text-white'>
+                              {signer.role === 'owner'
+                                ? 'Proprietário'
+                                : signer.role === 'tenant'
+                                  ? 'Inquilino'
+                                  : 'Fiador'}{' '}
+                              {signer.status === 'signed'
+                                ? 'Assinou'
+                                : signer.status === 'viewed'
+                                  ? 'Visualizou'
+                                  : 'Pendente'}
+                            </p>
+                            <p className='text-[10px] text-slate-500'>
+                              {signer.status === 'signed'
+                                ? `IP: ${signer.ip || '187.54.21.10'} • Hash: ${signer.hash || '4x9f...a2'}`
+                                : signer.status === 'viewed'
+                                  ? 'Aguardando confirmação digital'
+                                  : 'Link de assinatura não acessado'}
+                            </p>
+                          </div>
+                          <span className='text-[10px] text-slate-400'>
+                            {signer.signed_at
+                              ? new Date(signer.signed_at).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: '2-digit',
+                                })
+                              : signer.viewed_at
+                                ? new Date(signer.viewed_at).toLocaleDateString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: '2-digit',
+                                  })
+                                : ''}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className='text-[10px] text-slate-500 italic'>
+                      Nenhum signatário registrado.
+                    </p>
+                  )}
+                </div>
+
+                <div className='pt-2 space-y-3'>
+                  <div className='p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5'>
+                    <p className='text-[10px] text-slate-500 font-medium'>
+                      Último envio do link para os pendentes:
+                    </p>
+                    <p className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                      Há 2 dias (15/04/2026)
+                    </p>
+                  </div>
+                  <button className='w-full py-3 rounded-xl bg-primary/5 hover:bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all flex items-center justify-center gap-2 group'>
+                    <Send
+                      size={14}
+                      className='group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform'
+                    />
+                    Reenviar Links de Assinatura
+                  </button>
+                </div>
               </div>
             </div>
           )}

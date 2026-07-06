@@ -1,14 +1,14 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { Moon, Sun, LogOut } from 'lucide-react';
 import { User } from '../../types';
+import { Sun, Moon, LogOut } from 'lucide-react';
 
 interface SidebarProps {
-  navItems: any[];
-  adminItems: any[];
+  navItems: { path: string; label: string; icon: React.ElementType }[];
+  adminItems?: { path: string; label: string; icon: React.ElementType }[];
   user: User | null;
-  impersonatingFrom: User | null | undefined;
+  impersonatingFrom?: User | null;
   isDark: boolean;
   toggleTheme: () => void;
   logout: () => void;
@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className='px-3 mb-1.5 text-[8px] font-black uppercase text-amber-500 tracking-[0.2em]'>
               Administração
             </p>
-            {adminItems.map((item) => (
+            {adminItems?.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
@@ -142,25 +142,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
         </Link>
+      </div>
 
+      {/* Theme Toggle */}
+      <div className='px-3 mb-1'>
         <button
           onClick={toggleTheme}
-          className='group flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all duration-200'
+          className='flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200 text-xs font-medium'
         >
-          <div className='group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors'>
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </div>
-          <span className='font-medium text-xs'>{isDark ? 'Modo Claro' : 'Modo Escuro'}</span>
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          {isDark ? 'Modo Claro' : 'Modo Escuro'}
         </button>
+      </div>
 
+      {/* Logout */}
+      <div className='px-3 mb-3'>
         <button
           onClick={logout}
-          className='group flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 cursor-pointer'
+          className='flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-xs font-medium'
         >
-          <div className='group-hover:scale-110 transition-transform'>
-            <LogOut size={18} />
-          </div>
-          <span className='font-medium text-xs'>Sair</span>
+          <LogOut size={18} />
+          Sair
         </button>
       </div>
     </aside>

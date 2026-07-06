@@ -315,7 +315,7 @@ const Tenants: React.FC = () => {
   }
 
   return (
-    <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-5xl relative'>
+    <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       <TopBar title='Inquilinos' subtitle={`${tenants.length} locatários ativos`}>
         <button
           onClick={() => setShowAddForm(true)}

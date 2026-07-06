@@ -25,7 +25,7 @@ const Financials: React.FC = () => {
   const h = useFinancials();
 
   return (
-    <div className='h-full flex flex-col w-full max-w-md mx-auto md:max-w-4xl relative'>
+    <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       <TopBar title='Lançamentos' subtitle='Fluxo de caixa e gestão'>
         <div className='flex gap-1.5 md:gap-2'>
           <button

@@ -175,7 +175,7 @@ const Properties: React.FC = () => {
 
   return (
     <div
-      className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-md mx-auto md:max-w-4xl' : ''}`}
+      className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-[1600px] mx-auto' : ''}`}
     >
       {viewMode !== 'map' && (
         <TopBar title='Meus Ativos' subtitle='Gestão de propriedades'>

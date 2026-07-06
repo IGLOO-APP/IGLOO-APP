@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -32,25 +32,12 @@ const adminItems = [
   { path: '/admin/announcements', label: 'Comunicados', icon: MessageSquare },
 ];
 
-const primaryNavItems = navItems.slice(0, 5);
-const secondaryNavItems = navItems.slice(5);
+const mobileNavItems = navItems.filter((item) => item.path !== '/');
 
 const Layout: React.FC = () => {
   const location = useLocation();
-  const { logout, impersonatingFrom, user, stopImpersonation } = useAuth();
+  const { impersonatingFrom, user, stopImpersonation, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const prevPath = useRef(location.pathname);
-
-  useEffect(() => {
-    if (prevPath.current !== location.pathname) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShowMoreMenu(false);
-      prevPath.current = location.pathname;
-    }
-  }, [location.pathname]);
-
-  const isSecondaryActive = secondaryNavItems.some((item) => location.pathname === item.path);
 
   return (
     <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark'>
@@ -95,20 +82,13 @@ const Layout: React.FC = () => {
         )}
 
         <div
-          className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/messages' ? 'pb-0' : 'pb-20 md:pb-0'}`}
+          className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/messages' ? 'pb-0' : 'pb-24 md:pb-0'}`}
         >
           <Outlet />
         </div>
 
         <MobileNav
-          primaryNavItems={primaryNavItems}
-          secondaryNavItems={secondaryNavItems}
-          showMoreMenu={showMoreMenu}
-          setShowMoreMenu={setShowMoreMenu}
-          isSecondaryActive={isSecondaryActive}
-          isDark={isDark}
-          toggleTheme={toggleTheme}
-          logout={logout}
+          navItems={mobileNavItems}
         />
       </main>
     </div>

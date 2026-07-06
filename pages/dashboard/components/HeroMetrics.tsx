@@ -22,7 +22,7 @@ const SPARK_DATA_3 = [80, 85, 82, 88, 90, 95, 92];
 
 export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics }) => {
   return (
-    <section className='grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 items-stretch'>
+    <section className='grid grid-cols-2 gap-3 md:gap-6 items-stretch'>
       <HeroCard
         title='Patrimônio Total'
         value={metrics.totalWealth}

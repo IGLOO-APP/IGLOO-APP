@@ -76,7 +76,6 @@ export const useTheme = () => {
 
   const toggleTheme = () => {
     const nextDark = !document.documentElement.classList.contains('dark');
-
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReduced || !('startViewTransition' in document)) {

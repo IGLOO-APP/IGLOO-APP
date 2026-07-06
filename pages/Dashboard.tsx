@@ -118,6 +118,7 @@ const Dashboard: React.FC = () => {
   return (
     <div
       className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+      style={{ zoom: 1.1 }}
     >
       {showOnboarding && (
         <OwnerOnboardingWizard
@@ -138,16 +139,15 @@ const Dashboard: React.FC = () => {
       </TopBar>
 
       <div className='px-4 md:px-6 py-4 md:py-5 space-y-5 pb-20'>
-        {/* Top Section: Metrics, Health & Communication Integrated */}
+        {/* Top Section: Metrics & Communication Integrated */}
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
-          {/* Main Area (Left) - 9/12 Columns */}
-          <div className='lg:col-span-9 flex flex-col gap-4'>
+          {/* Main Area (Left) - 2x2 Grid */}
+          <div className='lg:col-span-8 flex flex-col gap-4'>
             <HeroMetrics metrics={metrics} />
-            <PortfolioHealth health={portfolioHealth} />
           </div>
 
-          {/* Side Hub (Right) - 3/12 Columns */}
-          <div className='lg:col-span-3 h-full'>
+          {/* Side Hub (Right) - 4/12 Columns */}
+          <div className='lg:col-span-4 h-full'>
             <CommunicationHub
               onNewAnnouncement={() => {
                 setAnnouncementToDuplicate(null);
@@ -160,6 +160,8 @@ const Dashboard: React.FC = () => {
             />
           </div>
         </div>
+
+        <PortfolioHealth health={portfolioHealth} />
 
         {/* Row 3: Assets & Wealth Evolution (SIDE BY SIDE) */}
         <div className='grid grid-cols-1 lg:grid-cols-12 items-stretch'>

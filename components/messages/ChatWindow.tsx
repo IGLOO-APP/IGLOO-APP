@@ -232,7 +232,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className='p-3 pb-16 md:pb-4 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
+        <div className='p-3 pb-24 md:pb-4 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 shrink-0'>
           <div className='flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1 items-center'>
             <span className='hidden md:inline-block text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] self-center mr-1 shrink-0'>
               Sugestões:
