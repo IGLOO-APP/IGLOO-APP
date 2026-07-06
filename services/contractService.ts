@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { Contract } from '../types';
+import { Contract, Signer, ContractHistoryEvent } from '../types';
 
 interface DbContractRow {
   id: string;
@@ -13,8 +13,8 @@ interface DbContractRow {
   payment_day: number;
   status: 'draft' | 'pending_signature' | 'active' | 'expiring_soon' | 'expired' | 'cancelled';
   pdf_url?: string | null;
-  signers?: any[];
-  history?: any[];
+  signers?: Signer[];
+  history?: ContractHistoryEvent[];
 }
 
 const mapContract = (row: DbContractRow): Contract => ({
@@ -78,26 +78,51 @@ export const contractService = {
     return mapContract(data as unknown as DbContractRow);
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async create(ownerId: string, contractData: any): Promise<void> {
-    const payload = {
+  async create(ownerId: string, contractData: Record<string, unknown>): Promise<void> {
+    let tenantId = contractData.tenant_id as string | null;
+
+    if (!tenantId) {
+      const tenantName = contractData.tenantName as string;
+      const tenantCpf = contractData.tenantCpf as string;
+      const tenantEmail =
+        (contractData.tenantEmail as string) || `tenant_${Date.now()}@temp.igloo.app`;
+      const tenantPhone = contractData.tenantPhone as string;
+
+      if (!tenantName) throw new Error('Nome do inquilino é obrigatório');
+
+      const { data: newTenant, error: tenantError } = await supabase
+        .from('profiles')
+        .insert({
+          id: crypto.randomUUID(),
+          name: tenantName,
+          email: tenantEmail,
+          cpf: tenantCpf || null,
+          phone: tenantPhone || null,
+          role: 'tenant',
+        })
+        .select('id')
+        .single();
+
+      if (tenantError) throw tenantError;
+      tenantId = newTenant.id;
+    }
+
+    const startDate = contractData.startDate as string;
+    const duration = parseInt(contractData.duration as string) || 30;
+
+    const { error } = await supabase.from('contracts').insert({
       contract_number: `CTR-${Date.now()}`,
       owner_id: ownerId,
-      property_id: contractData.property_id,
-      tenant_id: contractData.tenant_id,
-      start_date: contractData.startDate,
+      property_id: contractData.property_id as string,
+      tenant_id: tenantId,
+      start_date: startDate,
       end_date: new Date(
-        new Date(contractData.startDate).setMonth(
-          new Date(contractData.startDate).getMonth() + parseInt(contractData.duration)
-        )
+        new Date(startDate).setMonth(new Date(startDate).getMonth() + duration)
       ).toISOString(),
-      monthly_value: parseFloat(contractData.rentValue),
+      monthly_value: parseFloat(contractData.rentValue as string) || 0,
       status: 'draft',
-      // Usa o valor fornecido pelo usuário, com fallback para dia 10
-      payment_day: parseInt(contractData.paymentDay) || 10,
-    };
-
-    const { error } = await supabase.from('contracts').insert(payload);
+      payment_day: parseInt(contractData.paymentDay as string) || 10,
+    });
     if (error) throw error;
   },
 
@@ -109,13 +134,14 @@ export const contractService = {
       payment_day?: number;
       status?: string;
       pdf_url?: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      signers?: any[];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      history?: any[];
+      signers?: Signer[];
+      history?: ContractHistoryEvent[];
     }
   ): Promise<void> {
-    const { error } = await supabase.from('contracts').update(updates).eq('id', id);
+    const { error } = await supabase
+      .from('contracts')
+      .update(updates as Record<string, unknown>)
+      .eq('id', id);
 
     if (error) {
       console.error('Error updating contract:', error);

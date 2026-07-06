@@ -13,8 +13,7 @@ export type ContractStatus =
   | 'active'
   | 'expiring_soon'
   | 'expired'
-  | 'cancelled'
-  | 'renewed';
+  | 'cancelled';
 
 export interface Signer {
   id: string;

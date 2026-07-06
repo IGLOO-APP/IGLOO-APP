@@ -8,12 +8,16 @@ import { generateFilledContract } from '../../../utils/contractGenerator';
 
 export interface ContractFormData {
   property: string;
+  propertyId: string;
   tenantName: string;
   tenantCpf: string;
+  tenantEmail: string;
+  tenantPhone: string;
   rentValue: string;
   depositValue: string;
   startDate: string;
   duration: string;
+  paymentDay: string;
   autoRenew: boolean;
   hasMaintenanceFee: boolean;
   maintenanceFee: string;
@@ -56,25 +60,61 @@ export const STEPS = [
   { id: 6, title: 'Revisão' },
 ];
 
-export function useContractWizard(initialProperty?: string, onComplete?: (data: any) => void) {
+export interface ContractWizardData {
+  property_id: string;
+  tenant_id: string | null;
+  startDate: string;
+  duration: string;
+  rentValue: string;
+  depositValue: string;
+  paymentDay: string;
+  hasMaintenanceFee: boolean;
+  maintenanceFee: string;
+  earlyTerminationFee: string;
+  lockInPeriod: string;
+  tenantName: string;
+  tenantCpf: string;
+  tenantEmail: string;
+  tenantPhone: string;
+  property: string;
+  contractText: string;
+  uploadedFile: File | null;
+  docMode: string;
+  signaturePayloads: {
+    pageIndex: number;
+    signatureDataUrl: string;
+    position: { xPercent: number; yPercent: number };
+  }[];
+}
+
+export function useContractWizard(
+  initialProperty?: string,
+  onComplete?: (data: ContractWizardData) => void,
+  currentUser?: { id: string; name: string }
+) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [formData, setFormData] = useState<ContractFormData>({
     property: initialProperty || '',
+    propertyId: '',
     tenantName: '',
     tenantCpf: '',
+    tenantEmail: '',
+    tenantPhone: '',
     rentValue: '',
     depositValue: '',
     startDate: new Date().toISOString().split('T')[0],
     duration: '30',
+    paymentDay: '10',
     autoRenew: false,
     hasMaintenanceFee: false,
     maintenanceFee: '',
     earlyTerminationFee: '3',
     lockInPeriod: '6',
-    landlordName: 'Investidor Exemplo',
+    landlordName: currentUser?.name || 'Proprietário',
   });
 
   const [tenantSearch, setTenantSearch] = useState('');
@@ -118,13 +158,15 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
   const getEndDate = useCallback(() => {
     const start = new Date(formData.startDate);
     const months = parseInt(formData.duration);
-    const end = new Date(start.setMonth(start.getMonth() + months));
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + months);
     return end.toLocaleDateString('pt-BR');
   }, [formData.startDate, formData.duration]);
 
   const getAdjustmentDate = useCallback(() => {
     const start = new Date(formData.startDate);
-    const adj = new Date(start.setFullYear(start.getFullYear() + 1));
+    const adj = new Date(start);
+    adj.setFullYear(adj.getFullYear() + 1);
     return adj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   }, [formData.startDate]);
 
@@ -132,13 +174,13 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
     const selectedProp = properties.find((p) => p.name === formData.property);
     const contractText = contractPages.join('\n\n');
     return {
-      nome_proprietario: formData.landlordName || 'Investidor Exemplo',
+      nome_proprietario: formData.landlordName || 'Proprietário',
       cpf_proprietario: '000.000.000-00',
       endereco_proprietario: 'São Paulo, SP',
       nome_inquilino: formData.tenantName || '_______________________',
       cpf_inquilino: formData.tenantCpf || '_______________________',
       profissao_inquilino: '_______________________',
-      email_inquilino: 'email@exemplo.com',
+      email_inquilino: formData.tenantEmail || 'email@exemplo.com',
       endereco_imovel: selectedProp?.address || formData.property || '_______________________',
       numero_unidade: 'N/A',
       ocupacao_maxima: '2',
@@ -148,7 +190,7 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
       duracao_meses: formData.duration,
       data_fim: getEndDate(),
       valor_aluguel: formData.rentValue || '0,00',
-      dia_vencimento: '10',
+      dia_vencimento: formData.paymentDay || '10',
       valor_condominio: 'Incluso',
       valor_iptu: 'Incluso',
       valor_caucao: formData.depositValue || '0,00',
@@ -174,7 +216,7 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
       propertyName: selectedProp?.name,
       propertyAddress: selectedProp?.address,
       contractText,
-      landlordName: formData.landlordName || 'Investidor Exemplo',
+      landlordName: formData.landlordName || 'Proprietário',
     };
   }, [formData, properties, contractPages, getEndDate]);
 
@@ -207,14 +249,40 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
   }, [contractPages, currentStep]);
 
   const canAdvance = useCallback(() => {
-    if (currentStep === 1) return !!formData.property;
-    if (currentStep === 2) return !!formData.tenantName;
+    if (currentStep === 1) return !!formData.property && !!formData.propertyId;
+    if (currentStep === 2) return !!formData.tenantName && !!formData.tenantCpf;
+    if (currentStep === 3) {
+      const rent = parseFloat(formData.rentValue);
+      return !isNaN(rent) && rent > 0;
+    }
+    if (currentStep === 4) {
+      if (!formData.startDate) return false;
+      const start = new Date(formData.startDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (start < today) return false;
+      const pd = parseInt(formData.paymentDay);
+      if (isNaN(pd) || pd < 1 || pd > 31) return false;
+      return true;
+    }
     if (currentStep === 5) {
       if (docMode === 'template') return Object.keys(signatures).length > 0;
       return !!uploadedFile;
     }
     return true;
-  }, [currentStep, formData.property, formData.tenantName, docMode, signatures, uploadedFile]);
+  }, [
+    currentStep,
+    formData.property,
+    formData.propertyId,
+    formData.tenantName,
+    formData.tenantCpf,
+    formData.rentValue,
+    formData.startDate,
+    formData.paymentDay,
+    docMode,
+    signatures,
+    uploadedFile,
+  ]);
 
   const handleComplete = useCallback(() => {
     const TOTAL_WIDTH = 850;
@@ -232,13 +300,36 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
       };
     });
     return {
-      ...formData,
+      property_id: formData.propertyId,
+      tenant_id: selectedTenantId,
+      startDate: formData.startDate,
+      duration: formData.duration,
+      rentValue: formData.rentValue,
+      depositValue: formData.depositValue,
+      paymentDay: formData.paymentDay,
+      hasMaintenanceFee: formData.hasMaintenanceFee,
+      maintenanceFee: formData.maintenanceFee,
+      earlyTerminationFee: formData.earlyTerminationFee,
+      lockInPeriod: formData.lockInPeriod,
+      tenantName: formData.tenantName,
+      tenantCpf: formData.tenantCpf,
+      tenantEmail: formData.tenantEmail,
+      tenantPhone: formData.tenantPhone,
+      property: formData.property,
       contractText: contractPages.join('\n\n'),
       uploadedFile,
       docMode,
       signaturePayloads,
     };
-  }, [formData, contractPages, uploadedFile, docMode, signatures, signaturePositions]);
+  }, [
+    formData,
+    selectedTenantId,
+    contractPages,
+    uploadedFile,
+    docMode,
+    signatures,
+    signaturePositions,
+  ]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
@@ -249,6 +340,7 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
     if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
+      setSaving(true);
       onComplete?.(handleComplete());
     }
   }, [canAdvance, currentStep, onComplete, handleComplete]);
@@ -300,6 +392,8 @@ export function useContractWizard(initialProperty?: string, onComplete?: (data: 
     currentStep,
     setCurrentStep,
     loading,
+    saving,
+    setSaving,
     properties,
     tenants,
     formData,

@@ -36,7 +36,6 @@ export const ContractCard: React.FC<ContractCardProps> = ({
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const needsRenewal =
     diffDays <= 30 &&
-    contract.status !== 'renewed' &&
     contract.status !== 'cancelled' &&
     contract.status !== 'draft';
 

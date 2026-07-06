@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Search, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/contracts/ContractCard';
 import { CreateContractWizard } from '../components/contracts/CreateContractWizard';
+import { ContractWizardData } from '../components/contracts/steps/useContractWizard';
 import { ContractDetails } from '../components/contracts/ContractDetails';
 import { RenewContractModal } from '../components/contracts/RenewContractModal';
 import { contractService } from '../services/contractService';
@@ -24,20 +25,7 @@ const Contracts: React.FC = () => {
   const location = useLocation();
   const { addToast } = useNotification();
 
-  useEffect(() => {
-    if (user && tokenReady) {
-      loadContracts();
-    }
-
-    // Check if coming from Properties with a pre-selected property or from onboarding
-    if (location.state && (location.state as any).preSelectedProperty) {
-      setShowWizard(true);
-    } else if (location.state && (location.state as any).openWizard) {
-      setShowWizard(true);
-    }
-  }, [location, user, tokenReady]);
-
-  const loadContracts = async () => {
+  const loadContracts = useCallback(async () => {
     if (!user || !tokenReady) return;
     setLoading(true);
     try {
@@ -48,18 +36,29 @@ const Contracts: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, tokenReady]);
 
-  const handleCreateContract = async (data: any) => {
+  useEffect(() => {
+    loadContracts();
+
+    const state = location.state as Record<string, unknown> | null;
+    if (state?.preSelectedProperty) {
+      setShowWizard(true);
+    } else if (state?.openWizard) {
+      setShowWizard(true);
+    }
+  }, [loadContracts, location]);
+
+  const handleCreateContract = async (data: ContractWizardData) => {
     if (!user) return;
     try {
-      // This is now just a wrapper for the service
-      // In a real app we'd need to map the wizard data to the service format more carefully
-      await contractService.create(String(user.id), data);
+      await contractService.create(String(user.id), data as unknown as Record<string, unknown>);
       loadContracts();
       setShowWizard(false);
-    } catch (error) {
+      addToast('Contrato Criado', 'O contrato foi criado com sucesso.', 'success');
+    } catch (error: unknown) {
       console.error('Error creating contract', error);
+      addToast('Erro', (error as Error)?.message || 'Erro ao criar contrato.', 'error');
     }
   };
 
@@ -75,6 +74,7 @@ const Contracts: React.FC = () => {
     observations: string;
   }) => {
     if (!renewingContract) return;
+    void data;
 
     try {
       // In a real app, we would call a service to renew
@@ -110,7 +110,7 @@ const Contracts: React.FC = () => {
 
   // Calculate correct expiringCount (next 30 days)
   const expiringCount = contracts.filter((c) => {
-    if (c.status === 'renewed' || c.status === 'cancelled' || c.status === 'draft') return false;
+    if (c.status === 'cancelled' || c.status === 'draft') return false;
     const today = new Date();
     const endDate = new Date(c.end_date);
     const diffTime = endDate.getTime() - today.getTime();
@@ -185,7 +185,7 @@ const Contracts: React.FC = () => {
             ].map((f) => (
               <button
                 key={f.id}
-                onClick={() => setFilter(f.id as any)}
+                onClick={() => setFilter(f.id as ContractStatus)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
                   filter === f.id
                     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
@@ -230,11 +230,13 @@ const Contracts: React.FC = () => {
         <CreateContractWizard
           onClose={() => {
             setShowWizard(false);
-            // Clear location state when closing to avoid reopening on refresh
             window.history.replaceState({}, document.title);
           }}
           onComplete={handleCreateContract}
-          initialProperty={(location.state as any)?.preSelectedProperty}
+          initialProperty={
+            (location.state as Record<string, unknown>)?.preSelectedProperty as string | undefined
+          }
+          currentUser={user ? { id: user.id, name: user.name } : undefined}
         />
       )}
 

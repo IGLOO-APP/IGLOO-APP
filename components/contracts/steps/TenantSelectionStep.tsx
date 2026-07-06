@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, CreditCard, Plus, X } from 'lucide-react';
+import { User, CreditCard, Mail, Phone, Plus, X } from 'lucide-react';
 import { Tenant } from '../../../types';
 import { ContractFormData } from './useContractWizard';
 
@@ -11,7 +11,7 @@ interface TenantSelectionStepProps {
   showNewTenantForm: boolean;
   onToggleNewForm: (show: boolean) => void;
   selectedTenantId: string | null;
-  onSelectTenant: (id: string, name: string, cpf: string) => void;
+  onSelectTenant: (id: string, name: string, cpf: string, email: string) => void;
   formData: ContractFormData;
   onFormDataChange: (data: Partial<ContractFormData>) => void;
 }
@@ -88,7 +88,9 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                 filteredTenants.map((tenant) => (
                   <button
                     key={tenant.id}
-                    onClick={() => onSelectTenant(tenant.id, tenant.name, tenant.cpf || '')}
+                    onClick={() =>
+                      onSelectTenant(tenant.id, tenant.name, tenant.cpf || '', tenant.email)
+                    }
                     className={`group p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       selectedTenantId === tenant.id
                         ? 'border-primary bg-primary/5 shadow-md'
@@ -179,6 +181,41 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                   onChange={(e) => onFormDataChange({ tenantCpf: e.target.value })}
                   className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
                   placeholder='000.000.000-00'
+                />
+              </div>
+            </div>
+            <div>
+              <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
+                E-mail
+              </label>
+              <div className='relative'>
+                <Mail
+                  className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                  size={20}
+                />
+                <input
+                  type='email'
+                  value={formData.tenantEmail}
+                  onChange={(e) => onFormDataChange({ tenantEmail: e.target.value })}
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  placeholder='inquilino@email.com'
+                />
+              </div>
+            </div>
+            <div>
+              <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1'>
+                Telefone
+              </label>
+              <div className='relative'>
+                <Phone
+                  className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400'
+                  size={20}
+                />
+                <input
+                  value={formData.tenantPhone}
+                  onChange={(e) => onFormDataChange({ tenantPhone: e.target.value })}
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  placeholder='(11) 99999-9999'
                 />
               </div>
             </div>

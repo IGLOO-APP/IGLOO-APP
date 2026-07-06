@@ -9,12 +9,13 @@ import { ContractValuesStep } from './steps/ContractValuesStep';
 import { ContractDurationStep } from './steps/ContractDurationStep';
 import { DocumentSignatureStep } from './steps/DocumentSignatureStep';
 import { ContractReviewStep } from './steps/ContractReviewStep';
-import { useContractWizard } from './steps/useContractWizard';
+import { useContractWizard, ContractWizardData } from './steps/useContractWizard';
 
 interface CreateContractWizardProps {
   onClose: () => void;
-  onComplete: (data: any) => void;
+  onComplete: (data: ContractWizardData) => void;
   initialProperty?: string;
+  currentUser?: { id: string; name: string };
 }
 
 const stepRequirements: Record<number, string> = {
@@ -27,8 +28,9 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   onClose,
   onComplete,
   initialProperty,
+  currentUser,
 }) => {
-  const wizard = useContractWizard(initialProperty, onComplete);
+  const wizard = useContractWizard(initialProperty, onComplete, currentUser);
 
   return (
     <div className='fixed inset-0 z-50 bg-slate-50 dark:bg-background-dark flex flex-col animate-slideUp overflow-hidden'>
@@ -52,8 +54,14 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
               loading={wizard.loading}
               properties={wizard.properties}
               selectedProperty={wizard.formData.property}
-              onSelect={(property, rentValue, depositValue) =>
-                wizard.setFormData({ ...wizard.formData, property, rentValue, depositValue })
+              onSelect={(propertyId, propertyName, rentValue, depositValue) =>
+                wizard.setFormData({
+                  ...wizard.formData,
+                  property: propertyName,
+                  propertyId,
+                  rentValue,
+                  depositValue,
+                })
               }
             />
           )}
@@ -67,9 +75,14 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
               showNewTenantForm={wizard.showNewTenantForm}
               onToggleNewForm={wizard.setShowNewTenantForm}
               selectedTenantId={wizard.selectedTenantId}
-              onSelectTenant={(id, name, cpf) => {
+              onSelectTenant={(id, name, cpf, email) => {
                 wizard.setSelectedTenantId(id);
-                wizard.setFormData({ ...wizard.formData, tenantName: name, tenantCpf: cpf });
+                wizard.setFormData({
+                  ...wizard.formData,
+                  tenantName: name,
+                  tenantCpf: cpf,
+                  tenantEmail: email,
+                });
               }}
               formData={wizard.formData}
               onFormDataChange={(data) => wizard.setFormData({ ...wizard.formData, ...data })}

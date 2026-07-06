@@ -6,7 +6,12 @@ interface PropertySelectionStepProps {
   loading: boolean;
   properties: Property[];
   selectedProperty: string;
-  onSelect: (propertyName: string, rentValue: string, depositValue: string) => void;
+  onSelect: (
+    propertyId: string,
+    propertyName: string,
+    rentValue: string,
+    depositValue: string
+  ) => void;
 }
 
 export const PropertySelectionStep: React.FC<PropertySelectionStepProps> = ({
@@ -41,7 +46,7 @@ export const PropertySelectionStep: React.FC<PropertySelectionStepProps> = ({
               onClick={() => {
                 const cleanPrice = prop.price.replace(/[^\d,]/g, '').replace(',', '.');
                 const rentVal = parseFloat(cleanPrice) || 0;
-                onSelect(prop.name, rentVal.toString(), (rentVal * 3).toString());
+                onSelect(prop.id, prop.name, rentVal.toString(), (rentVal * 3).toString());
               }}
               className={`group relative overflow-hidden rounded-3xl border-2 text-left transition-all duration-300 flex flex-col bg-white dark:bg-surface-dark ${
                 selectedProperty === prop.name
