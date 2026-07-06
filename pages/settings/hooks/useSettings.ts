@@ -6,6 +6,9 @@ import { stripeService } from '../../../services/stripeService';
 import { subscriptionService } from '../../../services/subscriptionService';
 import { profileService } from '../../../services/profileService';
 import { storageService } from '../../../services/storageService';
+import { notificationService, NotificationPrefs } from '../../../services/notificationService';
+import { paymentConfigService } from '../../../services/paymentConfigService';
+import { maintenanceSettingsService } from '../../../services/maintenanceSettingsService';
 import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../../../types';
 
 export interface PaymentMethodConfig {
@@ -18,6 +21,36 @@ export interface PaymentMethodConfig {
   description: string;
 }
 
+const DEFAULT_PAYMENT_METHODS: PaymentMethodConfig[] = [
+  {
+    id: 'pix',
+    name: 'Pix',
+    enabled: true,
+    iconName: 'QrCode',
+    color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
+    fields: { key: '12.345.678/0001-90', type: 'CNPJ' },
+    description: 'Recebimento instantâneo via QR Code e Copia e Cola.',
+  },
+  {
+    id: 'boleto',
+    name: 'Boleto Bancário',
+    enabled: true,
+    iconName: 'Barcode',
+    color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+    fields: { bank: 'Itaú', agency: '0001', account: '12345-6', wallet: '109' },
+    description: 'Emissão automática com registro. Requer convênio.',
+  },
+  {
+    id: 'credit_card',
+    name: 'Cartão de Crédito',
+    enabled: false,
+    iconName: 'CreditCard',
+    color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+    fields: { gateway: 'Mercado Pago', publicKey: 'pk_test_...', maxInstallments: '12' },
+    description: 'Receba via cartão. Taxas de gateway aplicáveis.',
+  },
+];
+
 export function useSettings() {
   const { user } = useAuth();
   const { openUserProfile } = useClerk();
@@ -27,10 +60,8 @@ export function useSettings() {
   >('general');
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (location.state && (location.state as any).activeTab) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setActiveTab((location.state as any).activeTab);
+    if (location.state && (location.state as Record<string, unknown>).activeTab) {
+      setActiveTab((location.state as Record<string, unknown>).activeTab as typeof activeTab);
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -54,58 +85,28 @@ export function useSettings() {
   >('summary');
 
   const [expandedMethodId, setExpandedMethodId] = useState<string | null>(null);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([
-    {
-      id: 'pix',
-      name: 'Pix',
-      enabled: true,
-      iconName: 'QrCode',
-      color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
-      fields: { key: '12.345.678/0001-90', type: 'CNPJ' },
-      description: 'Recebimento instantâneo via QR Code e Copia e Cola.',
-    },
-    {
-      id: 'boleto',
-      name: 'Boleto Bancário',
-      enabled: true,
-      iconName: 'Barcode',
-      color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
-      fields: { bank: 'Itaú', agency: '0001', account: '12345-6', wallet: '109' },
-      description: 'Emissão automática com registro. Requer convênio.',
-    },
-    {
-      id: 'credit_card',
-      name: 'Cartão de Crédito',
-      enabled: false,
-      iconName: 'CreditCard',
-      color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
-      fields: { gateway: 'Mercado Pago', publicKey: 'pk_test_...', maxInstallments: '12' },
-      description: 'Receba via cartão. Taxas de gateway aplicáveis.',
-    },
-  ]);
+  const [paymentMethods, setPaymentMethods] =
+    useState<PaymentMethodConfig[]>(DEFAULT_PAYMENT_METHODS);
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    phone: (user as any)?.phone || '',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    companyName: (user as any)?.company_name || '',
+    phone: user?.phone || '',
+    companyName: ((user as unknown as Record<string, unknown>)?.company_name as string) || '',
     avatarUrl: user?.avatar || '',
   });
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    if (user)
+    if (user) {
       setProfileData({
         name: user.name || '',
         email: user.email || '',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        phone: (user as any).phone || '',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        companyName: (user as any).company_name || '',
+        phone: user.phone || '',
+        companyName: '',
         avatarUrl: user.avatar || '',
       });
+    }
   }, [user]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,35 +147,58 @@ export function useSettings() {
     ],
   });
 
-  const NOTIF_PREFS_KEY = 'igloo_notification_prefs';
-
-  const loadNotifPrefs = () => {
-    try {
-      const stored = localStorage.getItem(NOTIF_PREFS_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch {
-      /* ignore */
-    }
-    return {
-      emailAlerts: true,
-      smsAlerts: false,
-      paymentReceived: true,
-      latePayment: true,
-      maintenance: true,
-    };
-  };
-
-  const [notifications, setNotifications] = useState(loadNotifPrefs);
+  const [notifications, setNotifications] = useState<NotificationPrefs>({
+    email_alerts: true,
+    sms_alerts: false,
+    payment_received: true,
+    late_payment: true,
+    maintenance_updates: true,
+    payment_reminders: true,
+    new_messages: true,
+    announcements: false,
+  });
 
   useEffect(() => {
+    loadSettingsData();
     loadSubscriptionData();
-  }, []);
+  }, [user]);
+
+  const loadSettingsData = async () => {
+    if (!user) return;
+    try {
+      const prefs = await notificationService.get(user.id);
+      setNotifications(prefs);
+
+      const dbMethods = await paymentConfigService.getAll(user.id);
+      if (dbMethods.length > 0) {
+        setPaymentMethods((prev) =>
+          prev.map((m) => {
+            const db = dbMethods.find((d) => d.method === m.id);
+            return db ? { ...m, enabled: db.enabled, fields: { ...m.fields, ...db.fields } } : m;
+          })
+        );
+      }
+
+      const dbCategories = await maintenanceSettingsService.getAll(user.id);
+      if (dbCategories.length > 0) {
+        setMaintenanceSettings((prev) => ({
+          ...prev,
+          categories: prev.categories.map((c) => {
+            const db = dbCategories.find((d) => d.category === c.id);
+            return db ? { ...c, enabled: db.enabled } : c;
+          }),
+        }));
+      }
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    }
+  };
 
   const loadSubscriptionData = async () => {
     setLoadingSub(true);
     try {
-      const sub = await subscriptionService.getCurrentSubscription();
-      const inv = await subscriptionService.getInvoices();
+      const sub = await subscriptionService.getCurrentSubscription(user?.id);
+      const inv = await subscriptionService.getInvoices(user?.id);
       const allPlans = subscriptionService.getPlans();
       setSubscription(sub);
       setInvoices(inv);
@@ -193,13 +217,30 @@ export function useSettings() {
       await profileService.update(String(user.id), {
         name: profileData.name,
         phone: profileData.phone,
-        company_name: profileData.companyName,
+        company_name: profileData.companyName || null,
       });
-      localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(notifications));
+      await notificationService.save(user.id, notifications);
+
+      await Promise.all(
+        paymentMethods.map((m) =>
+          paymentConfigService.upsert(
+            user.id,
+            m.id as 'pix' | 'boleto' | 'credit_card',
+            m.enabled,
+            m.fields
+          )
+        )
+      );
+
+      await maintenanceSettingsService.saveBatch(
+        user.id,
+        maintenanceSettings.categories.map((c) => ({ category: c.id, enabled: c.enabled }))
+      );
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      console.error('Error saving profile:', err);
+      console.error('Error saving settings:', err);
       alert('Erro ao salvar as configurações.');
     } finally {
       setIsSaving(false);
@@ -225,6 +266,18 @@ export function useSettings() {
     setStripeConnected(true);
   };
 
+  const handleCancelSubscription = async () => {
+    if (!user || !confirm('Tem certeza que deseja cancelar sua assinatura?')) return;
+    try {
+      await subscriptionService.cancelSubscription(user.id);
+      await loadSubscriptionData();
+      alert('Assinatura cancelada com sucesso.');
+    } catch (err) {
+      console.error('Error canceling subscription:', err);
+      alert('Erro ao cancelar assinatura.');
+    }
+  };
+
   const openPlanModal = () => setShowPlansModal(true);
   const selectPlan = (planId: PlanTier) => {
     setSelectedPlanId(planId);
@@ -243,7 +296,7 @@ export function useSettings() {
         user?.id
       );
       setSubscription(updatedSub);
-      const inv = await subscriptionService.getInvoices();
+      const inv = await subscriptionService.getInvoices(user?.id);
       setInvoices(inv);
       setCheckoutStep('success');
     } catch {
@@ -277,6 +330,7 @@ export function useSettings() {
     setExpandedMethodId,
     stripeConnected,
     handleConnectStripe,
+    handleCancelSubscription,
     maintenanceSettings,
     setMaintenanceSettings,
     notifications,

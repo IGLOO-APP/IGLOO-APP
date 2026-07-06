@@ -44,6 +44,7 @@ const PendingAccess = lazy(() => import('./pages/PendingAccess'));
 
 // Tenant Pages
 const TenantDashboard = lazy(() => import('./pages/tenant/TenantDashboard'));
+const TenantContract = lazy(() => import('./pages/tenant/TenantContract'));
 const TenantMaintenance = lazy(() => import('./pages/tenant/TenantMaintenance'));
 const TenantProfile = lazy(() => import('./pages/tenant/TenantProfile'));
 const TenantPayments = lazy(() => import('./pages/tenant/TenantPayments'));
@@ -187,6 +188,7 @@ const router = createBrowserRouter(
           ),
           children: [
             { index: true, element: <TenantDashboard /> },
+            { path: 'contract', element: <TenantContract /> },
             { path: 'payments', element: <TenantPayments /> },
             { path: 'maintenance', element: <TenantMaintenance /> },
             { path: 'profile', element: <TenantProfile /> },

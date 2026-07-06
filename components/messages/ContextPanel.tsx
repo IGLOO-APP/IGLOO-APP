@@ -17,7 +17,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { ChatThread } from '../../services/messageService';
-import { supabase } from '../../lib/supabase';
+import { supportService } from '../../services/supportService';
 
 interface ContextPanelProps {
   activeChat: ChatThread;
@@ -47,21 +47,11 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
     if (!activeChat.ticket?.realId) return;
     setIsStatusLocked(true);
     try {
-      const { error } = await supabase
-        .from('support_tickets')
-        .update({ status: 'Fechado' })
-        .eq('id', activeChat.ticket.realId);
-
-      if (error) throw error;
-
-      await supabase.from('support_messages').insert({
-        ticket_id: activeChat.ticket.realId,
-        sender_id: null,
-        sender_role: 'system',
-        content: 'Chamado encerrado pelo proprietário',
-        is_read: true,
-      });
-
+      await supportService.updateTicketStatus(activeChat.ticket.realId, 'Fechado');
+      await supportService.addSystemMessage(
+        activeChat.ticket.realId,
+        'Chamado encerrado pelo proprietário'
+      );
       alert('Chamado de suporte fechado com sucesso!');
       window.location.reload();
     } catch (err) {

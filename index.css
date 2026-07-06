@@ -1,4 +1,4 @@
-@import "@fontsource-variable/geist";
+@import '@fontsource-variable/geist';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -53,7 +53,9 @@
 
   /* Previne o zoom automático em inputs no iOS (mínimo 16px) */
   @media screen and (max-width: 768px) {
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       font-size: 16px !important;
     }
   }
@@ -89,7 +91,7 @@
     --font-sans: 'Geist Variable', sans-serif;
   }
   :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.967 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -97,32 +99,32 @@
     --popover-foreground: oklch(0.145 0 0);
     --primary: oklch(0.205 0 0);
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
+    --secondary: oklch(0.904 0 0);
     --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
+    --muted: oklch(0.922 0 0);
+    --muted-foreground: oklch(0.5 0 0);
+    --accent: oklch(0.922 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.871 0 0);
+    --input: oklch(0.871 0 0);
+    --ring: oklch(0.6 0 0);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent: oklch(0.922 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-    --card-bg: rgba(0, 0, 0, 0.02);
-    --card-border: rgba(0, 0, 0, 0.08);
+    --sidebar-border: oklch(0.871 0 0);
+    --sidebar-ring: oklch(0.6 0 0);
+    --card-bg: rgba(0, 0, 0, 0.04);
+    --card-border: rgba(0, 0, 0, 0.1);
     --card-radius: 12px;
     --label-size: 11px;
     --value-size: 20px;
@@ -159,8 +161,8 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.1);
   }
   html {
     @apply font-sans;
@@ -248,9 +250,7 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent);
+    background: linear-gradient(transparent, rgba(255, 255, 255, 0.1), transparent);
     transform: rotate(45deg);
     transition: 0.5s;
     pointer-events: none;
@@ -273,7 +273,9 @@
 
   .active-tap {
     -webkit-tap-highlight-color: transparent;
-    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.1s;
+    transition:
+      transform 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.1s;
   }
 
   .active-tap:active {
@@ -288,13 +290,21 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
+
+  .card-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark .card-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
 }
 
 /* ─── Ocultar branding do Clerk ─── */
 /* Badge "Development mode" e "Secured by Clerk" */
 .cl-badge,
 .cl-badge--shadow,
-[data-localization-key="badge__devMode"],
+[data-localization-key='badge__devMode'],
 .cl-internal-b3fm6y,
 .cl-internal-1dauvpw,
 .cl-footer,
@@ -312,14 +322,18 @@
   padding-bottom: 0 !important;
 }
 
-.cl-footer~* {
+.cl-footer ~ * {
   display: none !important;
 }
 
 @layer utilities {
   @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
   }
 
   .animate-marquee {
@@ -334,14 +348,12 @@
 /* ─── Announcement Ticker ─── */
 
 .ticker-mask {
-  -webkit-mask-image: linear-gradient(to right,
-      transparent 0%,
-      black 12%,
-      black 75%,
-      transparent 100%);
-  mask-image: linear-gradient(to right,
-      transparent 0%,
-      black 12%,
-      black 75%,
-      transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 12%,
+    black 75%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 75%, transparent 100%);
 }

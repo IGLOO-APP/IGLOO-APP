@@ -1,6 +1,7 @@
 # iGloo Property Manager — AGENTS.md
 
 ## Commands
+
 - `npm run dev` — Vite dev server on port 5176
 - `npm run build` — `tsc && vite build` (must typecheck first)
 - `npm run test` — Vitest (no `--run`, so it watches in CI; use `npx vitest run`)
@@ -13,6 +14,7 @@
 **Stack:** React 18 + Vite + TypeScript + Tailwind + Clerk (auth) + Supabase (data)
 
 **State:**
+
 - Server state → `@tanstack/react-query` (no Redux/Zustand)
 - Auth → `context/AuthContext.tsx` (Clerk ↔ Supabase bridge, impersonation)
 - Notifications → `context/NotificationContext.tsx`
@@ -23,6 +25,7 @@
 **Entrypoint:** `index.tsx` — wraps `<ClerkProvider>` around `<App />`. Blocks render if `VITE_CLERK_PUBLISHABLE_KEY` is missing.
 
 **Directory structure:**
+
 - `pages/` — route-level page components (per-role subdirs: `admin/`, `tenant/`, `owner/`, `dashboard/`, `financials/`, `settings/`)
 - `components/` — shared UI, extracted modals/sections, per-domain subdirs
 - `services/` — domain service files calling Supabase; `adminService.ts` is a facade merging 7 sub-services
@@ -34,12 +37,14 @@
 **Auth flow:** Clerk ID is stored in `profiles.id`. The `AuthContext` resolves the Clerk session, looks up/fetches the profile, sets `currentUser` and `loading`. Role-based routing (`UserRole`).
 
 ## Refactoring conventions
+
 - Files >500 lines get split: extract `hooks/use[Nome].ts` for all logic, extract modals/sections to `modals/` and `sections/` subdirs, keep the page as thin orchestrator
 - Services >200 lines get split by domain into `services/admin/` subdirs; facade pattern preserves `services/adminService.ts` exports
 - Shared onboarding components live in `components/onboarding/`
 - Dead code (`AnnouncementBanner.tsx`, `getMockContractData`) should be removed
 
 ## Code quality rules
+
 - **No `any` types** — prefer proper interfaces or `unknown`
 - **No `console.log` in production** — use `console.warn` or structured logging only
 - **No mock data in production code** — stripeService, financeService, subscriptionService still have mock data; flag for removal
@@ -51,19 +56,23 @@
 - **No inline `style={{ }}`** — use Tailwind classes
 
 ## Testing
+
 - Vitest + jsdom + @testing-library/react
 - Only 3 test files exist (43 tests total)
 - Service tests should mock `../../lib/supabase` with `vi.mock()`
 - Run focused: `npx vitest run -t "test name"`
 
 ## Schema
+
 - `supabase/schema.sql` — full schema with RLS policies
 - `supabase/migrations/` — incremental migrations
 - `saved_cards` table added recently for Stripe payment methods
 - Tables: `profiles`, `properties`, `contracts`, `tenants`, `financial_transactions`, `inspections`, `conversations`, `conversation_messages`, `saved_cards`, `feature_flags`, `plans`, `owner_announcements`, etc.
 
 ## Environment
+
 Required in `.env`:
+
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
@@ -71,11 +80,13 @@ VITE_CLERK_PUBLISHABLE_KEY=
 ```
 
 ## Auto-fix rule
+
 On every session start, run `npx tsc --noEmit --skipLibCheck` and fix any syntax/type errors found before doing other work.
 
 ## Session Log
 
 ### 2026-07-03 — Lint error elimination in `components/`
+
 **Scope:** Fix all lint errors (not warnings) in `components/**/*.{ts,tsx}`.
 
 **Result:** `eslint --max-warnings 0` → **0 errors**, 83 warnings (all `no-explicit-any` / `exhaustive-deps` / `react-refresh/only-export-components`). `tsc --noEmit --skipLibCheck` passes cleanly.

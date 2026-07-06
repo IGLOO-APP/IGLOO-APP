@@ -4,90 +4,134 @@ import { contractService } from './contractService';
 import { financeService } from './financeService';
 import { supabase } from '../lib/supabase';
 import { paymentService } from './paymentService';
-import { 
-  Property, 
-  Tenant, 
-  Contract, 
-  FinancialTransaction, 
-  DashboardMetrics, 
-  DashboardRisk, 
+import {
+  Property,
+  Tenant,
+  Contract,
+  FinancialTransaction,
+  DashboardMetrics,
+  DashboardRisk,
   DashboardActivity,
-  DashboardFinancialHistory
+  DashboardFinancialHistory,
 } from '../types';
 
 export const dashboardService = {
-  // Method to fetch everything in one go (Legacy support)
-  async getDashboardData(userId: string) {
+  async getDashboardData(userId: string, months = 12) {
     const [properties, tenants, contracts, transactions, maintenanceRequests, pendingPayments] =
       await Promise.all([
-        propertyService.getAll(),
-        tenantService.getAll(),
-        contractService.getAll(),
-        financeService.getAll(),
+        propertyService.getAll().catch(() => [] as Property[]),
+        tenantService.getAll().catch(() => [] as Tenant[]),
+        contractService.getAll().catch(() => [] as Contract[]),
+        financeService.getAll().catch(() => [] as FinancialTransaction[]),
         supabase
           .from('maintenance_requests')
           .select('*')
           .order('created_at', { ascending: false })
           .then((res) => res.data || []),
-        paymentService.getPending(userId),
+        paymentService.getPending(userId).catch(() => []),
       ]);
 
     const activeContracts = contracts.filter((c) => c.status === 'active');
-    const mrrValue = activeContracts.reduce((acc, c) => acc + (c.numeric_value || 0), 0);
-    const totalWealthValue = properties.reduce((acc, p) => acc + (p.market_value || 0), 0);
+    const mrrValue = activeContracts.reduce(
+      (acc: number, c: Contract) => acc + (c.numeric_value || 0),
+      0
+    );
+    const totalWealthValue = properties.reduce(
+      (acc: number, p: Property) => acc + (p.market_value || 0),
+      0
+    );
 
     const portfolioHealth = this._calculatePortfolioHealth(properties, mrrValue, pendingPayments);
+    const history = this._generateFinancialHistory(
+      this._getLastNMonths(months),
+      transactions,
+      mrrValue
+    );
 
     return {
       properties,
+      tenants,
       portfolioHealth,
-      metrics: this._calculateMetrics(properties, mrrValue, totalWealthValue, contracts, maintenanceRequests),
-      risks: this._calculateRisks(contracts, portfolioHealth.delinquency, properties, maintenanceRequests),
-      financialHistory: this._generateFinancialHistory(this._getLast6Months(), transactions, mrrValue),
-      activities: this._consolidateActivities(transactions, maintenanceRequests, properties).slice(0, 5),
-      topProperties: [],
-      wealthHistory: [],
+      metrics: this._calculateMetrics(
+        properties,
+        tenants,
+        mrrValue,
+        totalWealthValue,
+        contracts,
+        maintenanceRequests,
+        history
+      ),
+      risks: this._calculateRisks(contracts, portfolioHealth.delinquency, properties),
+      financialHistory: history,
+      activities: this._consolidateActivities(transactions, maintenanceRequests, properties).slice(
+        0,
+        5
+      ),
+      topProperties: this._getTopProperties(properties, contracts),
+      wealthHistory: this._generateWealthHistory(months, properties),
     };
   },
 
   _calculateMetrics(
     properties: Property[],
+    tenants: any[],
     mrrValue: number,
     totalWealthValue: number,
     contracts: Contract[],
-    maintenanceRequests: any[]
+    maintenanceRequests: any[],
+    financialHistory: DashboardFinancialHistory[]
   ): DashboardMetrics {
+    const occRate = occupancyRate(properties);
+    const roi = totalWealthValue > 0 ? ((mrrValue * 12) / totalWealthValue) * 100 : 0;
+    const realHistory = financialHistory.filter((h) => !h.projected);
+    const mrrSpark = realHistory.map((h) => h.income);
+    const wealthSpark = realHistory.map((h) => h.net);
+
     return {
       totalWealth: totalWealthValue > 0 ? `R$ ${(totalWealthValue / 1000).toFixed(0)}k` : 'R$ 0k',
       mrr: `R$ ${(mrrValue / 1000).toFixed(1)}k`,
-      occupancyRate: occupancyRate(properties),
-      avgRoi: `${totalWealthValue > 0 ? (((mrrValue * 12) / totalWealthValue) * 100).toFixed(1) : '0'}%`,
+      occupancyRate: occRate,
+      avgRoi: `${roi.toFixed(1)}%`,
       expiringContractsCount: contracts.filter((c) => c.status === 'expiring_soon').length,
+      totalTenants: tenants.length,
       pendingMaintenanceCount: maintenanceRequests.filter(
-        (m) => m.status === 'pending' || m.status === 'in_progress'
+        (m: any) => m.status === 'pending' || m.status === 'in_progress'
       ).length,
       trends: {
         wealth: totalWealthValue > 0 ? '+0.4%' : '0%',
         mrr: '+0%',
-        occupancy: occupancyRate(properties) < 80 ? '-0%' : '+0%',
+        occupancy: occRate < 80 ? '-0%' : '+0%',
         roi: '+0%',
+      },
+      sparkData: {
+        wealth: wealthSpark,
+        mrr: mrrSpark,
       },
     };
   },
 
   _calculatePortfolioHealth(properties: Property[], mrrValue: number, pendingPayments: any[]) {
-    const totalWealthValue = properties.reduce((acc, p) => acc + (p.market_value || 0), 0);
+    const totalWealthValue = properties.reduce(
+      (acc: number, p: Property) => acc + (p.market_value || 0),
+      0
+    );
     const annualRent = mrrValue * 12;
     const portfolioYield = totalWealthValue > 0 ? (annualRent / totalWealthValue) * 100 : 0;
 
     const vacantProperties = properties.filter((p) => p.status !== 'ALUGADO');
-    const potentialRevenue = properties.reduce((acc, p) => acc + (p.numeric_price || 0), 0);
-    const lostRevenue = vacantProperties.reduce((acc, p) => acc + (p.numeric_price || 0), 0);
+    const potentialRevenue = properties.reduce(
+      (acc: number, p: Property) => acc + (p.numeric_price || 0),
+      0
+    );
+    const lostRevenue = vacantProperties.reduce(
+      (acc: number, p: Property) => acc + (p.numeric_price || 0),
+      0
+    );
     const financialVacancy = potentialRevenue > 0 ? (lostRevenue / potentialRevenue) * 100 : 0;
 
-    const unpaidThisMonth = pendingPayments
-      .filter((p) => new Date(p.due_date).getMonth() === new Date().getMonth())
-      .reduce((acc, p) => acc + (p.amount || 0), 0);
+    const unpaidThisMonth = (pendingPayments || [])
+      .filter((p: any) => new Date(p.due_date).getMonth() === new Date().getMonth())
+      .reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
     const delinquencyRate = mrrValue > 0 ? (unpaidThisMonth / mrrValue) * 100 : 0;
 
     return {
@@ -101,8 +145,7 @@ export const dashboardService = {
   _calculateRisks(
     contracts: Contract[],
     delinquencyRateStr: string,
-    properties: Property[],
-    maintenanceRequests: any[]
+    properties: Property[]
   ): DashboardRisk[] {
     const risks: DashboardRisk[] = [];
     const delinquencyRate = parseFloat(delinquencyRateStr);
@@ -137,16 +180,20 @@ export const dashboardService = {
     return risks;
   },
 
-  _getLast6Months() {
-    return Array.from({ length: 6 }).map((_, i) => {
+  _getLastNMonths(n: number) {
+    return Array.from({ length: n }).map((_, i) => {
       const d = new Date();
-      d.setMonth(d.getMonth() - (5 - i));
+      d.setMonth(d.getMonth() - (n - 1 - i));
       return d;
     });
   },
 
-  _generateFinancialHistory(last6Months: Date[], transactions: FinancialTransaction[], mrrValue: number): DashboardFinancialHistory[] {
-    const history = last6Months.map((date) => {
+  _generateFinancialHistory(
+    months: Date[],
+    transactions: FinancialTransaction[],
+    mrrValue: number
+  ): DashboardFinancialHistory[] {
+    const history = months.map((date) => {
       const monthName = date.toLocaleString('pt-BR', { month: 'short' });
       const monthTransactions = transactions.filter(
         (t) =>
@@ -176,7 +223,58 @@ export const dashboardService = {
     return history;
   },
 
-  _consolidateActivities(transactions: FinancialTransaction[], maintenanceRequests: any[], properties: Property[]): DashboardActivity[] {
+  _getTopProperties(properties: Property[], contracts: Contract[]) {
+    return properties
+      .map((p) => {
+        const contract = contracts.find((c) => c.property_id === p.id && c.status === 'active');
+        const revenue = contract?.numeric_value || 0;
+        const marketValue = p.market_value || 0;
+        const yieldVal = marketValue > 0 ? ((revenue * 12) / marketValue) * 100 : 0;
+        return {
+          id: p.id,
+          name: p.name,
+          image: p.image,
+          revenue: parseFloat(revenue.toFixed(2)),
+          yield: parseFloat(yieldVal.toFixed(2)),
+          status:
+            p.status === 'ALUGADO' ? 'occupied' : p.status === 'MANUTENÇÃO' ? 'warning' : 'vacant',
+        };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  },
+
+  _generateWealthHistory(months: number, properties: Property[]) {
+    const dates = this._getLastNMonths(months);
+    return dates.map((date) => {
+      const monthStr = date.toLocaleString('pt-BR', { month: 'short' });
+      const existingProps = properties.filter((p) => {
+        if (!p.created_at) return true;
+        return new Date(p.created_at) <= date;
+      });
+      const value = existingProps.reduce((acc, p) => acc + (p.market_value || 0), 0);
+
+      const events: { type: string; label: string }[] = [];
+      properties.forEach((p) => {
+        if (p.created_at) {
+          const created = new Date(p.created_at);
+          if (
+            created.getMonth() === date.getMonth() &&
+            created.getFullYear() === date.getFullYear()
+          ) {
+            events.push({ type: 'property', label: p.name });
+          }
+        }
+      });
+      return { month: monthStr, value, events };
+    });
+  },
+
+  _consolidateActivities(
+    transactions: FinancialTransaction[],
+    maintenanceRequests: any[],
+    properties: Property[]
+  ): DashboardActivity[] {
     return [
       ...transactions.map((t) => ({
         id: t.id,

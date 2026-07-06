@@ -27,9 +27,9 @@ async function testApyHub() {
         method: 'POST',
         headers: {
           'apy-token': APY_TOKEN,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: testUrl })
+        body: JSON.stringify({ url: testUrl }),
       }
     );
 

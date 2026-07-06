@@ -27,6 +27,11 @@ const PERIOD_OPTIONS = [
 export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory = [], isDark }) => {
   const [period, setPeriod] = useState('Último ano');
 
+  const realHistory = financialHistory.filter((h) => !h.projected);
+  const projected = financialHistory.filter((h) => h.projected);
+  const slicedReal = period === 'Últimos 6 meses' ? realHistory.slice(-6) : realHistory;
+  const displayData = [...slicedReal, ...projected];
+
   return (
     <div className='bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
       <div className='mb-4'>
@@ -49,10 +54,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
 
       <div className='h-[220px] w-full'>
         <ResponsiveContainer width='100%' height='100%'>
-          <ComposedChart
-            data={financialHistory}
-            margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
-          >
+          <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id='colorIncome' x1='0' y1='0' x2='0' y2='1'>
                 <stop offset='5%' stopColor='#10b981' stopOpacity={0.8} />
@@ -170,7 +172,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
               animationDuration={2000}
               animationBegin={400}
             >
-              {financialHistory.map((entry, index) => (
+              {displayData.map((entry, index) => (
                 <Cell
                   key={`income-${index}`}
                   fill='url(#colorIncome)'
@@ -190,7 +192,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
               animationDuration={2000}
               animationBegin={600}
             >
-              {financialHistory.map((entry, index) => (
+              {displayData.map((entry, index) => (
                 <Cell
                   key={`expense-${index}`}
                   fill='url(#colorExpense)'

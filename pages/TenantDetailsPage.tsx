@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  ArrowLeft,
-  ShieldAlert,
-  TrendingUp,
-  DollarSign,
-  ShieldCheck,
-  Clock,
-} from 'lucide-react';
+import { ArrowLeft, ShieldAlert, TrendingUp, DollarSign, ShieldCheck, Clock } from 'lucide-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
 import { OwnerOnboardingReviewChecklist } from '../components/tenants/OwnerOnboardingReviewChecklist';
 import { useTenantDetails } from './tenant/hooks/useTenantDetails';

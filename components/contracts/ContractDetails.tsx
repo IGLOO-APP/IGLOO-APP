@@ -39,7 +39,9 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
   onClose,
   onUpdate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'document' | 'history' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'document' | 'history' | 'audit'>(
+    'overview'
+  );
   const [isSigning, setIsSigning] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
@@ -191,8 +193,13 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
                       <span className='absolute top-0 left-[calc(50%-12px)] w-6 h-3 rounded-full blur-md bg-primary/20 dark:bg-primary/30' />
                     </motion.span>
                   )}
-                  <Icon size={14} className={`shrink-0 ${isActive ? 'text-primary' : 'text-slate-400'}`} />
-                  <span className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                  <Icon
+                    size={14}
+                    className={`shrink-0 ${isActive ? 'text-primary' : 'text-slate-400'}`}
+                  />
+                  <span
+                    className={`${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}
+                  >
                     {tab.label}
                   </span>
                 </button>

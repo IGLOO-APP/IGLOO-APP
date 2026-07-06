@@ -69,10 +69,10 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
           <div className='flex items-start gap-3 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 transition-all'>
             <div className='mt-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full shrink-0' />
             <div className='space-y-0.5'>
-            <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
+              <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
                 Manutenção Preventiva
               </p>
-            <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
+              <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
                 Existem {pendingMaintenanceCount} reparos pendentes. Resolvê-los evita vacância
                 futura.
               </p>

@@ -1,6 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Bell, Building2, Users, LayoutDashboard, Receipt, MessageSquare, Settings, X, ArrowRight, ArrowLeft, Moon, Sun } from 'lucide-react';
+import {
+  Search,
+  Bell,
+  Building2,
+  Users,
+  LayoutDashboard,
+  Receipt,
+  MessageSquare,
+  Settings,
+  X,
+  ArrowRight,
+  ArrowLeft,
+  Moon,
+  Sun,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotification } from '../../context/NotificationContext';
 import { propertyService } from '../../services/propertyService';
@@ -14,12 +28,54 @@ interface TopBarProps {
 }
 
 const navItems = [
-  { id: 'nav-dashboard', title: 'Painel Geral', subtitle: 'Visão geral', icon: LayoutDashboard, path: '/', type: 'Página' },
-  { id: 'nav-properties', title: 'Meus Imóveis', subtitle: 'Gestão de ativos', icon: Building2, path: '/properties', type: 'Página' },
-  { id: 'nav-tenants', title: 'Inquilinos', subtitle: 'Base de locatários', icon: Users, path: '/tenants', type: 'Página' },
-  { id: 'nav-messages', title: 'Mensagens', subtitle: 'Central de comunicação', icon: MessageSquare, path: '/messages', type: 'Página' },
-  { id: 'nav-financials', title: 'Finanças', subtitle: 'Fluxo de caixa', icon: Receipt, path: '/financials', type: 'Página' },
-  { id: 'nav-settings', title: 'Configurações', subtitle: 'Perfil e preferências', icon: Settings, path: '/settings', type: 'Página' },
+  {
+    id: 'nav-dashboard',
+    title: 'Painel Geral',
+    subtitle: 'Visão geral',
+    icon: LayoutDashboard,
+    path: '/',
+    type: 'Página',
+  },
+  {
+    id: 'nav-properties',
+    title: 'Meus Imóveis',
+    subtitle: 'Gestão de ativos',
+    icon: Building2,
+    path: '/properties',
+    type: 'Página',
+  },
+  {
+    id: 'nav-tenants',
+    title: 'Inquilinos',
+    subtitle: 'Base de locatários',
+    icon: Users,
+    path: '/tenants',
+    type: 'Página',
+  },
+  {
+    id: 'nav-messages',
+    title: 'Mensagens',
+    subtitle: 'Central de comunicação',
+    icon: MessageSquare,
+    path: '/messages',
+    type: 'Página',
+  },
+  {
+    id: 'nav-financials',
+    title: 'Finanças',
+    subtitle: 'Fluxo de caixa',
+    icon: Receipt,
+    path: '/financials',
+    type: 'Página',
+  },
+  {
+    id: 'nav-settings',
+    title: 'Configurações',
+    subtitle: 'Perfil e preferências',
+    icon: Settings,
+    path: '/settings',
+    type: 'Página',
+  },
 ];
 
 export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => {
@@ -86,7 +142,10 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
       }
       if (e.key === 'Enter') {
         const item = filteredItems[selectedIndex];
-        if (item) { navigate(item.path); setIsSearchOpen(false); }
+        if (item) {
+          navigate(item.path);
+          setIsSearchOpen(false);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -94,16 +153,36 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   }, [isSearchOpen, selectedIndex, query, properties, tenants]);
 
   const filteredProperties = properties
-    .filter((p) => p.name.toLowerCase().includes(query.toLowerCase()) || p.address.toLowerCase().includes(query.toLowerCase()))
+    .filter(
+      (p) =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        p.address.toLowerCase().includes(query.toLowerCase())
+    )
     .slice(0, 3)
-    .map((p) => ({ id: `prop-${p.id}`, title: p.name, subtitle: p.address, icon: Building2, path: `/properties?id=${p.id}`, type: 'Imóvel' }));
+    .map((p) => ({
+      id: `prop-${p.id}`,
+      title: p.name,
+      subtitle: p.address,
+      icon: Building2,
+      path: `/properties?id=${p.id}`,
+      type: 'Imóvel',
+    }));
 
   const filteredTenants = tenants
     .filter((t) => t.name.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 3)
-    .map((t) => ({ id: `tenant-${t.id}`, title: t.name, subtitle: t.email, icon: Users, path: `/tenants?id=${t.id}`, type: 'Inquilino' }));
+    .map((t) => ({
+      id: `tenant-${t.id}`,
+      title: t.name,
+      subtitle: t.email,
+      icon: Users,
+      path: `/tenants?id=${t.id}`,
+      type: 'Inquilino',
+    }));
 
-  const filteredNav = navItems.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
+  const filteredNav = navItems.filter((item) =>
+    item.title.toLowerCase().includes(query.toLowerCase())
+  );
 
   const filteredItems = [...filteredNav, ...filteredProperties, ...filteredTenants];
 
@@ -111,26 +190,26 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
     <header className='sticky top-0 z-40 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[80px]'>
       <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
         {!isDashboard && (
-        <button
-          onClick={() => navigate('/')}
-          className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 transition-all shrink-0'
-          aria-label='Voltar ao início'
-        >
-          <ArrowLeft size={20} />
-        </button>
+          <button
+            onClick={() => navigate('/')}
+            className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400 transition-all shrink-0'
+            aria-label='Voltar ao início'
+          >
+            <ArrowLeft size={20} />
+          </button>
         )}
         <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => navigate('/')}>
-        {title && (
-          <h1 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate'>
-            {title}
-          </h1>
-        )}
-        {subtitle && (
-          <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest truncate'>
-            {subtitle}
-          </p>
-        )}
-      </div>
+          {title && (
+            <h1 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate'>
+              {title}
+            </h1>
+          )}
+          {subtitle && (
+            <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest truncate'>
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className='flex items-center gap-1.5 md:gap-3 shrink-0' ref={searchRef}>
@@ -143,7 +222,10 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                 ref={inputRef}
                 type='text'
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelectedIndex(0);
+                }}
                 placeholder='Pesquisar...'
                 className='w-[200px] md:w-[280px] bg-transparent border-none focus:outline-none focus:ring-0 px-2.5 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400'
               />
@@ -172,7 +254,10 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                   {filteredItems.map((item, index) => (
                     <button
                       key={item.id}
-                      onClick={() => { navigate(item.path); setIsSearchOpen(false); }}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsSearchOpen(false);
+                      }}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
                         index === selectedIndex
@@ -217,8 +302,12 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                   <div className='w-10 h-10 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-3'>
                     <Search size={20} />
                   </div>
-                  <p className='text-slate-900 dark:text-white font-bold text-xs mb-1'>Nenhum resultado</p>
-                  <p className='text-[10px] text-slate-500 dark:text-slate-400'>Tente outras palavras-chave.</p>
+                  <p className='text-slate-900 dark:text-white font-bold text-xs mb-1'>
+                    Nenhum resultado
+                  </p>
+                  <p className='text-[10px] text-slate-500 dark:text-slate-400'>
+                    Tente outras palavras-chave.
+                  </p>
                 </div>
               ) : null}
 
@@ -226,13 +315,22 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
               {filteredItems.length > 0 && (
                 <div className='px-4 py-2.5 bg-gray-50/50 dark:bg-white/[0.02] border-t border-gray-100 dark:border-white/5 flex items-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
                   <span className='flex items-center gap-1'>
-                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>↑↓</span> Navegar
+                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>
+                      ↑↓
+                    </span>{' '}
+                    Navegar
                   </span>
                   <span className='flex items-center gap-1'>
-                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>Enter</span> Abrir
+                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>
+                      Enter
+                    </span>{' '}
+                    Abrir
                   </span>
                   <span className='flex items-center gap-1 ml-auto'>
-                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>Esc</span> Fechar
+                    <span className='px-1 py-0.5 bg-white dark:bg-white/5 rounded text-[7px]'>
+                      Esc
+                    </span>{' '}
+                    Fechar
                   </span>
                 </div>
               )}
@@ -250,10 +348,9 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
         {/* Notifications */}
         <div className='relative'>
-
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active-tap relative ${
+            className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active-tap relative ${
               showNotifications
                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
                 : 'hover:bg-gray-100 dark:hover:bg-white/5 text-slate-400'

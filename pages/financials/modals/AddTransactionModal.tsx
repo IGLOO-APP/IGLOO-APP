@@ -18,6 +18,7 @@ import { ModalWrapper } from '../../../components/ui/ModalWrapper';
 interface AddTransactionModalProps {
   show: boolean;
   onClose: () => void;
+  editingId?: string | null;
   transactionType: 'income' | 'expense';
   onTypeChange: (t: 'income' | 'expense') => void;
   txValue: string;
@@ -44,6 +45,7 @@ interface AddTransactionModalProps {
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   show,
   onClose,
+  editingId,
   transactionType,
   onTypeChange,
   txValue,
@@ -73,7 +75,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   return (
     <ModalWrapper
       onClose={onClose}
-      title={transactionType === 'expense' ? 'Nova Despesa' : 'Nova Receita'}
+      title={
+        editingId
+          ? 'Editar Lançamento'
+          : transactionType === 'expense'
+            ? 'Nova Despesa'
+            : 'Nova Receita'
+      }
       showCloseButton={true}
       className='md:max-w-lg'
     >
@@ -307,7 +315,11 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             disabled={isPending}
             className={`w-full h-14 flex items-center justify-center rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all duration-200 ${isPending ? 'opacity-50 cursor-not-allowed' : ''} ${transactionType === 'income' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25' : 'bg-red-500 hover:bg-red-600 shadow-red-500/25'}`}
           >
-            {isPending ? 'Salvando...' : 'Confirmar Lançamento'}
+            {isPending
+              ? 'Salvando...'
+              : editingId
+                ? 'Atualizar Lançamento'
+                : 'Confirmar Lançamento'}
           </button>
         </form>
       </div>

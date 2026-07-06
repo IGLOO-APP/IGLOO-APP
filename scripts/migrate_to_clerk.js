@@ -1,8 +1,8 @@
 /**
  * IGLOO - SCRIPT DE MIGRAÇÃO DE USUÁRIOS
  * Supabase Auth -> Clerk
- * 
- * ATENÇÃO: As senhas NÃO podem ser migradas diretamente (o Supabase não as exporta). 
+ *
+ * ATENÇÃO: As senhas NÃO podem ser migradas diretamente (o Supabase não as exporta).
  * Seus usuários atuais precisarão fazer a redefinição de senha no primeiro acesso ao Clerk.
  */
 
@@ -18,7 +18,9 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // NECESSÁR
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY; // NECESSÁRIO NO .ENV
 
 if (!SUPABASE_SERVICE_KEY || !CLERK_SECRET_KEY) {
-  console.error('❌ ERRO: Faltam chaves Secretas no seu .env! (SUPABASE_SERVICE_ROLE_KEY e CLERK_SECRET_KEY)');
+  console.error(
+    '❌ ERRO: Faltam chaves Secretas no seu .env! (SUPABASE_SERVICE_ROLE_KEY e CLERK_SECRET_KEY)'
+  );
   process.exit(1);
 }
 
@@ -29,9 +31,7 @@ async function migrateUsers() {
   console.log('🔄 Iniciando migração de usuários para o Clerk...');
 
   // 1. Buscar perfis existentes no Supabase
-  const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
-    .select('*');
+  const { data: profiles, error: profileError } = await supabase.from('profiles').select('*');
 
   if (profileError) {
     console.error('❌ Erro ao buscar perfis:', profileError);
@@ -51,9 +51,9 @@ async function migrateUsers() {
         lastName: profile.name?.split(' ').slice(1).join(' ') || '',
         // Definimos o papel (role) no metadata público para que o iGloo reconheça
         publicMetadata: {
-          role: profile.role || 'owner'
+          role: profile.role || 'owner',
         },
-        skipPasswordRequirement: true // O usuário criará a senha via 'Esqueci Senha'
+        skipPasswordRequirement: true, // O usuário criará a senha via 'Esqueci Senha'
       });
 
       console.log(`✅ Criado no Clerk! Novo ID: ${user.id}`);
@@ -61,7 +61,7 @@ async function migrateUsers() {
       // 3. Opcional: Se você quiser migrar o ID antigo para manter o histórico de registros
       // Você pode criar uma nova entrada na tabela profiles com o novo ID do Clerk
       // e depois rodar um SQL para atualizar as FKs (Contratos, Imóveis, etc).
-      
+
       // NOTA: No iGloo, nosso AuthContext agora usa profileService.ensureProfile({id: clerk_id})
       // Isso criará um NOVO perfil para o usuário se não existir.
       // O ideal é você renomear o ID na tabela profiles para o novo ID do Clerk aqui.
@@ -72,9 +72,11 @@ async function migrateUsers() {
         .eq('email', profile.email);
 
       if (updateError) {
-        console.warn(`⚠️ Aviso: Usuário migrado, mas falha ao atualizar ID na tabela profiles:`, updateError.message);
+        console.warn(
+          `⚠️ Aviso: Usuário migrado, mas falha ao atualizar ID na tabela profiles:`,
+          updateError.message
+        );
       }
-
     } catch (err) {
       if (err.errors?.[0]?.code === 'form_identifier_exists') {
         console.log(`ℹ️ O usuário ${profile.email} já existe no Clerk. Pulando...`);

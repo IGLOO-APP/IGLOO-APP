@@ -48,11 +48,7 @@ const AdminDashboard = () => {
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         <div className='bg-white dark:bg-surface-dark p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm space-y-6'>
-          <SectionHeader
-            title='Ações Recentes'
-            icon={Clock}
-            iconColor='text-slate-400'
-          />
+          <SectionHeader title='Ações Recentes' icon={Clock} iconColor='text-slate-400' />
           <div className='space-y-2'>
             {[
               { action: 'Admin "Carlos" aprovou novo usuário', time: 'há 2 horas' },
@@ -70,7 +66,10 @@ const AdminDashboard = () => {
                   <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
                     {item.time}
                   </span>
-                  <ChevronRight size={14} className='text-slate-300 group-hover:text-primary transition-all' />
+                  <ChevronRight
+                    size={14}
+                    className='text-slate-300 group-hover:text-primary transition-all'
+                  />
                 </div>
               </div>
             ))}
@@ -78,11 +77,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className='bg-white dark:bg-surface-dark p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm space-y-6'>
-          <SectionHeader
-            title='Alertas de Sistema'
-            icon={Bell}
-            iconColor='text-slate-400'
-          />
+          <SectionHeader title='Alertas de Sistema' icon={Bell} iconColor='text-slate-400' />
           <div className='flex flex-col items-center justify-center py-12 text-center'>
             <div className='w-14 h-14 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 mb-4'>
               <Bell size={24} />

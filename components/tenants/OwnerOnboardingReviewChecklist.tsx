@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { isValidUrl } from '../../utils/validation';
 import {
   ShieldCheck,
   User,
@@ -372,7 +373,7 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
         <Search size={14} /> Visualizar
       </button>
       <button
-        onClick={() => url && window.open(url, '_blank')}
+        onClick={() => url && isValidUrl(url) && window.open(url, '_blank', 'noopener,noreferrer')}
         className='flex-1 h-10 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-slate-200 dark:hover:bg-white/20 transition-all'
       >
         <ExternalLink size={14} /> Abrir

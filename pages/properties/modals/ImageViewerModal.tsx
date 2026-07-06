@@ -39,13 +39,19 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
       {images.length > 1 && (
         <div className='absolute inset-x-8 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none'>
           <button
-            onClick={(e) => { e.stopPropagation(); onPrev(e); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPrev(e);
+            }}
             className='pointer-events-auto p-4 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all transform hover:scale-110'
           >
             <ChevronLeft size={32} />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onNext(e); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onNext(e);
+            }}
             className='pointer-events-auto p-4 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all transform hover:scale-110'
           >
             <ChevronRight size={32} />

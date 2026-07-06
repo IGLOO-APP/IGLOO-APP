@@ -9,6 +9,7 @@ interface SubscriptionTabProps {
   invoices: any[];
   onOpenPlanModal: () => void;
   onLoadSubscription: () => void;
+  onCancelSubscription?: () => void;
 }
 
 export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
@@ -18,6 +19,7 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
   invoices,
   onOpenPlanModal,
   onLoadSubscription,
+  onCancelSubscription,
 }) => {
   if (loadingSub)
     return (
@@ -97,7 +99,10 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
             >
               Alterar Plano
             </button>
-            <button className='w-full py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-red-500 rounded-xl font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors'>
+            <button
+              onClick={onCancelSubscription}
+              className='w-full py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-red-500 rounded-xl font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors'
+            >
               Cancelar Assinatura
             </button>
           </div>

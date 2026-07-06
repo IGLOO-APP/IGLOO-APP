@@ -29,7 +29,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ voucherUrl, onClose 
         <div className='mt-6 flex gap-3'>
           <button
             onClick={() => {
-              if (isValidUrl(voucherUrl)) window.open(voucherUrl, '_blank');
+              if (isValidUrl(voucherUrl)) window.open(voucherUrl, '_blank', 'noopener,noreferrer');
             }}
             className='flex-1 h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-lg transition-all hover:opacity-90 active:scale-95'
           >

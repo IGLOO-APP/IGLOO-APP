@@ -51,11 +51,11 @@ export const MobileNav: React.FC<MobileNavProps> = ({ navItems }) => {
                 </motion.span>
               )}
 
-              <span className={`relative z-10 flex flex-col items-center gap-0.5 ${
-                isActive
-                  ? 'text-slate-900 dark:text-white'
-                  : 'text-slate-500 dark:text-slate-400'
-              }`}>
+              <span
+                className={`relative z-10 flex flex-col items-center gap-0.5 ${
+                  isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className='shrink-0' />
                 <span>{item.label}</span>
               </span>

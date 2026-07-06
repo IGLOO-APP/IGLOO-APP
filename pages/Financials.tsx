@@ -9,9 +9,9 @@ import {
   Download,
   FileUp,
   PieChart,
+  FileText,
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
-import { formatCurrency } from '../utils/formatters';
 import { useFinancials } from './financials/hooks/useFinancials';
 import { CashFlowCharts } from './financials/sections/CashFlowCharts';
 import { TransactionList } from './financials/sections/TransactionList';
@@ -20,9 +20,13 @@ import { LateCalculatorModal } from './financials/modals/LateCalculatorModal';
 import { ApportionmentModal } from './financials/modals/ApportionmentModal';
 import { BankImportModal } from './financials/modals/BankImportModal';
 import { VoucherModal } from './financials/modals/VoucherModal';
+import { TaxExportModal } from './financials/modals/TaxExportModal';
+import { useAuth } from '../context/AuthContext';
 
 const Financials: React.FC = () => {
   const h = useFinancials();
+  const { user } = useAuth();
+  const [showTaxExport, setShowTaxExport] = React.useState(false);
 
   return (
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
@@ -56,6 +60,13 @@ const Financials: React.FC = () => {
             title='Rateio de Despesas'
           >
             <PieChart size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
+          </button>
+          <button
+            onClick={() => setShowTaxExport(true)}
+            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
+            title='Exportar DIMOB / Carnê-Leão'
+          >
+            <FileText size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
           <button
             onClick={() => h.setShowAddForm(true)}
@@ -128,26 +139,35 @@ const Financials: React.FC = () => {
             <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
           </div>
         ) : (
-        <><CashFlowCharts
-          trendData={h.trendData}
-          forecastData={h.forecastData}
-          totalForecast={h.totalForecast}
-        />
-        <TransactionList
-          transactions={h.filteredTransactions}
-          properties={h.properties}
-          contracts={h.contracts}
-          totalReceived={h.totalReceived}
-          totalPending={h.totalPending}
-          pendingCount={h.pendingCount}
-          onShowLateCalculator={() => h.setShowLateCalculator(true)}
-          onSelectVoucher={(url) => h.setSelectedVoucher(url)}
-        />
-        </>)}</div>
+          <>
+            <CashFlowCharts
+              trendData={h.trendData}
+              forecastData={h.forecastData}
+              totalForecast={h.totalForecast}
+            />
+            <TransactionList
+              transactions={h.filteredTransactions}
+              properties={h.properties}
+              contracts={h.contracts}
+              totalReceived={h.totalReceived}
+              totalPending={h.totalPending}
+              pendingCount={h.pendingCount}
+              onShowLateCalculator={() => h.setShowLateCalculator(true)}
+              onSelectVoucher={(url) => h.setSelectedVoucher(url)}
+              onEdit={h.openEditForm}
+              onDelete={h.handleDeleteTransaction}
+            />
+          </>
+        )}
+      </div>
 
       <AddTransactionModal
         show={h.showAddForm}
-        onClose={() => h.setShowAddForm(false)}
+        onClose={() => {
+          h.setShowAddForm(false);
+          h.setEditingTransaction(null);
+        }}
+        editingId={h.editingTransaction?.id}
         transactionType={h.transactionType}
         onTypeChange={h.setTransactionType}
         txValue={h.txValue}
@@ -206,6 +226,10 @@ const Financials: React.FC = () => {
       />
 
       <VoucherModal voucherUrl={h.selectedVoucher} onClose={() => h.setSelectedVoucher(null)} />
+
+      {showTaxExport && (
+        <TaxExportModal ownerId={user?.id || ''} onClose={() => setShowTaxExport(false)} />
+      )}
     </div>
   );
 };

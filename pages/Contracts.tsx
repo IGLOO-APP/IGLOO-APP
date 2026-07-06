@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  RefreshCw,
+  FileText,
+  BarChart3,
+  Loader2,
+  Trash2,
+  AlertTriangle,
+} from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/contracts/ContractCard';
@@ -21,6 +30,7 @@ const Contracts: React.FC = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [renewingContract, setRenewingContract] = useState<Contract | null>(null);
+  const [deletingContract, setDeletingContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const { addToast } = useNotification();
@@ -74,13 +84,14 @@ const Contracts: React.FC = () => {
     observations: string;
   }) => {
     if (!renewingContract) return;
-    void data;
 
     try {
-      // In a real app, we would call a service to renew
-      // 1. Create new contract
-      // 2. Update old contract status to 'renewed'
-      // 3. Log activity for tenant
+      const numericValue = parseFloat(data.newValue.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+      await contractService.renew(renewingContract.id, {
+        newEndDate: data.newEndDate,
+        newValue: numericValue,
+        observations: data.observations,
+      });
 
       addToast(
         'Contrato Renovado',
@@ -92,6 +103,21 @@ const Contracts: React.FC = () => {
       loadContracts();
     } catch (error) {
       console.error('Error renewing contract', error);
+      addToast('Erro', 'Erro ao renovar contrato. Verifique os dados e tente novamente.', 'error');
+    }
+  };
+
+  const handleDeleteContract = async () => {
+    if (!deletingContract) return;
+    try {
+      await contractService.delete(deletingContract.id);
+      addToast('Contrato Excluído', 'O contrato foi excluído permanentemente.', 'success');
+      setDeletingContract(null);
+      setSelectedContract((prev) => (prev?.id === deletingContract.id ? null : prev));
+      loadContracts();
+    } catch (error) {
+      console.error('Error deleting contract', error);
+      addToast('Erro', 'Erro ao excluir contrato.', 'error');
     }
   };
 
@@ -182,6 +208,8 @@ const Contracts: React.FC = () => {
               { id: 'pending_signature', label: 'Assinatura' },
               { id: 'expiring_soon', label: 'Vencendo' },
               { id: 'draft', label: 'Rascunhos' },
+              { id: 'renewed', label: 'Renovados' },
+              { id: 'cancelled', label: 'Cancelados' },
             ].map((f) => (
               <button
                 key={f.id}
@@ -212,6 +240,7 @@ const Contracts: React.FC = () => {
                 contract={contract}
                 onClick={setSelectedContract}
                 onRenew={setRenewingContract}
+                onDelete={setDeletingContract}
               />
             ))}
           </div>
@@ -254,6 +283,42 @@ const Contracts: React.FC = () => {
           onClose={() => setRenewingContract(null)}
           onConfirm={handleRenewContract}
         />
+      )}
+
+      {deletingContract && (
+        <div className='fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn'>
+          <div className='bg-white dark:bg-surface-dark rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6'>
+            <div className='flex flex-col items-center text-center gap-3'>
+              <div className='w-14 h-14 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center'>
+                <AlertTriangle size={28} className='text-red-500' />
+              </div>
+              <div>
+                <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
+                  Excluir Contrato?
+                </h3>
+                <p className='text-sm text-slate-500 mt-1'>
+                  Esta ação irá excluir permanentemente o contrato{' '}
+                  <strong>{deletingContract.contract_number}</strong> para{' '}
+                  <strong>{deletingContract.tenant_name}</strong>. Não é possível desfazer.
+                </p>
+              </div>
+            </div>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setDeletingContract(null)}
+                className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-white/20 transition-all'
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteContract}
+                className='flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-lg shadow-red-500/20'
+              >
+                Sim, Excluir
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

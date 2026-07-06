@@ -13,7 +13,8 @@ export type ContractStatus =
   | 'active'
   | 'expiring_soon'
   | 'expired'
-  | 'cancelled';
+  | 'cancelled'
+  | 'renewed';
 
 export interface Signer {
   id: string;
@@ -36,8 +37,11 @@ export interface Contract {
   id: string;
   contract_number: string;
   property: string; // Property Name/Address
+  property_id?: string;
   tenant_name: string;
+  tenant_id?: string;
   owner_name: string;
+  owner_id?: string;
 
   // Dates
   start_date: string;
@@ -48,6 +52,8 @@ export interface Contract {
   value: string; // Formatted "R$ 1.500"
   numeric_value: number;
   security_deposit?: number;
+  condominium_value?: number;
+  iptu_value?: number;
   payment_day: number;
 
   // Status & Workflow

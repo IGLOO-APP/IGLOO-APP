@@ -5,7 +5,9 @@
 
 // Helper to resolve nested values (e.g., 'property.name')
 const getNestedValue = (obj: Record<string, any>, path: string) => {
-  return path.split('.').reduce((prev, curr) => (prev && prev[curr] !== undefined ? prev[curr] : undefined), obj);
+  return path
+    .split('.')
+    .reduce((prev, curr) => (prev && prev[curr] !== undefined ? prev[curr] : undefined), obj);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

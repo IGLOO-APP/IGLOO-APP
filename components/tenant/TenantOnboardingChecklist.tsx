@@ -23,9 +23,11 @@ import {
   Building2,
 } from 'lucide-react';
 import { Tenant } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { profileService } from '../../services/profileService';
+import { documentService } from '../../services/documentService';
+import { contractService } from '../../services/contractService';
 import { storageService } from '../../services/storageService';
+import { useAuth } from '../../context/AuthContext';
 import { OnboardingProgress, StepCard, ErrorAlert } from '../onboarding';
 import type { OnboardingStepConfig } from '../onboarding';
 
@@ -134,27 +136,10 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
   useEffect(() => {
     if (expandedStep === 'contract' && tenant.contract?.id && !fullContract) {
       setLoadingContract(true);
-      supabase
-        .from('contracts')
-        .select(
-          `*, property:properties(id, name, address, image_url, bedrooms, bathrooms, area), tenant_profile:profiles!contracts_tenant_id_fkey(id, name, email, cpf, phone), owner_profile:profiles!contracts_owner_id_fkey(id, name, email)`
-        )
-        .eq('id', tenant.contract.id.toString())
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (!error && data) setFullContract(data);
-          else if (error) {
-            supabase
-              .from('contracts')
-              .select(`*, property:properties(id, name, address, image_url)`)
-              .eq('id', tenant.contract!.id.toString())
-              .maybeSingle()
-              .then(({ data: d2 }) => {
-                if (d2) setFullContract(d2);
-              });
-          }
-          setLoadingContract(false);
-        });
+      contractService.getWithDetails(tenant.contract.id.toString()).then((data) => {
+        if (data) setFullContract(data);
+        setLoadingContract(false);
+      });
     }
   }, [expandedStep, tenant.contract?.id]);
 
@@ -168,10 +153,10 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
         contractSigned
       ) {
         try {
-          await supabase
-            .from('profiles')
-            .update({ onboarding_inspection_status: 'approved', onboarding_stage: 'keys' })
-            .eq('email', tenant.email);
+          await profileService.updateByEmail(tenant.email, {
+            onboarding_inspection_status: 'approved',
+            onboarding_stage: 'keys',
+          });
           onStepComplete();
         } catch (err) {
           console.error('Error syncing inspection state:', err);
@@ -230,16 +215,13 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
     setLoading(true);
     setErrorMsg(null);
     try {
-      await supabase
-        .from('profiles')
-        .update({
-          name,
-          cpf: cpf.replace(/\D/g, ''),
-          phone,
-          onboarding_profile_status: 'submitted',
-          onboarding_stage: 'profile',
-        })
-        .eq('email', tenant.email);
+      await profileService.updateByEmail(tenant.email, {
+        name,
+        cpf: cpf.replace(/\D/g, ''),
+        phone,
+        onboarding_profile_status: 'submitted',
+        onboarding_stage: 'profile',
+      });
       setExpandedStep(null);
       onStepComplete();
     } catch (err: any) {
@@ -272,35 +254,31 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
         income_name: incomeFile.name,
         income_url: incomeUrl,
       };
-      await supabase
-        .from('profiles')
-        .update({ onboarding_documents_status: 'submitted', onboarding_documents_urls: docUrls })
-        .eq('id', tenant.id);
+      await profileService.update(tenant.id, {
+        onboarding_documents_status: 'submitted',
+        onboarding_documents_urls: docUrls,
+      });
       const isValidUUID = (val: any): boolean => {
         if (!val || typeof val !== 'string') return false;
         return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
       };
       if (tenant.property_id && isValidUUID(tenant.property_id)) {
-        await supabase.from('property_documents').insert([
-          {
-            property_id: tenant.property_id,
-            name: `RG/CNH - ${tenant.name}`,
-            category: 'Jurídico',
-            type: rgFile.type.includes('pdf') ? 'PDF' : 'Imagem',
-            size: `${(rgFile.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'Pendente',
-            url: rgUrl,
-          },
-          {
-            property_id: tenant.property_id,
-            name: `Comp. Renda - ${tenant.name}`,
-            category: 'Financeiro',
-            type: incomeFile.type.includes('pdf') ? 'PDF' : 'Imagem',
-            size: `${(incomeFile.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'Pendente',
-            url: incomeUrl,
-          },
-        ]);
+        await documentService.create(tenant.property_id, {
+          name: `RG/CNH - ${tenant.name}`,
+          category: 'Jurídico',
+          type: rgFile.type.includes('pdf') ? 'PDF' : 'Imagem',
+          size: `${(rgFile.size / 1024 / 1024).toFixed(2)} MB`,
+          status: 'Pendente',
+          url: rgUrl,
+        });
+        await documentService.create(tenant.property_id, {
+          name: `Comp. Renda - ${tenant.name}`,
+          category: 'Financeiro',
+          type: incomeFile.type.includes('pdf') ? 'PDF' : 'Imagem',
+          size: `${(incomeFile.size / 1024 / 1024).toFixed(2)} MB`,
+          status: 'Pendente',
+          url: incomeUrl,
+        });
       }
       setExpandedStep(null);
       onStepComplete();
@@ -319,18 +297,16 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
       const fileExt = manualContractFile.name.split('.').pop();
       const fileName = `manual_contract_${tenant.contract.id}_${Date.now()}.${fileExt}`;
       const filePath = `contracts/${fileName}`;
-      await supabase.storage.from('documents').upload(filePath, manualContractFile);
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('documents').getPublicUrl(filePath);
-      await supabase
-        .from('contracts')
-        .update({ pdf_url: publicUrl, status: 'pending_signature' })
-        .eq('id', tenant.contract.id.toString());
-      await supabase
-        .from('profiles')
-        .update({ onboarding_contract_status: 'submitted' })
-        .eq('email', tenant.email);
+      const publicUrl = await storageService.uploadFile('documents', filePath, manualContractFile);
+      if (publicUrl) {
+        await contractService.update(tenant.contract.id.toString(), {
+          pdf_url: publicUrl,
+          status: 'pending_signature',
+        });
+      }
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_contract_status: 'submitted',
+      });
       onStepComplete();
       setExpandedStep(null);
     } catch (err) {
@@ -350,14 +326,11 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
     setLoading(true);
     setErrorMsg(null);
     try {
-      await supabase
-        .from('contracts')
-        .update({ status: 'active' })
-        .eq('id', tenant.contract.id.toString());
-      await supabase
-        .from('profiles')
-        .update({ onboarding_contract_status: 'approved', onboarding_stage: 'inspection' })
-        .eq('email', tenant.email);
+      await contractService.updateStatus(tenant.contract.id.toString(), 'active');
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_contract_status: 'approved',
+        onboarding_stage: 'inspection',
+      });
       setExpandedStep(null);
       onStepComplete();
     } catch (err: any) {

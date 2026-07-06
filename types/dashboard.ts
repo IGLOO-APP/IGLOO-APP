@@ -7,11 +7,16 @@ export interface DashboardMetrics {
   avgRoi: string;
   expiringContractsCount: number;
   pendingMaintenanceCount: number;
+  totalTenants: number;
   trends: {
     wealth: string;
     mrr: string;
     occupancy: string;
     roi: string;
+  };
+  sparkData: {
+    wealth: number[];
+    mrr: number[];
   };
 }
 
@@ -44,5 +49,8 @@ export interface DashboardData {
   risks: DashboardRisk[];
   activities: DashboardActivity[];
   financialHistory: DashboardFinancialHistory[];
-  // ... add others as needed
+  properties: any[];
+  portfolioHealth: any;
+  topProperties: any[];
+  wealthHistory: any[];
 }

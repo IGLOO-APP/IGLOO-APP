@@ -20,6 +20,10 @@ create table public.profiles (
   last_login_at timestamp with time zone,
   last_login_ip text,
   managed_by_admin_id uuid references public.profiles(id),
+  -- Subscription
+  subscription_plan text default 'free',
+  subscription_status text check (subscription_status in ('active', 'trialing', 'past_due', 'canceled', 'expired')) default 'trialing',
+  subscription_expires_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -174,9 +178,14 @@ create table public.contracts (
   start_date date not null,
   end_date date not null,
   monthly_value numeric not null,
+  security_deposit numeric default 0,
+  condominium_value numeric default 0,
+  iptu_value numeric default 0,
   payment_day integer default 10,
-  status text check (status in ('draft', 'pending_signature', 'active', 'expiring_soon', 'expired', 'cancelled')) default 'draft',
+  status text check (status in ('draft', 'pending_signature', 'active', 'expiring_soon', 'expired', 'cancelled', 'renewed')) default 'draft',
   pdf_url text,
+  signers jsonb default '[]'::jsonb,
+  history jsonb default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -192,6 +201,57 @@ create table public.payments (
   payment_method text,
   notes text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- INVOICES
+create table public.invoices (
+  id uuid default uuid_generate_v4() primary key,
+  user_id text references public.profiles(id) not null,
+  number text not null,
+  date date not null,
+  amount numeric not null,
+  status text check (status in ('paid', 'open', 'void')) default 'open',
+  pdf_url text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- NOTIFICATION PREFERENCES
+create table public.notification_prefs (
+  id uuid default uuid_generate_v4() primary key,
+  user_id text references public.profiles(id) not null unique,
+  email_alerts boolean default true,
+  sms_alerts boolean default false,
+  payment_received boolean default true,
+  late_payment boolean default true,
+  maintenance_updates boolean default true,
+  payment_reminders boolean default true,
+  new_messages boolean default true,
+  announcements boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- PAYMENT CONFIG
+create table public.payment_configs (
+  id uuid default uuid_generate_v4() primary key,
+  user_id text references public.profiles(id) not null,
+  method text not null check (method in ('pix', 'boleto', 'credit_card')),
+  enabled boolean default false,
+  fields jsonb default '{}'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(user_id, method)
+);
+
+-- MAINTENANCE SETTINGS
+create table public.maintenance_settings (
+  id uuid default uuid_generate_v4() primary key,
+  user_id text references public.profiles(id) not null,
+  category text not null,
+  enabled boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(user_id, category)
 );
 
 -- MAINTENANCE REQUESTS

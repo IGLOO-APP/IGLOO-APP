@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FeatureFlag } from '../../types';
 import { Switch } from '@headlessui/react';
-import { supabase } from '../../lib/supabase';
+import { featureFlagService } from '../../services/featureFlagService';
 import { Loader, Plus, Trash2, Tag } from 'lucide-react';
 
 const FeatureFlagManager: React.FC = () => {
@@ -12,13 +12,8 @@ const FeatureFlagManager: React.FC = () => {
 
   const fetchFlags = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('feature_flags')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) {
-      setFlags(data as FeatureFlag[]);
-    }
+    const data = await featureFlagService.getAll();
+    setFlags(data);
     setLoading(false);
   };
 
@@ -28,37 +23,33 @@ const FeatureFlagManager: React.FC = () => {
   }, []);
 
   const toggleFlag = async (id: string, currentState: boolean) => {
-    const { error } = await supabase
-      .from('feature_flags')
-      .update({ enabled: !currentState })
-      .eq('id', id);
-
-    if (!error) {
+    try {
+      await featureFlagService.toggle(id, !currentState);
       setFlags(flags.map((f) => (f.id === id ? { ...f, enabled: !currentState } : f)));
+    } catch (err) {
+      console.error('Error toggling flag:', err);
     }
   };
 
   const createFlag = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from('feature_flags').insert({
-      name: newFlagName,
-      description: newFlagDescription,
-      enabled: false,
-      target_audience: 'all',
-    });
-
-    if (!error) {
+    try {
+      await featureFlagService.create(newFlagName, newFlagDescription);
       setNewFlagName('');
       setNewFlagDescription('');
       fetchFlags();
+    } catch (err) {
+      console.error('Error creating flag:', err);
     }
   };
 
   const deleteFlag = async (id: string) => {
     if (!confirm('Tem certeza que deseja remover esta feature flag?')) return;
-    const { error } = await supabase.from('feature_flags').delete().eq('id', id);
-    if (!error) {
+    try {
+      await featureFlagService.delete(id);
       setFlags(flags.filter((f) => f.id !== id));
+    } catch (err) {
+      console.error('Error deleting flag:', err);
     }
   };
 

@@ -46,7 +46,11 @@ export const messageService = {
         for (const req of maintenanceRes) {
           if (!req.tenant_id) continue;
           const profile = profileMap.get(req.tenant_id);
-          const prop = req.properties as unknown as { name: string; image_url: string | null; price: number };
+          const prop = req.properties as unknown as {
+            name: string;
+            image_url: string | null;
+            price: number;
+          };
 
           if (!tenantThreads.has(req.tenant_id)) {
             tenantThreads.set(req.tenant_id, {
@@ -87,7 +91,11 @@ export const messageService = {
         for (const conv of conversationsRes) {
           if (!conv.tenant_id) continue;
           const existing = tenantThreads.get(conv.tenant_id);
-          const prop = conv.properties as unknown as { name: string; image_url: string | null; price: number };
+          const prop = conv.properties as unknown as {
+            name: string;
+            image_url: string | null;
+            price: number;
+          };
           const profile = profileMap.get(conv.tenant_id);
 
           if (!existing) {
@@ -139,7 +147,12 @@ export const messageService = {
     }
   },
 
-  async getMessages(threadId: string, category: string, limit = 50, offset = 0): Promise<ChatMessage[]> {
+  async getMessages(
+    threadId: string,
+    category: string,
+    limit = 50,
+    offset = 0
+  ): Promise<ChatMessage[]> {
     const tenantId = threadId.substring(threadId.indexOf('_') + 1);
 
     const { data: requests } = await supabase
@@ -190,9 +203,14 @@ export const messageService = {
         : m.sender_role === 'system'
           ? 'system'
           : 'tenant') as ChatMessage['sender'],
-      time: new Date(m.created_at || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(m.created_at || '').toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       isRead: true,
-      type: ((m as DbMaintenanceMessage).request_id ? (m as DbMaintenanceMessage).type : (m as DbConversationMessage).type || 'text') as ChatMessage['type'],
+      type: ((m as DbMaintenanceMessage).request_id
+        ? (m as DbMaintenanceMessage).type
+        : (m as DbConversationMessage).type || 'text') as ChatMessage['type'],
       created_at: m.created_at || undefined,
       requestId: (m as DbMaintenanceMessage).request_id,
     }));

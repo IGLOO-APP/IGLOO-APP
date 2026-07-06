@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DollarSign, MessageCircle, Copy, ExternalLink, AlertCircle, User } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Tenant } from '../../types';
+import { isValidUrl } from '../../utils/validation';
 import { MONTH_NAMES } from '../../utils/formatters';
 
 interface BillingModalProps {
@@ -72,7 +73,8 @@ export const BillingModal: React.FC<BillingModalProps> = ({ tenant, onClose, onC
     if (sendChannel === 'whatsapp') {
       const encodedMsg = encodeURIComponent(message);
       const phone = tenant.phone.replace(/\D/g, '');
-      window.open(`https://wa.me/55${phone}?text=${encodedMsg}`, '_blank');
+      const waUrl = `https://wa.me/55${phone}?text=${encodedMsg}`;
+      if (isValidUrl(waUrl)) window.open(waUrl, '_blank', 'noopener,noreferrer');
     } else if (sendChannel === 'copy') {
       navigator.clipboard.writeText(message);
     }

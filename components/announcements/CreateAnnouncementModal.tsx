@@ -257,19 +257,22 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             className='w-full text-left p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-primary/50 hover:shadow-sm hover:shadow-primary/5 transition-all group'
           >
             <div className='flex items-center gap-2 mb-1.5'>
-              <div className={`w-2 h-2 rounded-full ${
-                tpl.type === 'maintenance' ? 'bg-amber-400' :
-                tpl.type === 'warning' ? 'bg-red-400' :
-                tpl.type === 'event' ? 'bg-emerald-400' :
-                'bg-primary'
-              }`} />
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  tpl.type === 'maintenance'
+                    ? 'bg-amber-400'
+                    : tpl.type === 'warning'
+                      ? 'bg-red-400'
+                      : tpl.type === 'event'
+                        ? 'bg-emerald-400'
+                        : 'bg-primary'
+                }`}
+              />
               <p className='text-[10px] font-black text-primary uppercase tracking-widest group-hover:text-primary-dark transition-colors'>
                 {tpl.title}
               </p>
             </div>
-            <p className='text-[10px] text-slate-400 line-clamp-3 leading-relaxed'>
-              {tpl.content}
-            </p>
+            <p className='text-[10px] text-slate-400 line-clamp-3 leading-relaxed'>{tpl.content}</p>
           </button>
         ))}
       </div>
@@ -298,9 +301,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             <Users size={20} />
           </div>
           <div className='text-left'>
-            <p className='text-sm font-black text-slate-900 dark:text-white'>
-              Todos os inquilinos
-            </p>
+            <p className='text-sm font-black text-slate-900 dark:text-white'>Todos os inquilinos</p>
             <p className='text-[10px] text-slate-400 font-bold'>
               Enviar para todos as unidades ativas
             </p>
@@ -321,9 +322,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             <Building2 size={20} />
           </div>
           <div className='text-left'>
-            <p className='text-sm font-black text-slate-900 dark:text-white'>
-              Por Condomínio
-            </p>
+            <p className='text-sm font-black text-slate-900 dark:text-white'>Por Condomínio</p>
             <p className='text-[10px] text-slate-400 font-bold'>
               Agrupar imóveis no mesmo endereço
             </p>
@@ -347,9 +346,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             <p className='text-sm font-black text-slate-900 dark:text-white'>
               Inquilino Específico
             </p>
-            <p className='text-[10px] text-slate-400 font-bold'>
-              Enviar apenas para uma pessoa
-            </p>
+            <p className='text-[10px] text-slate-400 font-bold'>Enviar apenas para uma pessoa</p>
           </div>
         </button>
 
@@ -427,12 +424,8 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             <Home size={20} />
           </div>
           <div className='text-left'>
-            <p className='text-sm font-black text-slate-900 dark:text-white'>
-              Imóveis Específicos
-            </p>
-            <p className='text-[10px] text-slate-400 font-bold'>
-              Selecionar unidades manualmente
-            </p>
+            <p className='text-sm font-black text-slate-900 dark:text-white'>Imóveis Específicos</p>
+            <p className='text-[10px] text-slate-400 font-bold'>Selecionar unidades manualmente</p>
           </div>
         </button>
 
@@ -498,11 +491,21 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
                 onChange={(e) => setFormData({ ...formData, expires_in_days: e.target.value })}
                 className='w-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white appearance-none cursor-pointer focus:border-primary transition-all outline-none'
               >
-                <option value='1' className='bg-white dark:bg-slate-900'>1 dia</option>
-                <option value='3' className='bg-white dark:bg-slate-900'>3 dias</option>
-                <option value='7' className='bg-white dark:bg-slate-900'>7 dias</option>
-                <option value='15' className='bg-white dark:bg-slate-900'>15 dias</option>
-                <option value='30' className='bg-white dark:bg-slate-900'>30 dias</option>
+                <option value='1' className='bg-white dark:bg-slate-900'>
+                  1 dia
+                </option>
+                <option value='3' className='bg-white dark:bg-slate-900'>
+                  3 dias
+                </option>
+                <option value='7' className='bg-white dark:bg-slate-900'>
+                  7 dias
+                </option>
+                <option value='15' className='bg-white dark:bg-slate-900'>
+                  15 dias
+                </option>
+                <option value='30' className='bg-white dark:bg-slate-900'>
+                  30 dias
+                </option>
               </select>
               <div className='absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400'>
                 <ChevronRight size={18} className='rotate-90' />
@@ -568,9 +571,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 
         {/* Body */}
         <div className='flex overflow-y-auto flex-1 min-h-0'>
-          <div className='flex-1 p-8'>
-            {step === 1 ? step1Form : step2Content}
-          </div>
+          <div className='flex-1 p-8'>{step === 1 ? step1Form : step2Content}</div>
           {step === 1 && templatesPanel}
         </div>
 

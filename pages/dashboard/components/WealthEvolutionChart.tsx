@@ -29,8 +29,15 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
 }) => {
   const [period, setPeriod] = useState('Último ano');
 
+  const displayData = period === 'Últimos 6 meses' ? wealthHistory.slice(-6) : wealthHistory;
+
   return (
-    <div className={'bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col ' + className}>
+    <div
+      className={
+        'bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col ' +
+        className
+      }
+    >
       <div className='mb-4'>
         <SectionHeader
           title='Evolução do Patrimônio'
@@ -44,7 +51,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
 
       <div className='flex-1 w-full min-h-0'>
         <ResponsiveContainer width='100%' height='100%'>
-          <AreaChart data={wealthHistory} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={displayData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id='colorWealth' x1='0' y1='0' x2='0' y2='1'>
                 <stop offset='5%' stopColor='#06b6d4' stopOpacity={0.2} />

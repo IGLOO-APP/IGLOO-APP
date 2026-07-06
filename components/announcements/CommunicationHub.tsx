@@ -263,7 +263,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
 
   const urgentCount = announcements.filter((a) => a.is_urgent).length;
   const totalPages = Math.ceil(announcements.length / ITEMS_PER_PAGE);
-  const paginatedAnnouncements = announcements.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+  const paginatedAnnouncements = announcements.slice(
+    page * ITEMS_PER_PAGE,
+    (page + 1) * ITEMS_PER_PAGE
+  );
 
   return (
     <div className='relative group h-full cursor-default'>
@@ -349,7 +352,8 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
               </span>
             )}
             <span className='flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-600 font-medium'>
-              <Bell size={12} /> {announcements.length} comunicado{announcements.length !== 1 ? 's' : ''} ativo{announcements.length !== 1 ? 's' : ''}
+              <Bell size={12} /> {announcements.length} comunicado
+              {announcements.length !== 1 ? 's' : ''} ativo{announcements.length !== 1 ? 's' : ''}
             </span>
           </div>
         )}
@@ -379,7 +383,9 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                     key={i}
                     onClick={() => setPage(i)}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === page ? 'bg-primary w-4' : 'bg-slate-200 dark:bg-white/10 w-1.5 hover:bg-slate-300 dark:hover:bg-white/20'
+                      i === page
+                        ? 'bg-primary w-4'
+                        : 'bg-slate-200 dark:bg-white/10 w-1.5 hover:bg-slate-300 dark:hover:bg-white/20'
                     }`}
                   />
                 ))}

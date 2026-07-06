@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, AlertTriangle, FileText } from 'lucide-react';
+import { Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { TopBar } from '../components/layout/TopBar';
 import { dashboardService } from '../services/dashboardService';
-import { AlertBadge, HeroCardSkeleton, SectionHeader } from '../components/ui/DashboardComponents';
+import { HeroCardSkeleton, SectionHeader } from '../components/ui/DashboardComponents';
 import { useTheme } from '../hooks/useTheme';
 
 // Modular Dashboard Components
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
           {/* Main Area (Left) - 2x2 Grid */}
           <div className='lg:col-span-8 flex flex-col gap-4'>
-            <HeroMetrics metrics={metrics} />
+            <HeroMetrics metrics={metrics} navigate={navigate} />
           </div>
 
           {/* Side Hub (Right) - 4/12 Columns */}
@@ -166,10 +166,7 @@ const Dashboard: React.FC = () => {
         {/* Row 3: Assets & Wealth Evolution (SIDE BY SIDE) */}
         <div className='grid grid-cols-1 lg:grid-cols-12 items-stretch'>
           <section className='lg:col-span-5 flex flex-col gap-0 relative'>
-            <SectionHeader
-              title='Gestão de Ativos'
-              subtitle='Patrimônio ativo'
-            />
+            <SectionHeader title='Gestão de Ativos' subtitle='Patrimônio ativo' />
             <button
               onClick={() => navigate('/properties')}
               className='text-[9px] font-black text-primary uppercase tracking-widest hover:underline transition-all self-center -mt-2 mb-0.5'
@@ -221,31 +218,16 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
-
           </section>
 
           <section className='lg:col-span-7 pl-5 pt-6'>
-            <WealthEvolutionChart wealthHistory={wealthHistory || []} isDark={isDark} className='h-full' />
+            <WealthEvolutionChart
+              wealthHistory={wealthHistory || []}
+              isDark={isDark}
+              className='h-full'
+            />
           </section>
         </div>
-
-        {/* Row 4: Alerts */}
-        <section className='flex flex-wrap gap-3'>
-          <AlertBadge
-            icon={AlertTriangle}
-            label='Vacância Crítica'
-            count={metrics.occupancyRate < 80 ? 1 : 0}
-            color='bg-red-500 border-red-500 text-red-600 dark:text-red-400'
-            onClick={() => navigate('/properties')}
-          />
-          <AlertBadge
-            icon={FileText}
-            label='Contratos Vencendo'
-            count={metrics.expiringContractsCount || 0}
-            color='bg-amber-500 border-amber-500 text-amber-600 dark:text-amber-400'
-            onClick={() => navigate('/contracts')}
-          />
-        </section>
 
         {/* Row 5: Full-Width Cash Flow */}
         <section className='w-full'>

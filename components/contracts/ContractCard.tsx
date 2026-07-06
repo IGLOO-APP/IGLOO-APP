@@ -9,14 +9,17 @@ import {
   PenTool,
   RefreshCw,
   Search,
+  Trash2,
 } from 'lucide-react';
 import { Contract } from '../../types';
 import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
+import { isValidUrl } from '../../utils/validation';
 
 interface ContractCardProps {
   contract: Contract;
   onClick: (contract: Contract) => void;
   onRenew?: (contract: Contract) => void;
+  onDelete?: (contract: Contract) => void;
   onViewDocument?: (contract: Contract) => void;
 }
 
@@ -24,6 +27,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
   contract,
   onClick,
   onRenew,
+  onDelete,
   onViewDocument,
 }) => {
   const statusColor = getStatusColor(contract.status);
@@ -35,9 +39,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
   const diffTime = endDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const needsRenewal =
-    diffDays <= 30 &&
-    contract.status !== 'cancelled' &&
-    contract.status !== 'draft';
+    diffDays <= 30 && contract.status !== 'cancelled' && contract.status !== 'draft';
 
   // Calculate signature progress
   const signedCount = contract.signers.filter((s) => s.status === 'signed').length;
@@ -187,7 +189,9 @@ export const ContractCard: React.FC<ContractCardProps> = ({
                   if (onViewDocument) {
                     onViewDocument(contract);
                   } else {
-                    window.open(contract.pdf_url, '_blank');
+                    const pdfUrl = contract.pdf_url;
+                    if (pdfUrl && isValidUrl(pdfUrl))
+                      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
                   }
                 }}
                 className='flex items-center gap-1.5 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ring-slate-200 dark:ring-white/10 hover:bg-slate-200 dark:hover:bg-white/20 transition-all'
@@ -199,6 +203,18 @@ export const ContractCard: React.FC<ContractCardProps> = ({
             <div className='flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ring-primary/20 hover:bg-primary/20 transition-all'>
               Ver Detalhes <ArrowRight size={14} />
             </div>
+            {contract.status === 'draft' && onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(contract);
+                }}
+                className='flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-400 hover:text-red-600 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1 ring-red-200/50 dark:ring-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all'
+                title='Excluir contrato'
+              >
+                <Trash2 size={12} /> Excluir
+              </button>
+            )}
           </div>
         </div>
       </div>

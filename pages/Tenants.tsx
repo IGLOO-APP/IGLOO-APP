@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { isValidUrl } from '../utils/validation';
 import {
   ArrowLeft,
   Search,
@@ -300,10 +301,8 @@ const Tenants: React.FC = () => {
     e.stopPropagation();
     const baseUrl = window.location.origin;
     const message = `Olá ${tenant.name}! Boas-vindas ao IGLOO. 🏠\n\nSou seu proprietário e estou te convidando para gerenciar nosso aluguel pela plataforma. Por lá você acessa boletos, assina contratos e solicita manutenção.\n\nComplete seu cadastro aqui: ${baseUrl}/signup?email=${encodeURIComponent(tenant.email)}`;
-    window.open(
-      `https://wa.me/${tenant.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`,
-      '_blank'
-    );
+    const waUrl = `https://wa.me/${tenant.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    if (isValidUrl(waUrl)) window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {

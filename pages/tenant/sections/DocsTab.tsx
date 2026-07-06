@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText, Search, Download } from 'lucide-react';
+import { isValidUrl } from '../../../utils/validation';
 
 interface DocsTabProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +104,9 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
                 </button>
                 <button
                   onClick={() =>
-                    tenant.contract?.pdf_url && window.open(tenant.contract.pdf_url, '_blank')
+                    tenant.contract?.pdf_url &&
+                    isValidUrl(tenant.contract.pdf_url) &&
+                    window.open(tenant.contract.pdf_url, '_blank', 'noopener,noreferrer')
                   }
                   className='w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-all flex items-center justify-center shrink-0'
                   title='Baixar Contrato'
@@ -143,7 +146,8 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
                   </button>
                   <button
                     onClick={() => {
-                      if (doc.url) window.open(doc.url, '_blank');
+                      if (doc.url && isValidUrl(doc.url))
+                        window.open(doc.url, '_blank', 'noopener,noreferrer');
                     }}
                     className='w-8 h-8 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-all flex items-center justify-center shrink-0'
                     title='Baixar Documento'

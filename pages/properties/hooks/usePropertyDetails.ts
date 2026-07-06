@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { propertyService } from '../../../services/propertyService';
 import { tenantService } from '../../../services/tenantService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
+import { isValidUrl } from '../../../utils/validation';
 
 export function usePropertyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +23,11 @@ export function usePropertyDetails() {
     });
   };
 
-  const { data: property, isLoading, error } = useQuery({
+  const {
+    data: property,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['property', id],
     queryFn: () => propertyService.getById(id!),
     enabled: !!id,
@@ -53,7 +58,8 @@ export function usePropertyDetails() {
 
   const openGoogleMaps = () => {
     const encodedAddress = encodeURIComponent(property?.address || '');
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    if (isValidUrl(mapsUrl)) window.open(mapsUrl, '_blank', 'noopener,noreferrer');
   };
 
   const tenant = property?.tenant;

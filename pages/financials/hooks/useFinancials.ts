@@ -11,7 +11,14 @@ import {
   UnitParams,
 } from '../../../utils/financialCalculations';
 import { formatCurrency } from '../../../utils/formatters';
-import type { FinancialTransaction, LateFeeResult, ApportionmentResult, MatchedBankTransaction, Property, Contract } from '../../../types';
+import type {
+  FinancialTransaction,
+  LateFeeResult,
+  ApportionmentResult,
+  MatchedBankTransaction,
+  Property,
+  Contract,
+} from '../../../types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -29,6 +36,7 @@ export function useFinancials() {
   const [selectedVoucher, setSelectedVoucher] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<FinancialTransaction | null>(null);
 
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [txValue, setTxValue] = useState('');
@@ -72,13 +80,34 @@ export function useFinancials() {
   });
 
   const createTransactionMutation = useMutation({
-    mutationFn: (data: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>) => financeService.create(data),
+    mutationFn: (data: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>) =>
+      financeService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial_transactions'] });
       setShowAddForm(false);
       resetForm();
     },
     onError: (error: Error) => alert(`Erro ao salvar: ${error.message}`),
+  });
+
+  const updateTransactionMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<FinancialTransaction> }) =>
+      financeService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial_transactions'] });
+      setShowAddForm(false);
+      setEditingTransaction(null);
+      resetForm();
+    },
+    onError: (error: Error) => alert(`Erro ao atualizar: ${error.message}`),
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id: string) => financeService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial_transactions'] });
+    },
+    onError: (error: Error) => alert(`Erro ao excluir: ${error.message}`),
   });
 
   const handlePrevMonth = () =>
@@ -231,25 +260,62 @@ export function useFinancials() {
     }
   };
 
+  const openEditForm = (tx: FinancialTransaction) => {
+    setEditingTransaction(tx);
+    setTransactionType(tx.type);
+    setTxValue(String(tx.amount));
+    setTxDescription(tx.title);
+    setTxCategory(tx.category || '');
+    setTxDate(tx.date);
+    setTxProperty(tx.property_id || '');
+    setTxStatus(tx.status);
+    setIsRecurring(tx.is_recurring);
+    setHasAttachment(!!tx.attachment_url);
+    setShowAddForm(true);
+  };
+
   const handleSaveTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const numericAmount = parseFloat(txValue.replace(',', '.'));
+    const numericAmount = parseFloat(String(txValue).replace(',', '.'));
     if (isNaN(numericAmount)) {
       alert('Por favor, insira um valor válido.');
       return;
     }
-    createTransactionMutation.mutate({
-      owner_id: user.id,
-      property_id: txProperty || undefined,
-      title: txDescription,
-      amount: numericAmount,
-      type: transactionType,
-      category: txCategory,
-      date: txDate,
-      status: txStatus,
-      is_recurring: isRecurring,
-    });
+
+    if (editingTransaction) {
+      updateTransactionMutation.mutate({
+        id: editingTransaction.id,
+        data: {
+          title: txDescription,
+          amount: numericAmount,
+          type: transactionType,
+          category: txCategory,
+          date: txDate,
+          property_id: txProperty || undefined,
+          status: txStatus,
+          is_recurring: isRecurring,
+        },
+      });
+    } else {
+      createTransactionMutation.mutate({
+        owner_id: user.id,
+        property_id: txProperty || undefined,
+        title: txDescription,
+        amount: numericAmount,
+        type: transactionType,
+        category: txCategory,
+        date: txDate,
+        status: txStatus,
+        is_recurring: isRecurring,
+      });
+    }
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
+      deleteTransactionMutation.mutate(id);
+    }
   };
 
   const handleExport = () => {
@@ -372,5 +438,11 @@ export function useFinancials() {
     handleBankFileUpload,
     handleSaveTransaction,
     createTransactionMutation,
+    updateTransactionMutation,
+    deleteTransactionMutation,
+    editingTransaction,
+    setEditingTransaction,
+    openEditForm,
+    handleDeleteTransaction,
   };
 }

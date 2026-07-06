@@ -8,19 +8,46 @@
         "role": "primary",
         "displayName": "Glacier Cyan",
         "canonical": "oklch(81.5% 0.162 201.2)",
-        "tonalRamp": ["#074f5e", "#0a6f83", "#0d8fa9", "#10afd0", "#13c8ec", "#42d3f0", "#71def4", "#e0f7fa"]
+        "tonalRamp": [
+          "#074f5e",
+          "#0a6f83",
+          "#0d8fa9",
+          "#10afd0",
+          "#13c8ec",
+          "#42d3f0",
+          "#71def4",
+          "#e0f7fa"
+        ]
       },
       "background-light": {
         "role": "neutral",
         "displayName": "Frost White",
         "canonical": "oklch(98.4% 0.004 220.0)",
-        "tonalRamp": ["#0f172a", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9", "#f8fafc"]
+        "tonalRamp": [
+          "#0f172a",
+          "#334155",
+          "#475569",
+          "#64748b",
+          "#94a3b8",
+          "#cbd5e1",
+          "#f1f5f9",
+          "#f8fafc"
+        ]
       },
       "surface-dark": {
         "role": "neutral",
         "displayName": "Igloo Interior",
         "canonical": "oklch(18.5% 0.012 210.0)",
-        "tonalRamp": ["#050808", "#0b1011", "#141b1d", "#1c2528", "#2c3b40", "#455d64", "#77969f", "#c7d4d7"]
+        "tonalRamp": [
+          "#050808",
+          "#0b1011",
+          "#141b1d",
+          "#1c2528",
+          "#2c3b40",
+          "#455d64",
+          "#77969f",
+          "#c7d4d7"
+        ]
       }
     },
     "typographyMeta": {

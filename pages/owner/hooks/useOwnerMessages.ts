@@ -45,7 +45,9 @@ export function useOwnerMessages() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [availableTenants, setAvailableTenants] = useState<Tenant[]>([]);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string; icon_name: string; color_class: string; bg_class: string }[]>([]);
+  const [categories, setCategories] = useState<
+    { id: string; name: string; icon_name: string; color_class: string; bg_class: string }[]
+  >([]);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [newFaq, setNewFaq] = useState<Partial<FAQ>>({ question: '', answer: '', is_active: true });
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
@@ -389,7 +391,18 @@ export function useOwnerMessages() {
     };
   }, [currentUserId, activeChatId, inputText]);
 
-  const handleNewIncomingMessage = (threadId: string, newMsg: { id: string; content: string; sender_role: string; created_at: string; is_read?: boolean; type?: string }, category: string) => {
+  const handleNewIncomingMessage = (
+    threadId: string,
+    newMsg: {
+      id: string;
+      content: string;
+      sender_role: string;
+      created_at: string;
+      is_read?: boolean;
+      type?: string;
+    },
+    category: string
+  ) => {
     const formattedMsg: ChatMessage = {
       id: newMsg.id,
       text: newMsg.content,
@@ -435,7 +448,15 @@ export function useOwnerMessages() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'maintenance_messages' },
         async (payload) => {
-          const newMsg = payload.new as { id: string; content: string; sender_role: string; created_at: string; sender_id: string; request_id: string; type?: string };
+          const newMsg = payload.new as {
+            id: string;
+            content: string;
+            sender_role: string;
+            created_at: string;
+            sender_id: string;
+            request_id: string;
+            type?: string;
+          };
           if (newMsg.sender_id === currentUserId) return;
 
           const { data: req } = await supabase
@@ -453,7 +474,15 @@ export function useOwnerMessages() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'conversation_messages' },
         async (payload) => {
-          const newMsg = payload.new as { id: string; content: string; sender_role: string; created_at: string; sender_id: string; conversation_id: string; type?: string };
+          const newMsg = payload.new as {
+            id: string;
+            content: string;
+            sender_role: string;
+            created_at: string;
+            sender_id: string;
+            conversation_id: string;
+            type?: string;
+          };
           if (newMsg.sender_id === currentUserId) return;
 
           const { data: conv } = await supabase
@@ -471,7 +500,15 @@ export function useOwnerMessages() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'support_messages' },
         async (payload) => {
-          const newMsg = payload.new as { id: string; content: string; sender_role: string; created_at: string; sender_id: string; ticket_id: string; is_read?: boolean };
+          const newMsg = payload.new as {
+            id: string;
+            content: string;
+            sender_role: string;
+            created_at: string;
+            sender_id: string;
+            ticket_id: string;
+            is_read?: boolean;
+          };
           if (newMsg.sender_id === currentUserId) return;
 
           const { data: ticket } = await supabase
@@ -529,7 +566,9 @@ export function useOwnerMessages() {
     return icons[iconName] || Wrench;
   };
 
-  const handleSaveCategory = async (newCat: Partial<{ name: string; icon_name: string; color_class: string; bg_class: string }>) => {
+  const handleSaveCategory = async (
+    newCat: Partial<{ name: string; icon_name: string; color_class: string; bg_class: string }>
+  ) => {
     try {
       await tenantService.addMaintenanceCategory(
         newCat as { name: string; icon_name: string; color_class: string; bg_class: string }
@@ -655,18 +694,8 @@ export function useOwnerMessages() {
           await loadChats();
         } else {
           if (chat.ticket?.status === 'completed') {
-            await supabase
-              .from('support_tickets')
-              .update({ status: 'Pendente' })
-              .eq('id', ticketId);
-
-            await supabase.from('support_messages').insert({
-              ticket_id: ticketId,
-              sender_id: null,
-              sender_role: 'system',
-              content: 'Chamado reaberto para atendimento',
-              is_read: true,
-            });
+            await supportService.updateTicketStatus(ticketId, 'Pendente');
+            await supportService.addSystemMessage(ticketId, 'Chamado reaberto para atendimento');
           }
           await supportService.sendTicketMessage(ticketId, String(user.id), messageText);
         }
@@ -729,7 +758,7 @@ export function useOwnerMessages() {
     try {
       const publicUrl = await messageService.uploadFile(file);
       await handleSendMessage(publicUrl, 'image');
-    } catch (err) {
+    } catch {
       alert('Erro ao enviar imagem. Verifique se o bucket "documents" existe.');
     }
   };
@@ -750,7 +779,13 @@ export function useOwnerMessages() {
       setChats((prev) =>
         prev.map((c) =>
           c.id === activeChatId && c.ticket
-              ? { ...c, ticket: { ...c.ticket, status: newStatus as 'pending' | 'in_progress' | 'completed' } }
+            ? {
+                ...c,
+                ticket: {
+                  ...c.ticket,
+                  status: newStatus as 'pending' | 'in_progress' | 'completed',
+                },
+              }
             : c
         )
       );

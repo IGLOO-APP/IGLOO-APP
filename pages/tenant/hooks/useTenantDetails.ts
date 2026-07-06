@@ -7,7 +7,9 @@ import { calculateTenantFinancials } from '../../../utils/financialCalculations'
 import { formatPhone, getRemainingContractTime } from '../../../utils/formatters';
 import { fixDocumentUrl } from '../../../utils/mappingUtils';
 import { useNotification } from '../../../context/NotificationContext';
+import { profileService } from '../../../services/profileService';
 import { supabase } from '../../../lib/supabase';
+import { isValidUrl } from '../../../utils/validation';
 
 export function useTenantDetails() {
   const { id } = useParams<{ id: string }>();
@@ -69,11 +71,10 @@ export function useTenantDetails() {
     if (!tenant) return;
     setModalActionLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ onboarding_documents_status: 'approved', onboarding_stage: 'contract' })
-        .eq('id', tenant.id);
-      if (error) throw error;
+      await profileService.update(tenant.id, {
+        onboarding_documents_status: 'approved',
+        onboarding_stage: 'contract',
+      });
       addToast('Sucesso', 'Etapa de documentos aprovada com sucesso!', 'success');
       queryClient.invalidateQueries({ queryKey: ['tenant', id] });
       setPreviewUrl(null);
@@ -90,16 +91,12 @@ export function useTenantDetails() {
     if (!tenant || !modalRejectReason.trim()) return;
     setModalActionLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          onboarding_documents_status: 'rejected',
-          onboarding_documents_rejected_reason: modalRejectReason,
-          onboarding_stage: 'documents',
-          has_completed_onboarding: false,
-        })
-        .eq('id', tenant.id);
-      if (error) throw error;
+      await profileService.update(tenant.id, {
+        onboarding_documents_status: 'rejected',
+        onboarding_documents_rejected_reason: modalRejectReason,
+        onboarding_stage: 'documents',
+        has_completed_onboarding: false,
+      });
       addToast(
         'Solicitação enviada',
         'Documentos marcados para correção e inquilino notificado.',
@@ -389,7 +386,10 @@ export function useTenantDetails() {
   );
 
   const handleWhatsApp = () => {
-    if (tenant?.phone) window.open(`https://wa.me/55${tenant.phone.replace(/\D/g, '')}`, '_blank');
+    if (tenant?.phone) {
+      const waUrl = `https://wa.me/55${tenant.phone.replace(/\D/g, '')}`;
+      if (isValidUrl(waUrl)) window.open(waUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const triggerCreditCheck = () => {

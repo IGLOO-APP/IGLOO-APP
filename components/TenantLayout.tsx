@@ -6,6 +6,7 @@ import {
   User,
   LifeBuoy,
   Settings as SettingsIcon,
+  FileText,
   Lock,
   Zap,
 } from 'lucide-react';
@@ -104,6 +105,13 @@ const TenantLayout: React.FC = () => {
       label: 'Início',
       icon: Home,
       description: 'Painel principal',
+    },
+    {
+      path: '/tenant/contract',
+      label: 'Contrato',
+      icon: FileText,
+      description: 'Meu contrato de locação',
+      disabled: isOnboardingRequired,
     },
     {
       path: '/tenant/payments',
@@ -364,7 +372,6 @@ const TenantLayout: React.FC = () => {
                 </NavLink>
               );
             })}
-
           </div>
         </nav>
       </main>

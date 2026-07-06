@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plan } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { plansAdminService } from '../../services/admin/plansService';
 import { Loader, Plus, Edit2, Trash2 } from 'lucide-react';
 
 const PlanManager: React.FC = () => {
@@ -10,40 +10,8 @@ const PlanManager: React.FC = () => {
 
   const fetchPlans = async () => {
     setLoading(true);
-    // In a real scenario, fetch from DB.
-    // For now, we simulate fetching or use the mock data if DB is empty.
-    const { data } = await supabase
-      .from('plans')
-      .select('*')
-      .order('price_monthly', { ascending: true });
-
-    if (data && data.length > 0) {
-      setPlans(data as any);
-    } else {
-      // Fallback to initial seed if empty
-      const seedPlans: Plan[] = [
-        {
-          id: 'starter',
-          name: 'Starter',
-          description: 'Para quem está começando',
-          price: { monthly: 29.9, semiannual: 29.9 * 6 * 0.9, annual: 29.9 * 12 * 0.8 },
-          limits: { properties: 5, tenants: 10, storage_gb: 1, users: 1 },
-          features: [{ text: 'Gestão Básica', included: true }],
-          is_active: true,
-        },
-        {
-          id: 'professional',
-          name: 'Professional',
-          description: 'Para corretores e pequenas imobiliárias',
-          price: { monthly: 79.9 },
-          limits: { properties: 50, tenants: 100, storage_gb: 10, users: 3 },
-          features: [{ text: 'Gestão Completa', included: true }],
-          is_active: true,
-          highlight: true,
-        },
-      ];
-      setPlans(seedPlans);
-    }
+    const data = await plansAdminService.getAll();
+    setPlans(data);
     setLoading(false);
   };
 
@@ -56,32 +24,22 @@ const PlanManager: React.FC = () => {
     e.preventDefault();
     if (!editingPlan || !editingPlan.id) return;
 
-    // Upsert to Supabase
-    const { error } = await (supabase.from('plans') as any).upsert({
-      id: editingPlan.id,
-      name: editingPlan.name,
-      description: editingPlan.description,
-      price_monthly: editingPlan.price?.monthly,
-      price_semiannual: editingPlan.price?.semiannual,
-      price_annual: editingPlan.price?.annual,
-      limits: editingPlan.limits,
-      features: editingPlan.features,
-      is_active: editingPlan.is_active,
-    });
-
-    if (!error) {
+    try {
+      await plansAdminService.upsert(editingPlan as any);
       setEditingPlan(null);
       fetchPlans();
-    } else {
-      alert('Erro ao salvar plano: ' + error.message);
+    } catch (err: any) {
+      alert('Erro ao salvar plano: ' + (err.message || err));
     }
   };
 
   const handleDeletePlan = async (id: string) => {
     if (!confirm('Tem certeza? Isso pode afetar assinaturas existentes!')) return;
-    const { error } = await supabase.from('plans').delete().eq('id', id);
-    if (!error) {
+    try {
+      await plansAdminService.remove(id);
       setPlans(plans.filter((p) => p.id !== id));
+    } catch {
+      // Silently fail — row-level security may prevent deletion
     }
   };
 

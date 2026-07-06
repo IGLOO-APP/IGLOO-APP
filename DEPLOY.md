@@ -21,9 +21,9 @@ O Vite é suportado por padrão na Vercel. A configuração de build deverá ser
 
 Na aba "Environment Variables", defina as seguintes chaves com os valores do seu projeto Supabase:
 
-| Chave | Descrição |
-| --- | --- |
-| `VITE_SUPABASE_URL` | A URL do seu projeto Supabase (encontrada em Settings > API). |
+| Chave                    | Descrição                                                            |
+| ------------------------ | -------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | A URL do seu projeto Supabase (encontrada em Settings > API).        |
 | `VITE_SUPABASE_ANON_KEY` | A chave pública do Supabase (anon key) (encontrada no mesmo painel). |
 
 > [!WARNING]
@@ -40,4 +40,5 @@ Na aba "Environment Variables", defina as seguintes chaves com os valores do seu
 O projeto inclui um arquivo `vercel.json` na raiz da aplicação. O arquivo define "rewrites" mandando todas as rotas para o \`index.html\`, o que assegura que o roteamento flua corretamente para dentro do React Router (mesmo caso mude para o \`BrowserRouter\` padrão).
 
 ---
-*Pronto! Após a compilação, o sistema estará operante na Vercel.*
+
+_Pronto! Após a compilação, o sistema estará operante na Vercel._

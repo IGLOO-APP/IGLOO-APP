@@ -1,5 +1,14 @@
 import React from 'react';
-import { Search, Building2, Eye, Download, ArrowUp, Calculator } from 'lucide-react';
+import {
+  Search,
+  Building2,
+  Eye,
+  Download,
+  ArrowUp,
+  Calculator,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { formatCurrency } from '../../../utils/formatters';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { ReceiptPDFTemplate } from '../../../components/pdf/ReceiptPDFTemplate';
@@ -15,6 +24,8 @@ interface TransactionListProps {
   pendingCount: number;
   onShowLateCalculator: () => void;
   onSelectVoucher: (url: string | null) => void;
+  onEdit?: (tx: FinancialTransaction) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -26,6 +37,8 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   pendingCount,
   onShowLateCalculator,
   onSelectVoucher,
+  onEdit,
+  onDelete,
 }) => {
   return (
     <>
@@ -141,11 +154,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                                 'Sem Imóvel',
                             }}
                             tenantName={
-                  contracts.find(
-                    (c) =>
-                      c.property ===
-                      properties.find((p) => p.id === tx.property_id)?.name
-                  )?.tenant_name || 'Inquilino'
+                              contracts.find(
+                                (c) =>
+                                  c.property ===
+                                  properties.find((p) => p.id === tx.property_id)?.name
+                              )?.tenant_name || 'Inquilino'
                             }
                           />
                         }
@@ -168,6 +181,30 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                   >
                     {tx.status === 'paid' ? 'Pago' : 'Pendente'}
                   </span>
+                  {onEdit && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(tx);
+                      }}
+                      className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'
+                      title='Editar'
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(tx.id);
+                      }}
+                      className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-red-500 transition-colors'
+                      title='Excluir'
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

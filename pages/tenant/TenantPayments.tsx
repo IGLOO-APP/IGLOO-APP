@@ -380,7 +380,7 @@ const TenantPayments: React.FC = () => {
                       <Clock size={10} />
                     )}
                     {payment.status === 'paid'
-                       ? `Pago em ${payment.paid_date ? formatDate(payment.paid_date) : '-'}`
+                      ? `Pago em ${payment.paid_date ? formatDate(payment.paid_date) : '-'}`
                       : payment.status === 'late'
                         ? 'Atrasado'
                         : 'A Vencer'}

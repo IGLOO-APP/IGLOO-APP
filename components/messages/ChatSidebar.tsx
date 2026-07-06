@@ -24,7 +24,9 @@ interface ChatSidebarProps {
   propertyFilter: string;
   setPropertyFilter: (property: string) => void;
   activeFilter: 'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support';
-  setActiveFilter: (filter: 'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support') => void;
+  setActiveFilter: (
+    filter: 'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support'
+  ) => void;
   filteredChats: ChatThread[];
   chats: ChatThread[];
   getCategoryIcon: (category: string) => React.ReactNode;
@@ -202,13 +204,13 @@ export const ChatSidebar = React.memo(
             onMouseMove={handleMouseMove}
             className={`flex gap-1.5 overflow-x-auto hide-scrollbar pb-0.5 cursor-grab active:cursor-grabbing select-none mb-3 ${isDragging ? 'cursor-grabbing' : ''}`}
           >
-            {([
+            {[
               { id: 'all' as const, label: 'Tudo', icon: <MessageSquare size={12} /> },
               { id: 'support' as const, label: 'Suporte', icon: <Shield size={12} /> },
               { id: 'urgent' as const, label: 'Urgentes', icon: <AlertCircle size={12} /> },
               { id: 'maintenance' as const, label: 'Manutenção', icon: <Clock size={12} /> },
               { id: 'finance' as const, label: 'Financeiro', icon: <User size={12} /> },
-            ]).map((filter) => (
+            ].map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Moon, Sun, Globe, Lock, Smartphone, Save, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
+import { notificationService, NotificationPrefs } from '../../services/notificationService';
 
 const TenantSettings: React.FC = () => {
   const { user } = useAuth();
@@ -13,20 +14,43 @@ const TenantSettings: React.FC = () => {
     }
   };
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [notifications, setNotifications] = useState({
-    paymentReminders: true,
-    maintenanceUpdates: true,
-    newMessages: true,
+  const [notifications, setNotifications] = useState<NotificationPrefs>({
+    email_alerts: true,
+    sms_alerts: false,
+    payment_received: true,
+    late_payment: true,
+    maintenance_updates: true,
+    payment_reminders: true,
+    new_messages: true,
     announcements: false,
   });
 
   const [language, setLanguage] = useState('pt-BR');
 
-  const handleSave = () => {
-    // Em produção: salvar preferências no perfil do banco
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    if (user) {
+      notificationService
+        .get(user.id)
+        .then((prefs) => setNotifications(prefs))
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await notificationService.save(user.id, notifications);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Error saving notification prefs:', err);
+      alert('Erro ao salvar preferências.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -89,16 +113,16 @@ const TenantSettings: React.FC = () => {
         <div className='space-y-3'>
           {[
             {
-              key: 'paymentReminders',
+              key: 'payment_reminders',
               label: 'Lembretes de pagamento',
               desc: 'Avisos antes do vencimento',
             },
             {
-              key: 'maintenanceUpdates',
+              key: 'maintenance_updates',
               label: 'Atualizações de manutenção',
               desc: 'Progresso dos chamados',
             },
-            { key: 'newMessages', label: 'Novas mensagens', desc: 'Mensagens do proprietário' },
+            { key: 'new_messages', label: 'Novas mensagens', desc: 'Mensagens do proprietário' },
             { key: 'announcements', label: 'Comunicados gerais', desc: 'Avisos do condomínio' },
           ].map((item) => (
             <div key={item.key} className='flex items-center justify-between py-2'>
@@ -187,11 +211,14 @@ const TenantSettings: React.FC = () => {
       <div className='flex justify-end'>
         <button
           onClick={handleSave}
+          disabled={saving}
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all ${
             saved ? 'bg-green-500 text-white' : 'bg-primary text-white hover:bg-primary/90'
-          }`}
+          } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {saved ? (
+          {saving ? (
+            'Salvando...'
+          ) : saved ? (
             <>
               <CheckCircle className='w-4 h-4' />
               Salvo!

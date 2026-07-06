@@ -240,7 +240,10 @@ export const calculatePortfolioYield = (properties: Property[]) => {
 
 // --- 5. CASH FLOW PROJECTION ---
 
-export const generateCashFlowProjection = (pastData: { name: string; value: number }[], contracts: Contract[]) => {
+export const generateCashFlowProjection = (
+  pastData: { name: string; value: number }[],
+  contracts: Contract[]
+) => {
   // pastData: [{name: 'Jan', value: 4500}, ...] (Last 6 months)
   // contracts: Active contracts with end_date and numeric_value
 
@@ -314,7 +317,9 @@ export interface TenantFinancialSummary {
   isLate: boolean;
 }
 
-export const calculateTenantFinancials = (payments: { status: string; amount: number; due_date: string }[]): TenantFinancialSummary => {
+export const calculateTenantFinancials = (
+  payments: { status: string; amount: number; due_date: string }[]
+): TenantFinancialSummary => {
   if (!payments || payments.length === 0) {
     return {
       totalPaid: 0,

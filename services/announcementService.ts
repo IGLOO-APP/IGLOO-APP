@@ -11,7 +11,11 @@ async function resolveTenantIds(
       .from('contracts')
       .select('tenant_id')
       .eq('status', 'active');
-    return [...new Set((contracts || []).map((c: { tenant_id: string | null }) => c.tenant_id).filter(Boolean))] as string[];
+    return [
+      ...new Set(
+        (contracts || []).map((c: { tenant_id: string | null }) => c.tenant_id).filter(Boolean)
+      ),
+    ] as string[];
   }
 
   if (targetType === 'individual') {
@@ -26,7 +30,11 @@ async function resolveTenantIds(
       .select('tenant_id')
       .in('property_id', propertyIds)
       .eq('status', 'active');
-    return [...new Set((contracts || []).map((c: { tenant_id: string | null }) => c.tenant_id).filter(Boolean))] as string[];
+    return [
+      ...new Set(
+        (contracts || []).map((c: { tenant_id: string | null }) => c.tenant_id).filter(Boolean)
+      ),
+    ] as string[];
   }
 
   if (targetType === 'condominium') {
@@ -43,7 +51,14 @@ async function resolveTenantIds(
       .select('tenant_id')
       .in('property_id', propertyIds)
       .eq('status', 'active');
-    return [...new Set((contracts || []).filter(Boolean).map((c: { tenant_id: string | null }) => c.tenant_id).filter(Boolean))] as string[];
+    return [
+      ...new Set(
+        (contracts || [])
+          .filter(Boolean)
+          .map((c: { tenant_id: string | null }) => c.tenant_id)
+          .filter(Boolean)
+      ),
+    ] as string[];
   }
 
   return [];

@@ -24,6 +24,42 @@ export const financeService = {
     return (data || []).map(this.mapTransaction);
   },
 
+  /**
+   * Fetches transactions with pagination.
+   */
+  async getPaginated(
+    page: number = 1,
+    pageSize: number = 20,
+    filters?: { property_id?: string; search?: string; month?: number; year?: number }
+  ): Promise<{ data: FinancialTransaction[]; total: number; page: number; pageSize: number }> {
+    let query = supabase.from('financial_transactions').select('*', { count: 'exact' });
+
+    if (filters?.property_id && filters.property_id !== 'all') {
+      query = query.eq('property_id', filters.property_id);
+    }
+    if (filters?.month !== undefined && filters?.year !== undefined) {
+      const start = new Date(filters.year, filters.month, 1).toISOString().split('T')[0];
+      const end = new Date(filters.year, filters.month + 1, 0).toISOString().split('T')[0];
+      query = query.gte('date', start).lte('date', end);
+    }
+    if (filters?.search) {
+      query = query.or(`title.ilike.%${filters.search}%,category.ilike.%${filters.search}%`);
+    }
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.order('date', { ascending: false }).range(from, to);
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return {
+      data: (data || []).map(this.mapTransaction),
+      total: count || 0,
+      page,
+      pageSize,
+    };
+  },
+
   mapTransaction(t: Record<string, unknown>): FinancialTransaction {
     return {
       id: t.id as string,
@@ -82,7 +118,7 @@ export const financeService = {
   },
 
   /**
-   * Placeholder: In the future, this will trigger a server-side process 
+   * Placeholder: In the future, this will trigger a server-side process
    * to parse bank files. For now, it is disabled.
    */
   async processBankFile(_file: File): Promise<BankTransaction[]> {
@@ -93,7 +129,10 @@ export const financeService = {
   /**
    * Simulates matching bank transactions with existing transactions in the database.
    */
-  matchTransactions(bankTxs: BankTransaction[], existingTxs: FinancialTransaction[]): (BankTransaction & { matchedId?: string; matchStatus: 'perfect' | 'none' })[] {
+  matchTransactions(
+    bankTxs: BankTransaction[],
+    existingTxs: FinancialTransaction[]
+  ): (BankTransaction & { matchedId?: string; matchStatus: 'perfect' | 'none' })[] {
     return bankTxs.map((btx) => {
       const match = existingTxs.find(
         (etx) =>

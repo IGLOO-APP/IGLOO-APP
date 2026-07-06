@@ -31,7 +31,6 @@ html[data-igloo-vt="to-light"]::view-transition-new(root) {
 
 `;
 
-
 function injectVTStyle() {
   if (typeof document === 'undefined') return;
   if (document.getElementById(VT_STYLE_ID)) return;

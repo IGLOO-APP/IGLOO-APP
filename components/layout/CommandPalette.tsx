@@ -8,6 +8,7 @@ import {
   Receipt,
   MessageSquare,
   Settings,
+  FileText,
   ArrowRight,
   X,
 } from 'lucide-react';
@@ -62,6 +63,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       subtitle: 'Base de locatários e contratos',
       icon: Users,
       path: '/tenants',
+      type: 'Página',
+    },
+    {
+      id: 'nav-contracts',
+      title: 'Contratos',
+      subtitle: 'Gestão de contratos e assinaturas',
+      icon: FileText,
+      path: '/contracts',
       type: 'Página',
     },
     {

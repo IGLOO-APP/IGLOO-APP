@@ -25,5 +25,5 @@ export default tseslint.config(
       'prettier/prettier': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
     },
-  },
+  }
 );

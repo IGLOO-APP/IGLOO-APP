@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  calculateLateFee, 
-  calculateCarneLeao, 
-  calculateApportionment, 
-  calculateVacancyMetrics, 
-  calculatePortfolioYield, 
-  calculateTenantFinancials 
+import {
+  calculateLateFee,
+  calculateCarneLeao,
+  calculateApportionment,
+  calculateVacancyMetrics,
+  calculatePortfolioYield,
+  calculateTenantFinancials,
 } from './financialCalculations';
 
 describe('calculateLateFee', () => {
@@ -135,9 +135,7 @@ describe('calculateVacancyMetrics', () => {
 
 describe('calculatePortfolioYield', () => {
   it('should calculate yield', () => {
-    const properties = [
-      { status: 'ALUGADO', numeric_price: 1000, market_value: 200000 } as any,
-    ];
+    const properties = [{ status: 'ALUGADO', numeric_price: 1000, market_value: 200000 } as any];
     const result = calculatePortfolioYield(properties);
     // (1000 * 12 / 200000) * 100 = 6%
     expect(result).toBe(6);

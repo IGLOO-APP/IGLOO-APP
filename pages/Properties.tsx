@@ -177,44 +177,47 @@ const Properties: React.FC = () => {
     <div
       className={`h-full flex flex-col w-full relative ${viewMode !== 'map' ? 'max-w-[1600px] mx-auto' : ''}`}
     >
-      {viewMode !== 'map' && (
-        <TopBar title='Meus Ativos' subtitle='Gestão de propriedades'>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active-tap'
-          >
-            <Plus size={16} className='md:size-[18px]' />
-            <span className='hidden sm:inline'>Novo Imóvel</span>
-          </button>
-          <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 md:p-1 border border-slate-200 dark:border-slate-700'>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-              title='Lista'
-            >
-              <List size={18} className='md:size-5' />
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-              title='Grade'
-            >
-              <Grid size={18} className='md:size-5' />
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
-              title='Mapa'
-            >
-              <Map size={18} className='md:size-5' />
-            </button>
-          </div>
-        </TopBar>
-      )}
-
       {viewMode !== 'map' ? (
-        <>
-          <div className='px-6 py-4'>
+        <div className='flex-1 overflow-y-auto'>
+          <div className='px-6 py-4 flex items-center justify-between gap-4'>
+            <h1 className='text-lg font-bold text-slate-900 dark:text-white tracking-tight'>
+              Meus Ativos
+            </h1>
+            <div className='flex items-center gap-2'>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active-tap'
+              >
+                <Plus size={16} className='md:size-[18px]' />
+                <span className='hidden sm:inline'>Novo Imóvel</span>
+              </button>
+              <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 md:p-1 border border-slate-200 dark:border-slate-700'>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                  title='Lista'
+                >
+                  <List size={18} className='md:size-5' />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                  title='Grade'
+                >
+                  <Grid size={18} className='md:size-5' />
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                  title='Mapa'
+                >
+                  <Map size={18} className='md:size-5' />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className='px-6'>
             <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
               <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
                 <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Total</p>
@@ -371,7 +374,7 @@ const Properties: React.FC = () => {
             </div>
           </div>
 
-          <div className='flex-1 overflow-y-auto px-6 pb-24'>
+          <div className='px-6 pb-24'>
             {loading ? (
               <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
                 <Loader2 className='animate-spin mb-2' size={32} />
@@ -409,7 +412,7 @@ const Properties: React.FC = () => {
               </div>
             )}
           </div>
-        </>
+        </div>
       ) : (
         <PropertyMapView properties={properties} onBack={() => setViewMode('list')} />
       )}

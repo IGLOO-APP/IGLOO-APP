@@ -87,9 +87,7 @@ const Layout: React.FC = () => {
           <Outlet />
         </div>
 
-        <MobileNav
-          navItems={mobileNavItems}
-        />
+        <MobileNav navItems={mobileNavItems} />
       </main>
     </div>
   );

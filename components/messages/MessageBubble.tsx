@@ -1,15 +1,7 @@
 import React, { useCallback } from 'react';
 import { CheckCheck, Image as ImageIcon } from 'lucide-react';
 import { ChatMessage } from '../../services/messageService';
-
-const isValidUrl = (url: string) => {
-  try {
-    const u = new URL(url);
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
+import { isValidUrl } from '../../utils/validation';
 
 interface MessageBubbleProps {
   msg: ChatMessage;

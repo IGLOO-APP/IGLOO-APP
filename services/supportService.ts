@@ -175,4 +175,25 @@ export const supportService = {
       console.error('Error marking messages as read:', error);
     }
   },
+
+  async updateTicketStatus(ticketId: string, status: string): Promise<void> {
+    const { error } = await supabase
+      .from('support_tickets')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', ticketId);
+
+    if (error) throw error;
+  },
+
+  async addSystemMessage(ticketId: string, content: string): Promise<void> {
+    const { error } = await supabase.from('support_messages').insert({
+      ticket_id: ticketId,
+      sender_id: null,
+      sender_role: 'system',
+      content,
+      is_read: true,
+    });
+
+    if (error) throw error;
+  },
 };
