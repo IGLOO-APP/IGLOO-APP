@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Calculator, Info } from 'lucide-react';
 import { ModalWrapper } from '../../../components/ui/ModalWrapper';
-import { taxService } from '../../../services/taxService';
+import { taxService } from '../../../services/finance/taxService';
 import { CarneLeaoReport } from '../../../types/tax';
 
 interface TaxExportModalProps {

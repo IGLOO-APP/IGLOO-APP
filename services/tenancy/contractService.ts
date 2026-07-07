@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { Contract, ContractStatus, Signer, ContractHistoryEvent } from '../types';
+import { supabase } from '../../lib/supabase';
+import { Contract, ContractStatus, Signer, ContractHistoryEvent } from '../../types';
 
 interface DbContractRow {
   id: string;
@@ -264,5 +264,17 @@ export const contractService = {
       console.error('Error deleting contract:', error);
       throw error;
     }
+  },
+
+  async getExpiring(ownerId: string): Promise<Contract[]> {
+    const { data, error } = await supabase
+      .from('contracts')
+      .select('*, properties:property_id(name), profiles_tenant:tenant_id(name, email), profiles_owner:owner_id(name)')
+      .eq('owner_id', ownerId)
+      .in('status', ['active', 'expiring_soon'])
+      .lt('end_date', new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (error) return [];
+    return (data as unknown as DbContractRow[]).map(mapContract);
   },
 };

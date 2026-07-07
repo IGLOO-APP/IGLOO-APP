@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle, MessageCircle, Clock } from 'lucide-react';
 import { BillingStatus } from '../../types/billing';
-import { billingService } from '../../services/billingService';
+import { billingService } from '../../services/finance/billingService';
 
 interface BillingStatusIndicatorProps {
   contractId: string;

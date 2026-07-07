@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { propertyService } from '../../services/propertyService';
-import { tenantService } from '../../services/tenantService';
+import { tenantService } from '../../services/tenancy/tenantService';
 
 interface CommandPaletteProps {
   isOpen: boolean;

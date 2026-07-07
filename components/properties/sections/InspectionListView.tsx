@@ -13,7 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { Inspection } from '../../../services/inspectionService';
+import { Inspection } from '../../../services/maintenance/inspectionService';
 
 interface InspectionListViewProps {
   inspections: Inspection[];

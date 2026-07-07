@@ -14,7 +14,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { RequirementStatus, TenantProfileConfig } from '../../types';
-import { tenantConfigService, TEMPLATES } from '../../services/tenantConfigService';
+import { tenantConfigService, TEMPLATES } from '../../services/tenancy/tenantConfigService';
 import { ToastContainer, ToastMessage } from '../ui/Toast';
 
 interface TenantProfileConfigPanelProps {

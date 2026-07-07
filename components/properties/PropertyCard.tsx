@@ -14,9 +14,20 @@ interface PropertyCardProps {
   isTenant?: boolean;
 }
 
-// Derives the left-border accent color from contract status
+// Derives the left-border accent color from status_operacional
 function getStatusBorder(property: Property): string {
-  if (property.status === 'DISPONÍVEL') return ''; // no extra border
+  if (property.status_operacional) {
+    const statusColors: Record<string, string> = {
+      ocupado: 'border-l-[4px] border-l-emerald-500',
+      vago: 'border-l-[4px] border-l-red-500',
+      manutencao: 'border-l-[4px] border-l-amber-500',
+      pendencia_assinatura: 'border-l-[4px] border-l-cyan-500',
+    };
+    return statusColors[property.status_operacional] || '';
+  }
+
+  // Fallback to existing logic if status_operacional is missing
+  if (property.status === 'DISPONÍVEL') return '';
 
   if (property.contract) {
     if (property.contract.status === 'expired') {

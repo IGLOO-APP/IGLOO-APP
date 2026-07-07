@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { BillingReminder, BillingStatus } from '../types/billing';
+import { supabase } from '../../lib/supabase';
+import { BillingReminder, BillingStatus } from '../../types/billing';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

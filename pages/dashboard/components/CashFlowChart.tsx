@@ -100,6 +100,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                   const expense = payload[1]?.value || 0;
                   const net = payload[2]?.value || 0;
                   const isProjected = payload[0].payload.projected;
+                  const repasseData = payload[0].payload.repasse_previsto_data;
 
                   return (
                     <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
@@ -138,6 +139,17 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                             }).format(Number(expense))}
                           </span>
                         </div>
+
+                        {repasseData && (
+                          <div className='flex justify-between items-center pt-1 border-t border-white/5'>
+                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                              Repasse Previsto
+                            </span>
+                            <span className='text-xs font-bold text-white'>
+                              {new Date(repasseData).toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                        )}
 
                         <div className='pt-2 mt-2 border-t border-white/5'>
                           <div className='flex justify-between items-center'>

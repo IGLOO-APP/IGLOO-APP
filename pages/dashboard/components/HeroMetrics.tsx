@@ -14,7 +14,11 @@ interface HeroMetricsProps {
   metrics: {
     totalWealth: string;
     mrr: string;
+    mrr_bruto?: number;
+    mrr_liquido?: number;
     occupancyRate: number;
+    occupancyPhysicalRate?: number;
+    occupancyFinancialRate?: number;
     avgRoi: string;
     totalTenants: number;
     expiringContractsCount: number;
@@ -57,27 +61,33 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
         <HeroCard
           title='Receita Recorrente (MRR)'
           value={metrics.mrr}
-          subtext='vs. mês anterior'
+          subtext={
+            metrics.mrr_liquido && metrics.mrr_bruto && metrics.mrr_liquido !== metrics.mrr_bruto
+              ? `Líquido: R$ ${metrics.mrr_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+              : 'vs. mês anterior'
+          }
           trend={metrics.trends.mrr}
           trendUp={true}
           icon={DollarSign}
           color='text-emerald-500'
           sparkData={mrrSpark}
-          tooltip='Monthly Recurring Revenue. É a soma de todos os aluguéis ativos no mês atual. Representa a previsibilidade do seu fluxo de caixa.'
+          tooltip={
+            metrics.mrr_liquido && metrics.mrr_bruto && metrics.mrr_liquido !== metrics.mrr_bruto
+              ? `MRR Bruto: R$ ${metrics.mrr_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Deduções aplicadas.`
+              : 'Monthly Recurring Revenue. É a soma de todos os aluguéis ativos no mês atual. Representa a previsibilidade do seu fluxo de caixa.'
+          }
         />
 
         <HeroCard
-          title='Taxa de Ocupação'
-          value={`${metrics.occupancyRate}%`}
-          subtext={
-            metrics.occupancyRate < 80 ? 'Vacância crítica — agir agora' : 'Carteira saudável'
-          }
+          title='Ocupação'
+          value={`${metrics.occupancyPhysicalRate ?? metrics.occupancyRate}% física`}
+          subtext={`${metrics.occupancyFinancialRate ?? metrics.occupancyRate}% financeira`}
           trend={metrics.trends.occupancy}
-          trendUp={metrics.occupancyRate >= 80}
+          trendUp={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) >= 80}
           icon={Home}
-          color={metrics.occupancyRate < 80 ? 'text-red-500' : 'text-emerald-500'}
-          variant={metrics.occupancyRate < 80 ? 'critical' : 'default'}
-          tooltip='Percentual de imóveis alugados em relação ao total da sua carteira. Acima de 90% é considerado excelente.'
+          color={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 && (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90 ? 'text-red-500' : 'text-emerald-500'}
+          variant={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 && (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90 ? 'critical' : 'default'}
+          tooltip='Percentual de imóveis alugados em relação ao total da sua carteira (física) vs impacto financeiro real (financeira).'
         />
 
         <HeroCard

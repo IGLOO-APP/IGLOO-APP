@@ -1,10 +1,10 @@
-import { supabase } from '../lib/supabase';
-import { Tenant } from '../types';
-import { mapTenant } from '../utils/mappingUtils';
-import { maintenanceService } from './maintenanceService';
-import { paymentService } from './paymentService';
-import { documentService } from './documentService';
-import { handleServiceError } from '../lib/utils';
+import { supabase } from '../../lib/supabase';
+import { Tenant } from '../../types';
+import { mapTenant } from '../../utils/mappingUtils';
+import { maintenanceService } from '../maintenance/maintenanceService';
+import { paymentService } from '../finance/paymentService';
+import { documentService } from '../documentService';
+import { handleServiceError } from '../../lib/utils';
 
 export const tenantService = {
   async getAll(): Promise<Tenant[]> {

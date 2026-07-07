@@ -21,7 +21,7 @@ import {
   Search,
   ChevronRight,
 } from 'lucide-react';
-import { tenantService } from '../../services/tenantService';
+import { tenantService } from '../../services/tenancy/tenantService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';

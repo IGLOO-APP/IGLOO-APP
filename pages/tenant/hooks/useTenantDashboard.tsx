@@ -3,7 +3,7 @@ import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotification } from '../../../context/NotificationContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { tenantService } from '../../../services/tenantService';
+import { tenantService } from '../../../services/tenancy/tenantService';
 import { announcementService } from '../../../services/announcementService';
 import { supabase } from '../../../lib/supabase';
 import { Property, Tenant, SystemAnnouncement } from '../../../types';

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Zap, ArrowUpRight } from 'lucide-react';
+import { executeWorkflowAction } from '../../../services/workflow/workflowActions';
 
 interface DashboardAIInsightsProps {
   metrics: {
@@ -21,6 +22,15 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
   );
 
   const { occupancyRate, pendingMaintenanceCount, expiringContractsCount } = safeMetrics;
+
+  const handleAction = async (endpoint: string) => {
+    try {
+      await executeWorkflowAction(endpoint);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error performing action:', error);
+    }
+  };
 
   return (
     <div className='w-full h-full bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm flex flex-col'>
@@ -48,40 +58,57 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
 
       <div className='space-y-3 flex-grow'>
         {/* Occupancy Insight */}
-        <div className='flex items-start gap-3 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 transition-all'>
-          <div
-            className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${occupancyRate < 80 ? 'bg-rose-500' : 'bg-emerald-500'}`}
-          />
-          <div className='space-y-0.5'>
-            <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
-              Ocupação da Carteira
-            </p>
-            <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
-              {occupancyRate < 80
-                ? 'Sua vacância está acima do ideal. Considere revisar os preços.'
-                : 'Ocupação excelente! Sua carteira está performando acima da média.'}
-            </p>
+        <div className='flex flex-col gap-2 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5'>
+          <div className='flex items-start gap-3'>
+            <div
+              className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${occupancyRate < 80 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+            />
+            <div className='space-y-0.5'>
+              <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
+                Ocupação da Carteira
+              </p>
+              <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
+                {occupancyRate < 80
+                  ? 'Sua vacância está acima do ideal. Considere revisar os preços.'
+                  : 'Ocupação excelente! Sua carteira está performando acima da média.'}
+              </p>
+            </div>
           </div>
+          {occupancyRate < 80 && (
+            <button
+              onClick={() => handleAction('/api/imoveis/sugestao-preco')}
+              className='text-[9px] font-black text-primary hover:underline self-end uppercase tracking-widest'
+            >
+              Revisar preço
+            </button>
+          )}
         </div>
 
         {/* Maintenance Insight */}
         {pendingMaintenanceCount > 0 && (
-          <div className='flex items-start gap-3 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 transition-all'>
-            <div className='mt-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full shrink-0' />
-            <div className='space-y-0.5'>
-              <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
-                Manutenção Preventiva
-              </p>
-              <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
-                Existem {pendingMaintenanceCount} reparos pendentes. Resolvê-los evita vacância
-                futura.
-              </p>
+          <div className='flex flex-col gap-2 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5'>
+            <div className='flex items-start gap-3'>
+              <div className='mt-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full shrink-0' />
+              <div className='space-y-0.5'>
+                <p className='text-[9px] font-black uppercase tracking-widest text-slate-400'>
+                  Manutenção Preventiva
+                </p>
+                <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
+                  Existem {pendingMaintenanceCount} reparos pendentes.
+                </p>
+              </div>
             </div>
+            <button
+              onClick={() => handleAction('/api/manutencao/resolver')}
+              className='text-[9px] font-black text-primary hover:underline self-end uppercase tracking-widest'
+            >
+              Resolver reparo
+            </button>
           </div>
         )}
 
         {/* Contracts Insight */}
-        <div className='flex items-start gap-3 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 transition-all'>
+        <div className='flex items-start gap-3 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5'>
           <div
             className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${expiringContractsCount > 0 ? 'bg-blue-500' : 'bg-emerald-500'}`}
           />
@@ -91,7 +118,7 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
             </p>
             <p className='text-xs font-bold text-slate-500 dark:text-slate-300 leading-relaxed'>
               {expiringContractsCount > 0
-                ? `${expiringContractsCount} contrato(s) vencendo em breve. Hora de negociar a renovação.`
+                ? `${expiringContractsCount} contrato(s) vencendo em breve.`
                 : 'Nenhum contrato vencendo nos próximos 30 dias.'}
             </p>
           </div>

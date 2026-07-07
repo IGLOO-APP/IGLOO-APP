@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { tenantConfigService } from '../../../services/tenantConfigService';
+import { tenantConfigService } from '../../../services/tenancy/tenantConfigService';
 import { TenantProfileConfig, RequirementStatus } from '../../../types';
 
 export const useTenantProfile = () => {

@@ -18,7 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNotification } from '../../context/NotificationContext';
 import { propertyService } from '../../services/propertyService';
-import { tenantService } from '../../services/tenantService';
+import { tenantService } from '../../services/tenancy/tenantService';
 import { useTheme } from '../../hooks/useTheme';
 
 interface TopBarProps {

@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
 import { BillingModal } from '../components/tenants/BillingModal';
-import { tenantService } from '../services/tenantService';
+import { tenantService } from '../services/tenancy/tenantService';
 import { propertyService } from '../services/propertyService';
 import { useNotification } from '../context/NotificationContext';
 import {

@@ -6,7 +6,7 @@ import {
   Inspection,
   Room,
   InspectionSignature,
-} from '../../../services/inspectionService';
+} from '../../../services/maintenance/inspectionService';
 
 export type ViewType = 'list' | 'detail' | 'create' | 'compare';
 export type NewRoomType = 'entrada' | 'saída' | 'periódica';

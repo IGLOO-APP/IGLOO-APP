@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Property, Tenant } from '../../../types';
 import { propertyService } from '../../../services/propertyService';
-import { tenantService } from '../../../services/tenantService';
+import { tenantService } from '../../../services/tenancy/tenantService';
 import { adminService } from '../../../services/adminService';
 import { KITNET_CONTRACT_TEMPLATE } from '../../../utils/contractTemplates';
 import { generateFilledContract } from '../../../utils/contractGenerator';

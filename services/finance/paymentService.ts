@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import type { PaymentRecord } from '../types';
+import { supabase } from '../../lib/supabase';
+import type { PaymentRecord } from '../../types';
 
 function mapPaymentRecord(data: Record<string, unknown>): PaymentRecord {
   return {

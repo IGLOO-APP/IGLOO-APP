@@ -1,6 +1,6 @@
-import { supabase } from '../lib/supabase';
-import { calculateCarneLeao, RentalTransaction } from '../utils/financialCalculations';
-import { CarneLeaoReport, CarneLeaoMonth } from '../types/tax';
+import { supabase } from '../../lib/supabase';
+import { calculateCarneLeao, RentalTransaction } from '../../utils/financialCalculations';
+import { CarneLeaoReport, CarneLeaoMonth } from '../../types/tax';
 
 const MONTHS = [
   'Janeiro',

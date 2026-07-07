@@ -25,7 +25,7 @@ import {
 import { Tenant } from '../../types';
 import { profileService } from '../../services/profileService';
 import { documentService } from '../../services/documentService';
-import { contractService } from '../../services/contractService';
+import { contractService } from '../../services/tenancy/contractService';
 import { storageService } from '../../services/storageService';
 import { useAuth } from '../../context/AuthContext';
 import { OnboardingProgress, StepCard, ErrorAlert } from '../onboarding';

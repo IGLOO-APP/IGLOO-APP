@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { financeService } from '../../../services/financeService';
+import { financeService } from '../../../services/finance/financeService';
 import { propertyService } from '../../../services/propertyService';
-import { contractService } from '../../../services/contractService';
+import { contractService } from '../../../services/tenancy/contractService';
 import { useAuth } from '../../../context/AuthContext';
 import {
   calculateLateFee,

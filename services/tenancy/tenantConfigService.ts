@@ -1,4 +1,4 @@
-import { TenantProfileConfig, RequirementStatus } from '../types';
+import { TenantProfileConfig, RequirementStatus } from '../../types';
 
 const CONFIG_STORAGE_KEY = 'igloo_tenant_profile_configs';
 

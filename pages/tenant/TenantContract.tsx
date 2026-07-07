@@ -13,7 +13,7 @@ import {
   XCircle,
   PenTool,
 } from 'lucide-react';
-import { contractService } from '../../services/contractService';
+import { contractService } from '../../services/tenancy/contractService';
 import { Contract } from '../../types';
 import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
 

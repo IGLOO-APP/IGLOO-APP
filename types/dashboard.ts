@@ -34,6 +34,10 @@ export interface DashboardActivity {
   date: string;
   time: string;
   rawDate: string;
+  acao_pendente?: {
+    label: string;
+    endpoint: string;
+  };
 }
 
 export interface DashboardFinancialHistory {
@@ -53,4 +57,5 @@ export interface DashboardData {
   portfolioHealth: any;
   topProperties: any[];
   wealthHistory: any[];
+  pendingActions: any[];
 }

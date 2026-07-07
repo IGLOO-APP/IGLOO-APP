@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { FinancialTransaction } from '../types';
+import { supabase } from '../../lib/supabase';
+import { FinancialTransaction } from '../../types';
 
 export interface BankTransaction {
   id: string;

@@ -11,6 +11,24 @@ interface PortfolioHealthProps {
   };
 }
 
+const TooltipTrigger = ({ title, description }: { title: string; description: string }) => (
+  <div className='relative shrink-0 group/tooltip'>
+    <div className='w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[7px] font-bold leading-none cursor-help'>
+      ?
+    </div>
+    <div
+      className='absolute z-[100] w-52 p-2.5 bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white rounded-xl shadow-2xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-all duration-300 translate-y-1 group-hover/tooltip:translate-y-0'
+      style={{ bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)' }}
+    >
+      <p className='text-[9px] font-black uppercase tracking-[0.15em] mb-1 text-slate-300'>
+        {title}
+      </p>
+      <p className='text-[10px] leading-snug text-slate-400 font-medium'>{description}</p>
+      <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95' />
+    </div>
+  </div>
+);
+
 export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
   const parseVal = (val: string | number) => {
     if (!val) return 0;
@@ -20,24 +38,6 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
 
   const isHealthyVacancy = parseVal(health?.vacancy) === 0;
   const isHealthyDelinquency = parseVal(health?.delinquency) === 0;
-
-  const TooltipTrigger = ({ title, description }: { title: string; description: string }) => (
-    <div className='relative shrink-0 group/tooltip'>
-      <div className='w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[7px] font-bold leading-none cursor-help'>
-        ?
-      </div>
-      <div
-        className='absolute z-[100] w-52 p-2.5 bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white rounded-xl shadow-2xl pointer-events-none opacity-0 group-hover/tooltip:opacity-100 transition-all duration-300 translate-y-1 group-hover/tooltip:translate-y-0'
-        style={{ bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)' }}
-      >
-        <p className='text-[9px] font-black uppercase tracking-[0.15em] mb-1 text-slate-300'>
-          {title}
-        </p>
-        <p className='text-[10px] leading-snug text-slate-400 font-medium'>{description}</p>
-        <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95' />
-      </div>
-    </div>
-  );
 
   return (
     <div className='w-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-[32px] shadow-sm flex flex-col md:flex-row items-center gap-0 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-white/5 transition-all duration-500'>
@@ -85,8 +85,8 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
                 Vacância Financeira
               </p>
               <TooltipTrigger
-                title='Cálculo de Vacância'
-                description='Percentual da receita potencial perdida por imóveis vagos.'
+                title='Cálculo de Vacância Financeira'
+                description='Percentual da receita potencial perdida por imóveis vagos. Diferente da ocupação física (número de imóveis), esta métrica reflete o impacto financeiro real na sua receita.'
               />
             </div>
             {isHealthyVacancy ? (
@@ -94,9 +94,17 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
                 Carteira 100% ocupada
               </p>
             ) : (
-              <p className='text-base font-black text-slate-900 dark:text-white'>
-                {health?.vacancy || '0'}%
-              </p>
+              <div className='flex items-center gap-3'>
+                <p className='text-base font-black text-slate-900 dark:text-white'>
+                  {health?.vacancy || '0'}%
+                </p>
+                <button 
+                  onClick={() => window.location.href = '/properties'} 
+                  className='text-[9px] font-black uppercase tracking-widest text-primary hover:underline'
+                >
+                  Agir Agora
+                </button>
+              </div>
             )}
           </div>
         </div>

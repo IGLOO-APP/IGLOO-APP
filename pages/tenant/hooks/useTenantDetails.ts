@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { tenantService } from '../../../services/tenantService';
-import { tenantConfigService } from '../../../services/tenantConfigService';
+import { tenantService } from '../../../services/tenancy/tenantService';
+import { tenantConfigService } from '../../../services/tenancy/tenantConfigService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
 import { formatPhone, getRemainingContractTime } from '../../../utils/formatters';
 import { fixDocumentUrl } from '../../../utils/mappingUtils';

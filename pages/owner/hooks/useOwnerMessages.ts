@@ -6,7 +6,7 @@ import { messageService } from '../../../services/messageService';
 import type { ChatThread, ChatMessage } from '../../../types/messages';
 import type { LucideIcon } from 'lucide-react';
 import { supportService } from '../../../services/supportService';
-import { tenantService } from '../../../services/tenantService';
+import { tenantService } from '../../../services/tenancy/tenantService';
 import { propertyService } from '../../../services/propertyService';
 import { useAuth } from '../../../context/AuthContext';
 import { FAQ, Property, Tenant } from '../../../types';

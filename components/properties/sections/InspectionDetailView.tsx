@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, Film } from 'lucide-react';
-import { Inspection, Room, InspectionSignature } from '../../../services/inspectionService';
+import { Inspection, Room, InspectionSignature } from '../../../services/maintenance/inspectionService';
 import { getConditionLabelAndStyle } from '../hooks/usePropertyInspection';
 
 interface InspectionDetailViewProps {

@@ -27,4 +27,5 @@ export interface Property {
   baths?: number;
   vacantDays?: number;
   visits?: number;
+  status_operacional?: 'ocupado' | 'vago' | 'manutencao' | 'pendencia_assinatura';
 }

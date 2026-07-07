@@ -1,6 +1,17 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export const maintenanceService = {
+  async getPending(ownerId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('maintenance_requests')
+      .select('*, properties:property_id(name)')
+      .eq('owner_id', ownerId)
+      .in('status', ['pending', 'in_progress']);
+
+    if (error) return [];
+    return data;
+  },
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getByTenant(tenantId: string): Promise<any[]> {
     const { data, error } = await supabase

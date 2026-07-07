@@ -7,8 +7,8 @@ import { subscriptionService } from '../../../services/subscriptionService';
 import { profileService } from '../../../services/profileService';
 import { storageService } from '../../../services/storageService';
 import { notificationService, NotificationPrefs } from '../../../services/notificationService';
-import { paymentConfigService } from '../../../services/paymentConfigService';
-import { maintenanceSettingsService } from '../../../services/maintenanceSettingsService';
+import { paymentConfigService } from '../../../services/finance/paymentConfigService';
+import { maintenanceSettingsService } from '../../../services/maintenance/maintenanceSettingsService';
 import { Subscription, Plan, BillingCycle, Invoice, PlanTier } from '../../../types';
 
 export interface PaymentMethodConfig {

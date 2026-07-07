@@ -16,7 +16,7 @@ import { CreateContractWizard } from '../components/contracts/CreateContractWiza
 import { ContractWizardData } from '../components/contracts/steps/useContractWizard';
 import { ContractDetails } from '../components/contracts/ContractDetails';
 import { RenewContractModal } from '../components/contracts/RenewContractModal';
-import { contractService } from '../services/contractService';
+import { contractService } from '../services/tenancy/contractService';
 import { useNotification } from '../context/NotificationContext';
 import { TopBar } from '../components/layout/TopBar';
 

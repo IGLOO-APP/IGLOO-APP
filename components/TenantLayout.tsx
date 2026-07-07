@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserButton } from '@clerk/clerk-react';
-import { tenantService } from '../services/tenantService';
+import { tenantService } from '../services/tenancy/tenantService';
 import { supabase } from '../lib/supabase';
 
 const TenantLayout: React.FC = () => {

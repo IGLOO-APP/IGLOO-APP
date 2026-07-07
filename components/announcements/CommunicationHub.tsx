@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
 import { OwnerAnnouncement, AnnouncementType } from '../../types';
 import AnnouncementsHistoryModal from './AnnouncementsHistoryModal';
+import { executeWorkflowAction } from '../../services/workflow/workflowActions';
 
 interface CommunicationHubProps {
   onNewAnnouncement?: () => void;
@@ -77,14 +78,21 @@ const AnnouncementRow: React.FC<{
   onClick: () => void;
   isOwner: boolean;
   onAcknowledge?: () => void;
-}> = ({ ann, isActive, onClick, isOwner, onAcknowledge }) => {
+  fetchData: () => Promise<void>;
+}> = ({ ann, isActive, onClick, isOwner, onAcknowledge, fetchData }) => {
   const meta = TYPE_META[ann.type] ?? TYPE_META.info;
   const targetMeta = TARGET_META[ann.target_type] ?? TARGET_META.all;
 
   const now = useMemo(() => new Date(), []);
-  const isExpiring =
-    ann.expires_at && new Date(ann.expires_at) < new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  const isExpired = ann.expires_at && new Date(ann.expires_at) < new Date();
+  const handleAction = async (e: React.MouseEvent, endpoint: string) => {
+    e.stopPropagation();
+    try {
+      await executeWorkflowAction(endpoint);
+      fetchData();
+    } catch (error) {
+      console.error('Error performing action:', error);
+    }
+  };
 
   return (
     <div
@@ -95,7 +103,7 @@ const AnnouncementRow: React.FC<{
           : 'border-transparent hover:bg-slate-50/40 dark:hover:bg-white/[0.015] hover:border-slate-100 dark:hover:border-white/[0.02]'
       }`}
     >
-      {/* Left: Type icon pill (Neutral and clean background) */}
+      {/* Left: Type icon pill */}
       <div
         className={`shrink-0 w-7 h-7 rounded-xl flex items-center justify-center border bg-slate-50 dark:bg-white/[0.02] border-slate-200/60 dark:border-white/5 ${meta.color} mt-0.5`}
       >
@@ -126,85 +134,38 @@ const AnnouncementRow: React.FC<{
           )}
         </div>
 
-        {/* Content preview with marquee */}
-        <div className='mt-1.5 overflow-hidden whitespace-nowrap ticker-mask'>
-          <span className='inline-flex animate-marquee hover:pause-marquee text-xs text-slate-500 dark:text-slate-400 font-medium'>
-            <span>{ann.content}</span>
-            <span>{ann.content}</span>
-          </span>
+        {/* Content preview */}
+        <div className='mt-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2'>
+          {ann.content}
         </div>
 
-        {/* Meta & Stats row (Consolidated for premium density) */}
+        {/* Action button if applicable */}
+        {(ann as any).acao_pendente && (
+          <button
+            onClick={(e) => handleAction(e, (ann as any).acao_pendente.endpoint)}
+            className='mt-2 w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors'
+          >
+            {(ann as any).acao_pendente.label}
+          </button>
+        )}
+
+        {/* Meta & Stats row */}
         <div className='flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 pt-1.5 border-t border-slate-100/50 dark:border-white/5'>
-          {/* Category Tag */}
           <span
             className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-slate-50 dark:bg-white/[0.02] border-slate-200/60 dark:border-white/5 ${meta.color}`}
           >
             {meta.icon} {meta.label}
           </span>
-
-          {/* Target */}
           <span className='inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
             {targetMeta.icon} {targetMeta.label}
           </span>
-
-          {/* Views */}
           {ann.views_count != null && (
             <span className='inline-flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest'>
               <Eye size={11} /> {ann.views_count}
             </span>
           )}
-
-          {/* Expiry */}
-          {ann.expires_at && !isExpired && (
-            <span
-              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${isExpiring ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}
-            >
-              <Clock size={11} /> Expira{' '}
-              {new Date(ann.expires_at).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-              })}
-            </span>
-          )}
-
-          {isExpired && (
-            <span className='inline-flex items-center gap-1 text-[10px] font-bold text-rose-500 uppercase tracking-widest'>
-              <Clock size={11} /> Expira
-            </span>
-          )}
-
-          {/* Date */}
-          <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-auto'>
-            {new Date(ann.created_at).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-            })}
-          </span>
-
-          {/* Tenant Acknowledge */}
-          {!isOwner && !ann.acknowledged && onAcknowledge && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAcknowledge();
-              }}
-              className='shrink-0 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors ml-2'
-            >
-              <Check size={11} /> Confirmar
-            </button>
-          )}
-          {!isOwner && ann.acknowledged && (
-            <span className='inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 ml-2'>
-              <Check size={11} /> Lido
-            </span>
-          )}
         </div>
       </div>
-
-      {isActive && (
-        <ChevronRight size={12} className='shrink-0 text-primary mt-1 opacity-60 self-start' />
-      )}
     </div>
   );
 };
@@ -330,7 +291,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
               )}
             </div>
           ) : (
-            paginatedAnnouncements.map((ann) => (
+                paginatedAnnouncements.map((ann) => (
               <AnnouncementRow
                 key={ann.id}
                 ann={ann}
@@ -338,6 +299,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 onClick={() => {}}
                 isOwner={isOwner}
                 onAcknowledge={() => handleAcknowledge(ann.id)}
+                fetchData={fetchData}
               />
             ))
           )}

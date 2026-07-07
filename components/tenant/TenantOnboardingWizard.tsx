@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { ModalWrapper } from '../ui/ModalWrapper';
 import { Tenant, Property } from '../../types';
-import { tenantConfigService } from '../../services/tenantConfigService';
+import { tenantConfigService } from '../../services/tenancy/tenantConfigService';
 
 interface TenantOnboardingWizardProps {
   tenant: Tenant;

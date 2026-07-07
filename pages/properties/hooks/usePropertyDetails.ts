@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { propertyService } from '../../../services/propertyService';
-import { tenantService } from '../../../services/tenantService';
+import { tenantService } from '../../../services/tenancy/tenantService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
 import { isValidUrl } from '../../../utils/validation';
 

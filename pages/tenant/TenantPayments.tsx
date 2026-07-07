@@ -65,7 +65,7 @@ const TenantPayments: React.FC = () => {
     if (!user?.id) return;
     try {
       setLoading(true);
-      const { tenantService } = await import('../../services/tenantService');
+      const { tenantService } = await import('../../services/tenancy/tenantService');
       const tData = await tenantService.getById(user.id.toString());
       setTenantData(tData);
 
