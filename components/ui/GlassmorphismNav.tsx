@@ -27,8 +27,8 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
           'flex items-center w-full md:w-auto',
           'gap-1 py-1 px-1 rounded-full overflow-hidden',
           // Frosted glass pill
-          'bg-white/30 dark:bg-white/5',
-          'border border-black/[0.06] dark:border-white/10',
+          'bg-muted/80',
+          'border border-border',
           'shadow-sm',
           className
         )}
@@ -51,15 +51,15 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
                 'text-[9px] font-black uppercase tracking-wider',
                 'px-4 py-2 rounded-full transition-colors duration-200 min-w-[56px]',
                 isActive
-                  ? 'text-slate-900 dark:text-white'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {/* Spring-animated active background */}
               {isActive && (
                 <motion.span
                   layoutId='glass-lamp'
-                  className='absolute inset-0 rounded-full bg-white dark:bg-white/10 border border-slate-200/80 dark:border-white/10 shadow-sm'
+                  className='absolute inset-0 rounded-full bg-background border border-border shadow-sm'
                   initial={false}
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />

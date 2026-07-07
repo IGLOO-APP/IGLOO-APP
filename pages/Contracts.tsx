@@ -160,7 +160,7 @@ const Contracts: React.FC = () => {
       <div className='flex-1 overflow-y-auto px-6 pb-24'>
         {/* Stats Row */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 py-6'>
-          <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between'>
+          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
             <div>
               <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Ativos</p>
               <p className='text-2xl font-black text-emerald-500'>{activeCount}</p>
@@ -169,7 +169,7 @@ const Contracts: React.FC = () => {
               <FileText size={24} />
             </div>
           </div>
-          <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between'>
+          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
             <div>
               <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Pendentes</p>
               <p className='text-2xl font-black text-blue-500'>{pendingCount}</p>
@@ -178,7 +178,7 @@ const Contracts: React.FC = () => {
               <RefreshCw size={24} />
             </div>
           </div>
-          <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between'>
+          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
             <div>
               <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Vencendo</p>
               <p className='text-2xl font-black text-amber-500'>{expiringCount}</p>
@@ -198,7 +198,7 @@ const Contracts: React.FC = () => {
               placeholder='Buscar contratos...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-sm focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white'
+              className='w-full pl-10 pr-4 py-3 rounded-xl bg-muted border border-input text-sm focus:ring-2 focus:ring-ring outline-none transition-all text-foreground'
             />
           </div>
           <div className='flex gap-2 overflow-x-auto hide-scrollbar'>
@@ -216,8 +216,8 @@ const Contracts: React.FC = () => {
                 onClick={() => setFilter(f.id as ContractStatus)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
                   filter === f.id
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent'
-                    : 'bg-white dark:bg-surface-dark text-slate-500 border-gray-200 dark:border-white/5 hover:bg-slate-50'
+                    ? 'bg-foreground text-background border-transparent'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-accent'
                 }`}
               >
                 {f.label}
@@ -287,7 +287,7 @@ const Contracts: React.FC = () => {
 
       {deletingContract && (
         <div className='fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn'>
-          <div className='bg-white dark:bg-surface-dark rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6'>
+          <div className='bg-card text-card-foreground rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6'>
             <div className='flex flex-col items-center text-center gap-3'>
               <div className='w-14 h-14 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center'>
                 <AlertTriangle size={28} className='text-red-500' />
@@ -306,7 +306,7 @@ const Contracts: React.FC = () => {
             <div className='flex gap-3'>
               <button
                 onClick={() => setDeletingContract(null)}
-                className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-white/20 transition-all'
+                className='flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-all'
               >
                 Cancelar
               </button>

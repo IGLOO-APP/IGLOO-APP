@@ -25,12 +25,18 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { ModalWrapper } from '../../components/ui/ModalWrapper';
-import { InfoTooltip } from '../../components/ui/InfoTooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const SubscriptionManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -184,24 +190,30 @@ const SubscriptionManagement: React.FC = () => {
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
         {metrics.map((m) => (
-          <InfoTooltip key={m.label} title={m.tooltipTitle} description={m.tooltipDesc}>
-            <div className='h-full bg-white dark:bg-surface-dark p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm'>
-              <div className='flex items-center justify-between mb-4'>
-                <div className={`p-3 rounded-2xl bg-${m.color}-500/10 text-${m.color}-500`}>
-                  <m.icon size={22} />
+          <Tooltip key={m.label}>
+            <TooltipTrigger asChild>
+              <div className='h-full bg-white dark:bg-surface-dark p-6 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm'>
+                <div className='flex items-center justify-between mb-4'>
+                  <div className={`p-3 rounded-2xl bg-${m.color}-500/10 text-${m.color}-500`}>
+                    <m.icon size={22} />
+                  </div>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${getStatColor(m)}`}>
+                    {m.change}
+                  </span>
                 </div>
-                <span className={`text-xs font-bold px-2 py-1 rounded-full ${getStatColor(m)}`}>
-                  {m.change}
-                </span>
+                <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>
+                  {m.label}
+                </p>
+                <h3 className='text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
+                  {m.value}
+                </h3>
               </div>
-              <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>
-                {m.label}
-              </p>
-              <h3 className='text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
-                {m.value}
-              </h3>
-            </div>
-          </InfoTooltip>
+            </TooltipTrigger>
+            <TooltipContent className='max-w-xs'>
+              <p className='font-semibold'>{m.tooltipTitle}</p>
+              <p className='text-muted-foreground'>{m.tooltipDesc}</p>
+            </TooltipContent>
+          </Tooltip>
         ))}
       </div>
 
@@ -303,7 +315,7 @@ const SubscriptionManagement: React.FC = () => {
                   tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }}
                   tickFormatter={(value) => `R$${value / 1000}k`}
                 />
-                <Tooltip
+                <RechartsTooltip
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
@@ -368,14 +380,13 @@ const SubscriptionManagement: React.FC = () => {
       </div>
 
       {/* New Plan Modal */}
-      {showNewPlanModal && (
-        <ModalWrapper
-          onClose={() => setShowNewPlanModal(false)}
-          title='Criar Novo Plano'
-          showCloseButton={true}
-          className='md:max-w-2xl'
-        >
-          <div className='p-8 space-y-6 bg-background-light dark:bg-background-dark overflow-y-auto max-h-[80vh]'>
+      <Dialog open={showNewPlanModal} onOpenChange={(open) => !open && setShowNewPlanModal(false)}>
+        <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-2xl'>
+          <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+            <DialogTitle className='text-xl font-bold'>Criar Novo Plano</DialogTitle>
+            <DialogDescription />
+          </DialogHeader>
+          <div className='p-8 space-y-6 bg-background-light dark:bg-background-dark'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div className='space-y-4'>
                 <div>
@@ -558,8 +569,8 @@ const SubscriptionManagement: React.FC = () => {
               </button>
             </div>
           </div>
-        </ModalWrapper>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

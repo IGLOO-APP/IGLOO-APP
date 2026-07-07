@@ -26,7 +26,13 @@ import {
   Save,
   ShieldCheck,
 } from 'lucide-react';
-import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { useSupportCenter } from './hooks/useSupportCenter';
 import { User as UserType } from '../../types';
 
@@ -752,13 +758,12 @@ const SupportCenter: React.FC = () => {
         )}
       </div>
 
-      {showFAQManager && (
-        <ModalWrapper
-          onClose={() => setShowFAQManager(false)}
-          title='Gerenciar Dúvidas Frequentes'
-          showCloseButton={true}
-          className='max-w-3xl'
-        >
+      <Dialog open={showFAQManager} onOpenChange={(open) => !open && setShowFAQManager(false)}>
+        <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 max-w-3xl'>
+          <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+            <DialogTitle className='text-xl font-bold'>Gerenciar Dúvidas Frequentes</DialogTitle>
+            <DialogDescription />
+          </DialogHeader>
           <div className='p-6 bg-background-light dark:bg-background-dark min-h-[500px] flex flex-col gap-6'>
             <div className='p-5 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm space-y-4'>
               <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2'>
@@ -901,8 +906,8 @@ const SupportCenter: React.FC = () => {
               )}
             </div>
           </div>
-        </ModalWrapper>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

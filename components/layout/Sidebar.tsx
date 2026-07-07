@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { User } from '../../types';
 import { Sun, Moon, LogOut } from 'lucide-react';
+import { Sidebar as SidebarRoot } from '../ui/sidebar';
 
 interface SidebarProps {
   navItems: { path: string; label: string; icon: React.ElementType }[];
@@ -24,119 +25,124 @@ export const Sidebar: React.FC<SidebarProps> = ({
   logout,
 }) => {
   return (
-    <aside className='hidden md:flex flex-col w-48 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-white/5 h-full shrink-0 z-50'>
-      <div className='p-4 flex items-center mb-1'>
-        <Link
-          to='/'
-          className='flex items-center gap-2.5 hover:opacity-80 transition-opacity group'
-        >
-          <div className='w-8 h-8 bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-bold shadow-md shadow-black/10 group-hover:scale-105 transition-transform'>
-            I
-          </div>
-          <h1 className='text-base font-extrabold text-slate-900 dark:text-white tracking-tight'>
-            Igloo
-          </h1>
-        </Link>
-      </div>
-
-      <nav className='flex-1 px-3 space-y-1 overflow-y-auto'>
-        <div className='mb-4'>
-          <p className='px-3 mb-1.5 text-[8px] font-black uppercase text-slate-400 tracking-[0.2em]'>
-            Menu Principal
-          </p>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `group relative flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-300 ease-out ${
-                  isActive
-                    ? 'bg-primary/5 dark:bg-white/10 text-slate-main dark:text-white shadow-premium ring-1 ring-primary/10 dark:ring-white/5'
-                    : 'text-slate-body dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-main dark:hover:text-white'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={`transition-colors duration-300 ${isActive ? 'text-primary drop-shadow-sm' : 'group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
-                  >
-                    <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                  </div>
-                  <span
-                    className={`text-xs font-medium tracking-wide ${isActive ? 'font-bold' : ''}`}
-                  >
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <div className='absolute right-3 w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(19,200,236,0.6)] animate-scaleUp'></div>
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+    <SidebarRoot
+      collapsible='none'
+      className='hidden md:flex !bg-white/45 dark:!bg-zinc-400/10 backdrop-blur-3xl h-screen sticky top-0 !w-80 rounded-r-3xl !border-r !border-white/40 dark:!border-zinc-400/10 shadow-2xl shadow-black/5 flex flex-col py-6 justify-between transition-all duration-300 select-none'
+    >
+      <div className='flex flex-col flex-grow'>
+        {/* Header */}
+        <div className='px-6 mb-8 mt-4'>
+          <Link to='/' className='inline-block'>
+            <h1 className='font-sans text-4xl font-bold tracking-tight text-slate-900 dark:text-white drop-shadow-sm transition-colors duration-300'>
+              Igloo
+            </h1>
+          </Link>
         </div>
 
-        {user?.role === 'admin' && !impersonatingFrom && (
-          <div className='pt-1'>
-            <p className='px-3 mb-1.5 text-[8px] font-black uppercase text-amber-500 tracking-[0.2em]'>
-              Administração
-            </p>
-            {adminItems?.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `group relative flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-300 ease-out ${
-                    isActive
-                      ? 'bg-amber-500/10 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-premium ring-1 ring-amber-500/20 dark:ring-amber-500/20'
-                      : 'text-slate-body dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-main dark:hover:text-white'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <div
-                      className={`transition-colors duration-300 ${isActive ? 'text-amber-500' : 'group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
-                    >
-                      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                    </div>
-                    <span
-                      className={`text-xs font-medium tracking-wide ${isActive ? 'font-bold' : ''}`}
-                    >
-                      {item.label}
-                    </span>
-                    {isActive && (
-                      <div className='absolute right-3 w-1 h-1 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-scaleUp'></div>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </div>
-        )}
-      </nav>
+        {/* Navigation Links */}
+        <ul className='flex flex-col gap-2 px-4 flex-grow overflow-y-auto scroll-smooth hide-scrollbar'>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${
+                      isActive
+                        ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
+                        : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        className={`transition-colors duration-300 ${
+                          isActive
+                            ? 'text-white'
+                            : 'text-slate-500 dark:text-zinc-400'
+                        }`}
+                        size={24}
+                      />
+                      <span className='text-sm tracking-wide'>{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              </li>
+            );
+          })}
 
-      <div className='p-2 mx-3 mb-3 border-t border-gray-100 dark:border-white/5 space-y-0.5'>
-        <Link
-          to='/settings'
-          className='flex items-center gap-2.5 px-3 py-2 rounded-xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'
-        >
-          <div className='pointer-events-none'>
-            <UserButton
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: 'w-8 h-8 rounded-lg',
-                  userButtonTrigger: 'pointer-events-none',
-                },
-              }}
+          {/* Admin Items */}
+          {user?.role === 'admin' && !impersonatingFrom && adminItems && (
+            <>
+              <div className='my-4 border-t border-slate-200/50 dark:border-white/10 mx-2' />
+              <span className='px-6 mb-2 block text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider'>
+                Administração
+              </span>
+              {adminItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.path}>
+                    <NavLink
+                      to={item.path}
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${
+                          isActive
+                            ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
+                            : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <Icon
+                            className={`transition-colors duration-300 ${
+                              isActive
+                                ? 'text-white'
+                                : 'text-slate-500 dark:text-zinc-400'
+                            }`}
+                            size={24}
+                          />
+                          <span className='text-sm tracking-wide'>{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </>
+          )}
+        </ul>
+      </div>
+
+      {/* Bottom Section: Profile & Actions */}
+      <div className='px-6 flex flex-col gap-4 pt-4 border-t border-slate-200/50 dark:border-white/10 mx-4 mt-auto'>
+        {/* Profile */}
+        <Link to='/settings' className='flex items-center gap-3 group/profile'>
+          {user?.avatar_url || user?.avatar ? (
+            <img
+              alt={`${user.name} Avatar`}
+              className='w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-white/20 shadow-sm transition-transform duration-300 group-hover/profile:scale-105'
+              src={user.avatar_url || user.avatar}
             />
-          </div>
+          ) : (
+            <div className='pointer-events-none w-10 h-10 transition-transform duration-300 group-hover/profile:scale-105'>
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: 'w-10 h-10 rounded-full',
+                    userButtonTrigger: 'pointer-events-none',
+                  },
+                }}
+              />
+            </div>
+          )}
           <div className='flex flex-col min-w-0'>
-            <span className='text-xs font-bold text-slate-main dark:text-slate-200 truncate'>
-              {user?.name || 'Carregando...'}
+            <span className='text-sm font-semibold text-slate-900 dark:text-white truncate group-hover/profile:text-sky-500 dark:group-hover/profile:text-white/80 transition-colors duration-300'>
+              {user?.name || 'Arthur Alencar'}
             </span>
-            <span className='text-[9px] font-medium text-slate-body dark:text-slate-400 capitalize'>
+            <span className='text-xs text-slate-500 dark:text-zinc-400 capitalize'>
               {user?.role === 'owner'
                 ? 'Proprietário'
                 : user?.role === 'admin'
@@ -145,29 +151,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
         </Link>
-      </div>
 
-      {/* Theme Toggle */}
-      <div className='px-3 mb-1'>
-        <button
-          onClick={toggleTheme}
-          className='flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200 text-xs font-medium'
-        >
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          {isDark ? 'Modo Claro' : 'Modo Escuro'}
-        </button>
+        {/* System Actions */}
+        <div className='flex flex-col gap-1 mt-2'>
+          <button
+            onClick={toggleTheme}
+            className='flex items-center gap-3 px-4 py-2 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all duration-200 text-left w-full'
+          >
+            {isDark ? (
+              <>
+                <Sun size={20} className='text-slate-500 dark:text-zinc-400' />
+                <span className='text-sm font-medium'>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon size={20} className='text-slate-500 dark:text-zinc-400' />
+                <span className='text-sm font-medium'>Modo Escuro</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={logout}
+            className='flex items-center gap-3 px-4 py-2 text-red-500/80 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all duration-200 text-left w-full'
+          >
+            <LogOut size={20} />
+            <span className='text-sm font-medium'>Sair</span>
+          </button>
+        </div>
       </div>
-
-      {/* Logout */}
-      <div className='px-3 mb-3'>
-        <button
-          onClick={logout}
-          className='flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 text-xs font-medium'
-        >
-          <LogOut size={18} />
-          Sair
-        </button>
-      </div>
-    </aside>
+    </SidebarRoot>
   );
 };

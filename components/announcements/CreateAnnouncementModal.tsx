@@ -162,7 +162,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             className={`flex flex-col items-center gap-1.5 p-3.5 rounded-2xl border-2 transition-all ${
               formData.type === t
                 ? 'border-primary bg-primary/5 text-primary'
-                : 'border-slate-100 dark:border-white/5 text-slate-400 hover:border-slate-200'
+                : 'border-border text-muted-foreground hover:border-muted-foreground/30'
             }`}
           >
             {t === 'info' && <Info size={18} />}
@@ -185,7 +185,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           placeholder='Ex: Manutenção no Elevador'
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className='w-full bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-900 dark:text-white transition-all outline-none placeholder:text-slate-400'
+          className='w-full bg-muted border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-foreground transition-all outline-none placeholder:text-muted-foreground'
         />
       </div>
 
@@ -198,7 +198,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           rows={4}
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          className='w-full bg-slate-50 dark:bg-white/5 border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-900 dark:text-white transition-all outline-none placeholder:text-slate-400 resize-none'
+          className='w-full bg-muted border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-foreground transition-all outline-none placeholder:text-muted-foreground resize-none'
         />
       </div>
 
@@ -208,12 +208,12 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
           formData.is_urgent
             ? 'border-red-500 bg-red-500/5'
-            : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+            : 'border-border hover:border-muted-foreground/30'
         }`}
       >
         <div className='flex items-center gap-3'>
           <div
-            className={`w-8 h-8 rounded-lg flex items-center justify-center ${formData.is_urgent ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${formData.is_urgent ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground'}`}
           >
             <AlertTriangle size={16} />
           </div>
@@ -229,7 +229,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           </div>
         </div>
         <div
-          className={`w-12 h-6 rounded-full relative transition-all ${formData.is_urgent ? 'bg-red-500' : 'bg-slate-200 dark:bg-white/10'}`}
+          className={`w-12 h-6 rounded-full relative transition-all ${formData.is_urgent ? 'bg-red-500' : 'bg-muted'}`}
         >
           <div
             className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${formData.is_urgent ? 'left-7' : 'left-1'}`}
@@ -240,7 +240,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
   );
 
   const templatesPanel = (
-    <div className='w-72 shrink-0 border-l border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/10 p-5 overflow-y-auto max-h-[580px]'>
+    <div className='w-72 shrink-0 border-l border-border bg-muted/30 p-5 overflow-y-auto max-h-[580px]'>
       <div className='flex items-center gap-2 mb-5'>
         <div className='w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
           <Megaphone size={14} />
@@ -254,7 +254,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           <button
             key={i}
             onClick={() => fillTemplate(tpl)}
-            className='w-full text-left p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 hover:border-primary/50 hover:shadow-sm hover:shadow-primary/5 transition-all group'
+            className='w-full text-left p-4 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-sm hover:shadow-primary/5 transition-all group'
           >
             <div className='flex items-center gap-2 mb-1.5'>
               <div
@@ -292,11 +292,11 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
             formData.target_type === 'all'
               ? 'border-primary bg-primary/5'
-              : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+              : 'border-border hover:border-muted-foreground/30'
           }`}
         >
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.target_type === 'all' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.target_type === 'all' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
           >
             <Users size={20} />
           </div>
@@ -313,7 +313,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
             formData.target_type === 'condominium'
               ? 'border-primary bg-primary/5'
-              : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+              : 'border-border hover:border-muted-foreground/30'
           }`}
         >
           <div
@@ -334,7 +334,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
             formData.target_type === 'individual'
               ? 'border-primary bg-primary/5'
-              : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+              : 'border-border hover:border-muted-foreground/30'
           }`}
         >
           <div
@@ -355,7 +355,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             <select
               value={formData.condo_name}
               onChange={(e) => setFormData({ ...formData, condo_name: e.target.value })}
-              className='w-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white appearance-none cursor-pointer focus:border-primary transition-all outline-none'
+              className='w-full bg-muted border-2 border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground appearance-none cursor-pointer focus:border-primary transition-all outline-none'
             >
               <option value='' className='bg-white dark:bg-slate-900'>
                 Selecionar Condomínio...
@@ -373,13 +373,13 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         )}
 
         {formData.target_type === 'individual' && (
-          <div className='max-h-40 overflow-y-auto space-y-2 p-2 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 animate-slideDown'>
+          <div className='max-h-40 overflow-y-auto space-y-2 p-2 bg-muted/50 rounded-2xl border border-border animate-slideDown'>
             {properties
               .filter((p) => p.tenant)
               .map((p) => (
                 <label
                   key={p.tenant!.id}
-                  className='flex items-center gap-3 p-3 hover:bg-white dark:hover:bg-white/5 rounded-xl cursor-pointer transition-all border border-transparent hover:border-primary/20'
+                  className='flex items-center gap-3 p-3 hover:bg-accent rounded-xl cursor-pointer transition-all border border-transparent hover:border-primary/20'
                 >
                   <input
                     type='checkbox'
@@ -415,7 +415,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
             formData.target_type === 'property'
               ? 'border-primary bg-primary/5'
-              : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+              : 'border-border hover:border-muted-foreground/30'
           }`}
         >
           <div
@@ -430,11 +430,11 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         </button>
 
         {formData.target_type === 'property' && (
-          <div className='max-h-40 overflow-y-auto space-y-2 p-2 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5'>
+          <div className='max-h-40 overflow-y-auto space-y-2 p-2 bg-muted/50 rounded-2xl border border-border'>
             {properties.map((p) => (
               <label
                 key={p.id}
-                className='flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-white/5 rounded-xl cursor-pointer transition-all'
+                className='flex items-center gap-3 p-2 hover:bg-accent rounded-xl cursor-pointer transition-all'
               >
                 <input
                   type='checkbox'
@@ -468,11 +468,11 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
               formData.expire_mode === 'time'
                 ? 'border-primary bg-primary/5'
-                : 'border-slate-100 dark:border-white/5 hover:border-slate-200'
+                : 'border-border hover:border-muted-foreground/30'
             }`}
           >
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.expire_mode === 'time' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.expire_mode === 'time' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
             >
               <CalendarDays size={20} />
             </div>
@@ -489,7 +489,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
               <select
                 value={formData.expires_in_days}
                 onChange={(e) => setFormData({ ...formData, expires_in_days: e.target.value })}
-                className='w-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm font-bold text-slate-900 dark:text-white appearance-none cursor-pointer focus:border-primary transition-all outline-none'
+                className='w-full bg-muted border-2 border-border rounded-2xl px-5 py-4 text-sm font-bold text-foreground appearance-none cursor-pointer focus:border-primary transition-all outline-none'
               >
                 <option value='1' className='bg-white dark:bg-slate-900'>
                   1 dia
@@ -522,7 +522,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             }`}
           >
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.expire_mode === 'views' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.expire_mode === 'views' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
             >
               <Eye size={20} />
             </div>
@@ -545,9 +545,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         onClick={onClose}
       />
 
-      <div className='bg-white dark:bg-surface-dark w-full max-w-4xl max-h-[90vh] rounded-[32px] shadow-2xl border border-gray-100 dark:border-white/5 overflow-hidden animate-scaleUp z-10 flex flex-col'>
+      <div className='bg-card text-card-foreground w-full max-w-4xl max-h-[90vh] rounded-[32px] shadow-2xl border border-border overflow-hidden animate-scaleUp z-10 flex flex-col'>
         {/* Header */}
-        <div className='px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-slate-50 dark:bg-black/20'>
+        <div className='px-8 py-6 border-b border-border flex justify-between items-center bg-muted/30'>
           <div className='flex items-center gap-3'>
             <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
               <Megaphone size={20} strokeWidth={2.5} />
@@ -563,7 +563,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className='p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-400'
+            className='p-2 hover:bg-muted rounded-xl transition-colors text-muted-foreground'
           >
             <X size={20} />
           </button>
@@ -576,11 +576,11 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className='px-8 py-6 bg-slate-50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 flex gap-3'>
+        <div className='px-8 py-6 bg-muted/30 border-t border-border flex gap-3'>
           {step === 2 && (
             <button
               onClick={() => setStep(1)}
-              className='flex-1 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 transition-all'
+              className='flex-1 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground hover:bg-muted transition-all'
             >
               Voltar
             </button>
@@ -595,7 +595,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
                 (formData.target_type === 'property' || formData.target_type === 'individual') &&
                 formData.target_value.length === 0)
             }
-            className='flex-[2] py-4 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2'
+            className='flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2'
           >
             {loading ? (
               <div className='w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full' />

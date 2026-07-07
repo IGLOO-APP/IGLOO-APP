@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { ClerkProvider } from '@clerk/clerk-react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Limpeza automática de Service Workers em ambiente de desenvolvimento
 // Isso evita que o modo offline (PWA) de builds anteriores interfira no localhost
@@ -65,7 +66,9 @@ if (!PUBLISHABLE_KEY) {
   root.render(
     <React.StrictMode>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl='/'>
-        <App />
+        <TooltipProvider>
+          <App />
+        </TooltipProvider>
       </ClerkProvider>
     </React.StrictMode>
   );

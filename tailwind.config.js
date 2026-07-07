@@ -15,6 +15,7 @@ export default {
           dark: '#0ea5c3',
           light: '#e0f7fa',
           hover: '#0fb1d1',
+          foreground: 'var(--primary-foreground)',
         },
         'background-light': '#f8fafc', // Slate 50 - cleaner look
         'background-dark': '#0b1011',
@@ -28,6 +29,31 @@ export default {
         foreground: 'var(--foreground)',
         border: 'var(--border)',
         ring: 'var(--ring)',
+        input: 'var(--input)',
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
+        },
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
+        },
       },
       boxShadow: {
         premium: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 4px 10px -5px rgba(0, 0, 0, 0.02)',
@@ -72,5 +98,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 };

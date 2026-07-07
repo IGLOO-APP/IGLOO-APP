@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, Home, FileText } from 'lucide-react';
 import { SectionHeader, PeriodSelector } from '../../../components/ui/DashboardComponents';
+import { Card } from '../../../components/ui/card';
 import {
   AreaChart,
   Area,
@@ -32,9 +33,9 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
   const displayData = period === 'Últimos 6 meses' ? wealthHistory.slice(-6) : wealthHistory;
 
   return (
-    <div
+    <Card
       className={
-        'bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all flex flex-col ' +
+        'p-5 flex flex-col ' +
         className
       }
     >
@@ -176,6 +177,6 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
           </span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

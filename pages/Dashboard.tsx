@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, AlertTriangle } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
 import { useAuth } from '../context/AuthContext';
 import { TopBar } from '../components/layout/TopBar';
 import { dashboardService } from '../services/dashboardService';
@@ -86,21 +88,18 @@ const Dashboard: React.FC = () => {
   if (isError || !dashboardData) {
     return (
       <div className='flex h-screen flex-col items-center justify-center bg-background-light dark:bg-background-dark p-6 text-center'>
-        <div className='w-16 h-16 rounded-[32px] bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 flex items-center justify-center text-red-500 mb-4 shadow-sm'>
+        <Card className='w-16 h-16 flex items-center justify-center text-red-500 mb-4'>
           <AlertTriangle size={32} />
-        </div>
+        </Card>
         <h2 className='text-xl font-black text-slate-900 dark:text-white mb-2'>
           Erro ao carregar Dashboard
         </h2>
         <p className='text-slate-500 dark:text-slate-400 mb-6 max-w-md font-medium'>
           Não conseguimos sincronizar seus dados agora.
         </p>
-        <button
-          onClick={() => refetch()}
-          className='px-6 py-3 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all'
-        >
+        <Button onClick={() => refetch()} variant='default' size='lg'>
           Tentar Novamente
-        </button>
+        </Button>
       </div>
     );
   }
@@ -117,8 +116,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div
-      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-      style={{ zoom: 1.1 }}
+      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'} [zoom:1.1]`}
     >
       {showOnboarding && (
         <OwnerOnboardingWizard
@@ -129,13 +127,14 @@ const Dashboard: React.FC = () => {
         />
       )}
       <TopBar title='Dashboard' subtitle='Visão Geral do Patrimônio'>
-        <button
+        <Button
           onClick={() => navigate('/properties', { state: { openAdd: true } })}
-          className='flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95'
+          variant='default'
+          size='default'
         >
           <Plus size={16} />
           <span className='hidden sm:inline'>Novo Imóvel</span>
-        </button>
+        </Button>
       </TopBar>
 
       <div className='px-4 md:px-6 py-4 md:py-5 space-y-5 pb-20'>
@@ -167,12 +166,14 @@ const Dashboard: React.FC = () => {
         <div className='grid grid-cols-1 lg:grid-cols-12 items-stretch'>
           <section className='lg:col-span-5 flex flex-col gap-0 relative'>
             <SectionHeader title='Gestão de Ativos' subtitle='Patrimônio ativo' />
-            <button
+            <Button
               onClick={() => navigate('/properties')}
-              className='text-[9px] font-black text-primary uppercase tracking-widest hover:underline transition-all self-center -mt-2 mb-0.5'
+              variant='link'
+              size='sm'
+              className='self-center -mt-2 mb-0.5'
             >
               Ver todos
-            </button>
+            </Button>
             <div className='relative group/carousel'>
               {properties.length > 0 ? (
                 <Carousel
@@ -183,39 +184,37 @@ const Dashboard: React.FC = () => {
                     containScroll: 'trimSnaps',
                   }}
                 >
-                  <CarouselContent className='items-stretch ml-0'>
+                  <CarouselContent className='ml-0'>
                     {properties.slice(0, 5).map((prop) => (
-                      <CarouselItem key={prop.id} className='basis-[85%] h-full pl-0'>
-                        <div className='px-2 h-full'>
-                          <PropertyCard
-                            property={prop}
-                            onClick={(p) => navigate(`/properties?id=${p.id}`)}
-                            viewMode='grid'
-                            className='h-full w-full'
-                          />
-                        </div>
+                      <CarouselItem key={prop.id} className='basis-[85%] p-2'>
+                        <PropertyCard
+                          property={prop}
+                          onClick={(p) => navigate(`/properties?id=${p.id}`)}
+                          viewMode='grid'
+                          className='h-full w-full'
+                        />
                       </CarouselItem>
                     ))}
                   </CarouselContent>
                   {properties.length > 1 && (
                     <div className='absolute -right-2 -top-12 flex gap-2'>
-                      <CarouselPrevious className='static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5' />
-                      <CarouselNext className='static translate-y-0 h-8 w-8 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5' />
+                      <CarouselPrevious className='static translate-y-0 h-8 w-8' />
+                      <CarouselNext className='static translate-y-0 h-8 w-8' />
                     </div>
                   )}
                 </Carousel>
               ) : (
-                <div
+                <Card
                   onClick={() => navigate('/properties', { state: { openAdd: true } })}
-                  className='h-48 flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-[32px] border-2 border-dashed border-gray-100 dark:border-white/5 hover:border-primary transition-all cursor-pointer group'
+                  className='h-48 flex flex-col items-center justify-center p-8 border-2 border-dashed border-border hover:border-primary transition-all cursor-pointer group'
                 >
-                  <div className='w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:text-primary transition-all mb-3'>
+                  <div className='w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-all mb-3'>
                     <Plus size={24} strokeWidth={3} />
                   </div>
-                  <p className='text-sm font-black text-slate-900 dark:text-white'>
+                  <p className='text-sm font-black text-card-foreground'>
                     Cadastrar imóvel
                   </p>
-                </div>
+                </Card>
               )}
             </div>
           </section>

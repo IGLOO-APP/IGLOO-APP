@@ -44,7 +44,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     <>
       <section className='mb-6'>
         <div className='flex overflow-x-auto gap-4 pb-4 hide-scrollbar'>
-          <div className='shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors'>
+          <div className='shrink-0 w-[240px] p-5 rounded-2xl bg-card text-card-foreground border border-border shadow-sm relative overflow-hidden transition-colors'>
             <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 relative z-10'>
               Total Recebido
             </p>
@@ -62,7 +62,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </div>
           <div
             onClick={onShowLateCalculator}
-            className='shrink-0 w-[240px] p-5 rounded-2xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 shadow-sm relative overflow-hidden transition-colors cursor-pointer group hover:border-orange-200 dark:hover:border-orange-900/50'
+            className='shrink-0 w-[240px] p-5 rounded-2xl bg-card text-card-foreground border border-border shadow-sm relative overflow-hidden transition-colors cursor-pointer group hover:border-orange-200 dark:hover:border-orange-900/50'
           >
             <div className='absolute top-0 right-0 p-3 opacity-10'>
               <Calculator
@@ -91,7 +91,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           <h4 className='text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider'>
             Lançamentos Recentes
           </h4>
-          <span className='text-xs font-medium text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-1 rounded-md'>
+          <span className='text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md'>
             {transactions.length} itens
           </span>
         </div>
@@ -99,7 +99,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         {transactions.map((tx) => (
           <div
             key={tx.id}
-            className='group flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-transparent dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 shadow-sm cursor-pointer transition-colors'
+            className='group flex items-center gap-4 p-4 rounded-xl bg-card text-card-foreground border border-border hover:border-primary/30 shadow-sm cursor-pointer transition-colors'
           >
             <div
               className={`flex items-center justify-center rounded-xl shrink-0 size-12 ${tx.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'}`}
@@ -132,7 +132,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onSelectVoucher(tx.attachment_url || null);
                       }}
-                      className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'
+                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors'
                       title='Ver Comprovante'
                     >
                       <Eye size={14} />
@@ -163,7 +163,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           />
                         }
                         fileName={`Recibo_${tx.title.replace(/\s+/g, '_')}_${tx.date}.pdf`}
-                        className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors flex items-center justify-center'
+                        className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors flex items-center justify-center'
                         title='Baixar Recibo PDF'
                       >
                         {({ loading }) =>
@@ -187,7 +187,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onEdit(tx);
                       }}
-                      className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-primary transition-colors'
+                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors'
                       title='Editar'
                     >
                       <Pencil size={14} />
@@ -199,7 +199,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onDelete(tx.id);
                       }}
-                      className='p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-red-500 transition-colors'
+                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-red-500 transition-colors'
                       title='Excluir'
                     >
                       <Trash2 size={14} />

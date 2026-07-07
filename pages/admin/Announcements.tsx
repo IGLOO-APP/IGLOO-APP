@@ -16,8 +16,14 @@ import {
   Clock,
   Target,
 } from 'lucide-react';
-import { ModalWrapper } from '../../components/ui/ModalWrapper';
-import { InfoTooltip } from '../../components/ui/InfoTooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface Announcement {
   id: string;
@@ -152,26 +158,32 @@ const Announcements: React.FC = () => {
               'A porcentagem de usuários que clicaram em um comunicado após visualizá-lo. Mede a eficácia da sua mensagem.',
           },
         ].map((stat) => (
-          <InfoTooltip key={stat.label} title={stat.tooltipTitle} description={stat.tooltipDesc}>
-            <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
-              <div className='flex items-center justify-between mb-4'>
-                <div
-                  className={`p-3 rounded-xl bg-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}`}
-                >
-                  <stat.icon size={20} />
+          <Tooltip key={stat.label}>
+            <TooltipTrigger asChild>
+              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+                <div className='flex items-center justify-between mb-4'>
+                  <div
+                    className={`p-3 rounded-xl bg-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}/10 text-${stat.color === 'primary' ? 'primary' : stat.color + '-500'}`}
+                  >
+                    <stat.icon size={20} />
+                  </div>
+                  <span className='text-[10px] font-bold text-emerald-500 uppercase'>
+                    {stat.change}
+                  </span>
                 </div>
-                <span className='text-[10px] font-bold text-emerald-500 uppercase'>
-                  {stat.change}
-                </span>
+                <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>
+                  {stat.label}
+                </p>
+                <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
+                  {stat.value}
+                </h3>
               </div>
-              <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-1'>
-                {stat.label}
-              </p>
-              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
-                {stat.value}
-              </h3>
-            </div>
-          </InfoTooltip>
+            </TooltipTrigger>
+            <TooltipContent className='max-w-xs'>
+              <p className='font-semibold'>{stat.tooltipTitle}</p>
+              <p className='text-muted-foreground'>{stat.tooltipDesc}</p>
+            </TooltipContent>
+          </Tooltip>
         ))}
       </div>
 
@@ -328,13 +340,12 @@ const Announcements: React.FC = () => {
       </div>
 
       {/* New Announcement Modal */}
-      {showNewModal && (
-        <ModalWrapper
-          onClose={() => setShowNewModal(false)}
-          title='Criar Novo Comunicado'
-          showCloseButton={true}
-          className='md:max-w-2xl'
-        >
+      <Dialog open={showNewModal} onOpenChange={(open) => !open && setShowNewModal(false)}>
+        <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-2xl'>
+          <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+            <DialogTitle className='text-xl font-bold'>Criar Novo Comunicado</DialogTitle>
+            <DialogDescription />
+          </DialogHeader>
           <div className='p-6 space-y-6 bg-background-light dark:bg-background-dark'>
             <div className='space-y-4'>
               <div>
@@ -428,8 +439,8 @@ const Announcements: React.FC = () => {
               </button>
             </div>
           </div>
-        </ModalWrapper>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

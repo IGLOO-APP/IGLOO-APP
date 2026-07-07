@@ -84,9 +84,9 @@ export const ChatSidebar = React.memo(
 
     return (
       <div
-        className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+        className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-border bg-background text-foreground transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
       >
-        <div className='p-4 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
+        <div className='p-4 border-b border-border bg-background sticky top-0 z-30'>
           <div className='flex items-center justify-between mb-3'>
             <div className='flex flex-col'>
               <h1 className='text-lg md:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
@@ -103,7 +103,7 @@ export const ChatSidebar = React.memo(
                 placeholder='Buscar conversa...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='w-full h-10 pl-10 pr-3 rounded-2xl bg-slate-100/50 dark:bg-black/30 border-none text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-all'
+                className='w-full h-10 pl-10 pr-3 rounded-2xl bg-muted/50 border border-input text-xs text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
               />
               <Search
                 className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400'
@@ -112,14 +112,14 @@ export const ChatSidebar = React.memo(
             </div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100/50 dark:bg-white/5 text-slate-400 hover:text-slate-600 border border-gray-100 dark:border-white/5'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-muted/50 text-muted-foreground hover:text-foreground border border-input'}`}
             >
               <Filter size={16} />
             </button>
           </div>
 
           {showAdvancedFilters && (
-            <div className='p-3 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 space-y-3 animate-slideDown mb-3'>
+            <div className='p-3 rounded-2xl bg-muted/30 border border-border space-y-3 animate-slideDown mb-3'>
               <div className='space-y-1.5'>
                 <label className='text-[9px] font-black text-slate-400 uppercase tracking-widest px-1'>
                   Prioridade

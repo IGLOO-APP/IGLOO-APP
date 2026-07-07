@@ -77,7 +77,7 @@ const Financials: React.FC = () => {
         </div>
       </TopBar>
 
-      <div className='px-4 py-4 space-y-3 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-white/5'>
+      <div className='px-4 py-4 space-y-3 bg-background/95 backdrop-blur-sm border-b border-border'>
         <div className='relative'>
           <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
           <input
@@ -85,7 +85,7 @@ const Financials: React.FC = () => {
             placeholder='Buscar lançamentos (ex: aluguel, conserto...)'
             value={h.searchTerm}
             onChange={(e) => h.setSearchTerm(e.target.value)}
-            className='w-full pl-11 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm focus:outline-none focus:border-primary transition-all dark:text-white shadow-sm'
+            className='w-full pl-11 pr-4 py-2.5 rounded-full bg-muted border border-input text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition-all text-foreground shadow-sm'
           />
         </div>
 
@@ -94,7 +94,7 @@ const Financials: React.FC = () => {
             <select
               value={h.selectedPropertyId}
               onChange={(e) => h.setSelectedPropertyId(e.target.value)}
-              className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm cursor-pointer transition-colors'
+              className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-muted border border-input text-sm font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring shadow-sm cursor-pointer transition-colors'
             >
               <option value='all'>Todos os Imóveis</option>
               {h.properties.map((p) => (
@@ -108,10 +108,10 @@ const Financials: React.FC = () => {
               size={20}
             />
           </div>
-          <div className='h-11 px-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-700 dark:text-white flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
+          <div className='h-11 px-2 rounded-full bg-muted border border-input text-sm font-semibold text-foreground flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
             <button
               onClick={h.handlePrevMonth}
-              className='p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors'
+              className='p-1.5 hover:bg-accent rounded-full transition-colors'
             >
               <ArrowLeft size={14} />
             </button>
@@ -125,7 +125,7 @@ const Financials: React.FC = () => {
             </div>
             <button
               onClick={h.handleNextMonth}
-              className='p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors'
+              className='p-1.5 hover:bg-accent rounded-full transition-colors'
             >
               <ArrowUp size={14} className='rotate-90' />
             </button>

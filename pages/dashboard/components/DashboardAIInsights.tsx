@@ -1,5 +1,8 @@
 import React, { useMemo } from 'react';
 import { Zap, ArrowUpRight } from 'lucide-react';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { executeWorkflowAction } from '../../../services/workflow/workflowActions';
 
 interface DashboardAIInsightsProps {
@@ -33,8 +36,8 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
   };
 
   return (
-    <div className='w-full h-full bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm flex flex-col'>
-      <div className='flex items-center justify-between mb-5'>
+    <Card className='flex flex-col'>
+      <CardHeader className='flex flex-row items-center justify-between pb-0 w-full'>
         <div className='flex items-center gap-3'>
           <div className='w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
             <Zap size={16} />
@@ -48,15 +51,13 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
             </p>
           </div>
         </div>
-        <div className='flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/5'>
+        <Badge variant='outline'>
           <span className='w-1 h-1 rounded-full bg-emerald-500' />
-          <span className='text-[7px] font-black uppercase tracking-widest text-slate-400'>
-            Live Analysis
-          </span>
-        </div>
-      </div>
+          Live Analysis
+        </Badge>
+      </CardHeader>
 
-      <div className='space-y-3 flex-grow'>
+      <CardContent className='space-y-3 flex flex-col flex-grow pt-4'>
         {/* Occupancy Insight */}
         <div className='flex flex-col gap-2 p-4 rounded-[24px] bg-slate-50/50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5'>
           <div className='flex items-start gap-3'>
@@ -75,12 +76,14 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
             </div>
           </div>
           {occupancyRate < 80 && (
-            <button
+            <Button
               onClick={() => handleAction('/api/imoveis/sugestao-preco')}
-              className='text-[9px] font-black text-primary hover:underline self-end uppercase tracking-widest'
+              variant='link'
+              size='sm'
+              className='text-[9px] font-black uppercase tracking-widest self-end'
             >
               Revisar preço
-            </button>
+            </Button>
           )}
         </div>
 
@@ -98,12 +101,14 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
                 </p>
               </div>
             </div>
-            <button
+            <Button
               onClick={() => handleAction('/api/manutencao/resolver')}
-              className='text-[9px] font-black text-primary hover:underline self-end uppercase tracking-widest'
+              variant='link'
+              size='sm'
+              className='text-[9px] font-black uppercase tracking-widest self-end'
             >
               Resolver reparo
-            </button>
+            </Button>
           </div>
         )}
 
@@ -123,14 +128,18 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({ metric
             </p>
           </div>
         </div>
-      </div>
 
-      <div className='mt-4'>
-        <button className='w-full py-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 text-slate-500 dark:text-slate-400 font-black text-[9px] uppercase tracking-widest border border-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-all active:scale-95 flex items-center justify-center gap-2'>
-          Ver Recomendações
-          <ArrowUpRight size={14} />
-        </button>
-      </div>
-    </div>
+        <div className='mt-auto pt-4'>
+          <Button
+            variant='secondary'
+            size='sm'
+            className='w-full text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2'
+          >
+            Ver Recomendações
+            <ArrowUpRight size={14} />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

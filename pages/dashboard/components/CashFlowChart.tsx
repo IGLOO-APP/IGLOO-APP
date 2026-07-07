@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Download, DollarSign } from 'lucide-react';
 import { SectionHeader, PeriodSelector } from '../../../components/ui/DashboardComponents';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import {
   ComposedChart,
   Line,
@@ -33,8 +35,8 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
   const displayData = [...slicedReal, ...projected];
 
   return (
-    <div className='bg-white dark:bg-surface-dark p-5 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all'>
-      <div className='mb-4'>
+    <Card>
+      <CardHeader className='pb-0'>
         <SectionHeader
           title='Fluxo de Caixa & Projeção'
           subtitle='Histórico de transações e previsões contratuais'
@@ -44,221 +46,224 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
           action={
             <div className='flex items-center gap-3'>
               <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
-              <button className='p-2.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors text-slate-400 hover:text-primary'>
+              <Button variant='ghost' size='icon' className='rounded-xl'>
                 <Download size={18} />
-              </button>
+              </Button>
             </div>
           }
         />
-      </div>
+      </CardHeader>
+      <CardContent className='pt-4'>
+        <div className='h-[220px] w-full'>
+          <ResponsiveContainer width='100%' height='100%'>
+            <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id='colorIncome' x1='0' y1='0' x2='0' y2='1'>
+                  <stop offset='5%' stopColor='#10b981' stopOpacity={0.8} />
+                  <stop offset='95%' stopColor='#10b981' stopOpacity={0.5} />
+                </linearGradient>
+                <linearGradient id='colorExpense' x1='0' y1='0' x2='0' y2='1'>
+                  <stop offset='5%' stopColor='#ef4444' stopOpacity={0.8} />
+                  <stop offset='95%' stopColor='#ef4444' stopOpacity={0.5} />
+                </linearGradient>
+                <linearGradient id='colorNet' x1='0' y1='0' x2='0' y2='1'>
+                  <stop offset='5%' stopColor='#6366f1' stopOpacity={0.1} />
+                  <stop offset='95%' stopColor='#6366f1' stopOpacity={0} />
+                </linearGradient>
+              </defs>
 
-      <div className='h-[220px] w-full'>
-        <ResponsiveContainer width='100%' height='100%'>
-          <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id='colorIncome' x1='0' y1='0' x2='0' y2='1'>
-                <stop offset='5%' stopColor='#10b981' stopOpacity={0.8} />
-                <stop offset='95%' stopColor='#10b981' stopOpacity={0.5} />
-              </linearGradient>
-              <linearGradient id='colorExpense' x1='0' y1='0' x2='0' y2='1'>
-                <stop offset='5%' stopColor='#ef4444' stopOpacity={0.8} />
-                <stop offset='95%' stopColor='#ef4444' stopOpacity={0.5} />
-              </linearGradient>
-              <linearGradient id='colorNet' x1='0' y1='0' x2='0' y2='1'>
-                <stop offset='5%' stopColor='#6366f1' stopOpacity={0.1} />
-                <stop offset='95%' stopColor='#6366f1' stopOpacity={0} />
-              </linearGradient>
-            </defs>
+              <CartesianGrid
+                strokeDasharray='3 3'
+                vertical={false}
+                stroke={isDark ? '#334155' : '#e2e8f0'}
+                opacity={0.3}
+              />
 
-            <CartesianGrid
-              strokeDasharray='3 3'
-              vertical={false}
-              stroke={isDark ? '#334155' : '#e2e8f0'}
-              opacity={0.3}
-            />
+              <XAxis
+                dataKey='month'
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 600 }}
+                dy={10}
+              />
 
-            <XAxis
-              dataKey='month'
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 600 }}
-              dy={10}
-            />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }}
+                tickFormatter={(val) => `R$ ${val / 1000}k`}
+              />
 
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }}
-              tickFormatter={(val) => `R$ ${val / 1000}k`}
-            />
+              <Tooltip
+                cursor={{ fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const income = payload[0]?.value || 0;
+                    const expense = payload[1]?.value || 0;
+                    const net = payload[2]?.value || 0;
+                    const isProjected = payload[0].payload.projected;
+                    const repasseData = payload[0].payload.repasse_previsto_data;
 
-            <Tooltip
-              cursor={{ fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}
-              content={({ active, payload, label }) => {
-                if (active && payload && payload.length) {
-                  const income = payload[0]?.value || 0;
-                  const expense = payload[1]?.value || 0;
-                  const net = payload[2]?.value || 0;
-                  const isProjected = payload[0].payload.projected;
-                  const repasseData = payload[0].payload.repasse_previsto_data;
+                    return (
+                      <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
+                        <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2 flex justify-between items-center'>
+                          {label}
+                          {isProjected && (
+                            <span className='text-amber-500 text-[8px]'>PROJEÇÃO</span>
+                          )}
+                        </p>
 
-                  return (
-                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
-                      <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2 flex justify-between items-center'>
-                        {label}
-                        {isProjected && <span className='text-amber-500 text-[8px]'>PROJEÇÃO</span>}
-                      </p>
-
-                      <div className='space-y-3'>
-                        <div className='flex justify-between items-center'>
-                          <div className='flex items-center gap-2'>
-                            <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
-                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
-                              Receita
-                            </span>
-                          </div>
-                          <span className='text-xs font-black text-white'>
-                            {new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL',
-                            }).format(Number(income))}
-                          </span>
-                        </div>
-
-                        <div className='flex justify-between items-center'>
-                          <div className='flex items-center gap-2'>
-                            <div className='w-1.5 h-1.5 rounded-full bg-red-500' />
-                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
-                              Despesa
-                            </span>
-                          </div>
-                          <span className='text-xs font-black text-white'>
-                            {new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL',
-                            }).format(Number(expense))}
-                          </span>
-                        </div>
-
-                        {repasseData && (
-                          <div className='flex justify-between items-center pt-1 border-t border-white/5'>
-                            <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
-                              Repasse Previsto
-                            </span>
-                            <span className='text-xs font-bold text-white'>
-                              {new Date(repasseData).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className='pt-2 mt-2 border-t border-white/5'>
+                        <div className='space-y-3'>
                           <div className='flex justify-between items-center'>
                             <div className='flex items-center gap-2'>
-                              <div className='w-1.5 h-1.5 rounded-full bg-indigo-500' />
-                              <span className='text-[9px] font-black text-indigo-400 uppercase tracking-widest'>
-                                Líquido
+                              <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
+                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                                Receita
                               </span>
                             </div>
-                            <span className='text-sm font-black text-indigo-400'>
+                            <span className='text-xs font-black text-white'>
                               {new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
                                 currency: 'BRL',
-                              }).format(Number(net))}
+                              }).format(Number(income))}
                             </span>
+                          </div>
+
+                          <div className='flex justify-between items-center'>
+                            <div className='flex items-center gap-2'>
+                              <div className='w-1.5 h-1.5 rounded-full bg-red-500' />
+                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                                Despesa
+                              </span>
+                            </div>
+                            <span className='text-xs font-black text-white'>
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              }).format(Number(expense))}
+                            </span>
+                          </div>
+
+                          {repasseData && (
+                            <div className='flex justify-between items-center pt-1 border-t border-white/5'>
+                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                                Repasse Previsto
+                              </span>
+                              <span className='text-xs font-bold text-white'>
+                                {new Date(repasseData).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className='pt-2 mt-2 border-t border-white/5'>
+                            <div className='flex justify-between items-center'>
+                              <div className='flex items-center gap-2'>
+                                <div className='w-1.5 h-1.5 rounded-full bg-indigo-500' />
+                                <span className='text-[9px] font-black text-indigo-400 uppercase tracking-widest'>
+                                  Líquido
+                                </span>
+                              </div>
+                              <span className='text-sm font-black text-indigo-400'>
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(Number(net))}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
+                    );
+                  }
+                  return null;
+                }}
+              />
 
-            <Bar
-              dataKey='income'
-              name='Receita'
-              radius={[4, 4, 0, 0]}
-              maxBarSize={30}
-              stackId='a'
-              animationDuration={2000}
-              animationBegin={400}
-            >
-              {displayData.map((entry, index) => (
-                <Cell
-                  key={`income-${index}`}
-                  fill='url(#colorIncome)'
-                  fillOpacity={entry.projected ? 0.3 : 1}
-                  stroke={entry.projected ? '#10b981' : 'none'}
-                  strokeDasharray={entry.projected ? '3 3' : '0'}
-                />
-              ))}
-            </Bar>
+              <Bar
+                dataKey='income'
+                name='Receita'
+                radius={[4, 4, 0, 0]}
+                maxBarSize={30}
+                stackId='a'
+                animationDuration={2000}
+                animationBegin={400}
+              >
+                {displayData.map((entry, index) => (
+                  <Cell
+                    key={`income-${index}`}
+                    fill='url(#colorIncome)'
+                    fillOpacity={entry.projected ? 0.3 : 1}
+                    stroke={entry.projected ? '#10b981' : 'none'}
+                    strokeDasharray={entry.projected ? '3 3' : '0'}
+                  />
+                ))}
+              </Bar>
 
-            <Bar
-              dataKey='expense'
-              name='Despesa'
-              radius={[4, 4, 0, 0]}
-              maxBarSize={30}
-              stackId='a'
-              animationDuration={2000}
-              animationBegin={600}
-            >
-              {displayData.map((entry, index) => (
-                <Cell
-                  key={`expense-${index}`}
-                  fill='url(#colorExpense)'
-                  fillOpacity={entry.projected ? 0.3 : 1}
-                  stroke={entry.projected ? '#ef4444' : 'none'}
-                  strokeDasharray={entry.projected ? '4 4' : '0'}
-                />
-              ))}
-            </Bar>
+              <Bar
+                dataKey='expense'
+                name='Despesa'
+                radius={[4, 4, 0, 0]}
+                maxBarSize={30}
+                stackId='a'
+                animationDuration={2000}
+                animationBegin={600}
+              >
+                {displayData.map((entry, index) => (
+                  <Cell
+                    key={`expense-${index}`}
+                    fill='url(#colorExpense)'
+                    fillOpacity={entry.projected ? 0.3 : 1}
+                    stroke={entry.projected ? '#ef4444' : 'none'}
+                    strokeDasharray={entry.projected ? '4 4' : '0'}
+                  />
+                ))}
+              </Bar>
 
-            <Area
-              type='monotone'
-              dataKey='net'
-              fill='url(#colorNet)'
-              stroke='none'
-              animationDuration={2500}
-              animationBegin={800}
-            />
+              <Area
+                type='monotone'
+                dataKey='net'
+                fill='url(#colorNet)'
+                stroke='none'
+                animationDuration={2500}
+                animationBegin={800}
+              />
 
-            <Line
-              type='monotone'
-              dataKey='net'
-              name='Líquido'
-              stroke='#6366f1'
-              strokeWidth={3}
-              dot={{ r: 3, fill: '#6366f1', strokeWidth: 0 }}
-              activeDot={{ r: 5 }}
-              animationDuration={2500}
-              animationBegin={800}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className='flex items-center gap-4 mt-3 px-2'>
-        <div className='flex items-center gap-2'>
-          <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
-          <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-            Receita
-          </span>
+              <Line
+                type='monotone'
+                dataKey='net'
+                name='Líquido'
+                stroke='#6366f1'
+                strokeWidth={3}
+                dot={{ r: 3, fill: '#6366f1', strokeWidth: 0 }}
+                activeDot={{ r: 5 }}
+                animationDuration={2500}
+                animationBegin={800}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
-        <div className='flex items-center gap-2'>
-          <div className='w-3 h-3 rounded-full bg-red-500'></div>
-          <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-            Despesa
-          </span>
+
+        <div className='flex items-center gap-4 mt-3 px-2'>
+          <div className='flex items-center gap-2'>
+            <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
+            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              Receita
+            </span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <div className='w-3 h-3 rounded-full bg-red-500'></div>
+            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              Despesa
+            </span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <div className='w-6 h-[2px] bg-indigo-500'></div>
+            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              Resultado Líquido
+            </span>
+          </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <div className='w-6 h-[2px] bg-indigo-500'></div>
-          <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-            Resultado Líquido
-          </span>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

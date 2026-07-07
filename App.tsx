@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { UserRole } from './types';
 import { NotificationProvider } from './context/NotificationContext';
+import { Toaster } from './components/ui/sonner';
 import { SearchProvider } from './context/SearchContext';
 import { useAuth } from './context/AuthContext';
 
@@ -118,6 +119,7 @@ const Root = () => (
           <Outlet />
         </Suspense>
       </ErrorBoundary>
+      <Toaster />
     </NotificationProvider>
   </AuthProvider>
 );

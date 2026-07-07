@@ -119,3 +119,63 @@ On every session start, run `npx tsc --noEmit --skipLibCheck` and fix any syntax
    - Renamed `Infinity` → `InfinityIcon` to avoid global shadow in `ContractDurationStep.tsx`
 
 **Files modified:** ~45 files across `components/`
+
+### 2026-07-07 — shadcn/ui component installation + InfoTooltip migration
+
+**Scope:**
+
+- Install 20 missing shadcn components (CLI v4.11.0, radix-nova style)
+- Install `tailwindcss-animate` plugin
+- Migrate `InfoTooltip` → shadcn `Tooltip`
+
+**Changes:**
+
+1. **20 new shadcn components added** (`components/ui/`):
+   `accordion`, `alert`, `avatar`, `checkbox`, `command`, `dialog`, `dropdown-menu`, `input`, `input-group`, `label`, `popover`, `progress`, `scroll-area`, `select`, `sheet`, `skeleton`, `sonner`, `switch`, `tabs`, `textarea`
+
+2. **`tailwindcss-animate`** installed and added to `tailwind.config.js` plugins
+
+3. **`components/ui/button.tsx`** — added `icon-sm` size variant to fix TS error in dialog/sheet
+
+4. **`components/ui/tooltip.tsx`** — changed default `delayDuration` from `0` to `400` to match `InfoTooltip` behavior
+
+5. **`InfoTooltip.tsx`** — deleted (replaced by shadcn `Tooltip`)
+
+6. **4 files migrated** from `InfoTooltip` to shadcn `Tooltip`:
+   - `pages/financials/sections/CashFlowCharts.tsx` (2 usages)
+   - `pages/admin/ConversionReport.tsx` (4 usages)
+   - `pages/admin/SubscriptionManagement.tsx` (1 usage, mapped over metrics)
+   - `pages/admin/Announcements.tsx` (1 usage, mapped over stats)
+   - Renamed recharts `Tooltip` → `RechartsTooltip` where conflict existed
+
+**Result:** `tsc --noEmit --skipLibCheck` passes cleanly. No new lint errors introduced.
+
+### 2026-07-07 (later) — ModalWrapper → shadcn Dialog migration + Toast → sonner migration
+
+**Scope:**
+
+- Migrate `Toast` system → sonner
+- Migrate `ModalWrapper` → shadcn `Dialog` across 28 files
+
+**Toast → sonner changes:**
+
+1. **`context/NotificationContext.tsx`** — `addToast` now calls `toast()` from sonner; removed `toasts` state, `removeToast`, `ToastContainer` import
+2. **`components/properties/TenantProfileConfigPanel.tsx`** — local toast state replaced with `toast()` from sonner
+3. **`components/ui/Toast.tsx`** — deleted
+4. **`App.tsx`** — added `<Toaster />` from sonner globally in Root component
+5. **`components/ui/sonner.tsx`** — already installed by shadcn CLI
+
+**ModalWrapper → Dialog changes:**
+
+1. **`components/ui/ModalWrapper.tsx`** — rewritten to delegate to shadcn `Dialog`/`DialogContent`/`DialogHeader`/`DialogTitle`
+2. **All 28 consumer files** updated to import directly from `@/components/ui/dialog` removing `ModalWrapper` dependency
+3. **`components/ui/ModalWrapper.tsx`** — deleted
+4. Pattern: replaced conditional rendering guards with `<Dialog open>` + `onOpenChange`, content wrapped in `DialogContent` with `max-h-[90vh] overflow-y-auto p-0 gap-0`, optional `DialogHeader` + `DialogTitle`
+
+**Additional changes:**
+
+- `npx shadcn@latest init` — re-ran with `--base=radix -p nova` flags to update config to v4.13.0
+- `lib/utils.ts` — restored `handleServiceError` function that init removed
+- `index.css` — removed duplicate `@import '@fontsource-variable/geist'`
+
+**Result:** `tsc --noEmit --skipLibCheck` passes cleanly. `ModalWrapper`, `InfoTooltip`, `Toast` — all 3 custom components removed from `components/ui/`.

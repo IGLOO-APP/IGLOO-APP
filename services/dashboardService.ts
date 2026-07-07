@@ -18,21 +18,27 @@ import {
 
 export const dashboardService = {
   async getDashboardData(userId: string, months = 12) {
-    const [properties, tenants, contracts, transactions, maintenanceRequests, pendingPayments, pendingActions] =
-      await Promise.all([
-        propertyService.getAll().catch(() => [] as Property[]),
-        tenantService.getAll().catch(() => [] as Tenant[]),
-        contractService.getAll().catch(() => [] as Contract[]),
-        financeService.getAll().catch(() => [] as FinancialTransaction[]),
-        supabase
-          .from('maintenance_requests')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .then((res) => res.data || []),
-        paymentService.getPending(userId).catch(() => []),
-        workflowOrchestrator.getUnifiedPendingActions(userId).catch(() => []),
-      ]);
-
+    const [
+      properties,
+      tenants,
+      contracts,
+      transactions,
+      maintenanceRequests,
+      pendingPayments,
+      pendingActions,
+    ] = await Promise.all([
+      propertyService.getAll().catch(() => [] as Property[]),
+      tenantService.getAll().catch(() => [] as Tenant[]),
+      contractService.getAll().catch(() => [] as Contract[]),
+      financeService.getAll().catch(() => [] as FinancialTransaction[]),
+      supabase
+        .from('maintenance_requests')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .then((res) => res.data || []),
+      paymentService.getPending(userId).catch(() => []),
+      workflowOrchestrator.getUnifiedPendingActions(userId).catch(() => []),
+    ]);
 
     const activeContracts = contracts.filter((c) => c.status === 'active');
     const mrrValue = activeContracts.reduce(
@@ -66,10 +72,12 @@ export const dashboardService = {
       ),
       risks: this._calculateRisks(contracts, portfolioHealth.delinquency, properties),
       financialHistory: history,
-      activities: this._consolidateActivities(transactions, maintenanceRequests, properties, pendingActions).slice(
-        0,
-        5
-      ),
+      activities: this._consolidateActivities(
+        transactions,
+        maintenanceRequests,
+        properties,
+        pendingActions
+      ).slice(0, 5),
       topProperties: this._getTopProperties(properties, contracts),
       wealthHistory: this._generateWealthHistory(months, properties),
       pendingActions,
@@ -288,7 +296,7 @@ export const dashboardService = {
         date: new Date().toLocaleDateString('pt-BR'),
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         rawDate: new Date().toISOString(),
-        acao_pendente: a.acao_pendente
+        acao_pendente: a.acao_pendente,
       })),
       ...transactions.map((t) => ({
         id: t.id,

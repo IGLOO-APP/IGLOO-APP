@@ -49,7 +49,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
   return (
     <div
       onClick={() => onClick(contract)}
-      className='group bg-white dark:bg-surface-dark p-6 rounded-[24px] border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 cursor-pointer relative overflow-hidden'
+      className='group bg-card text-card-foreground p-6 rounded-[24px] border border-border shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 cursor-pointer relative overflow-hidden'
     >
       {/* Background Watermark */}
       <div className='absolute -right-8 -bottom-8 text-slate-100 dark:text-white/5 transform -rotate-12 group-hover:scale-110 transition-transform duration-500'>
@@ -81,7 +81,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
               )}
             </div>
             <div className='flex items-center gap-2'>
-              <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-white/5 px-2 py-0.5 rounded border border-slate-200/50 dark:border-white/5'>
+              <span className='text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded border border-border'>
                 Ref: {contract.contract_number}
               </span>
             </div>
@@ -107,8 +107,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         </div>
 
         <div className='space-y-4 mb-6'>
-          <div className='flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5'>
-            <div className='w-8 h-8 rounded-xl bg-white dark:bg-surface-dark flex items-center justify-center text-slate-400 border border-slate-100 dark:border-white/5'>
+          <div className='flex items-center gap-3 bg-muted/50 p-3 rounded-2xl border border-border'>
+            <div className='w-8 h-8 rounded-xl bg-background flex items-center justify-center text-muted-foreground border border-border'>
               <Users size={16} />
             </div>
             <div className='flex flex-col'>
@@ -122,8 +122,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
           </div>
 
           <div className='flex items-center justify-between gap-4'>
-            <div className='flex-1 flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-3 rounded-2xl border border-slate-100 dark:border-white/5'>
-              <div className='w-8 h-8 rounded-xl bg-white dark:bg-surface-dark flex items-center justify-center text-slate-400 border border-slate-100 dark:border-white/5'>
+            <div className='flex-1 flex items-center gap-3 bg-muted/50 p-3 rounded-2xl border border-border'>
+              <div className='w-8 h-8 rounded-xl bg-background flex items-center justify-center text-muted-foreground border border-border'>
                 <Calendar size={16} />
               </div>
               <div className='flex flex-col'>
@@ -170,7 +170,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         </div>
 
         {/* Signature Line Area */}
-        <div className='flex items-center justify-between pt-4 border-t border-dashed border-slate-200 dark:border-white/10'>
+        <div className='flex items-center justify-between pt-4 border-t border-dashed border-border'>
           <div className='flex flex-col'>
             <div className='flex items-center gap-2 mb-1'>
               <PenTool size={12} className='text-slate-300' />

@@ -269,7 +269,9 @@ export const contractService = {
   async getExpiring(ownerId: string): Promise<Contract[]> {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, properties:property_id(name), profiles_tenant:tenant_id(name, email), profiles_owner:owner_id(name)')
+      .select(
+        '*, properties:property_id(name), profiles_tenant:tenant_id(name, email), profiles_owner:owner_id(name)'
+      )
       .eq('owner_id', ownerId)
       .in('status', ['active', 'expiring_soon'])
       .lt('end_date', new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString());

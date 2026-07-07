@@ -69,7 +69,7 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className='flex flex-col h-full w-full relative bg-background-light dark:bg-background-dark'>
+    <div className='flex flex-col h-full w-full relative bg-background text-foreground'>
       {/* Pill flutuante com vidro — igual ao menu inquilino */}
       <div className='sticky top-4 z-40 flex justify-center px-4 md:px-8 pointer-events-none'>
         <div className='pointer-events-auto'>
@@ -117,7 +117,7 @@ const Settings: React.FC = () => {
         {h.activeTab === 'maintenance' && (
           <>
             <div className='animate-fadeIn space-y-8 max-w-4xl'>
-              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
                     <SettingsIcon size={20} />
@@ -135,7 +135,7 @@ const Settings: React.FC = () => {
                   {h.maintenanceSettings.categories.map((cat) => (
                     <div
                       key={cat.id}
-                      className='flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/10'
+                      className='flex items-center justify-between p-4 rounded-xl border border-border bg-muted/35'
                     >
                       <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
                         {cat.label}
@@ -161,7 +161,7 @@ const Settings: React.FC = () => {
                   ))}
                 </div>
               </div>
-              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center'>
                     <AlertTriangle size={20} />
@@ -179,7 +179,7 @@ const Settings: React.FC = () => {
                   {h.maintenanceSettings.urgencies.map((urg) => (
                     <div
                       key={urg.id}
-                      className='flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-black/10'
+                      className='flex items-center justify-between p-4 rounded-xl border border-border bg-muted/35'
                     >
                       <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
                         {urg.id}
@@ -229,7 +229,7 @@ const Settings: React.FC = () => {
         {h.activeTab === 'notifications' && (
           <>
             <div className='animate-fadeIn space-y-6 max-w-2xl'>
-              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
                     <Bell size={20} />
@@ -244,7 +244,7 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
                 <div className='space-y-3'>
-                  <div className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-100 dark:border-white/5'>
+                  <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
                       <Mail className='text-slate-500' size={20} />
                       <div>
@@ -270,7 +270,7 @@ const Settings: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  <div className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-100 dark:border-white/5'>
+                  <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
                       <Smartphone className='text-slate-500' size={20} />
                       <div>
@@ -298,7 +298,7 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
+              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center'>
                     <Activity size={20} />
@@ -311,7 +311,7 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
                 <div className='space-y-3'>
-                  <div className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-100 dark:border-white/5'>
+                  <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
                       <div className='w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center'>
                         <DollarSign size={18} />
@@ -339,7 +339,7 @@ const Settings: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  <div className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-100 dark:border-white/5'>
+                  <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
                       <div className='w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center'>
                         <AlertTriangle size={18} />
@@ -367,7 +367,7 @@ const Settings: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  <div className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-100 dark:border-white/5'>
+                  <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
                       <div className='w-9 h-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center'>
                         <Wrench size={18} />

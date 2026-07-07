@@ -81,7 +81,7 @@ const OwnerMessages: React.FC = () => {
   } = useOwnerMessages();
 
   return (
-    <div className='flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden relative transition-colors duration-300'>
+    <div className='flex flex-col h-full bg-background text-foreground overflow-hidden relative transition-colors duration-300'>
       <div className={`${activeChatId ? 'hidden md:block' : 'block'} shrink-0`}>
         <TopBar title='Central de Mensagens' subtitle='Comunicação direta com locatários'>
           <div className='flex items-center gap-1.5 md:gap-2 flex-wrap sm:flex-nowrap shrink-0'>
@@ -124,7 +124,7 @@ const OwnerMessages: React.FC = () => {
         </div>
       )}
 
-      <div className='flex flex-1 overflow-hidden relative min-h-0 bg-white dark:bg-background-dark'>
+      <div className='flex flex-1 overflow-hidden relative min-h-0 bg-background border-t border-border'>
         <ChatSidebar
           activeChatId={activeChatId}
           setActiveChatId={setActiveChatId}
@@ -194,7 +194,7 @@ const OwnerMessages: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className='hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-black/20'>
+          <div className='hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-muted/20'>
             <div className='max-w-md space-y-3 flex flex-col items-center'>
               <h2 className='text-lg font-black text-slate-900 dark:text-white tracking-tighter'>
                 Central de Mensagens Igloo

@@ -17,7 +17,13 @@ import {
   ArrowUpCircle,
   Power,
 } from 'lucide-react';
-import { ModalWrapper } from '../../components/ui/ModalWrapper';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const AdminManager: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -372,239 +378,250 @@ const AdminManager: React.FC = () => {
 
       {/* Invite Modal */}
       {isInviteModalOpen && (
-        <ModalWrapper
-          onClose={() => setIsInviteModalOpen(false)}
-          title='Convidar Administrador'
-          showCloseButton={true}
-          className='md:max-w-xl'
-        >
-          <div className='p-8 space-y-8 bg-background-light dark:bg-background-dark'>
-            <div className='space-y-6'>
-              <h3 className='text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2'>
-                <UserPlus size={16} className='text-primary' /> Dados do Administrador
-              </h3>
-              <div className='grid grid-cols-1 gap-4'>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
-                    Nome completo *
-                  </label>
-                  <input
-                    type='text'
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
-                    placeholder='Nome do administrador'
-                  />
-                </div>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
-                    E-mail *
-                  </label>
-                  <input
-                    type='email'
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
-                    placeholder='email@exemplo.com'
-                  />
-                </div>
-                <div>
-                  <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
-                    Nível de acesso *
-                  </label>
-                  <select
-                    value={formData.admin_type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, admin_type: e.target.value as any })
-                    }
-                    className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
-                  >
-                    <option value='support'>Admin</option>
-                    <option value='super'>Super Admin</option>
-                  </select>
-                  <p className='mt-2 text-[10px] text-slate-400 font-medium italic'>
-                    {formData.admin_type === 'super'
-                      ? 'Super Admin tem acesso total à plataforma incluindo dados financeiros e gestão de equipe'
-                      : 'Admin tem acesso restrito aos módulos permitidos abaixo'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {formData.admin_type !== 'super' ? (
-              <div className='space-y-6 pt-6 border-t border-gray-100 dark:border-white/5'>
+        <Dialog open onOpenChange={(open) => !open && setIsInviteModalOpen(false)}>
+          <DialogContent
+            className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-xl'
+            showCloseButton={true}
+          >
+            <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+              <DialogTitle className='text-xl font-bold'>Convidar Administrador</DialogTitle>
+              <DialogDescription />
+            </DialogHeader>
+            <div className='p-8 space-y-8 bg-background-light dark:bg-background-dark'>
+              <div className='space-y-6'>
                 <h3 className='text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2'>
-                  <ShieldCheck size={16} className='text-primary' /> Permissões Específicas
+                  <UserPlus size={16} className='text-primary' /> Dados do Administrador
                 </h3>
-                <div className='space-y-3'>
-                  {[
-                    { id: 'dashboard', label: 'Dashboard', disabled: true },
-                    { id: 'users', label: 'Gerenciar Usuários' },
-                    { id: 'subscriptions', label: 'Assinaturas' },
-                    { id: 'support', label: 'Central de Suporte' },
-                    { id: 'settings', label: 'Configurações' },
-                  ].map((module) => (
-                    <div
-                      key={module.id}
-                      className='flex items-center justify-between p-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-50 dark:border-white/5'
+                <div className='grid grid-cols-1 gap-4'>
+                  <div>
+                    <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
+                      Nome completo *
+                    </label>
+                    <input
+                      type='text'
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
+                      placeholder='Nome do administrador'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
+                      E-mail *
+                    </label>
+                    <input
+                      type='email'
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
+                      placeholder='email@exemplo.com'
+                    />
+                  </div>
+                  <div>
+                    <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
+                      Nível de acesso *
+                    </label>
+                    <select
+                      value={formData.admin_type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, admin_type: e.target.value as any })
+                      }
+                      className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm'
                     >
-                      <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
-                        {module.label}
-                      </span>
-                      <button
-                        disabled={module.disabled}
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            permissions: {
-                              ...formData.permissions,
-                              [module.id]: !(formData.permissions as any)[module.id],
-                            },
-                          })
-                        }
-                        className={`w-10 h-6 rounded-full relative transition-colors ${
-                          (formData.permissions as any)[module.id]
-                            ? 'bg-primary'
-                            : 'bg-slate-200 dark:bg-white/10'
-                        } ${module.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                      >
-                        <div
-                          className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-                            (formData.permissions as any)[module.id] ? 'left-5' : 'left-1'
-                          }`}
-                        ></div>
-                      </button>
-                    </div>
-                  ))}
-                  <p className='text-[10px] text-slate-400 font-medium italic'>
-                    Super Admins têm acesso automático a todos os módulos
-                  </p>
+                      <option value='support'>Admin</option>
+                      <option value='super'>Super Admin</option>
+                    </select>
+                    <p className='mt-2 text-[10px] text-slate-400 font-medium italic'>
+                      {formData.admin_type === 'super'
+                        ? 'Super Admin tem acesso total à plataforma incluindo dados financeiros e gestão de equipe'
+                        : 'Admin tem acesso restrito aos módulos permitidos abaixo'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className='p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 flex gap-3'>
-                <ShieldCheck size={20} className='text-amber-500 shrink-0' />
-                <p className='text-xs text-amber-700 dark:text-amber-400 font-medium'>
-                  Super Admins têm acesso automático a todos os módulos e configurações do sistema.
-                </p>
-              </div>
-            )}
 
-            <div className='pt-6 border-t border-gray-100 dark:border-white/5 flex gap-4'>
-              <button
-                onClick={() => setIsInviteModalOpen(false)}
-                className='flex-1 py-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold text-sm transition-all hover:bg-slate-200'
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleInvite}
-                disabled={!formData.name || !formData.email}
-                className='flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark disabled:opacity-50 active:scale-[0.98]'
-              >
-                Enviar Convite
-              </button>
+              {formData.admin_type !== 'super' ? (
+                <div className='space-y-6 pt-6 border-t border-gray-100 dark:border-white/5'>
+                  <h3 className='text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2'>
+                    <ShieldCheck size={16} className='text-primary' /> Permissões Específicas
+                  </h3>
+                  <div className='space-y-3'>
+                    {[
+                      { id: 'dashboard', label: 'Dashboard', disabled: true },
+                      { id: 'users', label: 'Gerenciar Usuários' },
+                      { id: 'subscriptions', label: 'Assinaturas' },
+                      { id: 'support', label: 'Central de Suporte' },
+                      { id: 'settings', label: 'Configurações' },
+                    ].map((module) => (
+                      <div
+                        key={module.id}
+                        className='flex items-center justify-between p-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-50 dark:border-white/5'
+                      >
+                        <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+                          {module.label}
+                        </span>
+                        <button
+                          disabled={module.disabled}
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              permissions: {
+                                ...formData.permissions,
+                                [module.id]: !(formData.permissions as any)[module.id],
+                              },
+                            })
+                          }
+                          className={`w-10 h-6 rounded-full relative transition-colors ${
+                            (formData.permissions as any)[module.id]
+                              ? 'bg-primary'
+                              : 'bg-slate-200 dark:bg-white/10'
+                          } ${module.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                              (formData.permissions as any)[module.id] ? 'left-5' : 'left-1'
+                            }`}
+                          ></div>
+                        </button>
+                      </div>
+                    ))}
+                    <p className='text-[10px] text-slate-400 font-medium italic'>
+                      Super Admins têm acesso automático a todos os módulos
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className='p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30 flex gap-3'>
+                  <ShieldCheck size={20} className='text-amber-500 shrink-0' />
+                  <p className='text-xs text-amber-700 dark:text-amber-400 font-medium'>
+                    Super Admins têm acesso automático a todos os módulos e configurações do
+                    sistema.
+                  </p>
+                </div>
+              )}
+
+              <div className='pt-6 border-t border-gray-100 dark:border-white/5 flex gap-4'>
+                <button
+                  onClick={() => setIsInviteModalOpen(false)}
+                  className='flex-1 py-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold text-sm transition-all hover:bg-slate-200'
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleInvite}
+                  disabled={!formData.name || !formData.email}
+                  className='flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark disabled:opacity-50 active:scale-[0.98]'
+                >
+                  Enviar Convite
+                </button>
+              </div>
             </div>
-          </div>
-        </ModalWrapper>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Role Change Confirmation */}
       {isRoleModalOpen && selectedAdmin && (
-        <ModalWrapper
-          onClose={() => setIsRoleModalOpen(false)}
-          title='Confirmar Alteração de Nível'
-          showCloseButton={true}
-        >
-          <div className='p-8 space-y-6 text-center'>
-            <div className='w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600'>
-              <ShieldCheck size={32} />
+        <Dialog open onOpenChange={(open) => !open && setIsRoleModalOpen(false)}>
+          <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0' showCloseButton={true}>
+            <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+              <DialogTitle className='text-xl font-bold'>Confirmar Alteração de Nível</DialogTitle>
+              <DialogDescription />
+            </DialogHeader>
+            <div className='p-8 space-y-6 text-center'>
+              <div className='w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600'>
+                <ShieldCheck size={32} />
+              </div>
+              <div>
+                <h4 className='text-lg font-bold text-slate-900 dark:text-white'>
+                  Deseja alterar o nível de {selectedAdmin.name}?
+                </h4>
+                <p className='text-sm text-slate-500 mt-2'>
+                  {selectedAdmin.admin_type === 'super'
+                    ? 'Ao rebaixar para Admin comum, o usuário perderá acesso às configurações críticas e gestão de equipe.'
+                    : 'Ao tornar Super Admin, o usuário terá controle total sobre a plataforma, incluindo finanças e equipe.'}
+                </p>
+              </div>
+              <div className='flex gap-4'>
+                <button
+                  onClick={() => setIsRoleModalOpen(false)}
+                  className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold'
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateRole}
+                  className='flex-1 py-3 rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20'
+                >
+                  Confirmar Alteração
+                </button>
+              </div>
             </div>
-            <div>
-              <h4 className='text-lg font-bold text-slate-900 dark:text-white'>
-                Deseja alterar o nível de {selectedAdmin.name}?
-              </h4>
-              <p className='text-sm text-slate-500 mt-2'>
-                {selectedAdmin.admin_type === 'super'
-                  ? 'Ao rebaixar para Admin comum, o usuário perderá acesso às configurações críticas e gestão de equipe.'
-                  : 'Ao tornar Super Admin, o usuário terá controle total sobre a plataforma, incluindo finanças e equipe.'}
-              </p>
-            </div>
-            <div className='flex gap-4'>
-              <button
-                onClick={() => setIsRoleModalOpen(false)}
-                className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold'
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpdateRole}
-                className='flex-1 py-3 rounded-xl bg-amber-500 text-white font-bold shadow-lg shadow-amber-500/20'
-              >
-                Confirmar Alteração
-              </button>
-            </div>
-          </div>
-        </ModalWrapper>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Status Change Modal */}
       {isStatusModalOpen && selectedAdmin && (
-        <ModalWrapper
-          onClose={() => setIsStatusModalOpen(false)}
-          title={selectedAdmin.is_suspended ? 'Reativar Acesso' : 'Desativar Acesso'}
-          showCloseButton={true}
-        >
-          <div className='p-8 space-y-6'>
-            <div
-              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${selectedAdmin.is_suspended ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
-            >
-              <Power size={32} />
-            </div>
-            <div className='text-center'>
-              <h4 className='text-lg font-bold text-slate-900 dark:text-white'>
-                {selectedAdmin.is_suspended
-                  ? `Reativar acesso de ${selectedAdmin.name}?`
-                  : `Desativar acesso de ${selectedAdmin.name}?`}
-              </h4>
-              <p className='text-sm text-slate-500 mt-2'>
-                {selectedAdmin.is_suspended
-                  ? 'O administrador poderá voltar a acessar a plataforma com suas permissões anteriores.'
-                  : 'O acesso será bloqueado imediatamente, mas o histórico de ações será mantido.'}
-              </p>
-            </div>
-
-            {!selectedAdmin.is_suspended && (
-              <div>
-                <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
-                  Motivo da desativação *
-                </label>
-                <textarea
-                  value={statusReason}
-                  onChange={(e) => setStatusReason(e.target.value)}
-                  className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm h-24 resize-none'
-                  placeholder='Descreva o motivo...'
-                ></textarea>
+        <Dialog open onOpenChange={(open) => !open && setIsStatusModalOpen(false)}>
+          <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0' showCloseButton={true}>
+            <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+              <DialogTitle className='text-xl font-bold'>
+                {selectedAdmin.is_suspended ? 'Reativar Acesso' : 'Desativar Acesso'}
+              </DialogTitle>
+              <DialogDescription />
+            </DialogHeader>
+            <div className='p-8 space-y-6'>
+              <div
+                className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${selectedAdmin.is_suspended ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
+              >
+                <Power size={32} />
               </div>
-            )}
+              <div className='text-center'>
+                <h4 className='text-lg font-bold text-slate-900 dark:text-white'>
+                  {selectedAdmin.is_suspended
+                    ? `Reativar acesso de ${selectedAdmin.name}?`
+                    : `Desativar acesso de ${selectedAdmin.name}?`}
+                </h4>
+                <p className='text-sm text-slate-500 mt-2'>
+                  {selectedAdmin.is_suspended
+                    ? 'O administrador poderá voltar a acessar a plataforma com suas permissões anteriores.'
+                    : 'O acesso será bloqueado imediatamente, mas o histórico de ações será mantido.'}
+                </p>
+              </div>
 
-            <div className='flex gap-4 pt-4'>
-              <button
-                onClick={() => setIsStatusModalOpen(false)}
-                className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold'
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpdateStatus}
-                disabled={!selectedAdmin.is_suspended && !statusReason}
-                className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg ${selectedAdmin.is_suspended ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-red-500 shadow-red-500/20'} disabled:opacity-50`}
-              >
-                Confirmar
-              </button>
+              {!selectedAdmin.is_suspended && (
+                <div>
+                  <label className='block text-xs font-bold text-slate-500 mb-2 uppercase'>
+                    Motivo da desativação *
+                  </label>
+                  <textarea
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    className='w-full px-4 py-3 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary outline-none transition-all text-sm h-24 resize-none'
+                    placeholder='Descreva o motivo...'
+                  ></textarea>
+                </div>
+              )}
+
+              <div className='flex gap-4 pt-4'>
+                <button
+                  onClick={() => setIsStatusModalOpen(false)}
+                  className='flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold'
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateStatus}
+                  disabled={!selectedAdmin.is_suspended && !statusReason}
+                  className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg ${selectedAdmin.is_suspended ? 'bg-emerald-500 shadow-emerald-500/20' : 'bg-red-500 shadow-red-500/20'} disabled:opacity-50`}
+                >
+                  Confirmar
+                </button>
+              </div>
             </div>
-          </div>
-        </ModalWrapper>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

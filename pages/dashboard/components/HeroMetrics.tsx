@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   FileText,
 } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
 import { HeroCard } from '../../../components/ui/DashboardComponents';
 
 interface HeroMetricsProps {
@@ -85,8 +87,18 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
           trend={metrics.trends.occupancy}
           trendUp={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) >= 80}
           icon={Home}
-          color={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 && (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90 ? 'text-red-500' : 'text-emerald-500'}
-          variant={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 && (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90 ? 'critical' : 'default'}
+          color={
+            (metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 &&
+            (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90
+              ? 'text-red-500'
+              : 'text-emerald-500'
+          }
+          variant={
+            (metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 &&
+            (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90
+              ? 'critical'
+              : 'default'
+          }
           tooltip='Percentual de imóveis alugados em relação ao total da sua carteira (física) vs impacto financeiro real (financeira).'
         />
 
@@ -105,11 +117,12 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
 
       {/* Secondary stats row: Inquilinos + Alertas */}
       <div className='grid grid-cols-3 gap-3'>
-        <button
+        <Button
           onClick={() => navigate('/tenants')}
-          className='flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left active-tap'
+          variant='outline'
+          className='flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left'
         >
-          <div className='p-2 rounded-lg bg-primary/10 text-primary'>
+          <div className='p-2 rounded-lg bg-primary/10 text-primary shrink-0'>
             <Users size={16} />
           </div>
           <div>
@@ -120,14 +133,15 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
               {metrics.totalTenants ?? 0}
             </p>
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => navigate('/properties')}
-          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-sm transition-all text-left active-tap ${
+          variant='outline'
+          className={`flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left ${
             metrics.occupancyRate < 80
-              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 hover:shadow-md'
-              : 'bg-white dark:bg-surface-dark border-gray-100 dark:border-white/5 opacity-60'
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50'
+              : 'bg-white dark:bg-surface-dark opacity-60'
           }`}
         >
           <div
@@ -151,14 +165,15 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
               <p className='text-sm font-bold text-slate-400 italic'>Tudo em ordem</p>
             )}
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => navigate('/contracts')}
-          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-sm transition-all text-left active-tap ${
+          variant='outline'
+          className={`flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left ${
             (metrics.expiringContractsCount ?? 0) > 0
-              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50 hover:shadow-md'
-              : 'bg-white dark:bg-surface-dark border-gray-100 dark:border-white/5 opacity-60'
+              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
+              : 'bg-white dark:bg-surface-dark opacity-60'
           }`}
         >
           <div
@@ -182,7 +197,7 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) =
               <p className='text-sm font-bold text-slate-400 italic'>Em dia</p>
             )}
           </div>
-        </button>
+        </Button>
       </div>
     </section>
   );

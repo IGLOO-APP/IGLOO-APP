@@ -22,7 +22,13 @@ import {
   Upload,
 } from 'lucide-react';
 import { documentService, PropertyDocument } from '../../services/documentService';
-import { ModalWrapper } from '../ui/ModalWrapper';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Property } from '../../types';
 
 interface PropertyDocumentsProps {
@@ -475,13 +481,17 @@ export const PropertyDocuments: React.FC<PropertyDocumentsProps> = ({
   return inline ? (
     content
   ) : (
-    <ModalWrapper
-      onClose={onClose}
-      className='md:max-w-4xl'
-      title='Documentos do Imóvel'
-      showCloseButton={true}
-    >
-      {content}
-    </ModalWrapper>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-4xl'
+        showCloseButton={true}
+      >
+        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+          <DialogTitle className='text-xl font-bold'>Documentos do Imóvel</DialogTitle>
+          <DialogDescription />
+        </DialogHeader>
+        {content}
+      </DialogContent>
+    </Dialog>
   );
 };

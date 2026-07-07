@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useAuth } from './AuthContext';
 import { notificationService } from '../services/notificationService';
 import { supabase } from '../lib/supabase';
-import { ToastContainer, ToastMessage } from '../components/ui/Toast';
+import { toast } from 'sonner';
 import { Database } from '../lib/database.types';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
@@ -51,7 +51,11 @@ interface NotificationContextType {
   loading: boolean;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
-  addToast: (title: string, message: string, type?: ToastMessage['type']) => void;
+  addToast: (
+    title: string,
+    message: string,
+    type?: 'success' | 'error' | 'info' | 'warning' | 'system'
+  ) => void;
   triggerTestNotification: () => void;
 }
 
@@ -60,7 +64,6 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
   const loadNotifications = async () => {
@@ -110,9 +113,27 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     };
   };
 
-  const addToast = (title: string, message: string, type: ToastMessage['type'] = 'info') => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, title, message, type }]);
+  const addToast = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning' | 'system' = 'info'
+  ) => {
+    switch (type) {
+      case 'success':
+        toast.success(title, { description: message });
+        break;
+      case 'error':
+        toast.error(title, { description: message });
+        break;
+      case 'warning':
+        toast.warning(title, { description: message });
+        break;
+      case 'system':
+      case 'info':
+      default:
+        toast.info(title, { description: message });
+        break;
+    }
   };
 
   // Load initial notifications
@@ -125,10 +146,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
 
   const markAsRead = async (id: string) => {
     // Optimistic update
@@ -182,7 +199,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       }}
     >
       {children}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </NotificationContext.Provider>
   );
 };

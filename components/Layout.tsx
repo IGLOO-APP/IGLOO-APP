@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Sidebar } from './layout/Sidebar';
 import { MobileNav } from './layout/MobileNav';
+import { SidebarProvider } from './ui/sidebar';
 
 const navItems = [
   { path: '/', label: 'Início', icon: LayoutDashboard },
@@ -40,18 +41,19 @@ const Layout: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark'>
-      <Sidebar
-        navItems={navItems}
-        adminItems={adminItems}
-        user={user}
-        impersonatingFrom={impersonatingFrom}
-        isDark={isDark}
-        toggleTheme={toggleTheme}
-        logout={logout}
-      />
+    <SidebarProvider className='h-full w-full overflow-hidden'>
+      <div className='flex h-full w-full overflow-hidden bg-background text-foreground'>
+        <Sidebar
+          navItems={navItems}
+          adminItems={adminItems}
+          user={user}
+          impersonatingFrom={impersonatingFrom}
+          isDark={isDark}
+          toggleTheme={toggleTheme}
+          logout={logout}
+        />
 
-      <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-background-light dark:bg-background-dark'>
+        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-background text-foreground'>
         {impersonatingFrom && (
           <div className='bg-amber-500 text-white px-6 py-2 flex items-center justify-between shadow-lg z-50 animate-slideDown'>
             <div className='flex items-center gap-3'>
@@ -89,7 +91,8 @@ const Layout: React.FC = () => {
 
         <MobileNav navItems={mobileNavItems} />
       </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

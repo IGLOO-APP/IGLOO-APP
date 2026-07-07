@@ -33,7 +33,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
   const wizard = useContractWizard(initialProperty, onComplete, currentUser);
 
   return (
-    <div className='fixed inset-0 z-50 bg-slate-50 dark:bg-background-dark flex flex-col animate-slideUp overflow-hidden'>
+    <div className='fixed inset-0 z-50 bg-background text-foreground flex flex-col animate-slideUp overflow-hidden'>
       <ContractWizardHeader
         currentStep={wizard.currentStep}
         canAdvance={wizard.canAdvance()}
@@ -43,7 +43,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
         stepRequirement={stepRequirements[wizard.currentStep]}
       />
 
-      <div className='flex-1 overflow-y-auto bg-slate-50 dark:bg-black/20'>
+      <div className='flex-1 overflow-y-auto bg-muted/30'>
         <div
           className={`mx-auto min-h-full flex flex-col transition-all duration-300 ${
             wizard.currentStep === 5 ? 'max-w-[1600px] w-full p-0' : 'max-w-4xl p-6 md:p-10'
@@ -148,8 +148,8 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
 
       {wizard.showPDFPreview && (
         <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn'>
-          <div className='bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-slate-200 dark:border-white/10'>
-            <div className='p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between'>
+          <div className='bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-border'>
+            <div className='p-6 border-b border-border flex items-center justify-between'>
               <div>
                 <h3 className='text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter'>
                   Pré-visualização da Minuta
@@ -160,12 +160,12 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
               </div>
               <button
                 onClick={() => wizard.setShowPDFPreview(false)}
-                className='p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                className='p-2 hover:bg-muted rounded-full transition-all text-muted-foreground hover:text-foreground'
               >
                 <X size={20} />
               </button>
             </div>
-            <div className='flex-1 bg-slate-100 dark:bg-slate-950 p-4'>
+            <div className='flex-1 bg-muted/40 p-4'>
               <PDFViewer
                 width='100%'
                 height='100%'

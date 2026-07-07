@@ -20,14 +20,14 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
   Cell,
 } from 'recharts';
 import { adminService } from '../../services/adminService';
-import { InfoTooltip } from '../../components/ui/InfoTooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const ConversionReport: React.FC = () => {
   const [period, setPeriod] = useState('30_days');
@@ -81,86 +81,110 @@ const ConversionReport: React.FC = () => {
 
       {/* Main Metrics */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-        <InfoTooltip
-          title='Novos Trials'
-          description='Total de proprietários que iniciaram o período de teste gratuito no intervalo selecionado.'
-        >
-          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
-            <div className='flex justify-between items-start mb-4'>
-              <div className='p-3 bg-indigo-500/10 text-indigo-500 rounded-xl'>
-                <Users size={20} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+              <div className='flex justify-between items-start mb-4'>
+                <div className='p-3 bg-indigo-500/10 text-indigo-500 rounded-xl'>
+                  <Users size={20} />
+                </div>
+                <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
               </div>
-              <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
+              <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
+                Novos Trials
+              </p>
+              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
+                {stats?.total_trials || 0}
+              </h3>
             </div>
-            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
-              Novos Trials
+          </TooltipTrigger>
+          <TooltipContent className='max-w-xs'>
+            <p className='font-semibold'>Novos Trials</p>
+            <p className='text-muted-foreground'>
+              Total de proprietários que iniciaram o período de teste gratuito no intervalo
+              selecionado.
             </p>
-            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
-              {stats?.total_trials || 0}
-            </h3>
-          </div>
-        </InfoTooltip>
+          </TooltipContent>
+        </Tooltip>
 
-        <InfoTooltip
-          title='Conversões'
-          description='Número de usuários Trial que realizaram o pagamento da primeira mensalidade e tornaram-se assinantes pagos.'
-        >
-          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
-            <div className='flex justify-between items-start mb-4'>
-              <div className='p-3 bg-emerald-500/10 text-emerald-500 rounded-xl'>
-                <CreditCard size={20} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+              <div className='flex justify-between items-start mb-4'>
+                <div className='p-3 bg-emerald-500/10 text-emerald-500 rounded-xl'>
+                  <CreditCard size={20} />
+                </div>
+                <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
               </div>
-              <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
+              <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
+                Conversões
+              </p>
+              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
+                {stats?.total_converted || 0}
+              </h3>
             </div>
-            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
-              Conversões
+          </TooltipTrigger>
+          <TooltipContent className='max-w-xs'>
+            <p className='font-semibold'>Conversões</p>
+            <p className='text-muted-foreground'>
+              Número de usuários Trial que realizaram o pagamento da primeira mensalidade e
+              tornaram-se assinantes pagos.
             </p>
-            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
-              {stats?.total_converted || 0}
-            </h3>
-          </div>
-        </InfoTooltip>
+          </TooltipContent>
+        </Tooltip>
 
-        <InfoTooltip
-          title='Taxa de Conversão'
-          description='A porcentagem de Trials que converteram para planos pagos. É o principal indicador de eficiência do produto.'
-        >
-          <div className='bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden h-full'>
-            <div className='flex justify-between items-start mb-4 relative z-10'>
-              <div className='p-3 bg-primary text-white rounded-xl'>
-                <TrendingUp size={20} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className='bg-primary/5 dark:bg-primary/10 p-6 rounded-2xl border border-primary/10 shadow-sm relative overflow-hidden h-full'>
+              <div className='flex justify-between items-start mb-4 relative z-10'>
+                <div className='p-3 bg-primary text-white rounded-xl'>
+                  <TrendingUp size={20} />
+                </div>
+              </div>
+              <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-1 relative z-10'>
+                Taxa de Conversão
+              </p>
+              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white relative z-10'>
+                {stats?.conversion_rate || 0}%
+              </h3>
+              <div className='absolute -bottom-2 -right-2 opacity-5 pointer-events-none'>
+                <TrendingUp size={100} />
               </div>
             </div>
-            <p className='text-[10px] font-bold text-primary uppercase tracking-widest mb-1 relative z-10'>
-              Taxa de Conversão
+          </TooltipTrigger>
+          <TooltipContent className='max-w-xs'>
+            <p className='font-semibold'>Taxa de Conversão</p>
+            <p className='text-muted-foreground'>
+              A porcentagem de Trials que converteram para planos pagos. É o principal indicador de
+              eficiência do produto.
             </p>
-            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white relative z-10'>
-              {stats?.conversion_rate || 0}%
-            </h3>
-            <div className='absolute -bottom-2 -right-2 opacity-5 pointer-events-none'>
-              <TrendingUp size={100} />
-            </div>
-          </div>
-        </InfoTooltip>
+          </TooltipContent>
+        </Tooltip>
 
-        <InfoTooltip
-          title='Tempo de Decisão'
-          description='Tempo médio (em dias) que os usuários levam desde o cadastro inicial até o pagamento da assinatura.'
-        >
-          <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
-            <div className='flex justify-between items-start mb-4'>
-              <div className='p-3 bg-amber-500/10 text-amber-500 rounded-xl'>
-                <Clock size={20} />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-full'>
+              <div className='flex justify-between items-start mb-4'>
+                <div className='p-3 bg-amber-500/10 text-amber-500 rounded-xl'>
+                  <Clock size={20} />
+                </div>
               </div>
+              <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
+                Tempo Médio p/ Converter
+              </p>
+              <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
+                {stats.time_to_convert_avg} dias
+              </h3>
             </div>
-            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
-              Tempo Médio p/ Converter
+          </TooltipTrigger>
+          <TooltipContent className='max-w-xs'>
+            <p className='font-semibold'>Tempo de Decisão</p>
+            <p className='text-muted-foreground'>
+              Tempo médio (em dias) que os usuários levam desde o cadastro inicial até o pagamento
+              da assinatura.
             </p>
-            <h3 className='text-2xl font-extrabold text-slate-900 dark:text-white'>
-              {stats.time_to_convert_avg} dias
-            </h3>
-          </div>
-        </InfoTooltip>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
@@ -192,7 +216,7 @@ const ConversionReport: React.FC = () => {
                   tick={{ fontSize: 11, fontWeight: 600, fill: '#94a3b8' }}
                 />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                <Tooltip
+                <RechartsTooltip
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                   contentStyle={{
                     borderRadius: '16px',

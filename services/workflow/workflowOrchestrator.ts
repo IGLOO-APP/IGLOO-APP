@@ -8,7 +8,7 @@ export const workflowOrchestrator = {
 
     // 1. Contratos: Verificar renovações
     const expiringContracts = await contractService.getExpiring(ownerId);
-    expiringContracts.forEach(c => {
+    expiringContracts.forEach((c) => {
       actions.push({
         id: `renew-${c.id}`,
         title: `Renovar contrato: ${c.tenant_name}`,
@@ -16,14 +16,14 @@ export const workflowOrchestrator = {
         priority: 'high',
         acao_pendente: {
           label: 'Renovar agora',
-          endpoint: `/api/contracts/${c.id}/renew`
-        }
+          endpoint: `/api/contracts/${c.id}/renew`,
+        },
       });
     });
 
     // 2. Manutenção: Verificar reparos pendentes
     const pendingMaintenance = await maintenanceService.getPending(ownerId);
-    pendingMaintenance.forEach(m => {
+    pendingMaintenance.forEach((m) => {
       actions.push({
         id: `repair-${m.id}`,
         title: `Manutenção: ${m.title}`,
@@ -31,11 +31,11 @@ export const workflowOrchestrator = {
         priority: 'medium',
         acao_pendente: {
           label: 'Ver reparo',
-          endpoint: `/api/manutencao/${m.id}/resolve`
-        }
+          endpoint: `/api/manutencao/${m.id}/resolve`,
+        },
       });
     });
 
     return actions;
-  }
+  },
 };

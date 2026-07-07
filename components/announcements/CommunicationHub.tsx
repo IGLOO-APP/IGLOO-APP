@@ -19,6 +19,9 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
 import { OwnerAnnouncement, AnnouncementType } from '../../types';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Card } from '../ui/card';
 import AnnouncementsHistoryModal from './AnnouncementsHistoryModal';
 import { executeWorkflowAction } from '../../services/workflow/workflowActions';
 
@@ -128,9 +131,9 @@ const AnnouncementRow: React.FC<{
           </h4>
 
           {ann.is_urgent && (
-            <span className='shrink-0 flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-widest'>
+            <Badge variant='destructive'>
               <Zap size={10} /> Urgente
-            </span>
+            </Badge>
           )}
         </div>
 
@@ -141,21 +144,21 @@ const AnnouncementRow: React.FC<{
 
         {/* Action button if applicable */}
         {(ann as any).acao_pendente && (
-          <button
+          <Button
             onClick={(e) => handleAction(e, (ann as any).acao_pendente.endpoint)}
-            className='mt-2 w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors'
+            variant='outline'
+            size='sm'
+            className='mt-2 w-full text-[10px] font-black uppercase tracking-widest rounded-lg'
           >
             {(ann as any).acao_pendente.label}
-          </button>
+          </Button>
         )}
 
         {/* Meta & Stats row */}
         <div className='flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 pt-1.5 border-t border-slate-100/50 dark:border-white/5'>
-          <span
-            className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-slate-50 dark:bg-white/[0.02] border-slate-200/60 dark:border-white/5 ${meta.color}`}
-          >
+          <Badge variant='outline' className={meta.color}>
             {meta.icon} {meta.label}
-          </span>
+          </Badge>
           <span className='inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
             {targetMeta.icon} {targetMeta.label}
           </span>
@@ -231,14 +234,14 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
 
   return (
     <div className='relative group h-full cursor-default'>
-      <div className='bg-white dark:bg-surface-dark h-full rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col relative overflow-hidden'>
+      <Card className='h-full flex flex-col relative overflow-hidden'>
         {/* Subtle bg icon */}
         <div className='absolute top-2 right-3 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity text-primary pointer-events-none'>
           <Megaphone className='w-20 h-20' />
         </div>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className='flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-slate-100 dark:border-white/5 relative z-10'>
+        <div className='flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border relative z-10'>
           <div className='flex items-center gap-3'>
             <div className='w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
               <Megaphone size={16} />
@@ -254,15 +257,16 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
           </div>
 
           {isOwner && (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onNewAnnouncement?.();
               }}
-              className='w-9 h-9 rounded-xl bg-primary text-white hover:bg-primary-dark shadow-lg shadow-primary/20 flex items-center justify-center transition-all active:scale-95'
+              size='icon'
+              className='rounded-xl shadow-lg shadow-primary/20'
             >
               <Plus size={18} />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -282,16 +286,18 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 </p>
               </div>
               {isOwner && (
-                <button
+                <Button
                   onClick={onNewAnnouncement}
-                  className='flex items-center gap-1.5 px-5 py-2.5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20'
+                  variant='default'
+                  size='sm'
+                  className='rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20'
                 >
                   <Plus size={14} /> Criar Comunicado
-                </button>
+                </Button>
               )}
             </div>
           ) : (
-                paginatedAnnouncements.map((ann) => (
+            paginatedAnnouncements.map((ann) => (
               <AnnouncementRow
                 key={ann.id}
                 ann={ann}
@@ -309,9 +315,9 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
         {announcements.length > 0 && (
           <div className='px-4 py-2 border-t border-slate-100 dark:border-white/5 flex items-center gap-2'>
             {urgentCount > 0 && (
-              <span className='flex items-center gap-1 px-2 py-1 rounded-full bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-widest'>
+              <Badge variant='destructive'>
                 <Zap size={10} /> {urgentCount}
-              </span>
+              </Badge>
             )}
             <span className='flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-600 font-medium'>
               <Bell size={12} /> {announcements.length} comunicado
@@ -322,12 +328,14 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
         <div className='px-3 py-2 border-t border-slate-100 dark:border-white/5 flex justify-between items-center'>
-          <button
+          <Button
             onClick={() => setShowHistoryModal(true)}
-            className='flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 dark:bg-black/20 border border-transparent hover:bg-slate-100 dark:hover:bg-white/5 hover:border-gray-100 dark:hover:border-white/5 transition-all text-[10px] font-black text-slate-400 uppercase tracking-widest'
+            variant='outline'
+            size='sm'
+            className='rounded-2xl text-[10px] font-black uppercase tracking-widest'
           >
             <History size={16} /> Histórico
-          </button>
+          </Button>
 
           {totalPages > 1 && (
             <div className='flex items-center gap-2'>
@@ -363,7 +371,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {user && (
         <AnnouncementsHistoryModal

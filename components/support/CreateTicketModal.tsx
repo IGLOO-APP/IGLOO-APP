@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { X, Wrench, DollarSign, HelpCircle, AlertTriangle, Sparkles } from 'lucide-react';
+import { Wrench, DollarSign, HelpCircle, AlertTriangle, Sparkles } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -78,34 +85,23 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   ];
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn'>
-      <div className='w-full max-w-lg max-h-[90vh] flex flex-col bg-white dark:bg-surface-dark border border-slate-200/60 dark:border-white/5 rounded-[32px] shadow-2xl overflow-hidden animate-scaleUp premium-glass'>
-        {/* Header - Encolhimento travado */}
-        <div className='px-6 py-4 border-b border-slate-200/60 dark:border-white/5 flex items-center justify-between shrink-0'>
-          <div>
-            <h2 className='text-base font-black text-slate-main dark:text-white tracking-tight uppercase'>
-              Abrir Novo Chamado
-            </h2>
-            <p className='text-[9px] text-slate-muted font-bold uppercase tracking-widest mt-0.5'>
-              Equipe de Suporte Igloo
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className='p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 transition-all'
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className='max-w-lg p-0 gap-0 overflow-hidden'>
+        {/* Header */}
+        <DialogHeader className='px-6 py-4 border-b border-border shrink-0'>
+          <DialogTitle className='text-base font-black tracking-tight uppercase'>
+            Abrir Novo Chamado
+          </DialogTitle>
+          <DialogDescription className='text-[9px] font-bold uppercase tracking-widest mt-0.5'>
+            Equipe de Suporte Igloo
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Form - Corpo rolável com scroll interno seguro */}
-        <form
-          onSubmit={handleSubmit}
-          className='p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar'
-        >
+        {/* Form */}
+        <form onSubmit={handleSubmit} className='p-6 space-y-4 overflow-y-auto max-h-[75vh]'>
           {/* Category Select */}
           <div className='space-y-2'>
-            <label className='text-[9px] font-black text-slate-muted uppercase tracking-widest px-1 block'>
+            <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Categoria do Chamado
             </label>
             <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
@@ -119,8 +115,8 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                     onClick={() => setCategory(cat.id)}
                     className={`p-2 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 border transition-all ${
                       isSelected
-                        ? 'border-primary bg-primary/5 dark:bg-primary/10 text-primary'
-                        : 'border-slate-200/60 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 text-slate-500'
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border hover:border-muted-foreground/30 text-muted-foreground'
                     }`}
                   >
                     <div className={`p-1.5 rounded-lg ${cat.color} transition-colors`}>
@@ -137,7 +133,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
 
           {/* Subject */}
           <div className='space-y-2'>
-            <label className='text-[9px] font-black text-slate-muted uppercase tracking-widest px-1 block'>
+            <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Assunto
             </label>
             <input
@@ -146,13 +142,13 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder='Ex: Erro ao gerar o boleto de aluguel'
-              className='w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 text-xs text-slate-main dark:text-white placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none'
+              className='w-full h-11 px-4 rounded-xl bg-muted border border-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none'
             />
           </div>
 
           {/* Description */}
           <div className='space-y-2'>
-            <label className='text-[9px] font-black text-slate-muted uppercase tracking-widest px-1 block'>
+            <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Descrição detalhada
             </label>
             <textarea
@@ -161,13 +157,13 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder='Descreva detalhadamente o seu problema para que nossa equipe possa ajudar de forma mais rápida...'
-              className='w-full p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200/60 dark:border-white/5 text-xs text-slate-main dark:text-white placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none resize-none'
+              className='w-full p-4 rounded-xl bg-muted border border-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none'
             />
           </div>
 
-          {/* Priority select */}
+          {/* Priority */}
           <div className='space-y-2'>
-            <label className='text-[9px] font-black text-slate-muted uppercase tracking-widest px-1 block'>
+            <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Prioridade
             </label>
             <div className='flex gap-2'>
@@ -176,11 +172,11 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                 const getPrioColor = () => {
                   if (prio === 'Baixa')
                     return isSelected
-                      ? 'bg-slate-500/10 text-slate-500 border-slate-500/30'
-                      : 'hover:border-slate-500/20';
+                      ? 'bg-muted text-foreground border-border'
+                      : 'hover:border-border/60';
                   if (prio === 'Média')
                     return isSelected
-                      ? 'bg-cyan-500/10 text-primary border-primary/30'
+                      ? 'bg-primary/10 text-primary border-primary/30'
                       : 'hover:border-primary/20';
                   if (prio === 'Alta')
                     return isSelected
@@ -196,9 +192,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                     type='button'
                     onClick={() => setPriority(prio)}
                     className={`flex-1 py-2 rounded-lg border text-[10px] font-bold transition-all ${getPrioColor()} ${
-                      isSelected
-                        ? 'border-2'
-                        : 'border-slate-200/60 dark:border-white/5 text-slate-500'
+                      isSelected ? 'border-2' : 'border-border text-muted-foreground'
                     }`}
                   >
                     {prio}
@@ -208,30 +202,30 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             </div>
           </div>
 
-          {/* Submit - Fica dentro da rolagem ou no rodapé do modal */}
-          <div className='flex gap-3 pt-2 shrink-0'>
+          {/* Actions */}
+          <div className='flex gap-3 pt-2'>
             <button
               type='button'
               onClick={onClose}
-              className='flex-1 py-3 rounded-xl border border-slate-200/60 dark:border-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all active-tap'
+              className='flex-1 py-3 rounded-xl border border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted transition-all'
             >
               Cancelar
             </button>
             <button
               type='submit'
               disabled={submitting || !subject.trim() || !description.trim()}
-              className='flex-grow py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[10px] font-black uppercase tracking-widest shadow-md shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all active-tap flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none'
+              className='flex-grow py-3 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none'
             >
               {submitting ? (
-                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                <div className='w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin' />
               ) : (
                 'Criar Chamado'
               )}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 export default CreateTicketModal;

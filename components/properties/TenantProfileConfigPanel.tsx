@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { RequirementStatus, TenantProfileConfig } from '../../types';
 import { tenantConfigService, TEMPLATES } from '../../services/tenancy/tenantConfigService';
-import { ToastContainer, ToastMessage } from '../ui/Toast';
+import { toast } from 'sonner';
 
 interface TenantProfileConfigPanelProps {
   propertyId: string;
@@ -55,19 +55,32 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
   const [config, setConfig] = useState<TenantProfileConfig>(
     tenantConfigService.getConfigForProperty(propertyId)
   );
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
 
   const [newSharedDoc, setNewSharedDoc] = useState('');
   const [newRequiredDoc, setNewRequiredDoc] = useState({ label: '', description: '' });
 
-  const addToast = (title: string, message: string, type: ToastMessage['type']) => {
-    const id = crypto.randomUUID().substring(0, 8);
-    setToasts((prev) => [...prev, { id, title, message, type }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+  const addToast = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning' | 'system' = 'info'
+  ) => {
+    switch (type) {
+      case 'success':
+        toast.success(title, { description: message });
+        break;
+      case 'error':
+        toast.error(title, { description: message });
+        break;
+      case 'warning':
+        toast.warning(title, { description: message });
+        break;
+      case 'system':
+      case 'info':
+      default:
+        toast.info(title, { description: message });
+        break;
+    }
   };
 
   const handleStatusChange = (
@@ -510,8 +523,7 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       >
         <Save size={20} /> Salvar Configurações
       </button>
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      {/* Toaster is rendered globally in App.tsx */}
     </div>
   );
 };
