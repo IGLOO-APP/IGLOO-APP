@@ -78,7 +78,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-lg'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-xl'>
         <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
           <DialogTitle className='text-xl font-bold'>
             {editingId
@@ -89,27 +89,27 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <div className='flex flex-col h-full w-full bg-background-light dark:bg-background-dark overflow-hidden'>
-          <div className='px-6 pt-2 pb-4 border-b border-gray-100 dark:border-white/5'>
-            <div className='flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl'>
+        <div className='flex flex-col w-full bg-background text-foreground'>
+          <div className='px-6 pt-2 pb-4 border-b border-border'>
+            <div className='flex bg-muted p-1 rounded-xl'>
               <button
                 onClick={() => onTypeChange('income')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionType === 'income' ? 'bg-white dark:bg-surface-dark text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionType === 'income' ? 'bg-background text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <TrendingUp size={16} /> Receita
               </button>
               <button
                 onClick={() => onTypeChange('expense')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionType === 'expense' ? 'bg-white dark:bg-surface-dark text-red-500 dark:text-red-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${transactionType === 'expense' ? 'bg-background text-red-500 dark:text-red-400 shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 <TrendingUp size={16} className='rotate-180' /> Despesa
               </button>
             </div>
           </div>
 
-          <div className='flex-1 overflow-y-auto p-6 space-y-6'>
+          <div className='p-6 space-y-6'>
             <div>
-              <label className='text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block text-center'>
+              <label className='text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block text-center'>
                 Valor do Lançamento
               </label>
               <div
@@ -125,7 +125,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   type='number'
                   value={txValue}
                   onChange={(e) => onValueChange(e.target.value)}
-                  className={`w-40 bg-transparent text-4xl font-black focus:outline-none text-center ${transactionType === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} placeholder-slate-300`}
+                  className={`w-40 bg-transparent text-4xl font-black focus:outline-none text-center ${transactionType === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} placeholder:text-muted-foreground`}
                   placeholder='0,00'
                 />
               </div>
@@ -140,7 +140,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   type='text'
                   value={txDescription}
                   onChange={(e) => onDescriptionChange(e.target.value)}
-                  className='w-full px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-base dark:text-white focus:outline-none focus:border-primary transition-colors'
+                  className='w-full px-4 py-3 bg-muted border border-input rounded-xl text-base text-foreground focus:outline-none focus:border-primary transition-colors'
                   placeholder={
                     transactionType === 'expense' ? 'Ex: Conserto do portão' : 'Ex: Aluguel Apt 104'
                   }
@@ -160,7 +160,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     <select
                       value={txCategory}
                       onChange={(e) => onCategoryChange(e.target.value)}
-                      className='w-full pl-10 pr-8 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                      className='w-full pl-10 pr-8 py-3 bg-muted border border-input rounded-xl text-sm font-medium text-foreground focus:outline-none focus:border-primary appearance-none'
                     >
                       <option value='' disabled>
                         Selecione
@@ -200,14 +200,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                       type='date'
                       value={txDate}
                       onChange={(e) => onDateChange(e.target.value)}
-                      className='w-full pl-10 pr-3 py-3 bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:border-primary dark:text-white'
+                      className='w-full pl-10 pr-3 py-3 bg-muted border border-input rounded-xl text-sm font-medium focus:outline-none focus:border-primary text-foreground'
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className='bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5 space-y-4'>
+            <div className='bg-muted/50 p-4 rounded-xl border border-border space-y-4'>
               <div className='flex items-center gap-2 mb-2'>
                 <Building2 size={16} className='text-primary' />
                 <span className='text-xs font-bold uppercase tracking-wider text-slate-500'>
@@ -226,7 +226,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   <select
                     value={txProperty}
                     onChange={(e) => onPropertyChange(e.target.value)}
-                    className='w-full pl-10 pr-8 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium dark:text-white focus:outline-none focus:border-primary appearance-none'
+                    className='w-full pl-10 pr-8 py-3 bg-muted border border-input rounded-xl text-sm font-medium text-foreground focus:outline-none focus:border-primary appearance-none'
                   >
                     <option value=''>Geral (Sem vínculo)</option>
                     {properties.map((p) => (
@@ -246,7 +246,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             <div className='space-y-4'>
               <div
                 onClick={() => onRecurringChange(!isRecurring)}
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${isRecurring ? 'bg-primary/5 border-primary/30' : 'bg-white dark:bg-surface-dark border-slate-200 dark:border-white/10'}`}
+                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${isRecurring ? 'bg-primary/5 border-primary/30' : 'bg-card border-border'}`}
               >
                 <div className='flex items-center gap-3'>
                   <div
@@ -273,13 +273,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl'>
                 <button
                   onClick={() => onStatusChange('paid')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${txStatus === 'paid' ? 'bg-white dark:bg-surface-dark text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-500'}`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${txStatus === 'paid' ? 'bg-background text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-muted-foreground'}`}
                 >
                   <CheckCircle size={16} /> {transactionType === 'income' ? 'Recebido' : 'Pago'}
                 </button>
                 <button
                   onClick={() => onStatusChange('pending')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${txStatus === 'pending' ? 'bg-white dark:bg-surface-dark text-orange-500 dark:text-orange-400 shadow-sm' : 'text-slate-500'}`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${txStatus === 'pending' ? 'bg-background text-orange-500 dark:text-orange-400 shadow-sm' : 'text-muted-foreground'}`}
                 >
                   <Clock size={16} /> Pendente
                 </button>
@@ -294,7 +294,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className={`w-full py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all ${hasAttachment ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/10 dark:border-emerald-800 dark:text-emerald-400' : 'border-slate-200 dark:border-white/10 text-slate-500 hover:border-primary/50 hover:bg-primary/5 hover:text-primary'}`}
+                  className={`w-full py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all ${hasAttachment ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/10 dark:border-emerald-800 dark:text-emerald-400' : 'border-border text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary'}`}
                 >
                   {hasAttachment ? (
                     <>
@@ -312,7 +312,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
           <form
             onSubmit={onSave}
-            className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20'
+            className='flex-none p-6 pt-4 bg-background border-t border-border z-20'
           >
             <button
               type='submit'

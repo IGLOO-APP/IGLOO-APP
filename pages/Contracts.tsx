@@ -150,9 +150,9 @@ const Contracts: React.FC = () => {
       <TopBar title='Gestão de Contratos' subtitle='Ciclo de vida e assinaturas digitais'>
         <button
           onClick={() => setShowWizard(true)}
-          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary hover:bg-primary-dark text-white px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 transition-all active:scale-95'
+          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
         >
-          <Plus size={18} className='md:size-5' />
+          <Plus size={16} className='md:size-[18px]' />
           <span className='hidden sm:inline'>Novo Contrato</span>
         </button>
       </TopBar>

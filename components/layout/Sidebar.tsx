@@ -48,21 +48,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${
-                      isActive
-                        ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
-                        : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                    `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${isActive
+                      ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <Icon
-                        className={`transition-colors duration-300 ${
-                          isActive
+                        className={`transition-colors duration-300 ${isActive
                             ? 'text-white'
                             : 'text-slate-500 dark:text-zinc-400'
-                        }`}
+                          }`}
                         size={24}
                       />
                       <span className='text-sm tracking-wide'>{item.label}</span>
@@ -87,21 +85,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-                        `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${
-                          isActive
-                            ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
-                            : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                        `flex items-center gap-4 px-6 py-3 rounded-full transition-all duration-300 ${isActive
+                          ? 'bg-sky-400 text-white dark:bg-white/20 dark:border dark:border-white/20 dark:text-white scale-95 shadow-[0_4px_30px_rgba(0,0,0,0.05)] font-bold'
+                          : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                         }`
                       }
                     >
                       {({ isActive }) => (
                         <>
                           <Icon
-                            className={`transition-colors duration-300 ${
-                              isActive
+                            className={`transition-colors duration-300 ${isActive
                                 ? 'text-white'
                                 : 'text-slate-500 dark:text-zinc-400'
-                            }`}
+                              }`}
                             size={24}
                           />
                           <span className='text-sm tracking-wide'>{item.label}</span>

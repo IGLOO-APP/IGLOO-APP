@@ -50,7 +50,7 @@ export const UserPlanModal: React.FC<UserPlanModalProps> = ({
                 <button
                   key={p}
                   onClick={() => setNewPlan(p)}
-                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${newPlan === p ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-50'}`}
+                  className={`flex items-center justify-between p-4 rounded-xl border transition-all ${newPlan === p ? 'bg-primary/5 border-primary text-primary shadow-sm' : 'bg-card border-border text-muted-foreground hover:bg-muted'}`}
                 >
                   <span className='font-bold'>{p}</span>
                   {newPlan === p && <CheckCircle size={18} />}
@@ -59,16 +59,16 @@ export const UserPlanModal: React.FC<UserPlanModalProps> = ({
             </div>
           </div>
 
-          <div className='flex gap-3 pt-4 border-t border-gray-100 dark:border-white/10'>
+          <div className='flex gap-3 pt-4 border-t border-border'>
             <button
               onClick={onClose}
-              className='flex-1 h-12 rounded-xl text-slate-500 font-bold hover:bg-slate-100 transition-all'
+              className='flex-1 h-12 rounded-xl text-muted-foreground font-bold hover:bg-muted transition-all'
             >
               Cancelar
             </button>
             <button
               onClick={onUpdatePlan}
-              className='flex-1 h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-95'
+              className='flex-1 h-12 bg-primary text-primary-foreground rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
             >
               Confirmar Alteração
             </button>

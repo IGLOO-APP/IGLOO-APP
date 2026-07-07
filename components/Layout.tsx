@@ -43,15 +43,17 @@ const Layout: React.FC = () => {
   return (
     <SidebarProvider className='h-full w-full overflow-hidden'>
       <div className='flex h-full w-full overflow-hidden bg-background text-foreground'>
-        <Sidebar
-          navItems={navItems}
-          adminItems={adminItems}
-          user={user}
-          impersonatingFrom={impersonatingFrom}
-          isDark={isDark}
-          toggleTheme={toggleTheme}
-          logout={logout}
-        />
+        <div className='hidden md:block shrink-0'>
+          <Sidebar
+            navItems={navItems}
+            adminItems={adminItems}
+            user={user}
+            impersonatingFrom={impersonatingFrom}
+            isDark={isDark}
+            toggleTheme={toggleTheme}
+            logout={logout}
+          />
+        </div>
 
         <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-background text-foreground'>
         {impersonatingFrom && (

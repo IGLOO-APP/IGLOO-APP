@@ -186,7 +186,7 @@ const Dashboard: React.FC = () => {
                 >
                   <CarouselContent className='ml-0'>
                     {properties.slice(0, 5).map((prop) => (
-                      <CarouselItem key={prop.id} className='basis-[85%] p-2'>
+                      <CarouselItem key={prop.id} className='basis-full p-2'>
                         <PropertyCard
                           property={prop}
                           onClick={(p) => navigate(`/properties?id=${p.id}`)}

@@ -33,7 +33,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
         </DialogHeader>
         <div className='p-8 space-y-8'>
           <div className='flex items-center gap-6'>
-            <div className='w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-white/5 dark:to-white/10 flex items-center justify-center text-slate-600 dark:text-white text-3xl font-black shadow-inner'>
+            <div className='w-20 h-20 rounded-3xl bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center text-foreground text-3xl font-black shadow-inner'>
               {user.name ? user.name.charAt(0) : '?'}
             </div>
             <div>
@@ -53,11 +53,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
           </div>
 
           <div className='grid grid-cols-2 gap-6'>
-            <div className='p-5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/5'>
-              <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1'>
+            <div className='p-5 rounded-2xl bg-muted/50 border border-border'>
+              <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1'>
                 Cadastro
               </p>
-              <p className='font-bold text-slate-700 dark:text-slate-200'>
+              <p className='font-bold text-foreground'>
                 {new Date((user as any).created_at || Date.now()).toLocaleDateString('pt-BR', {
                   day: '2-digit',
                   month: 'long',
@@ -65,15 +65,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 })}
               </p>
             </div>
-            <div className='p-5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-gray-100 dark:border-white/5'>
-              <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1'>
+            <div className='p-5 rounded-2xl bg-muted/50 border border-border'>
+              <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1'>
                 Status da Conta
               </p>
               <div className='flex items-center gap-2'>
                 <div
                   className={`w-2 h-2 rounded-full ${!user.is_suspended ? 'bg-emerald-500' : 'bg-rose-500'}`}
                 ></div>
-                <p className='font-bold text-slate-700 dark:text-slate-200'>
+                <p className='font-bold text-foreground'>
                   {!user.is_suspended ? 'Ativo' : 'Suspenso'}
                 </p>
               </div>
@@ -85,7 +85,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
               <ShieldAlert size={16} className='text-primary' /> Métricas de Uso
             </h4>
             <div className='grid grid-cols-3 gap-4'>
-              <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              <div className='text-center p-4 rounded-2xl border border-border bg-card shadow-sm dark:shadow-none'>
                 {isLoading ? (
                   <div className='flex justify-center p-2'>
                     <Loader2 className='animate-spin text-primary' size={20} />
@@ -97,7 +97,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 )}
                 <p className='text-[10px] font-bold text-slate-400 uppercase'>Imóveis</p>
               </div>
-              <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              <div className='text-center p-4 rounded-2xl border border-border bg-card shadow-sm dark:shadow-none'>
                 {isLoading ? (
                   <div className='flex justify-center p-2'>
                     <Loader2 className='animate-spin text-primary' size={20} />
@@ -109,7 +109,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 )}
                 <p className='text-[10px] font-bold text-slate-400 uppercase'>Inquilinos</p>
               </div>
-              <div className='text-center p-4 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-transparent shadow-sm dark:shadow-none'>
+              <div className='text-center p-4 rounded-2xl border border-border bg-card shadow-sm dark:shadow-none'>
                 {isLoading ? (
                   <div className='flex justify-center p-2'>
                     <Loader2 className='animate-spin text-primary' size={20} />
@@ -130,9 +130,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
             </h4>
             <div className='space-y-2'>
               {isLoading ? (
-                <div className='flex items-center justify-center p-8 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10'>
+                <div className='flex items-center justify-center p-8 bg-muted/30 rounded-xl border border-dashed border-border'>
                   <Loader2 className='animate-spin text-primary mr-2' size={20} />
-                  <span className='text-sm text-slate-400 font-medium'>
+                  <span className='text-sm text-muted-foreground font-medium'>
                     Carregando histórico...
                   </span>
                 </div>
@@ -140,9 +140,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 stats.payments.map((pay, i) => (
                   <div
                     key={i}
-                    className='flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-white/5 text-sm transition-all hover:bg-slate-100 dark:hover:bg-white/10'
+                    className='flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border text-sm transition-all hover:bg-accent'
                   >
-                    <span className='font-bold text-slate-700 dark:text-slate-300 uppercase text-[11px] tracking-tight'>
+                    <span className='font-bold text-foreground uppercase text-[11px] tracking-tight'>
                       {pay.month}
                     </span>
                     <div className='flex items-center gap-4'>
@@ -154,8 +154,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                   </div>
                 ))
               ) : (
-                <div className='flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10 opacity-60'>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>
+                <div className='flex flex-col items-center justify-center p-8 bg-muted/30 rounded-xl border border-dashed border-border opacity-60'>
+                  <p className='text-xs font-bold text-muted-foreground uppercase tracking-widest'>
                     Nenhum pagamento registrado
                   </p>
                 </div>

@@ -48,7 +48,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
     <div className='relative group'>
       <button
         onClick={() => setActiveDropdown(activeDropdown === label ? null : label)}
-        className='flex items-center gap-2 px-4 py-3 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-all min-w-[140px] justify-between'
+        className='flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl shadow-sm text-sm font-bold text-card-foreground hover:bg-muted transition-all min-w-[140px] justify-between'
       >
         <span className='truncate'>
           {label}: {value}
@@ -62,7 +62,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
       {activeDropdown === label && (
         <>
           <div className='fixed inset-0 z-10' onClick={() => setActiveDropdown(null)}></div>
-          <div className='absolute top-full left-0 mt-2 w-full bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 py-2 z-20 animate-scaleUp origin-top'>
+          <div className='absolute top-full left-0 mt-2 w-full bg-card rounded-2xl shadow-xl border border-border py-2 z-20 animate-scaleUp origin-top'>
             {options.map((opt) => (
               <button
                 key={opt}
@@ -70,7 +70,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
                   onChange(opt);
                   setActiveDropdown(null);
                 }}
-                className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors ${value === opt ? 'text-primary bg-primary/5' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors ${value === opt ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:bg-muted'}`}
               >
                 {opt}
               </button>
@@ -94,20 +94,20 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             placeholder='Buscar por nome, email...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className='w-full pl-12 pr-4 py-3 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-slate-900 dark:text-white font-medium'
+            className='w-full pl-12 pr-4 py-3 bg-muted border border-input rounded-2xl shadow-sm focus:ring-2 focus:ring-ring focus:border-transparent transition-all outline-none text-foreground placeholder:text-muted-foreground font-medium'
           />
         </div>
 
         <div className='flex gap-3'>
           <button
             onClick={onExportCSV}
-            className='px-6 py-3 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95'
+            className='px-6 py-3 bg-muted text-muted-foreground font-bold rounded-2xl hover:bg-accent transition-all active:scale-95 border border-border'
           >
             Exportar CSV
           </button>
           <button
             onClick={onAddOwner}
-            className='px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all active:scale-95 flex items-center gap-2'
+            className='px-6 py-3 bg-primary text-primary-foreground font-bold rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2'
           >
             <UserPlus size={18} />
             Adicionar Proprietário

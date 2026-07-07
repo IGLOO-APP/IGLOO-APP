@@ -240,7 +240,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
   );
 
   const templatesPanel = (
-    <div className='w-72 shrink-0 border-l border-border bg-muted/30 p-5 overflow-y-auto max-h-[580px]'>
+    <div className='w-full md:w-72 shrink-0 border-t md:border-t-0 md:border-l border-border bg-muted/30 p-5 overflow-y-auto max-h-[300px] md:max-h-[580px]'>
       <div className='flex items-center gap-2 mb-5'>
         <div className='w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
           <Megaphone size={14} />
@@ -547,7 +547,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 
       <div className='bg-card text-card-foreground w-full max-w-4xl max-h-[90vh] rounded-[32px] shadow-2xl border border-border overflow-hidden animate-scaleUp z-10 flex flex-col'>
         {/* Header */}
-        <div className='px-8 py-6 border-b border-border flex justify-between items-center bg-muted/30'>
+        <div className='px-6 sm:px-8 py-4 sm:py-6 border-b border-border flex justify-between items-center bg-muted/30'>
           <div className='flex items-center gap-3'>
             <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
               <Megaphone size={20} strokeWidth={2.5} />
@@ -570,13 +570,13 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className='flex overflow-y-auto flex-1 min-h-0'>
-          <div className='flex-1 p-8'>{step === 1 ? step1Form : step2Content}</div>
+        <div className='flex flex-col md:flex-row overflow-y-auto flex-1 min-h-0'>
+          <div className='flex-1 p-5 sm:p-8'>{step === 1 ? step1Form : step2Content}</div>
           {step === 1 && templatesPanel}
         </div>
 
         {/* Footer */}
-        <div className='px-8 py-6 bg-muted/30 border-t border-border flex gap-3'>
+        <div className='px-6 sm:px-8 py-4 sm:py-6 bg-muted/30 border-t border-border flex gap-3'>
           {step === 2 && (
             <button
               onClick={() => setStep(1)}

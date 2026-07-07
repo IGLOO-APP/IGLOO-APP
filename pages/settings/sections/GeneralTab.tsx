@@ -29,10 +29,10 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
 
   return (
     <div className='animate-fadeIn space-y-6 max-w-2xl'>
-      <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
-        <div className='flex flex-col md:flex-row items-center gap-6 mb-8 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700'>
+      <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+        <div className='flex flex-col md:flex-row items-center gap-6 mb-8 p-4 bg-muted/50 rounded-2xl border border-dashed border-border'>
           <div className='relative'>
-            <div className='w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-surface-dark shadow-xl bg-slate-200'>
+            <div className='w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl bg-muted'>
               {profileData.avatarUrl ? (
                 <img
                   src={profileData.avatarUrl}
@@ -76,11 +76,11 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <input
                 value={profileData.email}
                 disabled
-                className='flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-gray-200 dark:border-gray-800 text-slate-500 outline-none cursor-not-allowed text-sm'
+                className='flex-1 px-4 py-3 rounded-xl bg-muted/70 border border-border text-muted-foreground outline-none cursor-not-allowed text-sm'
               />
               <button
                 onClick={onOpenUserProfile}
-                className='px-4 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 dark:text-white'
+                className='px-4 py-2 bg-muted border border-border rounded-xl text-xs font-bold hover:bg-accent transition-colors flex items-center gap-2 text-foreground'
               >
                 Alterar e-mail <ArrowRight size={14} />
               </button>
@@ -93,7 +93,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
             <input
               value={profileData.name}
               onChange={(e) => update('name', e.target.value)}
-              className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
+              className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
             />
           </div>
           {(user?.role === 'owner' || user?.role === 'admin') && (
@@ -104,7 +104,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <input
                 value={profileData.companyName}
                 onChange={(e) => update('companyName', e.target.value)}
-                className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
+                className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
               />
             </div>
           )}
@@ -115,20 +115,20 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
             <input
               value={profileData.phone}
               onChange={(e) => update('phone', e.target.value)}
-              className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 outline-none focus:border-primary transition-colors dark:text-white'
+              className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
               placeholder='(00) 00000-0000'
             />
           </div>
         </div>
       </div>
-      <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5'>
-        <h3 className='font-bold text-slate-900 dark:text-white text-lg mb-4'>Segurança</h3>
-        <p className='text-sm text-slate-500 mb-6'>
+      <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+        <h3 className='font-bold text-foreground text-lg mb-4'>Segurança</h3>
+        <p className='text-sm text-muted-foreground mb-6'>
           Gerencie sua senha, autenticação de dois fatores e sessões ativas.
         </p>
         <button
           onClick={onOpenUserProfile}
-          className='flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]'
+          className='flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all active:scale-[0.98]'
         >
           <ShieldCheck size={24} />
           <div className='text-left'>

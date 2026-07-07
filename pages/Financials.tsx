@@ -70,9 +70,9 @@ const Financials: React.FC = () => {
           </button>
           <button
             onClick={() => h.setShowAddForm(true)}
-            className='flex h-9 md:h-11 px-3 md:px-4 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all gap-2 font-bold text-xs md:text-sm active:scale-95'
+            className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
           >
-            <Plus size={18} /> <span className='hidden md:inline'>Nova Receita</span>
+            <Plus size={16} className='md:size-[18px]' /> <span className='hidden md:inline'>Nova Receita</span>
           </button>
         </div>
       </TopBar>
