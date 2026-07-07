@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import {
   FileText,
-  Download,
   ExternalLink,
   Calendar,
   DollarSign,
@@ -10,12 +9,19 @@ import {
   Building2,
   Clock,
   CheckCircle,
-  XCircle,
   PenTool,
 } from 'lucide-react';
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+
 import { contractService } from '../../services/tenancy/contractService';
 import { Contract } from '../../types';
-import { getStatusColor, getStatusLabel } from '../../utils/contractLogic';
+import { getStatusLabel } from '../../utils/contractLogic';
 
 interface ContextType {
   isOnboardingRequired: boolean;
@@ -27,7 +33,6 @@ interface ContextType {
 
 const TenantContract: React.FC = () => {
   const { tenantData } = useOutletContext<ContextType>();
-  const navigate = useNavigate();
   const [contract, setContract] = useState<Contract | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,31 +57,34 @@ const TenantContract: React.FC = () => {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark'>
-        <div className='flex flex-col items-center gap-4'>
-          <div className='w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center'>
-            <div className='w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin' />
-          </div>
-          <p className='text-sm font-bold text-slate-500 animate-pulse'>Carregando contrato...</p>
-        </div>
+      <div className='min-h-screen bg-background p-4 md:p-8 max-w-4xl mx-auto space-y-6'>
+        <Skeleton className='h-8 w-48' />
+        <Skeleton className='h-4 w-64' />
+        <Card>
+          <CardContent className='grid grid-cols-2 gap-4 pt-6'>
+            <Skeleton className='h-16' />
+            <Skeleton className='h-16' />
+            <Skeleton className='h-16' />
+            <Skeleton className='h-16' />
+            <Skeleton className='h-2 col-span-2' />
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!contract) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark p-6'>
-        <div className='text-center max-w-md'>
-          <div className='w-20 h-20 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-6'>
-            <FileText size={40} className='text-slate-300' />
-          </div>
-          <h2 className='text-xl font-bold text-slate-900 dark:text-white mb-2'>
-            Nenhum contrato encontrado
-          </h2>
-          <p className='text-slate-500 text-sm'>
-            Você ainda não possui um contrato de locação ativo.
-          </p>
-        </div>
+      <div className='flex items-center justify-center min-h-screen bg-background p-6'>
+        <Card className='max-w-md'>
+          <CardHeader className='items-center text-center pb-2'>
+            <div className='mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted'>
+              <FileText size={40} className='text-muted-foreground' />
+            </div>
+            <CardTitle>Nenhum contrato encontrado</CardTitle>
+            <CardDescription>Você ainda não possui um contrato de locação ativo.</CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
@@ -91,201 +99,193 @@ const TenantContract: React.FC = () => {
   };
 
   return (
-    <div className='min-h-screen bg-background-light dark:bg-background-dark p-4 md:p-8 max-w-4xl mx-auto'>
-      <div className='flex items-center justify-between mb-6'>
-        <div>
-          <h1 className='text-2xl font-black text-slate-900 dark:text-white'>Meu Contrato</h1>
-          <p className='text-sm text-slate-500'>Detalhes do contrato de locação</p>
+    <div className='min-h-screen bg-background p-4 md:p-8 max-w-4xl mx-auto space-y-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div className='space-y-1'>
+          <h1 className='text-2xl font-semibold tracking-tight'>Meu Contrato</h1>
+          <p className='text-sm text-muted-foreground'>Detalhes do contrato de locação</p>
         </div>
-        <div
-          className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusColor(contract.status)}`}
-        >
+        <Badge variant={contract.status === 'active' ? 'default' : 'secondary'}>
           {getStatusLabel(contract.status)}
-        </div>
+        </Badge>
       </div>
 
-      <div className='grid gap-6'>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm p-6 space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div className='space-y-4'>
-              <div className='flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
-                <Building2 size={18} className='text-primary shrink-0' />
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>Imóvel</p>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                    {contract.property}
-                  </p>
-                </div>
-              </div>
-              <div className='flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
-                <User size={18} className='text-primary shrink-0' />
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>Proprietário</p>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                    {contract.owner_name}
-                  </p>
-                </div>
-              </div>
-              <div className='flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
-                <FileText size={18} className='text-primary shrink-0' />
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>Contrato</p>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                    Ref: {contract.contract_number}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className='space-y-4'>
-              <div className='flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl'>
-                <DollarSign size={18} className='text-emerald-500 shrink-0' />
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>Valor Mensal</p>
-                  <p className='text-lg font-black text-emerald-600 dark:text-emerald-400'>
-                    {contract.value}
-                  </p>
-                  <p className='text-[10px] text-emerald-500/60 font-bold'>
-                    Vencimento dia {contract.payment_day}
-                  </p>
-                </div>
-              </div>
-              <div className='flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
-                <Calendar size={18} className='text-primary shrink-0' />
-                <div className='flex-1 flex justify-between'>
-                  <div>
-                    <p className='text-[10px] font-bold text-slate-400 uppercase'>Início</p>
-                    <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                      {new Date(contract.start_date).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                  <div className='text-right'>
-                    <p className='text-[10px] font-bold text-slate-400 uppercase'>Término</p>
-                    <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                      {new Date(contract.end_date).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className='flex justify-between items-center mb-2'>
-              <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-                Vigência
+      <Card>
+        <CardHeader>
+          <CardTitle className='text-base'>Informações do Contrato</CardTitle>
+          <CardDescription>Ref: {contract.contract_number}</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='space-y-1.5'>
+              <span className='text-xs text-muted-foreground flex items-center gap-1.5'>
+                <Building2 size={14} className='text-primary' /> Imóvel
               </span>
-              <span className='text-[10px] font-black text-primary'>{calculateProgress()}%</span>
+              <p className='text-sm font-medium text-card-foreground'>{contract.property}</p>
             </div>
-            <div className='w-full h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden'>
-              <div
-                className='h-full bg-primary rounded-full transition-all duration-1000'
-                style={{ width: `${calculateProgress()}%` }}
-              ></div>
+            <div className='space-y-1.5'>
+              <span className='text-xs text-muted-foreground flex items-center gap-1.5'>
+                <User size={14} className='text-primary' /> Proprietário
+              </span>
+              <p className='text-sm font-medium text-card-foreground'>{contract.owner_name}</p>
+            </div>
+            <div className='space-y-1.5'>
+              <span className='text-xs text-muted-foreground flex items-center gap-1.5'>
+                <Calendar size={14} className='text-primary' /> Início
+              </span>
+              <p className='text-sm font-medium text-card-foreground'>
+                {new Date(contract.start_date).toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+            <div className='space-y-1.5'>
+              <span className='text-xs text-muted-foreground flex items-center gap-1.5'>
+                <Calendar size={14} className='text-primary' /> Término
+              </span>
+              <p className='text-sm font-medium text-card-foreground'>
+                {new Date(contract.end_date).toLocaleDateString('pt-BR')}
+              </p>
             </div>
           </div>
-        </div>
 
-        {contract.security_deposit ? (
-          <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm p-6'>
-            <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4'>
-              <DollarSign size={18} className='text-primary' /> Garantia
-            </h3>
-            <p className='text-sm text-slate-600 dark:text-slate-300'>
+          <Separator />
+
+          <div className='flex items-center justify-between rounded-lg border bg-card p-4'>
+            <div className='space-y-0.5'>
+              <span className='text-xs text-muted-foreground flex items-center gap-1.5'>
+                <DollarSign size={14} className='text-emerald-500' /> Valor Mensal
+              </span>
+              <p className='text-lg font-semibold text-emerald-600 dark:text-emerald-400'>
+                {contract.value}
+              </p>
+              <p className='text-xs text-muted-foreground'>Vencimento dia {contract.payment_day}</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <span className='text-xs text-muted-foreground'>Vigência</span>
+              <span className='text-xs font-medium text-primary'>{calculateProgress()}%</span>
+            </div>
+            <Progress value={calculateProgress()} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {contract.security_deposit && (
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2 text-base'>
+              <DollarSign size={16} className='text-primary' /> Garantia
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='text-sm text-muted-foreground'>
               Caução:{' '}
-              <strong>
-                R$ {contract.security_deposit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </strong>
+              <span className='font-medium text-card-foreground'>
+                R${' '}
+                {contract.security_deposit.toLocaleString('pt-BR', {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </p>
-          </div>
-        ) : null}
+          </CardContent>
+        </Card>
+      )}
 
-        {contract.condominium_value ? (
-          <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm p-6'>
-            <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4'>
-              <DollarSign size={18} className='text-primary' /> Encargos
-            </h3>
-            <div className='grid grid-cols-2 gap-4'>
-              {contract.condominium_value ? (
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>Condomínio</p>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white'>
+      {contract.condominium_value && (
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2 text-base'>
+              <DollarSign size={16} className='text-primary' /> Encargos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className='grid grid-cols-2 gap-4'>
+              <div className='space-y-1'>
+                <dt className='text-xs text-muted-foreground'>Condomínio</dt>
+                <dd className='text-sm font-medium text-card-foreground'>
+                  R${' '}
+                  {contract.condominium_value.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}
+                </dd>
+              </div>
+              {contract.iptu_value && (
+                <div className='space-y-1'>
+                  <dt className='text-xs text-muted-foreground'>IPTU</dt>
+                  <dd className='text-sm font-medium text-card-foreground'>
                     R${' '}
-                    {contract.condominium_value.toLocaleString('pt-BR', {
+                    {contract.iptu_value.toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
                     })}
-                  </p>
+                  </dd>
                 </div>
-              ) : null}
-              {contract.iptu_value ? (
-                <div>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase'>IPTU</p>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                    R$ {contract.iptu_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
+              )}
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
-        {contract.signers && contract.signers.length > 0 && (
-          <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm p-6'>
-            <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4'>
-              <PenTool size={18} className='text-primary' /> Assinaturas
-            </h3>
-            <div className='space-y-3'>
-              {contract.signers.map((signer, idx) => (
-                <div
-                  key={signer.id || idx}
-                  className='flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl'
-                >
-                  <div className='flex items-center gap-3'>
-                    {signer.status === 'signed' ? (
-                      <CheckCircle size={18} className='text-emerald-500' />
-                    ) : (
-                      <Clock size={18} className='text-amber-500' />
-                    )}
-                    <div>
-                      <p className='text-sm font-bold text-slate-900 dark:text-white'>
-                        {signer.name}
-                      </p>
-                      <p className='text-[10px] text-slate-500'>
-                        {signer.role === 'owner'
-                          ? 'Proprietário'
-                          : signer.role === 'tenant'
-                            ? 'Inquilino'
-                            : 'Fiador'}
-                      </p>
-                    </div>
+      {contract.signers && contract.signers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2 text-base'>
+              <PenTool size={16} className='text-primary' /> Assinaturas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-3'>
+            {contract.signers.map((signer, idx) => (
+              <div
+                key={signer.id || idx}
+                className='flex items-center justify-between rounded-lg border p-3'
+              >
+                <div className='flex items-center gap-3'>
+                  {signer.status === 'signed' ? (
+                    <CheckCircle size={18} className='text-emerald-500' />
+                  ) : (
+                    <Clock size={18} className='text-amber-500' />
+                  )}
+                  <div>
+                    <p className='text-sm font-medium leading-none text-card-foreground'>
+                      {signer.name}
+                    </p>
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      {signer.role === 'owner'
+                        ? 'Proprietário'
+                        : signer.role === 'tenant'
+                          ? 'Inquilino'
+                          : 'Fiador'}
+                    </p>
                   </div>
-                  <span
-                    className={`text-[10px] font-bold uppercase ${signer.status === 'signed' ? 'text-emerald-500' : 'text-amber-500'}`}
-                  >
-                    {signer.status === 'signed' ? 'Assinou' : 'Pendente'}
-                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+                <Badge variant={signer.status === 'signed' ? 'default' : 'outline'}>
+                  {signer.status === 'signed' ? 'Assinou' : 'Pendente'}
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-        {contract.pdf_url && (
-          <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm p-6'>
-            <h3 className='font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4'>
-              <FileText size={18} className='text-primary' /> Documento
-            </h3>
-            <a
-              href={contract.pdf_url}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold text-sm transition-all'
-            >
-              <ExternalLink size={18} /> Visualizar Contrato Completo
-            </a>
-          </div>
-        )}
-      </div>
+      {contract.pdf_url && (
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2 text-base'>
+              <FileText size={16} className='text-primary' /> Documento
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant='secondary' className='w-full' asChild>
+              <a href={contract.pdf_url} target='_blank' rel='noopener noreferrer'>
+                <ExternalLink size={16} />
+                Visualizar Contrato Completo
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

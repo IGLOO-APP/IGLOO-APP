@@ -7,8 +7,17 @@ import {
   BarChart3,
   Loader2,
   Trash2,
-  AlertTriangle,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useLocation } from 'react-router-dom';
 import { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/contracts/ContractCard';
@@ -285,41 +294,30 @@ const Contracts: React.FC = () => {
         />
       )}
 
-      {deletingContract && (
-        <div className='fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn'>
-          <div className='bg-card text-card-foreground rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6'>
-            <div className='flex flex-col items-center text-center gap-3'>
-              <div className='w-14 h-14 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center'>
-                <AlertTriangle size={28} className='text-red-500' />
-              </div>
-              <div>
-                <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
-                  Excluir Contrato?
-                </h3>
-                <p className='text-sm text-slate-500 mt-1'>
-                  Esta ação irá excluir permanentemente o contrato{' '}
-                  <strong>{deletingContract.contract_number}</strong> para{' '}
-                  <strong>{deletingContract.tenant_name}</strong>. Não é possível desfazer.
-                </p>
-              </div>
-            </div>
-            <div className='flex gap-3'>
-              <button
-                onClick={() => setDeletingContract(null)}
-                className='flex-1 py-3 rounded-xl bg-muted text-foreground font-bold text-sm hover:bg-accent transition-all'
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDeleteContract}
-                className='flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-lg shadow-red-500/20'
-              >
-                Sim, Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog
+        open={!!deletingContract}
+        onOpenChange={(v) => !v && setDeletingContract(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Contrato?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá excluir permanentemente o contrato{' '}
+              <strong>{deletingContract?.contract_number}</strong> para{' '}
+              <strong>{deletingContract?.tenant_name}</strong>. Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteContract}
+              className='bg-destructive hover:bg-destructive/90'
+            >
+              Sim, Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

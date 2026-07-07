@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
   ChevronRight,
@@ -10,6 +9,11 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from 'lucide-react';
+
+import { Dialog, DialogContent, DialogOverlay, DialogPortal } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface DocumentPreviewModalProps {
   previewUrl: string | null;
@@ -51,21 +55,15 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   onReject,
 }) => {
   return (
-    <AnimatePresence>
-      {previewUrl && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className='fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-sm'
+    <Dialog open={!!previewUrl} onOpenChange={(v) => !v && onClose()}>
+      <DialogPortal>
+        <DialogOverlay className='bg-black/90 backdrop-blur-sm' />
+        <DialogContent
+          showCloseButton={false}
+          className='fixed inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] w-full h-full p-0 m-0 bg-slate-900 border border-white/10 ring-0 shadow-2xl data-open:zoom-in-100 rounded-3xl md:rounded-[40px]'
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className='relative w-full max-w-6xl h-[95vh] md:h-full md:max-h-[90vh] bg-slate-900 rounded-3xl md:rounded-[40px] border border-white/10 shadow-2xl overflow-hidden flex flex-col'
-          >
-            <div className='flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-6 gap-3 border-b border-white/5 bg-slate-950/80 backdrop-blur-md'>
+          <div className='flex flex-col h-full overflow-hidden'>
+            <div className='flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-6 gap-3 border-b border-white/5 bg-slate-950/80 backdrop-blur-md shrink-0'>
               <div className='flex items-center gap-3 md:gap-4'>
                 <div className='w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/5 shrink-0'>
                   <FileText size={20} />
@@ -80,7 +78,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 </div>
               </div>
               <div className='flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto'>
-                {previewUrl.toLowerCase().includes('.pdf') && (
+                {previewUrl?.toLowerCase().includes('.pdf') && (
                   <div className='flex items-center gap-2 md:gap-3 bg-white/5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-white/10'>
                     <button
                       onClick={() => onPageChange(Math.max(1, previewPage - 1))}
@@ -102,19 +100,21 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 )}
                 <div className='flex items-center gap-2 ml-auto sm:ml-0'>
                   <a
-                    href={previewUrl}
+                    href={previewUrl || '#'}
                     download
                     className='p-2 md:p-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all'
                     title='Baixar Documento Original'
                   >
                     <Download size={16} />
                   </a>
-                  <button
+                  <Button
+                    variant='ghost'
+                    size='icon'
                     onClick={onClose}
-                    className='p-2 md:p-2.5 rounded-xl bg-white/5 text-white/60 hover:text-white border border-white/5 hover:border-white/10 transition-all'
+                    className='h-9 w-9 md:h-10 md:w-10 rounded-xl bg-white/5 text-white/60 hover:text-white border border-white/5 hover:border-white/10'
                   >
                     <X size={16} />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -130,7 +130,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   </div>
                 )}
                 {previewError ? (
-                  <div className='max-w-md text-center space-y-4 animate-fadeIn'>
+                  <div className='max-w-md text-center space-y-4'>
                     <div className='w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto'>
                       <ShieldAlert size={32} />
                     </div>
@@ -147,13 +147,13 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   <img
                     src={apyPreviewUrl}
                     alt={previewTitle}
-                    className='max-w-full max-h-full object-contain rounded-2xl shadow-2xl animate-scaleIn border border-white/5'
+                    className='max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/5'
                   />
-                ) : previewUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ||
-                  previewUrl.includes('image') ||
-                  !previewUrl.toLowerCase().includes('.pdf') ? (
+                ) : previewUrl?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ||
+                  previewUrl?.includes('image') ||
+                  !previewUrl?.toLowerCase().includes('.pdf') ? (
                   <img
-                    src={previewUrl}
+                    src={previewUrl || ''}
                     alt={previewTitle}
                     className='max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/5'
                     onError={() => {
@@ -163,7 +163,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   />
                 ) : (
                   (() => {
-                    let directPdfUrl = previewUrl;
+                    let directPdfUrl = previewUrl || '';
                     if (directPdfUrl.includes('docs.google.com/viewer')) {
                       try {
                         const urlParams = new URLSearchParams(new URL(directPdfUrl).search);
@@ -184,7 +184,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 )}
               </div>
 
-              <div className='w-full md:w-[380px] border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/60 backdrop-blur-md p-6 flex flex-col justify-between overflow-y-auto'>
+              <div className='w-full md:w-[380px] border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/60 backdrop-blur-md p-6 flex flex-col justify-between overflow-y-auto shrink-0'>
                 <div className='space-y-6'>
                   <div>
                     <h4 className='text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1'>
@@ -238,7 +238,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                           {previewTitle}
                         </p>
                         <p className='text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5'>
-                          {previewUrl.toLowerCase().includes('.pdf') ? 'PDF' : 'IMAGEM'}
+                          {previewUrl?.toLowerCase().includes('.pdf') ? 'PDF' : 'IMAGEM'}
                         </p>
                       </div>
                     </div>
@@ -275,55 +275,57 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                         </div>
                       )}
                     {showModalRejectInput ? (
-                      <div className='space-y-3 bg-rose-500/5 border border-rose-500/10 p-4 rounded-2xl animate-fadeIn'>
+                      <div className='space-y-3 bg-rose-500/5 border border-rose-500/10 p-4 rounded-2xl'>
                         <div>
-                          <label className='text-[8px] font-black text-rose-400 uppercase tracking-widest block mb-2'>
+                          <Label className='text-[8px] font-black text-rose-400 uppercase tracking-widest block mb-2'>
                             Motivo da Recusa
-                          </label>
-                          <textarea
+                          </Label>
+                          <Textarea
                             value={modalRejectReason}
                             onChange={(e) => onRejectReasonChange(e.target.value)}
                             placeholder='Descreva de forma clara o que precisa ser corrigido pelo inquilino...'
-                            className='w-full h-24 p-3 bg-slate-950/60 border border-rose-500/20 rounded-xl text-xs font-bold text-white placeholder-slate-500 outline-none focus:border-rose-500 transition-all resize-none'
+                            className='min-h-[96px] bg-slate-950/60 border-rose-500/20 text-white placeholder-slate-500 focus:border-rose-500 resize-none'
                           />
                         </div>
                         <div className='flex gap-2'>
-                          <button
+                          <Button
+                            variant='ghost'
                             onClick={() => {
                               onShowRejectInput(false);
                               onRejectReasonChange('');
                             }}
-                            className='flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all'
                             disabled={modalActionLoading}
+                            className='flex-1 bg-white/5 hover:bg-white/10 text-white'
                           >
                             Cancelar
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={onReject}
-                            className='flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-1.5'
                             disabled={modalActionLoading || !modalRejectReason.trim()}
+                            className='flex-1 bg-rose-600 hover:bg-rose-700 text-white'
                           >
                             {modalActionLoading ? (
                               <Loader2 size={12} className='animate-spin' />
                             ) : (
                               'Confirmar Recusa'
                             )}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ) : (
                       <div className='flex gap-3'>
-                        <button
+                        <Button
+                          variant='outline'
                           onClick={() => onShowRejectInput(true)}
-                          className='flex-1 h-12 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border border-rose-500/15 hover:scale-[1.02] transition-all'
                           disabled={modalActionLoading}
+                          className='flex-1 h-12 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/15'
                         >
                           <ThumbsDown size={14} /> Recusar Etapa
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={onApprove}
-                          className='flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] transition-all'
                           disabled={modalActionLoading}
+                          className='flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
                         >
                           {modalActionLoading ? (
                             <Loader2 size={14} className='animate-spin' />
@@ -332,7 +334,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                               <ThumbsUp size={14} /> Aprovar Etapa
                             </>
                           )}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -345,7 +347,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 </div>
               </div>
             </div>
-            <div className='p-4 bg-slate-950/80 border-t border-white/5 flex items-center justify-between px-8 backdrop-blur-md'>
+            <div className='p-4 bg-slate-950/80 border-t border-white/5 flex items-center justify-between px-8 backdrop-blur-md shrink-0'>
               <div className='flex items-center gap-2'>
                 <div className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
                 <p className='text-[8px] text-emerald-500/80 font-black uppercase tracking-widest'>
@@ -356,9 +358,9 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 Pressione ESC para fechar
               </p>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </div>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   );
 };
