@@ -1,6 +1,10 @@
 import { TenantProfileConfig, RequirementStatus } from '../../types';
+import { supabase } from '../../lib/supabase';
 
-const CONFIG_STORAGE_KEY = 'igloo_tenant_profile_configs';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = () => supabase as any;
+
+export type { TenantProfileConfig };
 
 export const DEFAULT_CONFIG: Omit<TenantProfileConfig, 'propertyId'> = {
   sections: {
@@ -79,39 +83,81 @@ export const TEMPLATES = {
   },
 };
 
+function dbRowToConfig(row: Record<string, unknown>): TenantProfileConfig {
+  return {
+    propertyId: (row.property_id as string) || 'global',
+    sections: (row.sections as TenantProfileConfig['sections']) || DEFAULT_CONFIG.sections,
+  };
+}
+
 export const tenantConfigService = {
-  getConfigs(): TenantProfileConfig[] {
+  async getConfigs(): Promise<TenantProfileConfig[]> {
     try {
-      const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      console.error('Error parsing tenant configs:', e);
+      const { data, error } = await db().from('tenant_profile_configs').select('*');
+      if (error) throw error;
+      return (data || []).map(dbRowToConfig);
+    } catch (err) {
+      console.error('[tenantConfigService] Error fetching configs:', err);
       return [];
     }
   },
 
-  getConfigForProperty(propertyId: string): TenantProfileConfig {
-    const configs = this.getConfigs();
-    const propertyConfig = configs.find((c) => c.propertyId === propertyId);
-    if (propertyConfig) return propertyConfig;
+  async getConfigForProperty(propertyId: string): Promise<TenantProfileConfig> {
+    try {
+      const { data, error } = await db()
+        .from('tenant_profile_configs')
+        .select('*')
+        .or(`property_id.eq.${propertyId},property_id.is.null,is_global.eq.true`)
+        .limit(10);
 
-    const globalConfig = configs.find((c) => c.propertyId === 'global');
-    return {
-      propertyId,
-      sections: globalConfig ? globalConfig.sections : DEFAULT_CONFIG.sections,
-    };
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const propertyConfig = data.find(
+          (r: Record<string, unknown>) => r.property_id === propertyId
+        );
+        if (propertyConfig)
+          return dbRowToConfig(propertyConfig as unknown as Record<string, unknown>);
+
+        const globalConfig = data.find((r: Record<string, unknown>) => r.is_global);
+        if (globalConfig) return dbRowToConfig(globalConfig as unknown as Record<string, unknown>);
+      }
+
+      return { propertyId, sections: DEFAULT_CONFIG.sections };
+    } catch (err) {
+      console.error('[tenantConfigService] Error fetching config for property:', err);
+      return { propertyId, sections: DEFAULT_CONFIG.sections };
+    }
   },
 
-  saveConfig(config: TenantProfileConfig) {
-    const configs = this.getConfigs();
-    const index = configs.findIndex((c) => c.propertyId === config.propertyId);
+  async saveConfig(config: TenantProfileConfig) {
+    try {
+      const sections = config.sections;
+      const existing = await db()
+        .from('tenant_profile_configs')
+        .select('id')
+        .eq('property_id', config.propertyId === 'global' ? null : config.propertyId)
+        .maybeSingle();
 
-    if (index !== -1) {
-      configs[index] = config;
-    } else {
-      configs.push(config);
+      if (existing.data) {
+        const { error } = await db()
+          .from('tenant_profile_configs')
+          .update({ sections })
+          .eq('id', existing.data.id);
+        if (error) throw error;
+      } else {
+        const { error } = await db()
+          .from('tenant_profile_configs')
+          .insert({
+            property_id: config.propertyId === 'global' ? null : config.propertyId,
+            is_global: config.propertyId === 'global',
+            sections,
+          });
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error('[tenantConfigService] Error saving config:', err);
+      throw err;
     }
-
-    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(configs));
   },
 };

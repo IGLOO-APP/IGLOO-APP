@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   User,
   Car,
@@ -52,10 +53,21 @@ const StatusSelector = ({
 export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> = ({
   propertyId,
 }) => {
-  const [config, setConfig] = useState<TenantProfileConfig>(
-    tenantConfigService.getConfigForProperty(propertyId)
-  );
   const [isTemplateMenuOpen, setIsTemplateMenuOpen] = useState(false);
+  const [config, setConfig] = useState<TenantProfileConfig | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: loadedConfig } = useQuery({
+    queryKey: ['tenant-config', propertyId],
+    queryFn: () => tenantConfigService.getConfigForProperty(propertyId),
+  });
+
+  useEffect(() => {
+    if (loadedConfig && !config) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setConfig(loadedConfig);
+    }
+  }, [loadedConfig, config]);
 
   const [newSharedDoc, setNewSharedDoc] = useState('');
   const [newRequiredDoc, setNewRequiredDoc] = useState({ label: '', description: '' });
@@ -174,8 +186,10 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
     });
   };
 
-  const handleSave = () => {
-    tenantConfigService.saveConfig(config);
+  const handleSave = async () => {
+    if (!config) return;
+    await tenantConfigService.saveConfig(config);
+    queryClient.invalidateQueries({ queryKey: ['tenant-config', propertyId] });
     addToast(
       'Salvo com Sucesso',
       'Configurações aplicadas para os inquilinos deste imóvel.',
@@ -192,6 +206,14 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
     setIsTemplateMenuOpen(false);
     addToast('Template Aplicado', `Configuração "${template.label}" aplicada.`, 'success');
   };
+
+  if (!config) {
+    return (
+      <div className='flex items-center justify-center py-20 text-slate-400 text-sm font-bold'>
+        Carregando configurações...
+      </div>
+    );
+  }
 
   const currentTemplate =
     Object.values(TEMPLATES).find(

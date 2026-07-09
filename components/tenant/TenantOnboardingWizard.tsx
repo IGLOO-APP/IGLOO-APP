@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle,
   ChevronRight,
@@ -13,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tenant, Property } from '../../types';
-import { tenantConfigService } from '../../services/tenancy/tenantConfigService';
+import { tenantConfigService, DEFAULT_CONFIG } from '../../services/tenancy/tenantConfigService';
 
 interface TenantOnboardingWizardProps {
   tenant: Tenant;
@@ -47,7 +48,11 @@ export const TenantOnboardingWizard: React.FC<TenantOnboardingWizardProps> = ({
     }, 300);
   };
 
-  const config = tenantConfigService.getConfigForProperty(tenant.property_id || '101');
+  const { data: config = { propertyId: tenant.property_id || '101', ...DEFAULT_CONFIG } } =
+    useQuery({
+      queryKey: ['tenant-config', tenant.property_id],
+      queryFn: () => tenantConfigService.getConfigForProperty(tenant.property_id || '101'),
+    });
 
   return (
     <Dialog open onOpenChange={(open) => !open && (() => {})()}>

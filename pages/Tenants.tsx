@@ -22,7 +22,7 @@ import { tenantService } from '../services/tenancy/tenantService';
 import { propertyService } from '../services/propertyService';
 import { useNotification } from '../context/NotificationContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { formatCPF, formatPhone, getRemainingContractTime, validateCPF } from '../utils/formatters';
+import { formatCPF, formatPhone, getRemainingContractTime } from '../utils/formatters';
 import { Tenant } from '../types';
 
 import { useAuth } from '../context/AuthContext';
@@ -106,35 +106,6 @@ const Tenants: React.FC = () => {
   // Form State & Step State
   const [newTenant, setNewTenant] = useState(INITIAL_TENANT_STATE);
 
-  // Bureau details (realtime SPC/Serasa check)
-  const [serasaScore, setSerasaScore] = useState<number | null>(null);
-  const [, setSerasaChecking] = useState(false);
-  const [serasaStatus, setSerasaStatus] = useState<'clean' | 'restricted' | null>(null);
-
-  useEffect(() => {
-    const cleanCPF = newTenant.cpf.replace(/\D/g, '');
-    if (cleanCPF.length === 11 && validateCPF(newTenant.cpf)) {
-      setSerasaChecking(true);
-      const timer = setTimeout(() => {
-        const score = Math.floor(Math.random() * 320) + 680; // 680 to 1000
-        const status = score >= 700 ? 'clean' : 'restricted';
-        setSerasaScore(score);
-        setSerasaStatus(status as any);
-        setSerasaChecking(false);
-        addToast(
-          'Consulta SPC/Serasa',
-          `Score localizado para o CPF: ${score} pontos. Cadastro apto.`,
-          'success'
-        );
-      }, 1200);
-      return () => clearTimeout(timer);
-    } else {
-      setSerasaScore(null);
-      setSerasaStatus(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newTenant.cpf]);
-
   const [isSuccess, setIsSuccess] = useState(false);
 
   const inviteMutation = useMutation({
@@ -145,25 +116,8 @@ const Tenants: React.FC = () => {
         return tenantService.create(data);
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_, _variables) => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
-
-      // Save all extended variables to localStorage so that they can be displayed beautifully in TenantDetails
-      const keyEmail = `igloo_extended_tenant_${variables.email}`;
-      const keyCpf = `igloo_extended_tenant_${variables.cpf.replace(/\D/g, '')}`;
-      const payload = {
-        ...variables,
-        creditScore: serasaScore || 850,
-        creditStatus: serasaStatus || 'clean',
-        creditChecked: true,
-        referencesVerified: true,
-        referencesNotes:
-          'Referências cadastrais checadas e aprovadas automaticamente via inteligência de onboarding.',
-        residenceRecent: true,
-        residenceMatch: true,
-      };
-      localStorage.setItem(keyEmail, JSON.stringify(payload));
-      localStorage.setItem(keyCpf, JSON.stringify(payload));
 
       setIsSuccess(true);
       addToast(

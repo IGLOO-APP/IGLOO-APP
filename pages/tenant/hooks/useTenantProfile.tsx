@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
-import { tenantConfigService } from '../../../services/tenancy/tenantConfigService';
-import { TenantProfileConfig, RequirementStatus } from '../../../types';
+import { tenantConfigService, DEFAULT_CONFIG } from '../../../services/tenancy/tenantConfigService';
+import { RequirementStatus } from '../../../types';
 
 export const useTenantProfile = () => {
   const { user } = useAuth();
@@ -10,9 +11,13 @@ export const useTenantProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showReminderSelect, setShowReminderSelect] = useState(false);
 
-  const config: TenantProfileConfig = tenantConfigService.getConfigForProperty(
-    user?.property_id?.toString() || '101'
-  );
+  const {
+    data: config = { propertyId: user?.property_id?.toString() || '101', ...DEFAULT_CONFIG },
+  } = useQuery({
+    queryKey: ['tenant-config', user?.property_id],
+    queryFn: () => tenantConfigService.getConfigForProperty(user?.property_id?.toString() || '101'),
+    enabled: !!user?.property_id,
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);

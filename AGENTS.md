@@ -47,8 +47,8 @@
 
 - **No `any` types** — prefer proper interfaces or `unknown`
 - **No `console.log` in production** — use `console.warn` or structured logging only
-- **No mock data in production code** — stripeService, financeService, subscriptionService still have mock data; flag for removal
-- **No `localStorage` as database** — subscriptionService, authService still use localStorage persistence
+- **No mock data in production code** — all mock data removed (was in stripeService, financeService, subscriptionService, analyticsService, usersService)
+- **No `localStorage` as database** — all localStorage persistence removed from subscriptionService, authService, tenantConfigService, tenantScreeningService; now uses Supabase
 - **No `window.open(url, '_blank')` without `isValidUrl()`** — XSS risk with user content
 - **No fire-and-forget promises** — use `void` operator or `.catch(() => {})`
 - **No direct `supabase.from()` calls in components** — must go through a service file

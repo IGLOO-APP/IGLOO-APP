@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tenantService } from '../../../services/tenancy/tenantService';
 import { tenantConfigService } from '../../../services/tenancy/tenantConfigService';
+import { tenantScreeningService } from '../../../services/tenancy/tenantScreeningService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
 import { formatPhone, getRemainingContractTime } from '../../../utils/formatters';
 import { fixDocumentUrl } from '../../../utils/mappingUtils';
@@ -25,36 +26,30 @@ export function useTenantDetails() {
   const [payments, setPayments] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any[]>([]);
 
-  const [creditChecked, setCreditChecked] = useState<boolean>(
-    () => localStorage.getItem(`igloo_credit_checked_${id}`) === 'true'
-  );
-  const [creditScore, setCreditScore] = useState<number | null>(() => {
-    const v = localStorage.getItem(`igloo_credit_score_${id}`);
-    return v ? parseInt(v) : null;
+  const { data: screening = null } = useQuery({
+    queryKey: ['tenant-screening', id],
+    queryFn: () => tenantScreeningService.getScreening(id!),
+    enabled: !!id,
   });
-  const [creditStatus, setCreditStatus] = useState<'clean' | 'restricted' | null>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (localStorage.getItem(`igloo_credit_status_${id}`) as any) || null
-  );
-  const [isCheckingCredit, setIsCheckingCredit] = useState(false);
 
-  const [referencesVerified, setReferencesVerified] = useState<boolean>(
-    () => localStorage.getItem(`igloo_references_verified_${id}`) === 'true'
-  );
-  const [referencesNotes, setReferencesNotes] = useState<string>(
-    () => localStorage.getItem(`igloo_references_notes_${id}`) || ''
-  );
+  const creditChecked = screening?.credit_checked ?? false;
+  const creditScore = screening?.credit_score ?? null;
+  const creditStatus = screening?.credit_status ?? null;
+  const isCheckingCredit = false;
 
-  const [employmentType, setEmploymentType] = useState<'CLT' | 'Autônomo' | 'PJ'>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (localStorage.getItem(`igloo_employment_type_${id}`) as any) || 'CLT'
-  );
-  const [residenceRecent, setResidenceRecent] = useState<boolean>(
-    () => localStorage.getItem(`igloo_residence_recent_${id}`) === 'true'
-  );
-  const [residenceMatch, setResidenceMatch] = useState<boolean>(
-    () => localStorage.getItem(`igloo_residence_match_${id}`) === 'true'
-  );
+  const referencesVerified = screening?.references_verified ?? false;
+  const referencesNotes = screening?.references_notes ?? '';
+  const employmentType = screening?.employment_type ?? 'CLT';
+  const residenceRecent = screening?.residence_recent ?? false;
+  const residenceMatch = screening?.residence_match ?? false;
+
+  const upsertMutation = useMutation({
+    mutationFn: (updates: Record<string, unknown>) =>
+      tenantScreeningService.upsertScreening({ tenant_id: id!, ...updates }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-screening', id] });
+    },
+  });
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
@@ -200,22 +195,19 @@ export function useTenantDetails() {
 
   const financialSummary = useMemo(() => calculateTenantFinancials(payments), [payments]);
   const currentDisplayStage = tenant?.onboarding_stage || 'profile';
-  const tenantRequirements = useMemo(() => {
-    if (!tenant?.property_id) return null;
-    return tenantConfigService.getConfigForProperty(tenant.property_id.toString());
-  }, [tenant?.property_id]);
+  const { data: tenantRequirements } = useQuery({
+    queryKey: ['tenant-config', tenant?.property_id],
+    queryFn: () => tenantConfigService.getConfigForProperty(tenant!.property_id!.toString()),
+    enabled: !!tenant?.property_id,
+  });
 
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
 
-  const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem(`igloo_manual_overrides_${id}`);
-    return saved ? JSON.parse(saved) : {};
-  });
+  const manualOverrides = screening?.manual_overrides ?? {};
 
   const toggleManualOverride = (label: string) => {
     const newOverrides = { ...manualOverrides, [label]: !manualOverrides[label] };
-    setManualOverrides(newOverrides);
-    localStorage.setItem(`igloo_manual_overrides_${id}`, JSON.stringify(newOverrides));
+    upsertMutation.mutate({ manual_overrides: newOverrides });
     addToast('Requisito Atualizado', `Status de "${label}" alterado manualmente.`, 'info');
   };
 
@@ -393,38 +385,26 @@ export function useTenantDetails() {
   };
 
   const triggerCreditCheck = () => {
-    setIsCheckingCredit(true);
-    setTimeout(() => {
-      const score = Math.floor(Math.random() * 380) + 620;
-      const status = score > 690 ? 'clean' : 'restricted';
-      setCreditChecked(true);
-      setCreditScore(score);
-      setCreditStatus(status);
-      setIsCheckingCredit(false);
-      localStorage.setItem(`igloo_credit_checked_${id}`, 'true');
-      localStorage.setItem(`igloo_credit_score_${id}`, String(score));
-      localStorage.setItem(`igloo_credit_status_${id}`, status);
-      addToast('Consulta SPC/Serasa', `Pesquisa concluída! Score: ${score} pontos.`, 'success');
-    }, 1800);
+    const score = Math.floor(Math.random() * 380) + 620;
+    const status = score > 690 ? 'clean' : 'restricted';
+    upsertMutation.mutate({
+      credit_checked: true,
+      credit_score: score,
+      credit_status: status,
+    });
+    addToast('Consulta SPC/Serasa', `Pesquisa concluída! Score: ${score} pontos.`, 'success');
   };
 
   const handleUpdateReferences = (verified: boolean, notes: string) => {
-    setReferencesVerified(verified);
-    setReferencesNotes(notes);
-    localStorage.setItem(`igloo_references_verified_${id}`, verified ? 'true' : 'false');
-    localStorage.setItem(`igloo_references_notes_${id}`, notes);
+    upsertMutation.mutate({ references_verified: verified, references_notes: notes });
   };
 
   const handleUpdateEmployment = (type: 'CLT' | 'Autônomo' | 'PJ') => {
-    setEmploymentType(type);
-    localStorage.setItem(`igloo_employment_type_${id}`, type);
+    upsertMutation.mutate({ employment_type: type });
   };
 
   const handleToggleResidenceCheck = (recent: boolean, match: boolean) => {
-    setResidenceRecent(recent);
-    setResidenceMatch(match);
-    localStorage.setItem(`igloo_residence_recent_${id}`, recent ? 'true' : 'false');
-    localStorage.setItem(`igloo_residence_match_${id}`, match ? 'true' : 'false');
+    upsertMutation.mutate({ residence_recent: recent, residence_match: match });
   };
 
   const handleRefresh = () => queryClient.invalidateQueries({ queryKey: ['tenant', id] });
