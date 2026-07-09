@@ -12,6 +12,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
+import { Button } from '@/components/ui/button';
 import { useFinancials } from './financials/hooks/useFinancials';
 import { CashFlowCharts } from './financials/sections/CashFlowCharts';
 import { TransactionList } from './financials/sections/TransactionList';
@@ -68,12 +69,13 @@ const Financials: React.FC = () => {
           >
             <FileText size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
-          <button
+          <Button
             onClick={() => h.setShowAddForm(true)}
-            className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
+            variant='default'
+            size='default'
           >
-            <Plus size={16} className='md:size-[18px]' /> <span className='hidden md:inline'>Nova Receita</span>
-          </button>
+            <Plus size={16} /> <span className='hidden sm:inline'>Nova Receita</span>
+          </Button>
         </div>
       </TopBar>
 

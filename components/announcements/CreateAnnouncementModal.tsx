@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   X,
   Send,
@@ -14,10 +14,23 @@ import {
   ChevronRight,
   Eye,
   CalendarDays,
+  MapPin,
+  Calendar,
+  Clock as ClockIcon,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
 import { AnnouncementType, AnnouncementTargetType, Property } from '../../types';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+
+const PLACEHOLDER_META: Record<string, { label: string; icon: React.ReactNode; placeholder: string }> = {
+  '[LOCAL]': { label: 'Local', icon: <MapPin size={14} />, placeholder: 'Ex: Elevador, Salão de Festas...' },
+  '[DATA]': { label: 'Data', icon: <Calendar size={14} />, placeholder: 'Ex: 15/07/2026' },
+  '[HORA]': { label: 'Horário', icon: <ClockIcon size={14} />, placeholder: 'Ex: 14:00' },
+  '[ASSUNTO]': { label: 'Assunto', icon: <FileText size={14} />, placeholder: 'Ex: Reforma do salão' },
+};
 
 interface CreateAnnouncementModalProps {
   isOpen: boolean;
@@ -25,6 +38,11 @@ interface CreateAnnouncementModalProps {
   properties: Property[];
   onSuccess?: () => void;
   initialData?: any;
+}
+
+function extractPlaceholders(text: string): string[] {
+  const matches = text.match(/\[([A-ZÁ-Ú]+)\]/g);
+  return [...new Set(matches || [])];
 }
 
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
@@ -36,7 +54,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
+  const [page, setPage] = useState(0);
+  const ITEMS_PER_PAGE = 4;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -51,37 +71,42 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
   });
 
   const [templates, setTemplates] = useState<any[]>([]);
+  const [placeholderValues, setPlaceholderValues] = useState<Record<string, string>>({});
 
   React.useEffect(() => {
     announcementService.getTemplates().then(setTemplates);
   }, []);
 
   React.useEffect(() => {
-    if (initialData) {
-      setFormData({
-        title: initialData.title || '',
-        content: initialData.content || '',
-        type: initialData.type || 'info',
-        target_type: initialData.target_type || 'all',
-        target_value: initialData.target_value?.ids || [],
-        condo_name: initialData.target_value?.name || '',
-        expire_mode: 'time',
-        expires_in_days: '7',
-        is_urgent: initialData.is_urgent || false,
-      });
-      setStep(1);
-    } else {
-      setFormData({
-        title: '',
-        content: '',
-        type: 'info',
-        target_type: 'all',
-        target_value: [],
-        condo_name: '',
-        expire_mode: 'time',
-        expires_in_days: '7',
-        is_urgent: false,
-      });
+    if (isOpen) {
+      setStep(initialData ? 1 : 0);
+      setPage(0);
+      if (initialData) {
+        setFormData({
+          title: initialData.title || '',
+          content: initialData.content || '',
+          type: initialData.type || 'info',
+          target_type: initialData.target_type || 'all',
+          target_value: initialData.target_value?.ids || [],
+          condo_name: initialData.target_value?.name || '',
+          expire_mode: 'time',
+          expires_in_days: '7',
+          is_urgent: initialData.is_urgent || false,
+        });
+        setStep(1);
+      } else {
+        setFormData({
+          title: '',
+          content: '',
+          type: 'info',
+          target_type: 'all',
+          target_value: [],
+          condo_name: '',
+          expire_mode: 'time',
+          expires_in_days: '7',
+          is_urgent: false,
+        });
+      }
     }
   }, [initialData, isOpen]);
 
@@ -115,7 +140,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
       await announcementService.create({
         owner_id: user.id,
         title: formData.title,
-        content: formData.content,
+        content: resolvedContent,
         type: formData.type,
         target_type: formData.target_type,
         target_value: targetValue,
@@ -125,7 +150,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 
       onSuccess?.();
       onClose();
-      setStep(1);
+      setStep(0);
       setFormData({
         title: '',
         content: '',
@@ -137,6 +162,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         expires_in_days: '7',
         is_urgent: false,
       });
+      setPlaceholderValues({});
     } catch (error) {
       console.error('Error creating announcement:', error);
       alert('Erro ao criar comunicado. Tente novamente.');
@@ -147,9 +173,121 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
 
   const fillTemplate = (tpl: any) => {
     setFormData({ ...formData, title: tpl.title, content: tpl.content, type: tpl.type });
+    const keys = extractPlaceholders(tpl.content);
+    const vals: Record<string, string> = {};
+    keys.forEach((k) => (vals[k] = placeholderValues[k] || ''));
+    setPlaceholderValues(vals);
   };
 
+  const foundPlaceholders = useMemo(() => extractPlaceholders(formData.content), [formData.content]);
+
+  const resolvedContent = useMemo(() => {
+    let text = formData.content;
+    for (const key of foundPlaceholders) {
+      if (placeholderValues[key]) {
+        text = text.split(key).join(placeholderValues[key]);
+      }
+    }
+    return text;
+  }, [formData.content, foundPlaceholders, placeholderValues]);
+
+  const hasUnfilledPlaceholders = foundPlaceholders.some((k) => !placeholderValues[k]?.trim());
+
+  const handlePlaceholderChange = useCallback((key: string, value: string) => {
+    setPlaceholderValues((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   if (!isOpen) return null;
+
+  const totalPages = Math.ceil(templates.length / ITEMS_PER_PAGE);
+
+  const templateSelection = (
+    <div className='space-y-4'>
+      <div className='text-center space-y-1.5'>
+        <p className='text-sm font-bold text-foreground'>Escolha um modelo pronto</p>
+        <p className='text-xs text-muted-foreground'>Você poderá editar o conteúdo depois</p>
+      </div>
+      <div className='grid gap-3 grid-cols-1 sm:grid-cols-2'>
+        {templates
+          .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+          .map((tpl, i) => {
+            const dotColor =
+              tpl.type === 'maintenance'
+                ? 'bg-amber-400'
+                : tpl.type === 'warning'
+                  ? 'bg-red-400'
+                  : tpl.type === 'event'
+                    ? 'bg-emerald-400'
+                    : 'bg-primary';
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  fillTemplate(tpl);
+                  setStep(1);
+                }}
+                className='text-left w-full p-4 rounded-2xl bg-white dark:bg-surface-dark border border-border hover:border-primary/40 hover:shadow-md transition-all ring-1 ring-inset ring-transparent hover:ring-primary/20 space-y-2'
+              >
+                <div className='flex items-center gap-2'>
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
+                  <span className='text-sm font-bold text-foreground'>{tpl.title}</span>
+                  <span className='ml-auto text-[10px] text-muted-foreground uppercase tracking-wider font-medium'>
+                    Usar →
+                  </span>
+                </div>
+                <p className='text-xs text-muted-foreground leading-relaxed line-clamp-2'>
+                  {tpl.content}
+                </p>
+              </button>
+            );
+          })}
+      </div>
+
+      {totalPages > 1 && (
+        <div className='flex items-center justify-center gap-2'>
+          <button
+            onClick={() => setPage(Math.max(0, page - 1))}
+            disabled={page === 0}
+            className='w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all disabled:opacity-20 disabled:pointer-events-none'
+          >
+            <span className='rotate-180 inline-block'><ChevronRight size={14} /></span>
+          </button>
+          <div className='flex gap-1'>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === page
+                    ? 'bg-primary w-4'
+                    : 'bg-slate-200 dark:bg-white/10 w-1.5 hover:bg-slate-300 dark:hover:bg-white/20'
+                }`}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+            disabled={page === totalPages - 1}
+            className='w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all disabled:opacity-20 disabled:pointer-events-none'
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
+      <div className='flex justify-center'>
+        <button
+          onClick={() => {
+            setPage(0);
+            setStep(1);
+          }}
+          className='text-xs font-medium text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2'
+        >
+          Começar do zero
+        </button>
+      </div>
+    </div>
+  );
 
   const step1Form = (
     <div className='space-y-5'>
@@ -176,16 +314,13 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         ))}
       </div>
 
-      <div>
-        <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block px-1'>
-          Título do Aviso
-        </label>
-        <input
-          type='text'
+      <div className='space-y-1.5'>
+        <Label htmlFor='ann-title'>Título do Aviso</Label>
+        <Input
+          id='ann-title'
           placeholder='Ex: Manutenção no Elevador'
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className='w-full bg-muted border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-foreground transition-all outline-none placeholder:text-muted-foreground'
         />
       </div>
 
@@ -196,11 +331,44 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         <textarea
           placeholder='Descreva os detalhes para os inquilinos...'
           rows={4}
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+          value={resolvedContent}
+          onChange={(e) => {
+            setFormData({ ...formData, content: e.target.value });
+            const keys = extractPlaceholders(e.target.value);
+            setPlaceholderValues((prev) => {
+              const next = { ...prev };
+              Object.keys(next).forEach((k) => { if (!keys.includes(k)) delete next[k]; });
+              keys.forEach((k) => { if (!(k in next)) next[k] = ''; });
+              return next;
+            });
+          }}
           className='w-full bg-muted border-2 border-transparent focus:border-primary rounded-2xl px-5 py-3.5 text-sm font-semibold text-foreground transition-all outline-none placeholder:text-muted-foreground resize-none'
         />
       </div>
+
+      {foundPlaceholders.length > 0 && (
+        <div className='space-y-4 rounded-xl border border-border bg-muted/50 p-4'>
+          <p className='text-xs font-medium text-muted-foreground'>
+            Preencha para substituir automaticamente no texto
+          </p>
+          {foundPlaceholders.map((key) => {
+            const meta = PLACEHOLDER_META[key];
+            if (!meta) return null;
+            return (
+              <div key={key} className='space-y-1.5'>
+                <Label className='text-xs font-medium text-foreground flex items-center gap-1.5'>
+                  {meta.icon} {meta.label}
+                </Label>
+                <Input
+                  placeholder={meta.placeholder}
+                  value={placeholderValues[key] || ''}
+                  onChange={(e) => handlePlaceholderChange(key, e.target.value)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Urgent Toggle */}
       <div
@@ -235,46 +403,6 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${formData.is_urgent ? 'left-7' : 'left-1'}`}
           />
         </div>
-      </div>
-    </div>
-  );
-
-  const templatesPanel = (
-    <div className='w-full md:w-72 shrink-0 border-t md:border-t-0 md:border-l border-border bg-muted/30 p-5 overflow-y-auto max-h-[300px] md:max-h-[580px]'>
-      <div className='flex items-center gap-2 mb-5'>
-        <div className='w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary'>
-          <Megaphone size={14} />
-        </div>
-        <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-          Modelos Prontos
-        </h3>
-      </div>
-      <div className='space-y-3'>
-        {templates.map((tpl, i) => (
-          <button
-            key={i}
-            onClick={() => fillTemplate(tpl)}
-            className='w-full text-left p-4 rounded-2xl bg-card border border-border hover:border-primary/50 hover:shadow-sm hover:shadow-primary/5 transition-all group'
-          >
-            <div className='flex items-center gap-2 mb-1.5'>
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  tpl.type === 'maintenance'
-                    ? 'bg-amber-400'
-                    : tpl.type === 'warning'
-                      ? 'bg-red-400'
-                      : tpl.type === 'event'
-                        ? 'bg-emerald-400'
-                        : 'bg-primary'
-                }`}
-              />
-              <p className='text-[10px] font-black text-primary uppercase tracking-widest group-hover:text-primary-dark transition-colors'>
-                {tpl.title}
-              </p>
-            </div>
-            <p className='text-[10px] text-slate-400 line-clamp-3 leading-relaxed'>{tpl.content}</p>
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -541,7 +669,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
   return (
     <div className='fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6'>
       <div
-        className='fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-fadeIn'
+        className='fixed inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn'
         onClick={onClose}
       />
 
@@ -557,7 +685,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
                 Novo Comunicado
               </h2>
               <p className='text-[10px] text-slate-400 font-bold uppercase tracking-widest'>
-                Passo {step} de 2
+                {step === 0 ? 'Modelo' : `Passo ${step} de 2`}
               </p>
             </div>
           </div>
@@ -570,43 +698,47 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className='flex flex-col md:flex-row overflow-y-auto flex-1 min-h-0'>
-          <div className='flex-1 p-5 sm:p-8'>{step === 1 ? step1Form : step2Content}</div>
-          {step === 1 && templatesPanel}
+        <div className='overflow-y-auto flex-1 min-h-0'>
+          <div className='p-5 sm:p-8'>
+            {step === 0 ? templateSelection : step === 1 ? step1Form : step2Content}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className='px-6 sm:px-8 py-4 sm:py-6 bg-muted/30 border-t border-border flex gap-3'>
-          {step === 2 && (
-            <button
-              onClick={() => setStep(1)}
-              className='flex-1 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground hover:bg-muted transition-all'
-            >
-              Voltar
-            </button>
-          )}
-          <button
-            onClick={() => (step === 1 ? setStep(2) : handleSubmit())}
-            disabled={
-              loading ||
-              !formData.title ||
-              !formData.content ||
-              (step === 2 &&
-                (formData.target_type === 'property' || formData.target_type === 'individual') &&
-                formData.target_value.length === 0)
-            }
-            className='flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2'
-          >
-            {loading ? (
-              <div className='w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full' />
-            ) : (
-              <>
-                {step === 1 ? 'Próximo Passo' : 'Enviar Comunicado'}
-                {step === 2 && <Send size={14} />}
-              </>
+        {step > 0 && (
+          <div className='px-6 sm:px-8 py-4 sm:py-6 bg-muted/30 border-t border-border flex gap-3'>
+            {step === 2 && (
+              <button
+                onClick={() => setStep(1)}
+                className='flex-1 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest text-muted-foreground hover:bg-muted transition-all'
+              >
+                Voltar
+              </button>
             )}
-          </button>
-        </div>
+            <button
+              onClick={() => (step === 1 ? setStep(2) : handleSubmit())}
+              disabled={
+                loading ||
+                !formData.title ||
+                !formData.content ||
+                hasUnfilledPlaceholders ||
+                (step === 2 &&
+                  (formData.target_type === 'property' || formData.target_type === 'individual') &&
+                  formData.target_value.length === 0)
+              }
+              className='flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2'
+            >
+              {loading ? (
+                <div className='w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full' />
+              ) : (
+                <>
+                  {step === 1 ? 'Próximo Passo' : 'Enviar Comunicado'}
+                  {step === 2 && <Send size={14} />}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

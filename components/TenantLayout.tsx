@@ -9,6 +9,7 @@ import {
   FileText,
   Lock,
   Zap,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserButton } from '@clerk/clerk-react';
@@ -125,6 +126,13 @@ const TenantLayout: React.FC = () => {
       label: 'Suporte',
       icon: LifeBuoy,
       description: 'Chamados e ajuda',
+      disabled: isOnboardingRequired,
+    },
+    {
+      path: '/tenant/messages',
+      label: 'Mensagens',
+      icon: MessageSquare,
+      description: 'Comunicados e conversas',
       disabled: isOnboardingRequired,
     },
     {

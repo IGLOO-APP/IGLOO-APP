@@ -50,6 +50,7 @@ const TenantMaintenance = lazy(() => import('./pages/tenant/TenantMaintenance'))
 const TenantProfile = lazy(() => import('./pages/tenant/TenantProfile'));
 const TenantPayments = lazy(() => import('./pages/tenant/TenantPayments'));
 const TenantSettings = lazy(() => import('./pages/tenant/TenantSettings'));
+const TenantMessages = lazy(() => import('./pages/tenant/TenantMessages'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -194,6 +195,7 @@ const router = createBrowserRouter(
             { path: 'payments', element: <TenantPayments /> },
             { path: 'maintenance', element: <TenantMaintenance /> },
             { path: 'profile', element: <TenantProfile /> },
+            { path: 'messages', element: <TenantMessages /> },
             { path: 'settings', element: <TenantSettings /> },
           ],
         },

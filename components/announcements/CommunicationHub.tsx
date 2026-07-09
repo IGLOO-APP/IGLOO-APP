@@ -137,8 +137,8 @@ const AnnouncementRow: React.FC<{
           )}
         </div>
 
-        {/* Content preview */}
-        <div className='mt-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2'>
+        {/* Content preview — expands on hover, pushing footer down */}
+        <div className='mt-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-2 group-hover/row:line-clamp-none transition-all duration-300'>
           {ann.content}
         </div>
 
@@ -180,7 +180,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
   tenantPropertyId,
   condoName,
 }) => {
-  const ITEMS_PER_PAGE = 1;
+  const ITEMS_PER_PAGE = 2;
 
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<OwnerAnnouncement[]>([]);

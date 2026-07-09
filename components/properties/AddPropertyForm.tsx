@@ -23,13 +23,6 @@ import {
   Zap,
   Gauge,
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { storageService } from '../../services/storageService';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -375,21 +368,39 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl'
-        showCloseButton={true}
-      >
-        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
-          <DialogTitle className='text-xl font-bold'>
-            {initialData ? 'Editar Imóvel' : 'Novo Imóvel'}
-          </DialogTitle>
-          <DialogDescription />
-        </DialogHeader>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className='flex flex-col h-full overflow-hidden bg-background text-foreground'
+    <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto'>
+      {/* Header */}
+      <div className='flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0 gap-4'>
+        <button
+          type='button'
+          onClick={onClose}
+          className='text-slate-500 dark:text-slate-400 text-sm font-bold hover:text-slate-800 dark:hover:text-white transition-colors px-2'
         >
+          Cancelar
+        </button>
+        <div className='text-center'>
+          <h1 className='text-slate-900 dark:text-white text-base font-black uppercase tracking-tight'>
+            {initialData ? 'Editar Imóvel' : 'Novo Imóvel'}
+          </h1>
+        </div>
+        <button
+          type='submit'
+          form='property-form'
+          disabled={isSubmitting}
+          className='bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/25 disabled:opacity-50 transition-all'
+        >
+          {isSubmitting ? (
+            <Loader2 size={16} className='animate-spin' />
+          ) : (
+            'Salvar'
+          )}
+        </button>
+      </div>
+      <form
+        id='property-form'
+        onSubmit={handleSubmit(onSubmit)}
+        className='flex-1 flex flex-col overflow-hidden bg-background text-foreground'
+      >
           <div className='flex-1 overflow-y-auto'>
             {/* 1. Mídia / Capa */}
             <div className='p-6 pb-2 grid grid-cols-1 md:grid-cols-3 gap-6'>
@@ -920,18 +931,11 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({
           </div>
 
           {/* Footer */}
-          <div className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20 flex gap-3'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='flex-1 h-12 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
-            >
-              Cancelar
-            </button>
+          <div className='flex-none p-6 pt-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/5 z-20'>
             <button
               type='submit'
               disabled={isSubmitting}
-              className='flex-[2] group h-12 flex items-center justify-center rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-50'
+              className='w-full h-12 flex items-center justify-center rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-50'
             >
               {isSubmitting ? (
                 <Loader2 size={20} className='animate-spin' />
@@ -947,7 +951,6 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({
             </button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 };

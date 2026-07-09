@@ -483,7 +483,7 @@ export function useOwnerMessages() {
             conversation_id: string;
             type?: string;
           };
-          if (newMsg.sender_id === currentUserId) return;
+          if (newMsg.sender_id === currentUserId && newMsg.sender_role !== 'system') return;
 
           const { data: conv } = await supabase
             .from('conversations')

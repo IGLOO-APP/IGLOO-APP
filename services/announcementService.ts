@@ -139,10 +139,10 @@ export const announcementService = {
         if (convId) {
           await supabase.from('conversation_messages').insert({
             conversation_id: convId,
-            sender_id: announcement.owner_id,
+            sender_id: null,
             sender_role: 'system',
             content: text,
-            type: 'text',
+            type: 'announcement',
           });
         }
       }
@@ -237,6 +237,30 @@ export const announcementService = {
         content:
           'Convidamos todos para a reunião extraordinária que ocorrerá no dia [DATA] às [HORA], no salão de festas. Pauta: [ASSUNTO].',
         type: 'event',
+      },
+      {
+        title: 'Vistoria Periódica',
+        content:
+          'Comunicamos que a vistoria periódica do imóvel será realizada no dia [DATA] às [HORA]. Pedimos que agende um horário conosco.',
+        type: 'info',
+      },
+      {
+        title: 'Aviso de Obras',
+        content:
+          'Informamos que iniciaremos obras de melhoria no [LOCAL] a partir do dia [DATA], com previsão de término às [HORA]. Haverá ruídos temporários.',
+        type: 'warning',
+      },
+      {
+        title: 'Fechamento de Área de Lazer',
+        content:
+          'A área de lazer estará fechada no dia [DATA] para manutenção geral. Pedimos desculpas pelo transtorno.',
+        type: 'maintenance',
+      },
+      {
+        title: 'Alteração no Regimento Interno',
+        content:
+          'Comunicamos a todos que o [ASSUNTO] foi atualizado. Confira as novas regras no quadro de avisos.',
+        type: 'info',
       },
     ];
   },

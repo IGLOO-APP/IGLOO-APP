@@ -111,7 +111,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({
   return (
     <div className='fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-6'>
       <div
-        className='fixed inset-0 bg-slate-900/80 backdrop-blur-md animate-fadeIn'
+        className='fixed inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn'
         onClick={onClose}
       />
 

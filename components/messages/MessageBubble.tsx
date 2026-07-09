@@ -1,7 +1,15 @@
 import React, { useCallback } from 'react';
-import { CheckCheck, Image as ImageIcon } from 'lucide-react';
+import { CheckCheck, Image as ImageIcon, Megaphone } from 'lucide-react';
 import { ChatMessage } from '../../services/messageService';
 import { isValidUrl } from '../../utils/validation';
+
+function formatDateTime(dateStr?: string, timeStr?: string) {
+  if (!dateStr) return timeStr || '';
+  const d = new Date(dateStr);
+  const date = d.toLocaleDateString('pt-BR');
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return `${date} ${time}`;
+}
 
 interface MessageBubbleProps {
   msg: ChatMessage;
@@ -11,11 +19,21 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
   const openImage = useCallback(() => {
     if (isValidUrl(msg.text)) window.open(msg.text, '_blank', 'noopener,noreferrer');
   }, [msg.text]);
+
   if (msg.sender === 'system') {
     return (
-      <div className='flex w-full justify-center my-4'>
-        <div className='bg-slate-100 dark:bg-white/5 text-slate-400 px-6 py-1.5 rounded-full text-[7px] font-black uppercase tracking-[0.3em] border border-gray-100 dark:border-white/5 shadow-inner'>
-          {msg.text}
+      <div className='flex w-full justify-start px-1 my-3'>
+        <div className='max-w-[88%] md:max-w-[70%] flex flex-col items-start'>
+          <div className='flex items-center gap-1.5 mb-2 px-1 text-[10px] font-bold text-primary uppercase tracking-tight'>
+            <Megaphone size={12} className='shrink-0' />
+            <span>Comunicado do proprietário</span>
+          </div>
+          <div className='px-4 py-3 bg-primary/5 dark:bg-primary/10 text-foreground rounded-[20px] rounded-tl-none border border-primary/10 shadow-md'>
+            <p className='text-xs leading-relaxed font-medium whitespace-pre-wrap'>{msg.text}</p>
+          </div>
+          <span className='text-[10px] text-muted-foreground mt-1.5 px-1'>
+            {formatDateTime(msg.created_at, msg.time)}
+          </span>
         </div>
       </div>
     );
@@ -58,8 +76,8 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
         </div>
 
         <div className={`flex items-center gap-1.5 mt-1 px-1 ${isMe ? 'flex-row-reverse' : ''}`}>
-          <span className='text-[8px] text-slate-400 font-bold uppercase tracking-[0.1em] opacity-60'>
-            {msg.time}
+          <span className='text-[10px] text-muted-foreground'>
+            {formatDateTime(msg.created_at, msg.time)}
           </span>
           {isMe && (
             <div className='flex items-center gap-1 opacity-70'>

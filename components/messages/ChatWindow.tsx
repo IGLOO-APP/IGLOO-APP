@@ -53,8 +53,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const virtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => 60,
-    overscan: 5,
+    estimateSize: (index) => {
+      const msg = messages[index];
+      return msg?.sender === 'system' ? 160 : 64;
+    },
+    overscan: 8,
   });
 
   const handleScroll = useCallback(() => {

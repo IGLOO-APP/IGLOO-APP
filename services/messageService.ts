@@ -162,12 +162,11 @@ export const messageService = {
 
     const requestIds = (requests || []).map((r) => r.id);
 
-    const { data: conv } = await supabase
+    const { data: conversations } = await supabase
       .from('conversations')
       .select('id')
       .eq('tenant_id', tenantId)
-      .eq('category', 'general')
-      .maybeSingle();
+      .eq('category', 'general');
 
     let maintMsgs: DbMaintenanceMessage[] = [];
     if (requestIds.length > 0) {
@@ -180,11 +179,12 @@ export const messageService = {
     }
 
     let convMsgs: DbConversationMessage[] = [];
-    if (conv) {
+    if (conversations && conversations.length > 0) {
+      const ids = conversations.map((c) => c.id);
       const { data } = await supabase
         .from('conversation_messages')
         .select('*')
-        .eq('conversation_id', conv.id)
+        .in('conversation_id', ids)
         .order('created_at', { ascending: false });
       convMsgs = (data || []) as DbConversationMessage[];
     }

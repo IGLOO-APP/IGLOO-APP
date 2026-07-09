@@ -28,6 +28,7 @@ import { RenewContractModal } from '../components/contracts/RenewContractModal';
 import { contractService } from '../services/tenancy/contractService';
 import { useNotification } from '../context/NotificationContext';
 import { TopBar } from '../components/layout/TopBar';
+import { Button } from '@/components/ui/button';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -157,13 +158,14 @@ const Contracts: React.FC = () => {
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       {/* Header */}
       <TopBar title='Gestão de Contratos' subtitle='Ciclo de vida e assinaturas digitais'>
-        <button
+        <Button
           onClick={() => setShowWizard(true)}
-          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
+          variant='default'
+          size='default'
         >
-          <Plus size={16} className='md:size-[18px]' />
+          <Plus size={16} />
           <span className='hidden sm:inline'>Novo Contrato</span>
-        </button>
+        </Button>
       </TopBar>
 
       <div className='flex-1 overflow-y-auto px-6 pb-24'>
