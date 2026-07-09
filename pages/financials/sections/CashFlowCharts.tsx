@@ -42,9 +42,9 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
             </p>
           </TooltipContent>
         </Tooltip>
-        <div className='h-48 w-full'>
+        <div className='h-48 sm:h-64 w-full'>
           <ResponsiveContainer width='100%' height='100%'>
-            <AreaChart data={trendData}>
+            <AreaChart data={trendData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id='colorReceita' x1='0' y1='0' x2='0' y2='1'>
                   <stop offset='5%' stopColor='#10b981' stopOpacity={0.2} />
@@ -136,9 +136,9 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
             <p className='text-lg font-black text-primary'>{formatCurrency(totalForecast)}</p>
           </div>
         </div>
-        <div className='h-40 w-full mb-4'>
+        <div className='h-40 sm:h-56 w-full mb-4'>
           <ResponsiveContainer width='100%' height='100%'>
-            <BarChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={forecastData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid
                 strokeDasharray='3 3'
                 vertical={false}

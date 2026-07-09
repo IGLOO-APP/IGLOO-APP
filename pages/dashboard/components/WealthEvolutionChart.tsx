@@ -50,9 +50,9 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
         />
       </div>
 
-      <div className='flex-1 w-full min-h-0'>
+      <div className='flex-1 w-full min-h-0 min-h-[200px] sm:min-h-0'>
         <ResponsiveContainer width='100%' height='100%'>
-          <AreaChart data={displayData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={displayData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id='colorWealth' x1='0' y1='0' x2='0' y2='1'>
                 <stop offset='5%' stopColor='#06b6d4' stopOpacity={0.2} />
@@ -85,7 +85,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                   const value = payload[0].value as number;
 
                   return (
-                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[220px]'>
+                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[160px] sm:min-w-[220px]'>
                       <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2'>
                         {label}
                       </p>
