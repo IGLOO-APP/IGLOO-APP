@@ -143,17 +143,6 @@ export const mapTransaction = (t: Record<string, unknown>): FinancialTransaction
 export const fixDocumentUrl = (url: string): string => {
   if (!url) return url;
   if (url.includes('supabase.co/storage')) return url;
-  if (url.includes('igloo-mock-docs') || url.includes('amazonaws.com')) {
-    if (url.toLowerCase().includes('rg_') || url.toLowerCase().includes('identidade'))
-      return '/mock-rg.svg';
-    if (
-      url.toLowerCase().includes('income_') ||
-      url.toLowerCase().includes('holerite') ||
-      url.toLowerCase().includes('renda')
-    )
-      return '/mock-income.svg';
-    return '/mock-rg.svg';
-  }
   return url;
 };
 

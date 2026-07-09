@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isValidUrl } from '../utils/validation';
 import {
-  ArrowLeft,
   Search,
   Phone,
   Mail,
@@ -12,40 +11,18 @@ import {
   User,
   Briefcase,
   FileText,
-  X,
   CloudUpload,
-  Trash2,
   Filter,
-  DollarSign,
   MessageCircle,
-  Star,
-  History,
   CheckCircle,
-  Building2,
-  Shield,
-  Lock,
-  Fingerprint,
 } from 'lucide-react';
 import { TopBar } from '../components/layout/TopBar';
 import { BillingModal } from '../components/tenants/BillingModal';
 import { tenantService } from '../services/tenancy/tenantService';
 import { propertyService } from '../services/propertyService';
 import { useNotification } from '../context/NotificationContext';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  formatCPF,
-  formatPhone,
-  getRemainingContractTime,
-  validateCPF,
-  formatCNPJ,
-  formatCEP,
-  formatRG,
-} from '../utils/formatters';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatCPF, formatPhone, getRemainingContractTime, validateCPF } from '../utils/formatters';
 import { Tenant } from '../types';
 
 import { useAuth } from '../context/AuthContext';
@@ -101,7 +78,6 @@ const INITIAL_TENANT_STATE = {
 const Tenants: React.FC = () => {
   const { user, tokenReady } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [billingTenant, setBillingTenant] = useState<Tenant | null>(null);
   const { addToast } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,12 +104,11 @@ const Tenants: React.FC = () => {
   });
 
   // Form State & Step State
-  const [currentStep, setCurrentStep] = useState(1);
   const [newTenant, setNewTenant] = useState(INITIAL_TENANT_STATE);
 
   // Bureau details (realtime SPC/Serasa check)
   const [serasaScore, setSerasaScore] = useState<number | null>(null);
-  const [serasaChecking, setSerasaChecking] = useState(false);
+  const [, setSerasaChecking] = useState(false);
   const [serasaStatus, setSerasaStatus] = useState<'clean' | 'restricted' | null>(null);
 
   useEffect(() => {
@@ -157,6 +132,7 @@ const Tenants: React.FC = () => {
       setSerasaScore(null);
       setSerasaStatus(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newTenant.cpf]);
 
   const [isSuccess, setIsSuccess] = useState(false);
@@ -215,12 +191,8 @@ const Tenants: React.FC = () => {
     if (idParam) {
       navigate(`/tenants/${idParam}`, { replace: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
-
-  const handleAction = (e: React.MouseEvent, type: 'tel' | 'mailto', value: string) => {
-    e.stopPropagation();
-    window.location.href = `${type}:${value}`;
-  };
 
   const getPaymentStatus = (tenant: Tenant) => {
     // 1. Onboarding & Setup States (Prevent false alerts)
@@ -545,9 +517,7 @@ const Tenants: React.FC = () => {
               <div className='w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mb-6 animate-bounce'>
                 <CheckCircle size={40} />
               </div>
-              <h2 className='text-2xl font-black text-slate-900 dark:text-white mb-2'>
-                Sucesso!
-              </h2>
+              <h2 className='text-2xl font-black text-slate-900 dark:text-white mb-2'>Sucesso!</h2>
               <p className='text-slate-500 dark:text-slate-400 text-sm mb-8'>
                 {newTenant.sendInvite
                   ? `O convite foi enviado para ${newTenant.name}. Agora ele pode completar o cadastro.`
@@ -801,12 +771,6 @@ const Tenants: React.FC = () => {
                 : data.channel === 'copy'
                   ? 'Cópia'
                   : 'Pix/Boleto';
-            const timestamp = new Date().toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            });
-            const date = new Date().toLocaleDateString('pt-BR');
-
             addToast(
               'Cobrança Enviada',
               `A cobrança para ${billingTenant.name} foi registrada com sucesso via ${channelLabel}.`,

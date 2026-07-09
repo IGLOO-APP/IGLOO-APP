@@ -12,7 +12,6 @@ interface InvoiceModalProps {
 }
 
 export const InvoiceModal: React.FC<InvoiceModalProps> = ({
-  show,
   onClose,
   monthlyValue,
   paymentDay,

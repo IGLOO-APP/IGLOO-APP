@@ -17,6 +17,59 @@ interface UserFiltersProps {
   onAddOwner: () => void;
 }
 
+interface FilterSelectInnerProps {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (val: string) => void;
+  activeDropdown: string | null;
+  setActiveDropdown: (val: string | null) => void;
+}
+
+const FilterSelect = ({
+  label,
+  value,
+  options,
+  onChange,
+  activeDropdown,
+  setActiveDropdown,
+}: FilterSelectInnerProps) => (
+  <div className='relative group'>
+    <button
+      onClick={() => setActiveDropdown(activeDropdown === label ? null : label)}
+      className='flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl shadow-sm text-sm font-bold text-card-foreground hover:bg-muted transition-all min-w-[140px] justify-between'
+    >
+      <span className='truncate'>
+        {label}: {value}
+      </span>
+      <ChevronDown
+        size={16}
+        className={`transition-transform ${activeDropdown === label ? 'rotate-180' : ''}`}
+      />
+    </button>
+
+    {activeDropdown === label && (
+      <>
+        <div className='fixed inset-0 z-10' onClick={() => setActiveDropdown(null)}></div>
+        <div className='absolute top-full left-0 mt-2 w-full bg-card rounded-2xl shadow-xl border border-border py-2 z-20 animate-scaleUp origin-top'>
+          {options.map((opt) => (
+            <button
+              key={opt}
+              onClick={() => {
+                onChange(opt);
+                setActiveDropdown(null);
+              }}
+              className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors ${value === opt ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:bg-muted'}`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+);
+
 export const UserFilters: React.FC<UserFiltersProps> = ({
   searchTerm,
   setSearchTerm,
@@ -33,53 +86,6 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   onAddOwner,
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-
-  const FilterSelect = ({
-    label,
-    value,
-    options,
-    onChange,
-  }: {
-    label: string;
-    value: string;
-    options: string[];
-    onChange: (val: string) => void;
-  }) => (
-    <div className='relative group'>
-      <button
-        onClick={() => setActiveDropdown(activeDropdown === label ? null : label)}
-        className='flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl shadow-sm text-sm font-bold text-card-foreground hover:bg-muted transition-all min-w-[140px] justify-between'
-      >
-        <span className='truncate'>
-          {label}: {value}
-        </span>
-        <ChevronDown
-          size={16}
-          className={`transition-transform ${activeDropdown === label ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {activeDropdown === label && (
-        <>
-          <div className='fixed inset-0 z-10' onClick={() => setActiveDropdown(null)}></div>
-          <div className='absolute top-full left-0 mt-2 w-full bg-card rounded-2xl shadow-xl border border-border py-2 z-20 animate-scaleUp origin-top'>
-            {options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => {
-                  onChange(opt);
-                  setActiveDropdown(null);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors ${value === opt ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:bg-muted'}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
 
   return (
     <div className='flex flex-col gap-6'>
@@ -121,24 +127,32 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
           value={filterStatus}
           options={['Todos', 'Ativo', 'Trial', 'Inativo', 'Suspenso']}
           onChange={setFilterStatus}
+          activeDropdown={activeDropdown}
+          setActiveDropdown={setActiveDropdown}
         />
         <FilterSelect
           label='Plano'
           value={filterPlan}
           options={['Todos', 'Free', 'Pro', 'Elite', 'Trial', 'Premium']}
           onChange={setFilterPlan}
+          activeDropdown={activeDropdown}
+          setActiveDropdown={setActiveDropdown}
         />
         <FilterSelect
           label='Role'
           value={filterRole}
           options={['Todos', 'Proprietário', 'Inquilino', 'Administrador']}
           onChange={setFilterRole}
+          activeDropdown={activeDropdown}
+          setActiveDropdown={setActiveDropdown}
         />
         <FilterSelect
           label='Período'
           value={filterPeriod}
           options={['Todos', 'Hoje', 'Últimos 7 dias', 'Último mês', 'Último ano']}
           onChange={setFilterPeriod}
+          activeDropdown={activeDropdown}
+          setActiveDropdown={setActiveDropdown}
         />
 
         {(filterStatus !== 'Todos' ||

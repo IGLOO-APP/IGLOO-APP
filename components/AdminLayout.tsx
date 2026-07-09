@@ -15,6 +15,7 @@ import {
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
 import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
+import { preloadRoute } from '../lib/routePreloader';
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -69,6 +70,7 @@ const AdminLayout: React.FC = () => {
               key={item.path}
               to={item.path}
               end={item.path === '/admin'}
+              onMouseEnter={() => preloadRoute(item.path)}
               className={({ isActive }) =>
                 `group relative flex items-center gap-3.5 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 ease-out ${
                   isActive

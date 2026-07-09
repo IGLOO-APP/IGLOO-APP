@@ -31,14 +31,14 @@ export function useSystemSettings() {
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
 
-  const [integrations, setIntegrations] = useState<Integrations>({
+  const [integrations] = useState<Integrations>({
     stripe: { enabled: true, status: 'Online', connected: true },
     clicksign: { enabled: true, status: 'Erro de conexão', apiKey: 'sk_test_51...f3d' },
     whatsapp: { enabled: false, apiKey: '', sender: '' },
     smtp: { host: 'smtp.igloo.pt', port: '587', user: 'noreply@igloo.pt', pass: '********' },
   });
 
-  const [notifications, setNotifications] = useState<Notifications>({
+  const [notifications] = useState<Notifications>({
     admin: {
       newOwner: { enabled: true, email: 'admin@igloo.pt' },
       integrationError: { enabled: true, email: 'dev@igloo.pt' },
@@ -58,6 +58,7 @@ export function useSystemSettings() {
     if (activeTab === 'Minutas') {
       loadTemplate();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const loadTemplate = async () => {
@@ -100,7 +101,7 @@ export function useSystemSettings() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleToggle = (_path: string, _value: boolean) => {
+  const handleToggle = (_key: string, _value: boolean) => {
     showToast('Alteração salva automaticamente');
   };
 

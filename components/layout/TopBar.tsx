@@ -124,34 +124,6 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSearchOpen]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen((p) => !p);
-      }
-      if (!isSearchOpen) return;
-      if (e.key === 'Escape') setIsSearchOpen(false);
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1));
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      }
-      if (e.key === 'Enter') {
-        const item = filteredItems[selectedIndex];
-        if (item) {
-          navigate(item.path);
-          setIsSearchOpen(false);
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchOpen, selectedIndex, query, properties, tenants]);
-
   const filteredProperties = properties
     .filter(
       (p) =>
@@ -186,8 +158,37 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
   const filteredItems = [...filteredNav, ...filteredProperties, ...filteredTenants];
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((p) => !p);
+      }
+      if (!isSearchOpen) return;
+      if (e.key === 'Escape') setIsSearchOpen(false);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1));
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      }
+      if (e.key === 'Enter' && filteredItems[selectedIndex]) {
+        const item = filteredItems[selectedIndex];
+        if (item) {
+          navigate(item.path);
+          setIsSearchOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSearchOpen, selectedIndex, query, properties, tenants]);
+
   return (
-    <header className='sticky top-0 z-40 bg-background/50 backdrop-blur-md border-b border-border px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[80px]'>
+    <header className='sticky top-0 z-40 bg-background/50 backdrop-blur-md border-b border-border px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px]'>
       <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
         {!isDashboard && (
           <button
@@ -200,9 +201,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
         )}
         <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => navigate('/')}>
           {title && (
-            <h1 className='text-lg font-bold text-foreground tracking-tight truncate'>
-              {title}
-            </h1>
+            <h1 className='text-lg font-bold text-foreground tracking-tight truncate'>{title}</h1>
           )}
           {subtitle && (
             <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest truncate'>
@@ -248,7 +247,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
           {/* Results Dropdown */}
           {isSearchOpen && (query || filteredItems.length > 0) && (
-            <div className='absolute top-full right-0 mt-2 w-[320px] md:w-[400px] bg-card rounded-[32px] shadow-sm border border-border overflow-hidden animate-scaleUp origin-top-right z-50'>
+            <div className='absolute top-full right-0 mt-2 w-[320px] max-w-[calc(100vw-2rem)] md:w-[400px] bg-card rounded-[32px] shadow-sm border border-border overflow-hidden animate-scaleUp origin-top-right z-50'>
               {filteredItems.length > 0 ? (
                 <div className='p-2 max-h-[60vh] overflow-y-auto custom-scrollbar'>
                   {filteredItems.map((item, index) => (
@@ -260,9 +259,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                       }}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
-                        index === selectedIndex
-                          ? 'bg-muted'
-                          : 'hover:bg-accent/50'
+                        index === selectedIndex ? 'bg-muted' : 'hover:bg-accent/50'
                       }`}
                     >
                       <div className='flex items-center gap-3 min-w-0'>
@@ -302,12 +299,8 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                   <div className='w-10 h-10 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground mb-3'>
                     <Search size={20} />
                   </div>
-                  <p className='text-foreground font-bold text-xs mb-1'>
-                    Nenhum resultado
-                  </p>
-                  <p className='text-[10px] text-muted-foreground'>
-                    Tente outras palavras-chave.
-                  </p>
+                  <p className='text-foreground font-bold text-xs mb-1'>Nenhum resultado</p>
+                  <p className='text-[10px] text-muted-foreground'>Tente outras palavras-chave.</p>
                 </div>
               ) : null}
 
@@ -315,22 +308,13 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
               {filteredItems.length > 0 && (
                 <div className='px-4 py-2.5 bg-muted/50 border-t border-border flex items-center gap-3 text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>
                   <span className='flex items-center gap-1'>
-                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>
-                      ↑↓
-                    </span>{' '}
-                    Navegar
+                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>↑↓</span> Navegar
                   </span>
                   <span className='flex items-center gap-1'>
-                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>
-                      Enter
-                    </span>{' '}
-                    Abrir
+                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>Enter</span> Abrir
                   </span>
                   <span className='flex items-center gap-1 ml-auto'>
-                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>
-                      Esc
-                    </span>{' '}
-                    Fechar
+                    <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>Esc</span> Fechar
                   </span>
                 </div>
               )}
@@ -365,7 +349,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           {showNotifications && (
             <>
               <div className='fixed inset-0 z-30' onClick={() => setShowNotifications(false)}></div>
-              <div className='absolute top-12 right-0 w-80 bg-card rounded-[32px] shadow-2xl border border-border py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
+              <div className='absolute top-12 right-0 w-80 max-w-[calc(100vw-2rem)] bg-card rounded-[32px] shadow-2xl border border-border py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
                 <div className='px-4 py-3 border-b border-border flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground'>
                   Notificações
                   {unreadCount > 0 && (

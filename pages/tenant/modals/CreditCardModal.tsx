@@ -17,7 +17,6 @@ interface CreditCardModalProps {
 }
 
 export const CreditCardModal: React.FC<CreditCardModalProps> = ({
-  show,
   onClose,
   processingPayment,
   paymentSuccess,

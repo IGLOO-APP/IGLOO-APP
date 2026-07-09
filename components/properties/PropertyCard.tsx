@@ -227,9 +227,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             {property.bedrooms ? (
               <span className='flex items-center gap-1'>
                 <Bed size={12} className='text-primary/70' />
-                <span className='font-bold text-card-foreground'>
-                  {property.bedrooms}
-                </span>
+                <span className='font-bold text-card-foreground'>{property.bedrooms}</span>
               </span>
             ) : null}
             {property.area && property.area !== '0m²' && property.area !== 'nullm²' && (
@@ -237,9 +235,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 <span className='w-px h-3 bg-border' />
                 <span className='flex items-center gap-1'>
                   <Square size={12} className='text-primary/70' />
-                  <span className='font-bold text-card-foreground'>
-                    {property.area}
-                  </span>
+                  <span className='font-bold text-card-foreground'>{property.area}</span>
                 </span>
               </>
             )}
@@ -319,9 +315,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             <h3 className='text-lg font-bold text-card-foreground leading-tight line-clamp-1'>
               {property.name}
             </h3>
-            <p className='text-xs text-muted-foreground line-clamp-1'>
-              {property.address}
-            </p>
+            <p className='text-xs text-muted-foreground line-clamp-1'>{property.address}</p>
           </div>
 
           {/* Right column: price + actions */}
@@ -390,9 +384,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
               <div className='flex items-center gap-1.5 px-3'>
                 <Square size={14} className='text-muted-foreground shrink-0' />
                 <div className='flex flex-col leading-none'>
-                  <span className='text-sm font-bold text-card-foreground'>
-                    {property.area}
-                  </span>
+                  <span className='text-sm font-bold text-card-foreground'>{property.area}</span>
                   <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
                     área total
                   </span>
@@ -406,9 +398,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           <div className='flex items-center gap-1.5 px-3'>
             <Clock size={14} className='text-muted-foreground shrink-0' />
             <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-card-foreground'>
-                {timeInfo.label}
-              </span>
+              <span className='text-sm font-bold text-card-foreground'>{timeInfo.label}</span>
               <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
                 {timeInfo.sub}
               </span>

@@ -2,9 +2,6 @@ import React from 'react';
 import {
   Settings,
   Shield,
-  Database,
-  Globe,
-  Bell,
   Cpu,
   Save,
   RotateCcw,
@@ -16,8 +13,6 @@ import {
   MessageSquare,
   CheckCircle,
   AlertTriangle,
-  Send,
-  Trash2,
   Calendar,
   FileText,
   Loader2,

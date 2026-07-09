@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Megaphone,
   Plus,
@@ -9,7 +9,6 @@ import {
   Info,
   Users,
   Eye,
-  Clock,
   ChevronRight,
   Zap,
   Bell,
@@ -79,14 +78,10 @@ const AnnouncementRow: React.FC<{
   ann: OwnerAnnouncement;
   isActive: boolean;
   onClick: () => void;
-  isOwner: boolean;
-  onAcknowledge?: () => void;
   fetchData: () => Promise<void>;
-}> = ({ ann, isActive, onClick, isOwner, onAcknowledge, fetchData }) => {
+}> = ({ ann, isActive, onClick, fetchData }) => {
   const meta = TYPE_META[ann.type] ?? TYPE_META.info;
   const targetMeta = TARGET_META[ann.target_type] ?? TARGET_META.all;
-
-  const now = useMemo(() => new Date(), []);
   const handleAction = async (e: React.MouseEvent, endpoint: string) => {
     e.stopPropagation();
     try {
@@ -207,16 +202,6 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
     fetchData();
   }, [fetchData]);
 
-  const handleAcknowledge = async (id: string) => {
-    if (!user || user.role !== 'tenant') return;
-    try {
-      await announcementService.acknowledge(id, user.id);
-      fetchData();
-    } catch (error) {
-      console.error('Error acknowledging:', error);
-    }
-  };
-
   if (loading)
     return (
       <div className='w-full h-full bg-slate-900/50 animate-pulse rounded-[32px] border border-white/5' />
@@ -303,8 +288,6 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 ann={ann}
                 isActive={false}
                 onClick={() => {}}
-                isOwner={isOwner}
-                onAcknowledge={() => handleAcknowledge(ann.id)}
                 fetchData={fetchData}
               />
             ))

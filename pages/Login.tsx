@@ -59,7 +59,7 @@ const Login: React.FC = () => {
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/',
       });
-    } catch (err: any) {
+    } catch {
       setError('Erro ao conectar com Google.');
       setGoogleLoading(false);
     }

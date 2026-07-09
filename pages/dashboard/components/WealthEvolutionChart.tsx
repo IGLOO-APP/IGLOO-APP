@@ -33,12 +33,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
   const displayData = period === 'Últimos 6 meses' ? wealthHistory.slice(-6) : wealthHistory;
 
   return (
-    <Card
-      className={
-        'p-5 flex flex-col ' +
-        className
-      }
-    >
+    <Card className={'p-5 flex flex-col ' + className}>
       <div className='mb-4'>
         <SectionHeader
           title='Evolução do Patrimônio'
@@ -50,9 +45,9 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
         />
       </div>
 
-      <div className='flex-1 w-full min-h-0 min-h-[200px] sm:min-h-0'>
+      <div className='flex-1 w-full min-h-[140px] sm:min-h-[200px]'>
         <ResponsiveContainer width='100%' height='100%'>
-          <AreaChart data={displayData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
+          <AreaChart data={displayData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
             <defs>
               <linearGradient id='colorWealth' x1='0' y1='0' x2='0' y2='1'>
                 <stop offset='5%' stopColor='#06b6d4' stopOpacity={0.2} />
@@ -161,7 +156,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
         </ResponsiveContainer>
       </div>
 
-      <div className='flex items-center gap-4 mt-4 px-2'>
+      <div className='flex items-center gap-2 sm:gap-4 mt-4 px-2 flex-wrap'>
         <div className='flex items-center gap-2'>
           <div className='w-4 h-[3px] bg-cyan-500 rounded-full'></div>
           <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>

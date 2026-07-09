@@ -50,9 +50,7 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
                 'flex-1 md:flex-none md:shrink-0',
                 'text-[9px] font-black uppercase tracking-wider',
                 'px-4 py-2 rounded-full transition-colors duration-200 min-w-[56px]',
-                isActive
-                  ? 'text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {/* Spring-animated active background */}

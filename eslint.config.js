@@ -6,7 +6,7 @@ import prettier from 'eslint-plugin-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', '.eslintrc.cjs', 'eslint.config.js'] },
+  { ignores: ['dist', 'dev-dist', '**/node_modules/**', '.eslintrc.cjs', 'eslint.config.js'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -24,6 +24,7 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'prettier/prettier': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   }
 );

@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  Search,
-  RefreshCw,
-  FileText,
-  BarChart3,
-  Loader2,
-  Trash2,
-} from 'lucide-react';
+import { Plus, Search, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -158,11 +150,7 @@ const Contracts: React.FC = () => {
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       {/* Header */}
       <TopBar title='Gestão de Contratos' subtitle='Ciclo de vida e assinaturas digitais'>
-        <Button
-          onClick={() => setShowWizard(true)}
-          variant='default'
-          size='default'
-        >
+        <Button onClick={() => setShowWizard(true)} variant='default' size='default'>
           <Plus size={16} />
           <span className='hidden sm:inline'>Novo Contrato</span>
         </Button>
@@ -296,10 +284,7 @@ const Contracts: React.FC = () => {
         />
       )}
 
-      <AlertDialog
-        open={!!deletingContract}
-        onOpenChange={(v) => !v && setDeletingContract(null)}
-      >
+      <AlertDialog open={!!deletingContract} onOpenChange={(v) => !v && setDeletingContract(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Contrato?</AlertDialogTitle>

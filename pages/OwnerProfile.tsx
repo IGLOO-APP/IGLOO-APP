@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Mail,
   Phone,
-  Calendar,
   Award,
   Clock,
   Camera,
@@ -16,8 +15,6 @@ import {
   Download,
   UploadCloud,
   MapPin,
-  Globe,
-  MoreVertical,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 

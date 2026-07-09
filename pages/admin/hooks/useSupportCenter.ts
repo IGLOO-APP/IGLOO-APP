@@ -4,7 +4,7 @@ import { adminService } from '../../../services/adminService';
 import { faqService } from '../../../services/faqService';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotification } from '../../../context/NotificationContext';
-import { FAQ, User as UserType } from '../../../types';
+import { FAQ } from '../../../types';
 
 export interface Message {
   id: string;

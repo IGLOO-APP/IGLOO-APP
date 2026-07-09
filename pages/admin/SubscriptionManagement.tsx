@@ -6,18 +6,11 @@ import {
   TrendingUp,
   Users,
   DollarSign,
-  ArrowUpRight,
   Download,
-  Filter,
-  MoreHorizontal,
   Plus,
   ChevronRight,
-  TrendingDown,
-  Clock,
-  Check,
   X,
   PlusCircle,
-  AlertCircle,
 } from 'lucide-react';
 import {
   BarChart,
@@ -42,8 +35,9 @@ const SubscriptionManagement: React.FC = () => {
   const navigate = useNavigate();
   const [revenuePeriod, setRevenuePeriod] = useState('Últimos 6 meses');
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [revenueData, setRevenueData] = useState<any[]>([]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -56,8 +50,6 @@ const SubscriptionManagement: React.FC = () => {
         setRevenueData(growth.map((g) => ({ name: g.name, value: g.revenue })));
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
     loadStats();
@@ -73,8 +65,6 @@ const SubscriptionManagement: React.FC = () => {
   const [newPlanStatus, setNewPlanStatus] = useState<'active' | 'draft'>('active');
   const [newFeature, setNewFeature] = useState('');
   const [featuresList, setFeaturesList] = useState<string[]>([]);
-
-  const [revenueData, setRevenueData] = useState<any[]>([]);
 
   const movementMetrics = [
     {

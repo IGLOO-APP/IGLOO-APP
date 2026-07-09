@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Map, List, Grid, Filter, Loader2, X } from 'lucide-react';
+import { Search, Plus, Map, List, Grid, Filter, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Property } from '../types';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ const Properties: React.FC = () => {
 
   useEffect(() => {
     if (location.state && (location.state as any).openAdd) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowAddForm(true);
       window.history.replaceState({}, document.title);
     }
@@ -236,17 +237,25 @@ const Properties: React.FC = () => {
               <div className='px-6'>
                 <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
                   <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
-                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Total</p>
-                    <p className='text-3xl font-bold text-slate-900 dark:text-white'>{properties.length}</p>
+                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
+                      Total
+                    </p>
+                    <p className='text-3xl font-bold text-slate-900 dark:text-white'>
+                      {properties.length}
+                    </p>
                   </div>
                   <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
-                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Alugados</p>
+                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
+                      Alugados
+                    </p>
                     <p className='text-3xl font-bold text-slate-900 dark:text-white'>
                       {properties.filter((p) => p.status === 'ALUGADO').length}
                     </p>
                   </div>
                   <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
-                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>Livres</p>
+                    <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
+                      Livres
+                    </p>
                     <p className='text-3xl font-bold text-slate-900 dark:text-white'>
                       {properties.filter((p) => p.status === 'DISPONÍVEL').length}
                     </p>
@@ -277,36 +286,81 @@ const Properties: React.FC = () => {
                 {showAdvancedFilters && (
                   <div className='animate-slideUp p-6 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 shadow-md space-y-6'>
                     <div className='flex justify-between items-center'>
-                      <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>Filtros Avançados</h4>
-                      <button onClick={clearFilters} className='text-xs font-bold text-primary hover:underline'>Limpar Tudo</button>
+                      <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>
+                        Filtros Avançados
+                      </h4>
+                      <button
+                        onClick={clearFilters}
+                        className='text-xs font-bold text-primary hover:underline'
+                      >
+                        Limpar Tudo
+                      </button>
                     </div>
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
                       <div className='space-y-3'>
-                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Dormitórios & Banheiros</label>
+                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                          Dormitórios & Banheiros
+                        </label>
                         <div className='flex flex-col gap-2'>
                           <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
                             {[1, 2, 3, 4].map((n) => (
-                              <button key={n} onClick={() => setFilterBedrooms(n)} className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBedrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}>{n}{n === 4 ? '+' : ''}</button>
+                              <button
+                                key={n}
+                                onClick={() => setFilterBedrooms(n)}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBedrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                              >
+                                {n}
+                                {n === 4 ? '+' : ''}
+                              </button>
                             ))}
                           </div>
                           <div className='flex gap-1 bg-slate-100 dark:bg-black/20 p-1 rounded-lg'>
                             {[1, 2, 3].map((n) => (
-                              <button key={n} onClick={() => setFilterBathrooms(n)} className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBathrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}>{n}{n === 3 ? '+' : ''}</button>
+                              <button
+                                key={n}
+                                onClick={() => setFilterBathrooms(n)}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${filterBathrooms === n ? 'bg-white dark:bg-surface-dark text-primary shadow-sm' : 'text-slate-500'}`}
+                              >
+                                {n}
+                                {n === 3 ? '+' : ''}
+                              </button>
                             ))}
                           </div>
                         </div>
                       </div>
                       <div className='space-y-3'>
-                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Faixa de Aluguel (R$)</label>
+                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                          Faixa de Aluguel (R$)
+                        </label>
                         <div className='flex items-center gap-2'>
-                          <input type='number' placeholder='Min' value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary' />
+                          <input
+                            type='number'
+                            placeholder='Min'
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                            className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                          />
                           <span className='text-slate-300'>-</span>
-                          <input type='number' placeholder='Max' value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary' />
+                          <input
+                            type='number'
+                            placeholder='Max'
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                            className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                          />
                         </div>
                       </div>
                       <div className='space-y-3'>
-                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>Área Mínima (m²)</label>
-                        <input type='number' placeholder='Ex: 50' value={minArea} onChange={(e) => setMinArea(e.target.value)} className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary' />
+                        <label className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                          Área Mínima (m²)
+                        </label>
+                        <input
+                          type='number'
+                          placeholder='Ex: 50'
+                          value={minArea}
+                          onChange={(e) => setMinArea(e.target.value)}
+                          className='w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 text-sm outline-none focus:border-primary'
+                        />
                       </div>
                     </div>
                   </div>
@@ -330,7 +384,13 @@ const Properties: React.FC = () => {
                     <p>Carregando imóveis...</p>
                   </div>
                 ) : filteredProperties.length > 0 ? (
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 gap-4 pt-4' : 'space-y-4 pt-4'}>
+                  <div
+                    className={
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-2 md:grid-cols-3 gap-4 pt-4'
+                        : 'space-y-4 pt-4'
+                    }
+                  >
                     {filteredProperties.map((prop) => (
                       <PropertyCard
                         key={prop.id}
@@ -348,8 +408,12 @@ const Properties: React.FC = () => {
                     <div className='bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3'>
                       <Search className='text-gray-400' size={32} />
                     </div>
-                    <p className='text-slate-900 dark:text-white font-bold'>Nenhum imóvel encontrado</p>
-                    <p className='text-slate-500 dark:text-slate-400 text-sm'>Tente mudar os filtros ou a busca.</p>
+                    <p className='text-slate-900 dark:text-white font-bold'>
+                      Nenhum imóvel encontrado
+                    </p>
+                    <p className='text-slate-500 dark:text-slate-400 text-sm'>
+                      Tente mudar os filtros ou a busca.
+                    </p>
                   </div>
                 )}
               </div>

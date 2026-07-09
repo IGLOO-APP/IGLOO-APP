@@ -60,7 +60,7 @@ const SignUpPage: React.FC = () => {
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/',
       });
-    } catch (err: any) {
+    } catch {
       setError('Erro ao criar conta com Google.');
       setGoogleLoading(false);
     }

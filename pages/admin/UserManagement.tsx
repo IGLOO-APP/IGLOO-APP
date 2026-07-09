@@ -102,7 +102,7 @@ const UserManagement: React.FC = () => {
       showToast('Plano atualizado com sucesso.');
       setIsPlanModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['users'] });
-    } catch (error) {
+    } catch {
       showToast('Erro ao atualizar plano.', 'error');
     }
   };
@@ -113,7 +113,7 @@ const UserManagement: React.FC = () => {
       await adminService.unsuspendUser(user.id.toString());
       showToast('Usuário reativado com sucesso.');
       queryClient.invalidateQueries({ queryKey: ['users'] });
-    } catch (error) {
+    } catch {
       showToast('Erro ao reativar usuário.', 'error');
     }
   };
@@ -128,7 +128,7 @@ const UserManagement: React.FC = () => {
       await adminService.suspendUser(userId, reason, notes, notifyUser);
       showToast('Usuário suspenso com sucesso.');
       queryClient.invalidateQueries({ queryKey: ['users'] });
-    } catch (error) {
+    } catch {
       showToast('Erro ao suspender usuário.', 'error');
     }
   };
@@ -139,7 +139,7 @@ const UserManagement: React.FC = () => {
       await adminService.updateUserRole(user.id.toString(), 'owner');
       showToast('Usuário aprovado com sucesso.');
       queryClient.invalidateQueries({ queryKey: ['users'] });
-    } catch (error) {
+    } catch {
       showToast('Erro ao aprovar usuário.', 'error');
     }
   };
@@ -221,7 +221,7 @@ const UserManagement: React.FC = () => {
             link.click();
             URL.revokeObjectURL(url);
             showToast('Dados exportados com sucesso.');
-          } catch (error) {
+          } catch {
             showToast('Erro ao exportar dados.', 'error');
           }
         }}

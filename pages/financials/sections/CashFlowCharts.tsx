@@ -170,10 +170,7 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
         </div>
         <div className='grid grid-cols-3 gap-2 relative z-10'>
           {forecastData.map((item, idx) => (
-            <div
-              key={idx}
-              className='bg-muted/50 p-2 rounded-xl border border-border'
-            >
+            <div key={idx} className='bg-muted/50 p-2 rounded-xl border border-border'>
               <p className='text-[9px] font-black text-slate-400 uppercase'>{item.name}</p>
               <p className='text-xs font-bold text-slate-900 dark:text-white mt-0.5'>
                 {formatCurrency(item.valor)}

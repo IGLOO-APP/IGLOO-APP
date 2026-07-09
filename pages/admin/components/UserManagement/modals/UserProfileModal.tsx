@@ -58,11 +58,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 Cadastro
               </p>
               <p className='font-bold text-foreground'>
-                {new Date((user as any).created_at || Date.now()).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                })}
+                {(user as any).created_at
+                  ? new Date((user as any).created_at).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : '--'}
               </p>
             </div>
             <div className='p-5 rounded-2xl bg-muted/50 border border-border'>

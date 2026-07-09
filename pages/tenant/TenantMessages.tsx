@@ -34,9 +34,9 @@ const TenantMessages: React.FC = () => {
 
   useEffect(() => {
     if (!user?.id) return;
-    setLoading(true);
 
     (async () => {
+      setLoading(true);
       const { data: conversations } = await supabase
         .from('conversations')
         .select('*, properties(name)')

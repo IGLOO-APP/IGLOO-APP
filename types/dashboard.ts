@@ -1,5 +1,3 @@
-import { Property, Tenant, Contract, FinancialTransaction } from './index';
-
 export interface DashboardMetrics {
   totalWealth: string;
   mrr: string;

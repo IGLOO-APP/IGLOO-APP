@@ -1,23 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  MessageSquare,
-  Search,
-  User,
-  ExternalLink,
-  Filter,
-  Loader2,
-  Building2,
-  Calendar,
-} from 'lucide-react';
+import { MessageSquare, Search, ExternalLink, Loader2, Building2, Calendar } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import { messageService } from '../../services/messageService';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-
 const AdminConversations: React.FC = () => {
   const { startImpersonation } = useAuth();
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch all users to allow starting a conversation/impersonating

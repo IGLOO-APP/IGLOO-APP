@@ -67,8 +67,6 @@ const SupportCenter: React.FC = () => {
     setInputText,
     fileInputRef,
     messagesEndRef,
-    quickReplies,
-    tickets,
     messages,
     selectedTicket,
     filteredTickets,

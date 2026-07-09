@@ -223,11 +223,13 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </td>
                   <td className='px-8 py-5'>
                     <p className='text-sm font-bold text-slate-600 dark:text-slate-400'>
-                      {new Date((u as any).created_at || Date.now()).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {(u as any).created_at
+                        ? new Date((u as any).created_at).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '--'}
                     </p>
                   </td>
                   <td className='px-8 py-5'>

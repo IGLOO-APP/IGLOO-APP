@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financeService } from '../../../services/finance/financeService';
@@ -17,7 +17,6 @@ import type {
   ApportionmentResult,
   MatchedBankTransaction,
   Property,
-  Contract,
 } from '../../../types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -55,7 +54,7 @@ export function useFinancials() {
   const [apportionTotal, setApportionTotal] = useState('');
   const [apportionMethod, setApportionMethod] = useState<'fixed' | 'people'>('fixed');
   const [apportionResult, setApportionResult] = useState<ApportionmentResult | null>(null);
-  const [units, setUnits] = useState<UnitParams[]>([]);
+  const [units] = useState<UnitParams[]>([]);
   const [selectedUnitsIds, setSelectedUnitsIds] = useState<string[]>([]);
 
   const [isProcessingFile, setIsProcessingFile] = useState(false);

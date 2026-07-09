@@ -16,6 +16,7 @@ import { UserButton } from '@clerk/clerk-react';
 import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { tenantService } from '../services/tenancy/tenantService';
 import { supabase } from '../lib/supabase';
+import { preloadRoute } from '../lib/routePreloader';
 
 const TenantLayout: React.FC = () => {
   const { user } = useAuth();
@@ -219,6 +220,7 @@ const TenantLayout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   end={item.path === '/tenant'}
+                  onMouseEnter={() => preloadRoute(item.path)}
                   className={({ isActive }) =>
                     `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${
                       isActive

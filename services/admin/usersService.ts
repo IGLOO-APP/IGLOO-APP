@@ -144,7 +144,8 @@ export const usersService = {
       .eq('id', userId);
     if (profileError) throw profileError;
     await auditService.logActivity('suspend_user', 'user', userId, { reason, notes, notifyUser });
-    if (notifyUser) console.log(`[Mock] Sending suspension email to user ${userId}`);
+    if (notifyUser)
+      console.warn(`[usersService] Email notification not implemented for user ${userId}`);
   },
 
   async unsuspendUser(userId: string) {

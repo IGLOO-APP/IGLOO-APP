@@ -56,7 +56,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
       <CardContent className='pt-4'>
         <div className='h-[220px] sm:h-[300px] w-full'>
           <ResponsiveContainer width='100%' height='100%'>
-            <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
+            <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id='colorIncome' x1='0' y1='0' x2='0' y2='1'>
                   <stop offset='5%' stopColor='#10b981' stopOpacity={0.8} />
@@ -243,7 +243,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
           </ResponsiveContainer>
         </div>
 
-        <div className='flex items-center gap-4 mt-3 px-2'>
+        <div className='flex items-center gap-2 sm:gap-4 mt-3 px-2 flex-wrap'>
           <div className='flex items-center gap-2'>
             <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
             <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>

@@ -198,6 +198,7 @@ const TenantMaintenance: React.FC = () => {
     if (pendingTicket && requests.find((r) => r.id === pendingTicket.id)) {
       setPendingTicket(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requests]);
 
   // ─── Mutations ───────────────────────────────────────────

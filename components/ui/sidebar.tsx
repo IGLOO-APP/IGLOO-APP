@@ -87,7 +87,7 @@ const Sidebar = React.forwardRef<
     collapsible?: 'offcanvas' | 'icon' | 'none';
   }
 >(({ side = 'left', collapsible = 'icon', className, children, ...props }, ref) => {
-  const { isMobile, open, state } = useSidebar();
+  const { isMobile, open, setOpen, state } = useSidebar();
 
   if (isMobile) {
     return (
@@ -97,10 +97,7 @@ const Sidebar = React.forwardRef<
           <div
             data-slot='sidebar-overlay'
             className='fixed inset-0 z-40 bg-black/20 backdrop-blur-xs transition-opacity duration-200 md:hidden'
-            onClick={() => {
-              const ctx = React.useContext(SidebarContext);
-              ctx?.setOpen(false);
-            }}
+            onClick={() => setOpen?.(false)}
           />
         )}
         <div
@@ -112,11 +109,7 @@ const Sidebar = React.forwardRef<
           className={cn(
             'fixed inset-y-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out md:hidden',
             side === 'left' ? 'left-0' : 'right-0',
-            open
-              ? 'translate-x-0'
-              : side === 'left'
-                ? '-translate-x-full'
-                : 'translate-x-full',
+            open ? 'translate-x-0' : side === 'left' ? '-translate-x-full' : 'translate-x-full',
             'w-[var(--sidebar-width-mobile)]'
           )}
           {...props}

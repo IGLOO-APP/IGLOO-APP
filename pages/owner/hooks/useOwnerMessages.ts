@@ -245,6 +245,7 @@ export function useOwnerMessages() {
     };
 
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -639,9 +640,10 @@ export function useOwnerMessages() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChatId]);
 
+  const activeMessages = chats.find((c) => c.id === activeChatId)?.messages;
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chats.find((c) => c.id === activeChatId)?.messages]);
+  }, [activeMessages]);
 
   const handleSendMessage = async (
     text: string = inputText,

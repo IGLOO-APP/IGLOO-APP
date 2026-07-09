@@ -28,9 +28,7 @@ const AdminDashboard = () => {
                 <CardTitle className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
                   {stat.title}
                 </CardTitle>
-                <p className='mt-2 text-2xl font-black text-card-foreground'>
-                  {stat.value}
-                </p>
+                <p className='mt-2 text-2xl font-black text-card-foreground'>{stat.value}</p>
               </div>
               <div className='p-3.5 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform'>
                 <stat.icon className='h-6 w-6' />
@@ -61,9 +59,7 @@ const AdminDashboard = () => {
                 key={i}
                 className='flex items-center justify-between p-4 rounded-2xl bg-muted/50 hover:bg-accent transition-all cursor-pointer group'
               >
-                <span className='text-sm font-bold text-card-foreground'>
-                  {item.action}
-                </span>
+                <span className='text-sm font-bold text-card-foreground'>{item.action}</span>
                 <div className='flex items-center gap-2'>
                   <span className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
                     {item.time}
@@ -80,7 +76,11 @@ const AdminDashboard = () => {
 
         <Card>
           <CardHeader>
-            <SectionHeader title='Alertas de Sistema' icon={Bell} iconColor='text-muted-foreground' />
+            <SectionHeader
+              title='Alertas de Sistema'
+              icon={Bell}
+              iconColor='text-muted-foreground'
+            />
           </CardHeader>
           <CardContent>
             <div className='flex flex-col items-center justify-center py-12 text-center'>

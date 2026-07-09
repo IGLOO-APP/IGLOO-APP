@@ -35,13 +35,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   getFieldClass,
   handleSaveProfile,
   setActiveTab,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   totalRequired: _totalRequired,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   avatarInputRef: _avatarInputRef,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   handleAvatarChange: _handleAvatarChange,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isSaving: _isSaving,
 }) => {
   return (

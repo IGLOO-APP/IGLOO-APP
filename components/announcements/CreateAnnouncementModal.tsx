@@ -25,11 +25,22 @@ import { AnnouncementType, AnnouncementTargetType, Property } from '../../types'
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 
-const PLACEHOLDER_META: Record<string, { label: string; icon: React.ReactNode; placeholder: string }> = {
-  '[LOCAL]': { label: 'Local', icon: <MapPin size={14} />, placeholder: 'Ex: Elevador, Salão de Festas...' },
+const PLACEHOLDER_META: Record<
+  string,
+  { label: string; icon: React.ReactNode; placeholder: string }
+> = {
+  '[LOCAL]': {
+    label: 'Local',
+    icon: <MapPin size={14} />,
+    placeholder: 'Ex: Elevador, Salão de Festas...',
+  },
   '[DATA]': { label: 'Data', icon: <Calendar size={14} />, placeholder: 'Ex: 15/07/2026' },
   '[HORA]': { label: 'Horário', icon: <ClockIcon size={14} />, placeholder: 'Ex: 14:00' },
-  '[ASSUNTO]': { label: 'Assunto', icon: <FileText size={14} />, placeholder: 'Ex: Reforma do salão' },
+  '[ASSUNTO]': {
+    label: 'Assunto',
+    icon: <FileText size={14} />,
+    placeholder: 'Ex: Reforma do salão',
+  },
 };
 
 interface CreateAnnouncementModalProps {
@@ -179,7 +190,10 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
     setPlaceholderValues(vals);
   };
 
-  const foundPlaceholders = useMemo(() => extractPlaceholders(formData.content), [formData.content]);
+  const foundPlaceholders = useMemo(
+    () => extractPlaceholders(formData.content),
+    [formData.content]
+  );
 
   const resolvedContent = useMemo(() => {
     let text = formData.content;
@@ -208,39 +222,37 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
         <p className='text-xs text-muted-foreground'>Você poderá editar o conteúdo depois</p>
       </div>
       <div className='grid gap-3 grid-cols-1 sm:grid-cols-2'>
-        {templates
-          .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
-          .map((tpl, i) => {
-            const dotColor =
-              tpl.type === 'maintenance'
-                ? 'bg-amber-400'
-                : tpl.type === 'warning'
-                  ? 'bg-red-400'
-                  : tpl.type === 'event'
-                    ? 'bg-emerald-400'
-                    : 'bg-primary';
-            return (
-              <button
-                key={i}
-                onClick={() => {
-                  fillTemplate(tpl);
-                  setStep(1);
-                }}
-                className='text-left w-full p-4 rounded-2xl bg-white dark:bg-surface-dark border border-border hover:border-primary/40 hover:shadow-md transition-all ring-1 ring-inset ring-transparent hover:ring-primary/20 space-y-2'
-              >
-                <div className='flex items-center gap-2'>
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
-                  <span className='text-sm font-bold text-foreground'>{tpl.title}</span>
-                  <span className='ml-auto text-[10px] text-muted-foreground uppercase tracking-wider font-medium'>
-                    Usar →
-                  </span>
-                </div>
-                <p className='text-xs text-muted-foreground leading-relaxed line-clamp-2'>
-                  {tpl.content}
-                </p>
-              </button>
-            );
-          })}
+        {templates.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE).map((tpl, i) => {
+          const dotColor =
+            tpl.type === 'maintenance'
+              ? 'bg-amber-400'
+              : tpl.type === 'warning'
+                ? 'bg-red-400'
+                : tpl.type === 'event'
+                  ? 'bg-emerald-400'
+                  : 'bg-primary';
+          return (
+            <button
+              key={i}
+              onClick={() => {
+                fillTemplate(tpl);
+                setStep(1);
+              }}
+              className='text-left w-full p-4 rounded-2xl bg-white dark:bg-surface-dark border border-border hover:border-primary/40 hover:shadow-md transition-all ring-1 ring-inset ring-transparent hover:ring-primary/20 space-y-2'
+            >
+              <div className='flex items-center gap-2'>
+                <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
+                <span className='text-sm font-bold text-foreground'>{tpl.title}</span>
+                <span className='ml-auto text-[10px] text-muted-foreground uppercase tracking-wider font-medium'>
+                  Usar →
+                </span>
+              </div>
+              <p className='text-xs text-muted-foreground leading-relaxed line-clamp-2'>
+                {tpl.content}
+              </p>
+            </button>
+          );
+        })}
       </div>
 
       {totalPages > 1 && (
@@ -250,7 +262,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             disabled={page === 0}
             className='w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all disabled:opacity-20 disabled:pointer-events-none'
           >
-            <span className='rotate-180 inline-block'><ChevronRight size={14} /></span>
+            <span className='rotate-180 inline-block'>
+              <ChevronRight size={14} />
+            </span>
           </button>
           <div className='flex gap-1'>
             {Array.from({ length: totalPages }, (_, i) => (
@@ -337,8 +351,12 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({
             const keys = extractPlaceholders(e.target.value);
             setPlaceholderValues((prev) => {
               const next = { ...prev };
-              Object.keys(next).forEach((k) => { if (!keys.includes(k)) delete next[k]; });
-              keys.forEach((k) => { if (!(k in next)) next[k] = ''; });
+              Object.keys(next).forEach((k) => {
+                if (!keys.includes(k)) delete next[k];
+              });
+              keys.forEach((k) => {
+                if (!(k in next)) next[k] = '';
+              });
               return next;
             });
           }}

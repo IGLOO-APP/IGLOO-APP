@@ -226,7 +226,7 @@ export const useTenantProfile = () => {
     );
   };
 
-  const getFieldClass = (_value: string) => {
+  const getFieldClass = () => {
     return `w-full px-4 py-3 rounded-xl border transition-all text-sm font-bold ${
       isEditing
         ? 'bg-white dark:bg-surface-dark border-primary/30 focus:ring-2 focus:ring-primary focus:border-transparent text-slate-900 dark:text-white'

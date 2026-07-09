@@ -69,11 +69,7 @@ const Financials: React.FC = () => {
           >
             <FileText size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
-          <Button
-            onClick={() => h.setShowAddForm(true)}
-            variant='default'
-            size='default'
-          >
+          <Button onClick={() => h.setShowAddForm(true)} variant='default' size='default'>
             <Plus size={16} /> <span className='hidden sm:inline'>Nova Receita</span>
           </Button>
         </div>

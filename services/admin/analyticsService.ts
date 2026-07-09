@@ -222,7 +222,7 @@ export const analyticsService = {
     reason: string,
     method: 'stripe' | 'credit'
   ) {
-    console.log(`Processing ${type} refund of R$${amount} via ${method} for user ${userId}`);
+    console.warn(`Processing ${type} refund of R$${amount} via ${method} for user ${userId}`);
     const { auditService } = await import('./auditService');
     await auditService.logActivity('refund_processed', 'payment', userId, {
       amount,
@@ -230,6 +230,6 @@ export const analyticsService = {
       reason,
       method,
     });
-    return { success: true, transactionId: 'mock_refund_' + Date.now() };
+    return { success: true, transactionId: crypto.randomUUID() };
   },
 };

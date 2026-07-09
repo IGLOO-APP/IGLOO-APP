@@ -70,7 +70,8 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
                   {health?.yield || '0'}%
                 </p>
                 <Badge variant='outline' className='items-center gap-0.5'>
-                  <ArrowUp size={9} />0.2%
+                  <ArrowUp size={9} />
+                  0.2%
                 </Badge>
               </div>
             </div>

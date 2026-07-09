@@ -5,13 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
 import { Badge } from './badge';
 import { Button } from './button';
 import { Card } from './card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
 export const Sparkline = ({ data, color }: { data: number[]; color: string }) => (
   <div className='h-8 w-16 sm:h-10 sm:w-20 md:w-24 xl:w-16 xl:h-8 2xl:w-24 2xl:h-10'>
@@ -130,7 +124,7 @@ export const HeroCard = ({
             )}
           </div>
           <h3
-            className={`text-xl xl:text-2xl font-black tracking-tighter truncate ${
+            className={`            text-base sm:text-xl xl:text-2xl font-black tracking-tighter truncate ${
               variant === 'muted'
                 ? 'text-slate-400 dark:text-slate-500'
                 : 'text-slate-900 dark:text-white'
@@ -272,7 +266,7 @@ interface EmptyStateProps {
 }
 
 export const EmptyState = ({ icon: Icon, message, action, className = '' }: EmptyStateProps) => (
-  <div className={`flex flex-col items-center justify-center py-10 ${className}`}>
+  <div className={`flex flex-col items-center justify-center py-6 sm:py-10 ${className}`}>
     <div className='w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 mb-4'>
       <Icon size={24} strokeWidth={1.5} />
     </div>

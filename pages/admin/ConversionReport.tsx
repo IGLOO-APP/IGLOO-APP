@@ -6,17 +6,11 @@ import {
   Users,
   CreditCard,
   Clock,
-  ArrowUpRight,
-  ArrowDownRight,
-  Filter,
   Download,
-  Calendar,
   ChevronRight,
   Info,
 } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -24,7 +18,6 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Cell,
 } from 'recharts';
 import { adminService } from '../../services/adminService';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';

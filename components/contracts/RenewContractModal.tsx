@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,27 +44,15 @@ export const RenewContractModal: React.FC<RenewContractModalProps> = ({
             <div className='grid grid-cols-2 gap-4'>
               <div className='space-y-1.5'>
                 <Label className='text-xs'>Nº do Contrato</Label>
-                <Input
-                  value={contract.contract_number}
-                  disabled
-                  className='bg-muted/50'
-                />
+                <Input value={contract.contract_number} disabled className='bg-muted/50' />
               </div>
               <div className='space-y-1.5'>
                 <Label className='text-xs'>Inquilino</Label>
-                <Input
-                  value={contract.tenant_name}
-                  disabled
-                  className='bg-muted/50'
-                />
+                <Input value={contract.tenant_name} disabled className='bg-muted/50' />
               </div>
               <div className='col-span-2 space-y-1.5'>
                 <Label className='text-xs'>Imóvel</Label>
-                <Input
-                  value={contract.property}
-                  disabled
-                  className='bg-muted/50'
-                />
+                <Input value={contract.property} disabled className='bg-muted/50' />
               </div>
               <div className='space-y-1.5'>
                 <Label className='text-xs'>Data de Início</Label>
@@ -156,11 +139,7 @@ export const RenewContractModal: React.FC<RenewContractModalProps> = ({
         </div>
 
         <div className='p-6 pt-4 border-t border-border'>
-          <Button
-            onClick={handleConfirm}
-            disabled={!newEndDate}
-            className='w-full h-12 text-base'
-          >
+          <Button onClick={handleConfirm} disabled={!newEndDate} className='w-full h-12 text-base'>
             Confirmar Renovação
           </Button>
         </div>

@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div
-      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'} [zoom:1.1]`}
+      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
     >
       {showOnboarding && (
         <OwnerOnboardingWizard
@@ -211,9 +211,7 @@ const Dashboard: React.FC = () => {
                   <div className='w-12 h-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-all mb-3'>
                     <Plus size={24} strokeWidth={3} />
                   </div>
-                  <p className='text-sm font-black text-card-foreground'>
-                    Cadastrar imóvel
-                  </p>
+                  <p className='text-sm font-black text-card-foreground'>Cadastrar imóvel</p>
                 </Card>
               )}
             </div>

@@ -160,7 +160,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   };
 
   const triggerTestNotification = () => {
-    // Mock feature for demo purposes
+    if (!import.meta.env.DEV) return;
     const titles = ['Novo Pagamento', 'Solicitação de Manutenção', 'Contrato Assinado'];
     const messages = [
       'Você recebeu R$ 1.500,00',
@@ -170,7 +170,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const random = Math.floor(Math.random() * titles.length);
 
     const mockNotif: Notification = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       user_id: String(user?.id || 'uid'),
       title: titles[random],
       message: messages[random],
