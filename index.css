@@ -1,5 +1,6 @@
 @import '@fontsource-variable/geist';
 @import 'tw-animate-css';
+@import 'konsta/react/theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -284,13 +285,7 @@
     opacity: 0.8;
   }
 
-  /* Safe Area Helpers */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
+  /* Safe Area Helpers — delegado ao Konsta UI via --k-safe-area-* */
 
   .card-shadow {
     box-shadow:

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserButton } from '@clerk/clerk-react';
+import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { tenantService } from '../services/tenancy/tenantService';
 import { supabase } from '../lib/supabase';
 
@@ -309,79 +310,42 @@ const TenantLayout: React.FC = () => {
           />
         </div>
 
-        {/* ─── Mobile Bottom Navigation ─── */}
-        <nav className='md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe-bottom'>
-          {/* Glass background */}
-          <div className='absolute inset-0 bg-white/90 dark:bg-[#0d1517]/95 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/[0.07] shadow-[0_-8px_24px_-4px_rgba(0,0,0,0.08)]' />
-
-          <div className='relative flex justify-around items-center h-16 max-w-lg mx-auto px-2'>
+        {/* ─── Mobile Bottom Navigation — Konsta Tabbar ─── */}
+        <Toolbar className='md:hidden fixed bottom-0 left-0 right-0 z-50' tabbar>
+          <Tabbar>
             {navItems.map((item) => {
-              const isDisabled = item.disabled;
-              if (isDisabled) {
+              const isActive = !item.disabled && location.pathname === item.path;
+              if (item.disabled) {
                 return (
-                  <div
+                  <TabbarLink
                     key={item.path}
-                    className='flex flex-col items-center justify-center w-14 gap-1 cursor-not-allowed select-none'
+                    active={false}
+                    label={item.label}
+                    className='opacity-35 cursor-not-allowed'
                     title='Complete o onboarding para desbloquear'
                   >
-                    <div className='relative'>
-                      <item.icon
-                        size={22}
-                        strokeWidth={1.8}
-                        className='text-slate-300 dark:text-slate-700'
-                      />
-                      <div className='absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-slate-300 dark:bg-slate-700 rounded-full flex items-center justify-center'>
-                        <Lock size={7} className='text-white dark:text-slate-900' />
-                      </div>
-                    </div>
-                    <span className='text-[9px] font-bold text-slate-300 dark:text-slate-700'>
-                      {item.label}
+                    <span className='relative inline-flex'>
+                      <item.icon size={21} strokeWidth={1.8} />
+                      <span className='absolute -top-1 -right-2 w-3 h-3 bg-slate-400 rounded-full flex items-center justify-center'>
+                        <Lock size={6} className='text-white' />
+                      </span>
                     </span>
-                  </div>
+                  </TabbarLink>
                 );
               }
               return (
-                <NavLink
+                <TabbarLink
                   key={item.path}
-                  to={item.path}
-                  end={item.path === '/tenant'}
-                  className={({ isActive }) =>
-                    `flex flex-col items-center justify-center w-14 gap-1 transition-all duration-200 active:scale-90 ${
-                      isActive ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
-                    }`
-                  }
+                  active={isActive}
+                  label={item.label}
+                  onClick={() => navigate(item.path)}
                 >
-                  {({ isActive }) => (
-                    <>
-                      <div className='relative'>
-                        {/* Active pill indicator */}
-                        {isActive && (
-                          <div className='absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-primary rounded-full' />
-                        )}
-                        <div
-                          className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-                            isActive
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-slate-400 dark:text-slate-500'
-                          }`}
-                        >
-                          <item.icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[9px] font-black leading-none transition-colors ${
-                          isActive ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                    </>
-                  )}
-                </NavLink>
+                  <item.icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
+                </TabbarLink>
               );
             })}
-          </div>
-        </nav>
+          </Tabbar>
+        </Toolbar>
       </main>
     </div>
   );

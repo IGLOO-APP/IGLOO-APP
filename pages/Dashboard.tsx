@@ -219,7 +219,7 @@ const Dashboard: React.FC = () => {
             </div>
           </section>
 
-          <section className='lg:col-span-7 pl-5 pt-6'>
+          <section className='lg:col-span-7 lg:pl-5 lg:pt-6'>
             <WealthEvolutionChart
               wealthHistory={wealthHistory || []}
               isDark={isDark}

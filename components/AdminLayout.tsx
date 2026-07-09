@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, NavLink, useLocation, Link } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
+import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,6 +30,7 @@ const adminNavItems = [
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const filteredNavItems = adminNavItems.filter((item) => {
@@ -136,28 +138,24 @@ const AdminLayout: React.FC = () => {
           <Outlet />
         </div>
 
-        {/* Mobile Nav */}
-        <nav className='md:hidden fixed bottom-0 w-full bg-slate-900 dark:bg-surface-dark/95 backdrop-blur-xl border-t border-white/5 pb-safe-bottom pt-1 px-2 z-50'>
-          <div className='flex justify-around items-center h-16 max-w-lg mx-auto'>
+        {/* Mobile Nav — Konsta Tabbar */}
+        <Toolbar className='md:hidden fixed bottom-0 left-0 right-0 z-50' tabbar>
+          <Tabbar>
             {filteredNavItems.slice(0, 4).map((item) => {
               const isActive = location.pathname === item.path;
               return (
-                <NavLink
+                <TabbarLink
                   key={item.path}
-                  to={item.path}
-                  className={`relative flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${
-                    isActive ? 'text-primary scale-105' : 'text-slate-500'
-                  }`}
+                  active={isActive}
+                  label={item.label.split(' ')[0]}
+                  onClick={() => navigate(item.path)}
                 >
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  <span className='text-[10px] font-bold truncate w-full text-center'>
-                    {item.label.split(' ')[0]}
-                  </span>
-                </NavLink>
+                </TabbarLink>
               );
             })}
-          </div>
-        </nav>
+          </Tabbar>
+        </Toolbar>
       </main>
     </div>
   );

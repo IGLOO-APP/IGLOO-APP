@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Megaphone } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Navbar, NavbarBackLink } from 'konsta/react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { announcementService } from '../../services/announcementService';
@@ -53,13 +54,15 @@ const TenantMessages: React.FC = () => {
           .in('conversation_id', ids)
           .order('created_at', { ascending: true });
 
-        const mapped = ((convMsgs || []) as Array<{
-          id: string;
-          content: string;
-          type: string | null;
-          sender_role: string | null;
-          created_at: string;
-        }>).map((m) => ({
+        const mapped = (
+          (convMsgs || []) as Array<{
+            id: string;
+            content: string;
+            type: string | null;
+            sender_role: string | null;
+            created_at: string;
+          }>
+        ).map((m) => ({
           id: m.id,
           text: m.content,
           isAnnouncement: m.type === 'announcement' || m.sender_role === 'system',
@@ -84,23 +87,16 @@ const TenantMessages: React.FC = () => {
 
   return (
     <div className='flex flex-col h-full w-full bg-background'>
-      <header className='flex items-center gap-3 px-4 py-3 bg-card border-b border-border shrink-0 z-20'>
-        <button
-          onClick={() => navigate('/tenant')}
-          className='p-2 -ml-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors'
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-          <Megaphone size={20} />
-        </div>
-        <div>
-          <h2 className='text-sm font-bold text-card-foreground leading-tight'>Mensagens</h2>
-          {propertyName && (
-            <p className='text-xs text-muted-foreground font-medium'>{propertyName}</p>
-          )}
-        </div>
-      </header>
+      <Navbar
+        title='Mensagens'
+        subtitle={propertyName || undefined}
+        left={<NavbarBackLink onClick={() => navigate('/tenant')} />}
+        right={
+          <div className='w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
+            <Megaphone size={18} />
+          </div>
+        }
+      />
 
       <div className='flex-1 overflow-y-auto p-4 space-y-4'>
         {loading ? (
@@ -138,9 +134,7 @@ const TenantMessages: React.FC = () => {
                     {msg.text}
                   </p>
                 </div>
-                <span className='text-[10px] text-muted-foreground mt-1.5 px-1'>
-                  {msg.time}
-                </span>
+                <span className='text-[10px] text-muted-foreground mt-1.5 px-1'>{msg.time}</span>
               </div>
             </div>
           ))

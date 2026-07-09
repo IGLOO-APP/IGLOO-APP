@@ -106,6 +106,7 @@ const ProtectedRoute: React.FC<{
   return children;
 };
 
+import { App as KonstaApp } from 'konsta/react';
 import GlobalErrorElement from './components/GlobalErrorElement';
 
 // Root componente que envolve a aplicação com os provedores necessários
@@ -244,12 +245,14 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SearchProvider>
-        <RouterProvider
-          router={router}
-          future={{
-            v7_startTransition: true,
-          }}
-        />
+        <KonstaApp theme='material' safeAreas materialTouchRipple>
+          <RouterProvider
+            router={router}
+            future={{
+              v7_startTransition: true,
+            }}
+          />
+        </KonstaApp>
       </SearchProvider>
     </QueryClientProvider>
   );
