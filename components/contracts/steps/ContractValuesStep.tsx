@@ -159,6 +159,43 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
               </div>
             </div>
 
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black mb-2 ml-1'>
+                  Condomínio
+                </label>
+                <div className='relative'>
+                  <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
+                    R$
+                  </span>
+                  <input
+                    type='number'
+                    value={formData.condominiumValue}
+                    onChange={(e) => onFormDataChange({ condominiumValue: e.target.value })}
+                    className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                    placeholder='0,00'
+                  />
+                </div>
+              </div>
+              <div>
+                <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black mb-2 ml-1'>
+                  IPTU
+                </label>
+                <div className='relative'>
+                  <span className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xl'>
+                    R$
+                  </span>
+                  <input
+                    type='number'
+                    value={formData.iptuValue}
+                    onChange={(e) => onFormDataChange({ iptuValue: e.target.value })}
+                    className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                    placeholder='0,00'
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className='pt-6 border-t border-slate-100 dark:border-white/5'>
               <div className='flex items-center justify-between mb-4'>
                 <div className='flex flex-col'>

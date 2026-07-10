@@ -23,6 +23,7 @@ import { TenantConfigTab } from './sections/TenantConfigTab';
 import { UtilitiesTab } from './sections/UtilitiesTab';
 import { ImageViewerModal } from './modals/ImageViewerModal';
 import { propertyService } from '../../services/propertyService';
+import { AddPropertyForm } from '../../components/properties/AddPropertyForm';
 
 const PropertyDetailsPage: React.FC = () => {
   const h = usePropertyDetails();
@@ -63,6 +64,28 @@ const PropertyDetailsPage: React.FC = () => {
   }
 
   const { property } = h;
+
+  if (h.showEditForm) {
+    return (
+      <AddPropertyForm
+        onClose={() => h.setShowEditForm(false)}
+        onSave={h.handleEditSave}
+        initialData={{
+          nickname: property.name,
+          rentValue: property.price,
+          area: property.area?.replace(/\D/g, ''),
+          bedrooms: property.bedrooms || 0,
+          bathrooms: property.bathrooms || 0,
+          parking: property.parking || 0,
+          coverImage: property.image,
+          galleryImages: property.galleryImages || [],
+          street: property.address.split(',')[0],
+          number: property.address.split(',')[1]?.split('-')[0]?.trim() || '',
+          neighborhood: property.address.split('-')[1]?.trim() || '',
+        }}
+      />
+    );
+  }
 
   return (
     <div className='flex flex-col h-full bg-background text-foreground overflow-hidden transition-colors duration-300'>
@@ -188,7 +211,7 @@ const PropertyDetailsPage: React.FC = () => {
             <OverviewTab
               property={property}
               timeInfo={h.timeInfo}
-              onEdit={(id) => h.navigate(`/properties?id=${id}`)}
+              onEdit={() => h.setShowEditForm(true)}
               onDelete={async (id) => {
                 if (window.confirm('Tem certeza que deseja excluir este imóvel?')) {
                   await propertyService.delete(String(id));

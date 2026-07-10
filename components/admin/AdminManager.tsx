@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { adminService } from '../../services/adminService';
 import { User } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -59,7 +59,7 @@ const AdminManager: React.FC = () => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       const data = await adminService.getAdmins();
       setAdmins(data || []);
@@ -67,7 +67,7 @@ const AdminManager: React.FC = () => {
       console.error('Error fetching admins:', error);
       showToast('Erro ao carregar lista de administradores', 'error');
     }
-  };
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

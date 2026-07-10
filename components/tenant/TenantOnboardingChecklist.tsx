@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles,
   CheckCircle,
@@ -131,7 +131,7 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
       setCpf(tenant.cpf || '');
       setPhone(tenant.phone || '');
     }
-  }, [tenant?.email]);
+  }, [tenant, user?.name]);
 
   useEffect(() => {
     if (expandedStep === 'contract' && tenant.contract?.id && !fullContract) {
@@ -141,7 +141,7 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
         setLoadingContract(false);
       });
     }
-  }, [expandedStep, tenant.contract?.id]);
+  }, [expandedStep, tenant.contract?.id, fullContract]);
 
   useEffect(() => {
     const syncInspectionState = async () => {
@@ -169,24 +169,22 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
     tenant.onboarding_inspection_status,
     tenant.onboarding_contract_status,
     tenant.contract?.status,
+    tenant.email,
+    onStepComplete,
   ]);
 
-  const steps = buildSteps(tenant, pendingInspection);
+  const steps = useMemo(() => buildSteps(tenant, pendingInspection), [tenant, pendingInspection]);
   const completedCount = steps.filter((s) => s.completed).length;
   const progressPercent = Math.round((completedCount / steps.length) * 100);
 
+  const firstActiveStepId = useMemo(
+    () => (!expandedStep ? steps.find((s) => !s.completed && s.unlocked)?.id : null),
+    [expandedStep, steps]
+  );
+
   useEffect(() => {
-    if (!expandedStep) {
-      const activeStep = steps.find((s) => !s.completed && s.unlocked);
-      if (activeStep) setExpandedStep(activeStep.id);
-    }
-  }, [
-    tenant.onboarding_profile_status,
-    tenant.onboarding_documents_status,
-    tenant.onboarding_contract_status,
-    tenant.onboarding_inspection_status,
-    tenant.onboarding_stage,
-  ]);
+    if (firstActiveStepId) setExpandedStep(firstActiveStepId);
+  }, [firstActiveStepId]);
 
   const toggleExpand = (stepId: string) => {
     setErrorMsg(null);

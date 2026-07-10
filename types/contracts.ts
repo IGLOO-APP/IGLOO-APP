@@ -21,8 +21,11 @@ export interface Signer {
   role: 'owner' | 'tenant' | 'witness';
   name: string;
   email: string;
-  status: 'pending' | 'signed' | 'rejected';
+  status: 'pending' | 'signed' | 'viewed' | 'rejected';
   signed_at?: string;
+  viewed_at?: string;
+  ip?: string;
+  hash?: string;
 }
 
 export interface ContractHistoryEvent {
@@ -63,8 +66,38 @@ export interface Contract {
 
   // Document
   pdf_url?: string;
+  contract_text?: string;
   template_type?: 'residential' | 'commercial';
 
   // Metadata for list view logic
   days_remaining?: number;
+}
+
+export interface CreateContractInput {
+  property_id: string;
+  tenant_id: string | null;
+  startDate: string;
+  duration: string;
+  rentValue: string;
+  depositValue: string;
+  paymentDay: string;
+  hasMaintenanceFee: boolean;
+  maintenanceFee: string;
+  earlyTerminationFee: string;
+  lockInPeriod: string;
+  condominiumValue: string;
+  iptuValue: string;
+  ownerName: string;
+  ownerEmail: string;
+  tenantName: string;
+  tenantCpf: string;
+  tenantEmail: string;
+  tenantPhone: string;
+  property: string;
+  contractText: string;
+  signaturePayloads: {
+    pageIndex: number;
+    signatureDataUrl: string;
+    position: { xPercent: number; yPercent: number };
+  }[];
 }

@@ -52,7 +52,7 @@ const Properties: React.FC = () => {
     if (idParam && properties.length > 0) {
       navigate(`/properties/${idParam}`, { replace: true });
     }
-  }, [location, properties]);
+  }, [location, properties, navigate]);
 
   const handleSaveProperty = async (data: any) => {
     if (!user) return;

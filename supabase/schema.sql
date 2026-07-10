@@ -184,6 +184,7 @@ create table public.contracts (
   payment_day integer default 10,
   status text check (status in ('draft', 'pending_signature', 'active', 'expiring_soon', 'expired', 'cancelled', 'renewed')) default 'draft',
   pdf_url text,
+  contract_text text,
   signers jsonb default '[]'::jsonb,
   history jsonb default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,

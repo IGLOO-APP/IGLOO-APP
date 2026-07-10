@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { propertyService } from '../../../services/propertyService';
 import { tenantService } from '../../../services/tenancy/tenantService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
@@ -12,6 +12,8 @@ export function usePropertyDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullscreenImage, setShowFullscreenImage] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const queryClient = useQueryClient();
 
   const activeTab = searchParams.get('tab') || 'overview';
 
@@ -44,6 +46,27 @@ export function usePropertyDetails() {
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleEditSave = async (data: any) => {
+    if (!property) return;
+    try {
+      await propertyService.update(String(property.id), {
+        name: data.nickname,
+        address: `${data.street}, ${data.number} - ${data.neighborhood}`,
+        price: parseFloat(data.rentValue) || 0,
+        area: parseFloat(data.area) || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        parking: data.parking || 0,
+        image_url: data.coverImage || null,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['property', id] });
+      await queryClient.invalidateQueries({ queryKey: ['properties'] });
+      setShowEditForm(false);
+    } catch (err) {
+      console.error('Erro ao atualizar imóvel:', err);
+    }
   };
 
   const getTimeLabel = () => {
@@ -125,5 +148,8 @@ export function usePropertyDetails() {
     isLate,
     getDaysInProperty,
     formattedName,
+    showEditForm,
+    setShowEditForm,
+    handleEditSave,
   };
 }

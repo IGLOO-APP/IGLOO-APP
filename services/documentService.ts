@@ -62,7 +62,6 @@ export const documentService = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getByTenant(tenantId: string): Promise<any[]> {
     // Robust query: search by UUID or Email
-    console.log('[documentService] getByTenant called with tenantId:', tenantId);
 
     // Use the correct PostgREST syntax for OR with string values
     const { data, error: profileError } = await supabase

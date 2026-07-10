@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Building2,
@@ -12,72 +12,99 @@ import {
   Camera,
   Save,
   Lock,
-  Download,
   UploadCloud,
   MapPin,
+  Loader,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { profileService } from '../services/profileService';
 
 const OwnerProfile: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'documents' | 'reputation'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [profileData, setProfileData] = useState({
-    name: user?.name || 'Proprietário Demo',
-    email: user?.email || 'proprietario@igloo.com',
-    phone: '(11) 98888-7777',
-    cpf: '123.456.789-00',
-    cnpj: '12.345.678/0001-90',
-    companyName: 'Igloo Real Estate Ltda',
-    bio: 'Investidor imobiliário focado em ativos residenciais de alta liquidez.',
-    address: 'Av. Paulista, 1000 - São Paulo, SP',
-    website: 'www.iglooimoveis.com.br',
-    avatar: user?.avatar || 'https://i.pravatar.cc/150?u=owner',
+    name: '',
+    email: '',
+    phone: '',
+    cpf: '',
+    cnpj: '',
+    companyName: '',
+    bio: '',
+    address: '',
+    website: '',
+    avatar: '',
   });
 
-  const [documents] = useState([
-    {
-      id: '1',
-      name: 'RG_Frente.pdf',
-      type: 'Identidade',
-      status: 'Verificado',
-      date: '12 Jan 2024',
-    },
-    {
-      id: '2',
-      name: 'Comprovante_Endereco.jpg',
-      type: 'Residência',
-      status: 'Verificado',
-      date: '15 Jan 2024',
-    },
-    {
-      id: '3',
-      name: 'Contrato_Social.pdf',
-      type: 'Empresa',
-      status: 'Em Análise',
-      date: '20 Mar 2024',
-    },
-  ]);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      setLoading(true);
+      try {
+        const profile = await profileService.getById(user.id);
+        if (profile) {
+          setProfileData({
+            name: profile.name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            cpf: profile.cpf || '',
+            cnpj: '',
+            companyName: profile.company_name || '',
+            bio: '',
+            address: '',
+            website: '',
+            avatar: profile.avatar_url || '',
+          });
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSave = () => {
+    fetchProfile();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user?.id) return;
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await profileService.update(user.id, {
+        name: profileData.name || null,
+        phone: profileData.phone || null,
+        cpf: profileData.cpf || null,
+        company_name: profileData.companyName || null,
+      });
       setIsEditing(false);
-    }, 1000);
+    } catch {
+      // ignore
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <Loader className='animate-spin' size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col h-full w-full max-w-5xl mx-auto bg-background-light dark:bg-background-dark'>
-      {/* Header */}
       <header className='sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-6 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
         <div className='flex items-center gap-4'>
           <div className='relative group'>
             <div
               className='w-16 h-16 rounded-2xl bg-cover bg-center border-2 border-white dark:border-surface-dark shadow-md'
-              style={{ backgroundImage: `url(${profileData.avatar})` }}
+              style={{
+                backgroundImage: `url(${profileData.avatar || 'https://i.pravatar.cc/150?u=owner'})`,
+              }}
             ></div>
             <button className='absolute -bottom-1 -right-1 p-1.5 bg-primary text-white rounded-lg shadow-lg scale-0 group-hover:scale-100 transition-transform'>
               <Camera size={12} />
@@ -85,7 +112,7 @@ const OwnerProfile: React.FC = () => {
           </div>
           <div>
             <h1 className='text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2'>
-              {profileData.name}
+              {profileData.name || 'Proprietário'}
               <div className='flex items-center gap-1 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-500/20'>
                 <ShieldCheck size={10} /> Verificado
               </div>
@@ -125,7 +152,6 @@ const OwnerProfile: React.FC = () => {
         </div>
       </header>
 
-      {/* Tabs */}
       <div className='px-6 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5'>
         <div className='flex gap-8'>
           {[
@@ -135,7 +161,7 @@ const OwnerProfile: React.FC = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'profile' | 'documents' | 'reputation')}
               className={`flex items-center gap-2 py-4 text-xs font-bold uppercase tracking-widest border-b-2 transition-all ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
             >
               <tab.icon size={16} /> {tab.label}
@@ -147,7 +173,6 @@ const OwnerProfile: React.FC = () => {
       <div className='flex-1 overflow-y-auto p-6 space-y-6'>
         {activeTab === 'profile' && (
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn'>
-            {/* Sidebar Stats */}
             <div className='space-y-6'>
               <div className='bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
                 <h3 className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4'>
@@ -199,14 +224,15 @@ const OwnerProfile: React.FC = () => {
                     </div>
                     <div>
                       <p className='text-[10px] font-bold text-slate-400 uppercase'>Telefone</p>
-                      <p className='text-xs font-bold dark:text-white'>{profileData.phone}</p>
+                      <p className='text-xs font-bold dark:text-white'>
+                        {profileData.phone || 'Não informado'}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Main Form Area */}
             <div className='md:col-span-2 space-y-6'>
               <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 space-y-6'>
                 <div>
@@ -233,8 +259,8 @@ const OwnerProfile: React.FC = () => {
                       </label>
                       <input
                         disabled={!isEditing}
-                        value={profileData.cnpj}
-                        onChange={(e) => setProfileData({ ...profileData, cnpj: e.target.value })}
+                        value={profileData.cpf}
+                        onChange={(e) => setProfileData({ ...profileData, cpf: e.target.value })}
                         className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-medium focus:border-primary outline-none transition-all'
                       />
                     </div>
@@ -253,6 +279,7 @@ const OwnerProfile: React.FC = () => {
                           onChange={(e) =>
                             setProfileData({ ...profileData, address: e.target.value })
                           }
+                          placeholder='Endereço não cadastrado'
                           className='w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-medium focus:border-primary outline-none transition-all'
                         />
                       </div>
@@ -271,8 +298,8 @@ const OwnerProfile: React.FC = () => {
                     value={profileData.bio}
                     onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                     rows={4}
-                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-medium focus:border-primary outline-none transition-all resize-none'
                     placeholder='Fale um pouco sobre sua atuação como investidor...'
+                    className='w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-medium focus:border-primary outline-none transition-all resize-none'
                   />
                 </div>
               </div>
@@ -336,38 +363,21 @@ const OwnerProfile: React.FC = () => {
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-all'
-                >
-                  <div className='flex items-center gap-3'>
-                    <div className='p-3 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 group-hover:text-primary transition-colors'>
-                      <FileText size={24} />
-                    </div>
-                    <div>
-                      <p className='text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]'>
-                        {doc.name}
-                      </p>
-                      <div className='flex items-center gap-2 mt-0.5'>
-                        <span className='text-[10px] font-medium text-slate-400'>{doc.type}</span>
-                        <span className='w-1 h-1 rounded-full bg-slate-300' />
-                        <span
-                          className={`text-[10px] font-bold ${doc.status === 'Verificado' ? 'text-emerald-500' : 'text-amber-500'}`}
-                        >
-                          {doc.status}
-                        </span>
-                      </div>
-                    </div>
+              <div className='bg-white dark:bg-surface-dark p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-all'>
+                <div className='flex items-center gap-3'>
+                  <div className='p-3 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 group-hover:text-primary transition-colors'>
+                    <FileText size={24} />
                   </div>
-                  <button
-                    className='p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg text-slate-400 transition-colors'
-                    title='Baixar'
-                  >
-                    <Download size={18} />
-                  </button>
+                  <div>
+                    <p className='text-sm font-bold text-slate-900 dark:text-white'>
+                      Nenhum documento enviado
+                    </p>
+                    <p className='text-[10px] font-medium text-slate-400'>
+                      Faça upload dos seus documentos
+                    </p>
+                  </div>
                 </div>
-              ))}
+              </div>
               <button className='border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-primary/50 hover:text-primary transition-all group'>
                 <div className='p-2 bg-slate-50 dark:bg-white/5 rounded-xl group-hover:bg-primary/10 transition-colors'>
                   <UploadCloud size={24} />

@@ -176,7 +176,7 @@ export function ActionSwapText({
     if (!nextWidth) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
-  });
+  }, []);
 
   // Cascade needs a plain string to split into letters; non-string content
   // and reduced motion fall back to the closest single-element animation.

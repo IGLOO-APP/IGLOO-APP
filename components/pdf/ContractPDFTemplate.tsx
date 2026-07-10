@@ -156,6 +156,8 @@ interface ContractPDFProps {
     maintenanceFee?: string | number;
     earlyTerminationFee?: string;
     lockInPeriod?: string;
+    condominiumValue?: string | number;
+    iptuValue?: string | number;
     propertyName?: string;
     propertyAddress?: string;
     contractText?: string;

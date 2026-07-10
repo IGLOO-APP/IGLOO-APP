@@ -2,6 +2,24 @@ import React from 'react';
 import { PenTool, Move, X } from 'lucide-react';
 import { SignaturePad } from '../signature/SignaturePad';
 
+const SNAP_POSITIONS = [
+  { role: 'owner', x: 244, y: 985 },
+  { role: 'tenant', x: 652, y: 985 },
+] as const;
+
+const snapToNearestField = (x: number, y: number): { x: number; y: number } => {
+  let nearest: { x: number; y: number } = { x: SNAP_POSITIONS[0].x, y: SNAP_POSITIONS[0].y };
+  let minDist = Infinity;
+  for (const pos of SNAP_POSITIONS) {
+    const dist = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+    if (dist < minDist) {
+      minDist = dist;
+      nearest = { x: pos.x, y: pos.y };
+    }
+  }
+  return nearest;
+};
+
 interface DocumentSignatureStepProps {
   contractPages: string[];
   signatures: Record<number, string>;
@@ -22,6 +40,7 @@ interface DocumentSignatureStepProps {
   onSignatureConfirm: (dataUrl: string) => void;
   onMoveSignature: (index: number | null) => void;
   onRemoveSignature: (index: number) => void;
+  onSetPendingRole: (role: 'owner' | 'tenant') => void;
 }
 
 export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
@@ -39,6 +58,7 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
   onSignatureConfirm,
   onMoveSignature,
   onRemoveSignature,
+  onSetPendingRole,
 }) => {
   return (
     <div className='flex-1 flex flex-col lg:flex-row items-stretch bg-slate-100 dark:bg-black/40 p-6 gap-6 overflow-y-auto animate-fadeIn'>
@@ -50,15 +70,8 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
         {contractPages.map((pageContent, index) => (
           <div
             key={index}
-            className='relative group/page w-full max-w-4xl min-h-[1080px] bg-white dark:bg-surface-dark shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col rounded-lg overflow-visible shrink-0 border border-slate-200/60 dark:border-white/5'
+            className='relative w-full max-w-4xl min-h-[1080px] bg-white flex flex-col overflow-visible shrink-0'
           >
-            <div className='absolute top-6 left-16 right-16 flex justify-between items-center text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest pointer-events-none select-none border-b border-slate-100 dark:border-white/5 pb-2 z-0'>
-              <span>Contrato de Locação</span>
-              <span>
-                Página {index + 1} de {contractPages.length}
-              </span>
-            </div>
-
             <textarea
               ref={(el) => {
                 textareaRefs.current[index] = el;
@@ -66,7 +79,7 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
               value={pageContent}
               onChange={(e) => onUpdatePageContent(index, e.target.value)}
               style={{ pointerEvents: signatures[index] ? 'none' : 'auto' }}
-              className='w-full flex-1 p-16 pt-20 bg-transparent border-none resize-none focus:ring-0 font-serif text-[15px] leading-relaxed text-slate-800 dark:text-slate-200 text-justify outline-none relative z-10 overflow-hidden shadow-none'
+              className='w-full flex-1 p-16 pt-12 bg-white border-none resize-none focus:ring-0 font-serif text-[13px] leading-[2] text-black text-justify outline-none relative z-10 overflow-hidden shadow-none'
               placeholder={`Conteúdo da Página ${index + 1}...`}
               spellCheck={false}
             />
@@ -102,6 +115,8 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
                   };
                   const onMouseUp = () => {
                     isDraggingRef.current = false;
+                    const nearest = snapToNearestField(signaturePositions[index].x, signaturePositions[index].y);
+                    signaturePositions[index] = { x: nearest.x, y: nearest.y };
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
                   };
@@ -109,20 +124,12 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
                   document.addEventListener('mouseup', onMouseUp);
                 }}
               >
-                <div className='absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-md flex items-center gap-1 whitespace-nowrap shadow-md pointer-events-none opacity-90'>
-                  <Move size={10} /> Arraste para posicionar
-                </div>
                 <img
                   src={signatures[index]}
-                  className='h-16 object-contain mix-blend-multiply dark:invert opacity-95 select-none pointer-events-none'
+                  className='h-16 object-contain select-none pointer-events-none'
                   alt='Assinatura Digital'
                   draggable={false}
                 />
-                <div className='border-t border-slate-300 dark:border-slate-600 mt-1 pt-1 min-w-[140px] text-center pointer-events-none'>
-                  <p className='text-[8px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight'>
-                    Autenticação Eletrônica Igloo
-                  </p>
-                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -137,28 +144,31 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
             )}
 
             {index === contractPages.length - 1 && (
-              <div className='mt-auto p-16 pt-0 grid grid-cols-2 gap-12 relative z-20'>
+              <div className='mt-auto px-16 pb-8 grid grid-cols-2 gap-12 relative z-20'>
                 <div
-                  className='border-t-2 border-dashed border-slate-200 dark:border-white/10 pt-4 text-center relative cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl p-4 transition-all group/sigarea'
-                  onClick={() => onShowSignatureModal(true)}
+                  className='border-t border-black/20 pt-3 text-center relative cursor-pointer transition-all group/sigarea'
+                  onClick={() => {
+                    onSetPendingRole('owner');
+                    onShowSignatureModal(true);
+                  }}
                 >
-                  <div className='absolute inset-0 border-2 border-dashed border-primary/40 bg-primary/[0.02] rounded-xl opacity-0 group-hover/sigarea:opacity-100 transition-opacity flex items-center justify-center z-30 shadow-inner'>
-                    <span className='text-[10px] font-black text-primary uppercase tracking-widest bg-white dark:bg-surface-dark px-3 py-1.5 rounded-md shadow-sm'>
-                      Assinar digitalmente aqui
+                  <div className='absolute inset-0 opacity-0 group-hover/sigarea:opacity-100 transition-opacity flex items-center justify-center z-30 bg-black/5'>
+                    <span className='text-[10px] font-bold text-black uppercase tracking-widest bg-white px-3 py-1'>
+                      Assinar aqui
                     </span>
                   </div>
-                  <p className='font-sans font-bold text-slate-800 dark:text-white text-sm'>
+                  <p className='font-serif font-bold text-black text-sm'>
                     {formData.landlordName || 'Investidor Exemplo'}
                   </p>
-                  <span className='text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 block'>
+                  <span className='text-[8px] font-bold text-black/50 uppercase tracking-widest mt-1 block'>
                     LOCADOR (PROPRIETÁRIO)
                   </span>
                 </div>
-                <div className='border-t-2 border-dashed border-slate-200 dark:border-white/10 pt-4 text-center p-4 opacity-60'>
-                  <p className='font-sans font-bold text-slate-800 dark:text-white text-sm'>
+                <div className='border-t border-black/20 pt-3 text-center opacity-60'>
+                  <p className='font-serif font-bold text-black text-sm'>
                     {formData.tenantName || 'Aguardando Cadastro...'}
                   </p>
-                  <span className='text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 block'>
+                  <span className='text-[8px] font-bold text-black/50 uppercase tracking-widest mt-1 block'>
                     LOCATÁRIO (INQUILINO)
                   </span>
                 </div>
@@ -184,7 +194,10 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
           </div>
 
           <button
-            onClick={() => onShowSignatureModal(true)}
+            onClick={() => {
+              onSetPendingRole('owner');
+              onShowSignatureModal(true);
+            }}
             className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all active:scale-95 shadow-md ${Object.keys(signatures).length > 0 ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/10' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 shadow-slate-900/10'}`}
           >
             <PenTool size={16} />{' '}

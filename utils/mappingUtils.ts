@@ -50,7 +50,7 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
     ? (contracts as Record<string, unknown>[])
     : undefined;
   const activeContract = contractsArr
-    ? contractsArr.find((c) => c.status === 'active') || contractsArr[0]
+    ? contractsArr.find((c) => c.status === 'active')
     : undefined;
 
   const propertyData = activeContract?.property;
@@ -65,11 +65,13 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
     phone: (t.phone as string) || '',
     cpf: t.cpf as string | undefined,
     image: t.avatar_url as string | undefined,
-    status: (activeContract?.status === 'late'
-      ? 'late'
-      : activeContract?.status === 'inactive'
-        ? 'inactive'
-        : 'active') as 'active' | 'late' | 'inactive',
+    status: (!activeContract
+      ? 'inactive'
+      : activeContract.status === 'late'
+        ? 'late'
+        : activeContract.status === 'cancelled'
+          ? 'inactive'
+          : 'active') as 'active' | 'late' | 'inactive',
     is_pending: t.is_pending as boolean | undefined,
     property: (property?.name as string) || 'NÃO VINCULADO',
     property_id: property?.id as string | undefined,

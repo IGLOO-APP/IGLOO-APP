@@ -16,8 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Contract } from '../../types';
+import { Contract, Signer, ContractHistoryEvent } from '../../types';
 import { getStatusLabel } from '../../utils/contractLogic';
+import { contractService } from '../../services/tenancy/contractService';
+import { captureAndSaveSignature } from '../../utils/signatureLogic';
 import {
   FileText,
   DollarSign,
@@ -67,50 +69,73 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
   };
   const contractProgress = calculateProgress();
 
-  const handleSendSignature = () => {
+  const handleSendSignature = async () => {
     setIsSigning(true);
-    setTimeout(() => {
+    try {
+      const updatedSigners: Signer[] = contract.signers.map((s) => ({
+        ...s,
+        status: 'signed' as const,
+        signed_at: new Date().toISOString(),
+      }));
+      const newEvent: ContractHistoryEvent = {
+        id: Date.now().toString(),
+        action: 'signed',
+        description: 'Assinado digitalmente por todas as partes',
+        performed_by: 'Sistema',
+        date: new Date().toLocaleString(),
+      };
+      const updatedHistory = [newEvent, ...contract.history];
+
+      await contractService.update(contract.id, {
+        status: 'active',
+        signers: updatedSigners,
+        history: updatedHistory,
+      });
+
+      for (const signer of updatedSigners) {
+        await captureAndSaveSignature(contract.id, signer.id, contract.contract_text || '');
+      }
+
       const updated = {
         ...contract,
         status: 'active' as const,
-        signers: contract.signers.map((s) => ({
-          ...s,
-          status: 'signed' as const,
-          signed_at: new Date().toISOString(),
-        })),
-        history: [
-          {
-            id: Date.now().toString(),
-            action: 'signed' as const,
-            description: 'Assinado digitalmente por todas as partes',
-            performed_by: 'Sistema',
-            date: new Date().toLocaleString(),
-          },
-          ...contract.history,
-        ],
+        signers: updatedSigners,
+        history: updatedHistory,
       };
       onUpdate(updated);
+    } catch (err) {
+      console.error('Erro ao processar assinatura:', err);
+    } finally {
       setIsSigning(false);
-    }, 2000);
+    }
   };
 
-  const handleCancelContract = () => {
-    const updated = {
-      ...contract,
-      status: 'cancelled' as const,
-      history: [
-        {
-          id: Date.now().toString(),
-          action: 'cancelled' as const,
-          description: 'Contrato rescindido manualmente',
-          performed_by: 'Proprietário',
-          date: new Date().toLocaleString(),
-        },
-        ...contract.history,
-      ],
-    };
-    onUpdate(updated);
-    setShowCancelConfirm(false);
+  const handleCancelContract = async () => {
+    try {
+      const newEvent: ContractHistoryEvent = {
+        id: Date.now().toString(),
+        action: 'cancelled',
+        description: 'Contrato rescindido manualmente',
+        performed_by: 'Proprietário',
+        date: new Date().toISOString(),
+      };
+      const updatedHistory = [newEvent, ...contract.history];
+
+      await contractService.update(contract.id, {
+        status: 'cancelled',
+        history: updatedHistory,
+      });
+
+      const updated = {
+        ...contract,
+        status: 'cancelled' as const,
+        history: updatedHistory,
+      };
+      onUpdate(updated);
+      setShowCancelConfirm(false);
+    } catch (err) {
+      console.error('Erro ao rescindir contrato:', err);
+    }
   };
 
   return (
@@ -348,7 +373,7 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
                       <CardContent className='space-y-4'>
                         <div className='relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-border'>
                           {contract.signers && contract.signers.length > 0 ? (
-                            contract.signers.map((signer: any, idx: number) => (
+                            contract.signers.map((signer: Signer, idx: number) => (
                               <div key={signer.id || idx} className='relative'>
                                 <div
                                   className={`absolute -left-[19px] top-1 size-4 rounded-full flex items-center justify-center ring-4 ring-background ${
@@ -485,7 +510,7 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
                 <Card>
                   <CardContent className='py-6'>
                     <div className='relative pl-8 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-border'>
-                      {contract.history.map((event: any) => (
+                      {contract.history.map((event: ContractHistoryEvent) => (
                         <div key={event.id} className='relative group'>
                           <div className='absolute -left-[27px] top-0 size-8 rounded-full bg-card border border-border flex items-center justify-center ring-4 ring-background group-hover:scale-110 transition-transform'>
                             {event.action === 'created' && (
@@ -542,7 +567,7 @@ export const ContractDetails: React.FC<ContractDetailsProps> = ({
                   <CardContent>
                     <div className='relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-border'>
                       {contract.signers && contract.signers.length > 0 ? (
-                        contract.signers.map((signer: any, idx: number) => (
+                        contract.signers.map((signer: Signer, idx: number) => (
                           <div key={signer.id || idx} className='relative'>
                             <div
                               className={`absolute -left-[19px] top-1 size-4 rounded-full flex items-center justify-center ring-4 ring-background ${

@@ -4,14 +4,17 @@
  */
 
 // Helper to resolve nested values (e.g., 'property.name')
-const getNestedValue = (obj: Record<string, any>, path: string) => {
+const getNestedValue = (obj: Record<string, unknown>, path: string) => {
   return path
     .split('.')
-    .reduce((prev, curr) => (prev && prev[curr] !== undefined ? prev[curr] : undefined), obj);
+    .reduce<unknown>(
+      (prev, curr) =>
+        prev && typeof prev === 'object' ? (prev as Record<string, unknown>)[curr] : undefined,
+      obj
+    );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateFilledContract = (template: string, data: Record<string, any>): string => {
+export const generateFilledContract = (template: string, data: Record<string, unknown>): string => {
   const regex = /{{(.*?)}}/g;
 
   return template.replace(regex, (_, key) => {

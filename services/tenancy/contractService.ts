@@ -1,5 +1,11 @@
 import { supabase } from '../../lib/supabase';
-import { Contract, ContractStatus, Signer, ContractHistoryEvent } from '../../types';
+import {
+  Contract,
+  ContractStatus,
+  CreateContractInput,
+  Signer,
+  ContractHistoryEvent,
+} from '../../types';
 
 interface DbContractRow {
   id: string;
@@ -19,9 +25,16 @@ interface DbContractRow {
   payment_day: number;
   status: ContractStatus;
   pdf_url?: string | null;
+  contract_text?: string | null;
   signers?: Signer[];
   history?: ContractHistoryEvent[];
 }
+
+const parseJsonArray = <T>(val: unknown): T[] => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') try { return JSON.parse(val); } catch { return []; }
+  return [];
+};
 
 const mapContract = (row: DbContractRow): Contract => ({
   id: row.id,
@@ -42,8 +55,8 @@ const mapContract = (row: DbContractRow): Contract => ({
   payment_day: row.payment_day,
   status: row.status,
   pdf_url: row.pdf_url || undefined,
-  signers: row.signers || [],
-  history: row.history || [],
+  signers: parseJsonArray<Signer>(row.signers),
+  history: parseJsonArray<ContractHistoryEvent>(row.history),
 });
 
 export const contractService = {
@@ -106,26 +119,20 @@ export const contractService = {
     return data;
   },
 
-  async create(ownerId: string, contractData: Record<string, unknown>): Promise<void> {
-    let tenantId = contractData.tenant_id as string | null;
+  async create(ownerId: string, contractData: CreateContractInput): Promise<string> {
+    let tenantId = contractData.tenant_id;
 
     if (!tenantId) {
-      const tenantName = contractData.tenantName as string;
-      const tenantCpf = contractData.tenantCpf as string;
-      const tenantEmail =
-        (contractData.tenantEmail as string) || `tenant_${Date.now()}@temp.igloo.app`;
-      const tenantPhone = contractData.tenantPhone as string;
-
-      if (!tenantName) throw new Error('Nome do inquilino é obrigatório');
+      if (!contractData.tenantName) throw new Error('Nome do inquilino é obrigatório');
 
       const { data: newTenant, error: tenantError } = await supabase
         .from('profiles')
         .insert({
           id: crypto.randomUUID(),
-          name: tenantName,
-          email: tenantEmail,
-          cpf: tenantCpf || null,
-          phone: tenantPhone || null,
+          name: contractData.tenantName,
+          email: contractData.tenantEmail || `tenant_${Date.now()}@temp.igloo.app`,
+          cpf: contractData.tenantCpf || null,
+          phone: contractData.tenantPhone || null,
           role: 'tenant',
         })
         .select('id')
@@ -135,30 +142,72 @@ export const contractService = {
       tenantId = newTenant.id;
     }
 
-    const startDate = contractData.startDate as string;
-    const duration = parseInt(contractData.duration as string) || 30;
+    // Verify property is still available
+    const { data: property } = await supabase
+      .from('properties')
+      .select('status')
+      .eq('id', contractData.property_id)
+      .single();
 
-    const { error } = await supabase.from('contracts').insert({
-      contract_number: `CTR-${Date.now()}`,
-      owner_id: ownerId,
-      property_id: contractData.property_id as string,
-      tenant_id: tenantId,
-      start_date: startDate,
-      end_date: new Date(
-        new Date(startDate).setMonth(new Date(startDate).getMonth() + duration)
-      ).toISOString(),
-      monthly_value: parseFloat(contractData.rentValue as string) || 0,
-      security_deposit: parseFloat(contractData.depositValue as string) || 0,
-      condominium_value: contractData.condominiumValue
-        ? parseFloat(contractData.condominiumValue as string)
-        : 0,
-      iptu_value: contractData.iptuValue ? parseFloat(contractData.iptuValue as string) : 0,
-      status: 'draft',
-      payment_day: parseInt(contractData.paymentDay as string) || 10,
-      signers: contractData.signers ? JSON.stringify(contractData.signers) : JSON.stringify([]),
-      history: contractData.history ? JSON.stringify(contractData.history) : JSON.stringify([]),
+    if (property && property.status !== 'DISPONÍVEL') {
+      throw new Error('Imóvel não está mais disponível para locação.');
+    }
+
+    const startDate = contractData.startDate;
+    const duration = parseInt(contractData.duration) || 30;
+
+    const signers: Signer[] = [];
+    signers.push({
+      id: crypto.randomUUID(),
+      role: 'owner',
+      name: contractData.ownerName || 'Proprietário',
+      email: contractData.ownerEmail || '',
+      status: contractData.signaturePayloads.length > 0 ? 'signed' : 'pending',
+      signed_at: contractData.signaturePayloads.length > 0 ? new Date().toISOString() : undefined,
     });
+    signers.push({
+      id: crypto.randomUUID(),
+      role: 'tenant',
+      name: contractData.tenantName || 'Inquilino',
+      email: contractData.tenantEmail || '',
+      status: 'pending',
+    });
+
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('contracts')
+      .insert({
+        contract_number: `CTR-${Date.now()}`,
+        owner_id: ownerId,
+        property_id: contractData.property_id,
+        tenant_id: tenantId,
+        start_date: startDate,
+        end_date: new Date(
+          new Date(startDate).setMonth(new Date(startDate).getMonth() + duration)
+        ).toISOString(),
+        monthly_value: parseFloat(contractData.rentValue) || 0,
+        security_deposit: parseFloat(contractData.depositValue) || 0,
+        condominium_value: parseFloat(contractData.condominiumValue) || 0,
+        iptu_value: parseFloat(contractData.iptuValue) || 0,
+        status: 'draft',
+        payment_day: parseInt(contractData.paymentDay) || 10,
+        contract_text: contractData.contractText || null,
+        signers: JSON.stringify(signers),
+        history: JSON.stringify([
+          {
+            id: Date.now().toString(),
+            action: 'created',
+            description: 'Contrato criado como rascunho',
+            performed_by: 'Sistema',
+            date: now,
+          },
+        ]),
+      })
+      .select('id')
+      .single();
+
     if (error) throw error;
+    return data.id;
   },
 
   async update(
@@ -170,7 +219,7 @@ export const contractService = {
       iptu_value?: number;
       end_date?: string;
       payment_day?: number;
-      status?: string;
+      status?: ContractStatus | string;
       pdf_url?: string;
       signers?: Signer[];
       history?: ContractHistoryEvent[];
@@ -206,13 +255,14 @@ export const contractService = {
       throw new Error('Dados do contrato original incompletos para renovação');
     }
 
+    const nowIso = new Date().toISOString();
     const newHistory: ContractHistoryEvent[] = [
       {
         id: Date.now().toString(),
         action: 'renewed',
         description: `Renovado — ${data.observations || 'Sem observações'}`,
         performed_by: 'Sistema',
-        date: new Date().toLocaleString('pt-BR'),
+        date: nowIso,
       },
       ...existing.history,
     ];
@@ -245,7 +295,7 @@ export const contractService = {
             action: 'created',
             description: 'Contrato criado a partir de renovação',
             performed_by: 'Sistema',
-            date: new Date().toLocaleString('pt-BR'),
+            date: new Date().toISOString(),
           },
         ]),
       })

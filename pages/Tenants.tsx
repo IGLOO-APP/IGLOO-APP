@@ -481,7 +481,6 @@ const Tenants: React.FC = () => {
               <div className='w-full space-y-3'>
                 <button
                   onClick={() => {
-                    console.log('Redirecting to contract wizard for:', newTenant);
                     addToast(
                       'Em breve',
                       'Módulo de criação de contrato via atalho em desenvolvimento.',
@@ -716,8 +715,6 @@ const Tenants: React.FC = () => {
           tenant={billingTenant}
           onClose={() => setBillingTenant(null)}
           onConfirm={(data) => {
-            console.log('Billing Confirmed:', data);
-
             // Register activity (Demo)
             const channelLabel =
               data.channel === 'whatsapp'

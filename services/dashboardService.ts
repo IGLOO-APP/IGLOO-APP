@@ -10,14 +10,54 @@ import {
   Tenant,
   Contract,
   FinancialTransaction,
+  PaymentRecord,
   DashboardMetrics,
   DashboardRisk,
   DashboardActivity,
   DashboardFinancialHistory,
+  DashboardData,
+  PendingAction,
 } from '../types';
 
+interface MaintenanceRequest {
+  id: string;
+  title: string;
+  created_at: string;
+  status: string | null;
+}
+
+interface CacheEntry {
+  data: DashboardData;
+  timestamp: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL = 60_000;
+
+const getCacheKey = (userId: string, months: number) => `${userId}_${months}`;
+
+function isCacheValid(entry: CacheEntry | undefined): entry is CacheEntry {
+  if (!entry) return false;
+  return Date.now() - entry.timestamp < CACHE_TTL;
+}
+
 export const dashboardService = {
+  invalidateCache(userId?: string) {
+    if (userId) {
+      for (const key of cache.keys()) {
+        if (key.startsWith(userId)) cache.delete(key);
+      }
+    } else {
+      cache.clear();
+    }
+  },
+
   async getDashboardData(userId: string, months = 12) {
+    const cacheKey = getCacheKey(userId, months);
+    const cached = cache.get(cacheKey);
+    if (isCacheValid(cached)) {
+      return cached.data;
+    }
     const [
       properties,
       tenants,
@@ -57,7 +97,7 @@ export const dashboardService = {
       mrrValue
     );
 
-    return {
+    const result = {
       properties,
       tenants,
       portfolioHealth,
@@ -82,15 +122,19 @@ export const dashboardService = {
       wealthHistory: this._generateWealthHistory(months, properties),
       pendingActions,
     };
+
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+
+    return result;
   },
 
   _calculateMetrics(
     properties: Property[],
-    tenants: any[],
+    tenants: Tenant[],
     mrrValue: number,
     totalWealthValue: number,
     contracts: Contract[],
-    maintenanceRequests: any[],
+    maintenanceRequests: MaintenanceRequest[],
     financialHistory: DashboardFinancialHistory[]
   ): DashboardMetrics {
     const occRate = occupancyRate(properties);
@@ -107,7 +151,7 @@ export const dashboardService = {
       expiringContractsCount: contracts.filter((c) => c.status === 'expiring_soon').length,
       totalTenants: tenants.length,
       pendingMaintenanceCount: maintenanceRequests.filter(
-        (m: any) => m.status === 'pending' || m.status === 'in_progress'
+        (m) => m.status === 'pending' || m.status === 'in_progress'
       ).length,
       trends: {
         wealth: totalWealthValue > 0 ? '+0.4%' : '0%',
@@ -122,7 +166,11 @@ export const dashboardService = {
     };
   },
 
-  _calculatePortfolioHealth(properties: Property[], mrrValue: number, pendingPayments: any[]) {
+  _calculatePortfolioHealth(
+    properties: Property[],
+    mrrValue: number,
+    pendingPayments: PaymentRecord[]
+  ) {
     const totalWealthValue = properties.reduce(
       (acc: number, p: Property) => acc + (p.market_value || 0),
       0
@@ -142,8 +190,8 @@ export const dashboardService = {
     const financialVacancy = potentialRevenue > 0 ? (lostRevenue / potentialRevenue) * 100 : 0;
 
     const unpaidThisMonth = (pendingPayments || [])
-      .filter((p: any) => new Date(p.due_date).getMonth() === new Date().getMonth())
-      .reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
+      .filter((p) => new Date(p.due_date).getMonth() === new Date().getMonth())
+      .reduce((acc, p) => acc + (p.amount || 0), 0);
     const delinquencyRate = mrrValue > 0 ? (unpaidThisMonth / mrrValue) * 100 : 0;
 
     return {
@@ -284,9 +332,9 @@ export const dashboardService = {
 
   _consolidateActivities(
     transactions: FinancialTransaction[],
-    maintenanceRequests: any[],
+    maintenanceRequests: MaintenanceRequest[],
     properties: Property[],
-    pendingActions: any[]
+    pendingActions: PendingAction[]
   ): DashboardActivity[] {
     return [
       ...pendingActions.map((a) => ({

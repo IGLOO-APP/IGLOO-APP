@@ -38,12 +38,12 @@ const TenantContract: React.FC = () => {
 
   useEffect(() => {
     const loadContract = async () => {
-      if (!tenantData?.contracts?.length) {
+      if (!tenantData?.contract) {
         setLoading(false);
         return;
       }
       try {
-        const contractId = tenantData.contracts[0].id;
+        const contractId = tenantData.contract.id;
         const data = await contractService.getById(contractId);
         setContract(data);
       } catch (err) {

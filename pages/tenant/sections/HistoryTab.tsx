@@ -1,5 +1,15 @@
 import React from 'react';
-import { Clock, FileText, CheckCircle2, Wrench } from 'lucide-react';
+import {
+  Clock,
+  FileText,
+  FilePlus,
+  Send,
+  PenTool,
+  Eye,
+  XCircle,
+  CheckCircle2,
+  Wrench,
+} from 'lucide-react';
 
 interface HistoryTabProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -8,14 +18,25 @@ interface HistoryTabProps {
   payments: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   maintenance: any[];
+  contractHistory: { action: string; description: string; date: string; performed_by?: string }[];
   timelineFilter: 'all' | 'payments' | 'maintenance' | 'contracts';
   onFilterChange: (f: 'all' | 'payments' | 'maintenance' | 'contracts') => void;
 }
+
+const contractEventConfig: Record<string, { title: string; icon: any; color: string }> = {
+  created: { title: 'Contrato Criado', icon: FilePlus, color: 'bg-blue-500 text-white' },
+  sent: { title: 'Enviado para Assinatura', icon: Send, color: 'bg-amber-500 text-white' },
+  signed: { title: 'Assinado', icon: PenTool, color: 'bg-emerald-500 text-white' },
+  viewed: { title: 'Visualizado', icon: Eye, color: 'bg-indigo-500 text-white' },
+  cancelled: { title: 'Contrato Rescindido', icon: XCircle, color: 'bg-red-500 text-white' },
+  renewed: { title: 'Contrato Renovado', icon: FileText, color: 'bg-purple-500 text-white' },
+};
 
 export const HistoryTab: React.FC<HistoryTabProps> = ({
   tenant,
   payments,
   maintenance,
+  contractHistory,
   timelineFilter,
   onFilterChange,
 }) => {
@@ -33,6 +54,22 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
           },
         ]
       : []),
+    ...contractHistory.map((ev, i) => {
+      const cfg = contractEventConfig[ev.action] || {
+        title: ev.action,
+        icon: FileText,
+        color: 'bg-slate-500 text-white',
+      };
+      return {
+        id: `ch-${i}`,
+        type: 'contracts' as const,
+        date: ev.date,
+        title: cfg.title,
+        desc: ev.description + (ev.performed_by ? ` — ${ev.performed_by}` : ''),
+        icon: cfg.icon,
+        color: cfg.color,
+      };
+    }),
     ...payments.map((p: any) => ({
       id: `pay-${p.id}`,
       type: 'payments' as const,
@@ -108,8 +145,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
                     <h4 className='text-xs font-black text-slate-800 dark:text-white'>
                       {ev.title}
                     </h4>
-                    <span className='text-[9px] font-bold text-slate-400'>
+                    <span className='text-[9px] font-bold text-slate-400 text-right leading-tight'>
                       {new Date(ev.date).toLocaleDateString('pt-BR')}
+                      <br />
+                      {new Date(ev.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <p className='text-xs text-slate-500 leading-normal font-semibold'>{ev.desc}</p>

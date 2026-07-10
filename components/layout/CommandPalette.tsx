@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -131,12 +131,18 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     item.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  const filteredItems = [...filteredNav, ...filteredProperties, ...filteredTenants];
+  const filteredItems = useMemo(
+    () => [...filteredNav, ...filteredProperties, ...filteredTenants],
+    [filteredNav, filteredProperties, filteredTenants]
+  );
 
-  const handleSelect = (item: any) => {
-    navigate(item.path);
-    onClose();
-  };
+  const handleSelect = useCallback(
+    (item: any) => {
+      navigate(item.path);
+      onClose();
+    },
+    [navigate, onClose]
+  );
 
   useEffect(() => {
     if (isOpen) {

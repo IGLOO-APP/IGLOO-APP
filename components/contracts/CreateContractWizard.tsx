@@ -37,6 +37,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
       <ContractWizardHeader
         currentStep={wizard.currentStep}
         canAdvance={wizard.canAdvance()}
+        saving={wizard.saving}
         onClose={onClose}
         onBack={wizard.handleBack}
         onNext={wizard.handleNext}
@@ -124,6 +125,7 @@ export const CreateContractWizard: React.FC<CreateContractWizardProps> = ({
               onShowSignatureModal={wizard.setShowSignatureModal}
               onSignatureConfirm={wizard.handleSignatureConfirm}
               onMoveSignature={wizard.setMovingSignature}
+              onSetPendingRole={wizard.setPendingSignatureRole}
               onRemoveSignature={(index) => {
                 const newSigs = { ...wizard.signatures };
                 delete newSigs[index];

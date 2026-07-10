@@ -3,6 +3,7 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
+  Loader2,
   Building2,
   User,
   CircleDollarSign,
@@ -15,6 +16,7 @@ import { STEPS } from './steps/useContractWizard';
 interface ContractWizardHeaderProps {
   currentStep: number;
   canAdvance: boolean;
+  saving: boolean;
   onClose: () => void;
   onBack: () => void;
   onNext: () => void;
@@ -26,6 +28,7 @@ const STEP_ICONS = [Building2, User, CircleDollarSign, Calendar, FileText, Check
 export const ContractWizardHeader: React.FC<ContractWizardHeaderProps> = ({
   currentStep,
   canAdvance,
+  saving,
   onClose,
   onBack,
   onNext,
@@ -97,15 +100,23 @@ export const ContractWizardHeader: React.FC<ContractWizardHeaderProps> = ({
               )}
               <button
                 onClick={onNext}
-                disabled={!canAdvance}
+                disabled={!canAdvance || saving}
                 className={`px-5 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all flex items-center gap-2 ${
-                  !canAdvance
+                  !canAdvance || saving
                     ? 'bg-slate-200 dark:bg-white/5 text-slate-400 cursor-not-allowed'
                     : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 active:scale-95'
                 }`}
               >
-                {currentStep === 6 ? 'Finalizar' : 'Próxima'}
-                <ArrowRight size={14} />
+                {saving ? (
+                  <>
+                    <Loader2 size={14} className='animate-spin' /> Salvando
+                  </>
+                ) : currentStep === 6 ? (
+                  'Finalizar'
+                ) : (
+                  'Próxima'
+                )}
+                {!saving && <ArrowRight size={14} />}
               </button>
             </div>
           </div>

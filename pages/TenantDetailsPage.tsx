@@ -1,8 +1,18 @@
 import React from 'react';
-import { ArrowLeft, ShieldAlert, TrendingUp, DollarSign, ShieldCheck, Clock } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, TrendingUp, DollarSign, ShieldCheck, Clock, Trash2 } from 'lucide-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
 import { OwnerOnboardingReviewChecklist } from '../components/tenants/OwnerOnboardingReviewChecklist';
 import { useTenantDetails } from './tenant/hooks/useTenantDetails';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { DocumentPreviewModal } from './tenant/modals/DocumentPreviewModal';
 import { OverviewTab } from './tenant/sections/OverviewTab';
 import { PaymentsTab } from './tenant/sections/PaymentsTab';
@@ -60,7 +70,7 @@ const TenantDetailsPage: React.FC = () => {
 
   return (
     <div className='flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white'>
-      <div className='px-8 pt-6 pb-2'>
+      <div className='px-8 pt-6 pb-2 flex items-center justify-between'>
         <div className='flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-widest'>
           <button
             onClick={() => h.navigate('/tenants')}
@@ -71,6 +81,12 @@ const TenantDetailsPage: React.FC = () => {
           <span>/</span>
           <span className='text-slate-700 dark:text-slate-200 font-black'>{tenant.name}</span>
         </div>
+        <button
+          onClick={() => h.setShowDeleteDialog(true)}
+          className='flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
+        >
+          <Trash2 size={14} /> Excluir
+        </button>
       </div>
 
       <div className='px-8 py-3 sticky top-[0px] z-20 flex justify-center'>
@@ -123,11 +139,46 @@ const TenantDetailsPage: React.FC = () => {
             tenant={tenant}
             payments={h.payments}
             maintenance={h.maintenance}
+            contractHistory={h.contractHistory}
             timelineFilter={h.timelineFilter}
             onFilterChange={h.setTimelineFilter}
           />
         )}
       </div>
+
+      <AlertDialog open={h.showDeleteDialog} onOpenChange={h.setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Inquilino?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá remover permanentemente o perfil de{' '}
+              <strong>{tenant.name}</strong>. Os dados de contratos e financeiros
+              permanecerão para registro.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className='space-y-2'>
+            <label className='text-xs font-semibold text-slate-600 dark:text-slate-400'>
+              Motivo da Exclusão
+            </label>
+            <textarea
+              value={h.deleteReason}
+              onChange={(e) => h.setDeleteReason(e.target.value)}
+              placeholder='Descreva o motivo da exclusão...'
+              className='w-full min-h-[80px] rounded-lg border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary'
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={h.handleDeleteTenant}
+              disabled={!h.deleteReason.trim() || h.isDeleting}
+              className='bg-red-600 hover:bg-red-700 text-white'
+            >
+              {h.isDeleting ? 'Excluindo...' : 'Sim, Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <DocumentPreviewModal
         previewUrl={h.previewUrl}

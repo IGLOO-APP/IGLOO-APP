@@ -97,11 +97,17 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                         : 'border-white dark:border-white/5 bg-white dark:bg-surface-dark hover:border-slate-100 dark:hover:border-white/10'
                     }`}
                   >
-                    <img
-                      src={tenant.image || `https://i.pravatar.cc/150?u=${tenant.email}`}
-                      className='w-12 h-12 rounded-full border border-slate-100 dark:border-white/5'
-                      alt=''
-                    />
+                    {tenant.image ? (
+                      <img
+                        src={tenant.image}
+                        className='w-12 h-12 rounded-full border border-slate-100 dark:border-white/5 object-cover'
+                        alt=''
+                      />
+                    ) : (
+                      <div className='w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                        <User size={20} />
+                      </div>
+                    )}
                     <div className='flex-1'>
                       <h4 className='font-bold text-slate-900 dark:text-white leading-tight'>
                         {tenant.name}

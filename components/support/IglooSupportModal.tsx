@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   X,
   MessageSquare,
@@ -51,14 +51,7 @@ export const IglooSupportModal: React.FC<IglooSupportModalProps> = ({
     'Problema resolvido! Muito obrigado.',
   ];
 
-  // 1. Initial Load of Tickets
-  useEffect(() => {
-    if (isOpen && userId) {
-      loadTickets();
-    }
-  }, [isOpen, userId]);
-
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     setLoadingTickets(true);
     try {
       const data = await supportService.getTickets(userId);
@@ -68,7 +61,14 @@ export const IglooSupportModal: React.FC<IglooSupportModalProps> = ({
     } finally {
       setLoadingTickets(false);
     }
-  };
+  }, [userId]);
+
+  // 1. Initial Load of Tickets
+  useEffect(() => {
+    if (isOpen && userId) {
+      loadTickets();
+    }
+  }, [isOpen, loadTickets, userId]);
 
   // 2. Load Messages for Active Ticket
   useEffect(() => {
@@ -170,7 +170,7 @@ export const IglooSupportModal: React.FC<IglooSupportModalProps> = ({
     return () => {
       globalChannel.unsubscribe();
     };
-  }, [userId, isOpen]);
+  }, [userId, isOpen, loadTickets]);
 
   // Scroll to bottom on new messages
   useEffect(() => {

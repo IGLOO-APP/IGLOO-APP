@@ -31,7 +31,7 @@
 - `services/` — domain service files calling Supabase; `adminService.ts` is a facade merging 7 sub-services
 - `hooks/` — shared hooks (theme)
 - `utils/` — pure formatters, financial calculations
-- `types.ts` — single file with all interfaces (404 lines, intended to be split)
+- `types/` — 12 domain‑specific type modules, re‑exported via `types/index.ts`
 - `lib/` — Supabase client (`supabase.ts`), Clerk bridge (`supabaseClerk.ts`)
 
 **Auth flow:** Clerk ID is stored in `profiles.id`. The `AuthContext` resolves the Clerk session, looks up/fetches the profile, sets `currentUser` and `loading`. Role-based routing (`UserRole`).

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tenantService } from '../../../services/tenancy/tenantService';
+import { contractService } from '../../../services/tenancy/contractService';
 import { tenantConfigService } from '../../../services/tenancy/tenantConfigService';
 import { tenantScreeningService } from '../../../services/tenancy/tenantScreeningService';
 import { calculateTenantFinancials } from '../../../utils/financialCalculations';
@@ -25,6 +26,7 @@ export function useTenantDetails() {
   >('all');
   const [payments, setPayments] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any[]>([]);
+  const [contractHistory, setContractHistory] = useState<any[]>([]);
 
   const { data: screening = null } = useQuery({
     queryKey: ['tenant-screening', id],
@@ -61,6 +63,9 @@ export function useTenantDetails() {
   const [modalActionLoading, setModalActionLoading] = useState(false);
   const [modalRejectReason, setModalRejectReason] = useState('');
   const [showModalRejectInput, setShowModalRejectInput] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleApproveDocsFromModal = async () => {
     if (!tenant) return;
@@ -168,12 +173,14 @@ export function useTenantDetails() {
     queryFn: async () => {
       const t = await tenantService.getById(id!);
       if (t?.contract) {
-        const [paymentsData, maintenanceData] = await Promise.all([
+        const [paymentsData, maintenanceData, fullContract] = await Promise.all([
           tenantService.getPayments(String(t.contract.id)),
           tenantService.getMaintenanceRequests(String(t.id)),
+          contractService.getById(String(t.contract.id)),
         ]);
         setPayments(paymentsData);
         setMaintenance(maintenanceData);
+        if (fullContract?.history) setContractHistory(fullContract.history);
       }
       return t;
     },
@@ -203,7 +210,10 @@ export function useTenantDetails() {
 
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
 
-  const manualOverrides = screening?.manual_overrides ?? {};
+  const manualOverrides = useMemo(
+    () => screening?.manual_overrides ?? {},
+    [screening?.manual_overrides]
+  );
 
   const toggleManualOverride = (label: string) => {
     const newOverrides = { ...manualOverrides, [label]: !manualOverrides[label] };
@@ -407,6 +417,27 @@ export function useTenantDetails() {
     upsertMutation.mutate({ residence_recent: recent, residence_match: match });
   };
 
+  const handleDeleteTenant = async () => {
+    if (!tenant || !deleteReason.trim()) return;
+    setIsDeleting(true);
+    try {
+      await tenantService.delete(tenant.id);
+      addToast(
+        'Inquilino Excluído',
+        `${tenant.name} foi removido permanentemente. Motivo: ${deleteReason}`,
+        'success'
+      );
+      navigate('/tenants');
+    } catch (err) {
+      console.error(err);
+      addToast('Erro', 'Falha ao excluir inquilino.', 'error');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteReason('');
+    }
+  };
+
   const handleRefresh = () => queryClient.invalidateQueries({ queryKey: ['tenant', id] });
 
   const setActiveTab = (tabName: string) => setSearchParams({ tab: tabName });
@@ -420,6 +451,7 @@ export function useTenantDetails() {
     navigate,
     payments,
     maintenance,
+    contractHistory,
     docs,
     activeTab,
     setActiveTab,
@@ -473,6 +505,12 @@ export function useTenantDetails() {
     handleApproveDocsFromModal,
     handleRejectDocsFromModal,
     tenantRequirements,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    deleteReason,
+    setDeleteReason,
+    isDeleting,
+    handleDeleteTenant,
     contractProgress: tenant?.contract
       ? Math.min(
           100,

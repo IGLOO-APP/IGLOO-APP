@@ -4,6 +4,9 @@ import { supabase } from '../../lib/supabase';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = () => supabase as any;
 
+const isMissingTable = (err: unknown) =>
+  typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === 'PGRST205';
+
 export type { TenantProfileConfig };
 
 export const DEFAULT_CONFIG: Omit<TenantProfileConfig, 'propertyId'> = {
@@ -97,7 +100,7 @@ export const tenantConfigService = {
       if (error) throw error;
       return (data || []).map(dbRowToConfig);
     } catch (err) {
-      console.error('[tenantConfigService] Error fetching configs:', err);
+      if (!isMissingTable(err)) console.error('[tenantConfigService] Error fetching configs:', err);
       return [];
     }
   },
@@ -125,7 +128,7 @@ export const tenantConfigService = {
 
       return { propertyId, sections: DEFAULT_CONFIG.sections };
     } catch (err) {
-      console.error('[tenantConfigService] Error fetching config for property:', err);
+      if (!isMissingTable(err)) console.error('[tenantConfigService] Error fetching config:', err);
       return { propertyId, sections: DEFAULT_CONFIG.sections };
     }
   },
@@ -156,8 +159,10 @@ export const tenantConfigService = {
         if (error) throw error;
       }
     } catch (err) {
-      console.error('[tenantConfigService] Error saving config:', err);
-      throw err;
+      if (!isMissingTable(err)) {
+        console.error('[tenantConfigService] Error saving config:', err);
+        throw err;
+      }
     }
   },
 };

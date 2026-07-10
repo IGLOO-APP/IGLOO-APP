@@ -11,13 +11,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useLocation } from 'react-router-dom';
+import { pdf } from '@react-pdf/renderer';
 import { Contract, ContractStatus } from '../types';
 import { ContractCard } from '../components/contracts/ContractCard';
 import { CreateContractWizard } from '../components/contracts/CreateContractWizard';
 import { ContractWizardData } from '../components/contracts/steps/useContractWizard';
 import { ContractDetails } from '../components/contracts/ContractDetails';
 import { RenewContractModal } from '../components/contracts/RenewContractModal';
+import { ContractPDFTemplate } from '../components/pdf/ContractPDFTemplate';
 import { contractService } from '../services/tenancy/contractService';
+import { storageService } from '../services/storageService';
+import { supabase } from '../lib/supabase';
 import { useNotification } from '../context/NotificationContext';
 import { TopBar } from '../components/layout/TopBar';
 import { Button } from '@/components/ui/button';
@@ -64,7 +68,92 @@ const Contracts: React.FC = () => {
   const handleCreateContract = async (data: ContractWizardData) => {
     if (!user) return;
     try {
-      await contractService.create(String(user.id), data as unknown as Record<string, unknown>);
+      // Enrich with user data before passing to service
+      const enrichedData: ContractWizardData = {
+        ...data,
+        ownerName: user.name,
+        ownerEmail: user.email,
+      };
+
+      const contractId = await contractService.create(String(user.id), enrichedData);
+
+      // 1. Persist PDF to Supabase Storage
+      try {
+        const pdfBlob = await pdf(
+          <ContractPDFTemplate
+            data={{
+              property: enrichedData.property,
+              tenantName: enrichedData.tenantName,
+              tenantCpf: enrichedData.tenantCpf,
+              startDate: enrichedData.startDate,
+              duration: enrichedData.duration,
+              rentValue: enrichedData.rentValue,
+              depositValue: enrichedData.depositValue,
+              hasMaintenanceFee: enrichedData.hasMaintenanceFee,
+              maintenanceFee: enrichedData.maintenanceFee,
+              earlyTerminationFee: enrichedData.earlyTerminationFee,
+              lockInPeriod: enrichedData.lockInPeriod,
+              condominiumValue: enrichedData.condominiumValue,
+              iptuValue: enrichedData.iptuValue,
+              propertyName: enrichedData.property,
+              propertyAddress: enrichedData.property,
+              contractText: enrichedData.contractText,
+              landlordName: user.name,
+              tenantEmail: enrichedData.tenantEmail,
+            }}
+          />
+        ).toBlob();
+
+        const filePath = `contracts/${contractId}.pdf`;
+        const publicUrl = await storageService.uploadFile(
+          'documents',
+          filePath,
+          new File([pdfBlob], filePath, { type: 'application/pdf' })
+        );
+
+        if (publicUrl) {
+          await contractService.update(contractId, { pdf_url: publicUrl });
+        }
+      } catch (pdfError) {
+        console.warn('Error generating/uploading PDF:', pdfError);
+      }
+
+      // 1b. Upload file in docMode 'upload'
+      if (enrichedData.docMode === 'upload' && enrichedData.uploadedFile) {
+        try {
+          const filePath = `contracts/${contractId}_uploaded_${enrichedData.uploadedFile.name}`;
+          const uploadUrl = await storageService.uploadFile(
+            'documents',
+            filePath,
+            enrichedData.uploadedFile
+          );
+          if (uploadUrl) {
+            await contractService.update(contractId, { pdf_url: uploadUrl });
+          }
+        } catch (uploadError) {
+          console.warn('Error uploading contract file:', uploadError);
+        }
+      }
+
+      // 2. Notify tenant
+      if (enrichedData.tenant_id) {
+        try {
+          const notificationPayload = {
+            id: crypto.randomUUID(),
+            user_id: enrichedData.tenant_id,
+            title: 'Novo Contrato',
+            message: `Um novo contrato de locação para ${enrichedData.property} foi criado e aguarda sua assinatura.`,
+            type: 'contract',
+            is_read: false,
+            created_at: new Date().toISOString(),
+            link: null,
+          };
+          await supabase.from('notifications').insert(notificationPayload);
+        } catch (notifError) {
+          console.warn('Error notifying tenant:', notifError);
+        }
+      }
+
       loadContracts();
       setShowWizard(false);
       addToast('Contrato Criado', 'O contrato foi criado com sucesso.', 'success');

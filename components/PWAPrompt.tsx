@@ -14,7 +14,6 @@ const PWAPrompt: React.FC = () => {
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log('PWA Install prompt saved');
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -24,8 +23,7 @@ const PWAPrompt: React.FC = () => {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
+    await deferredPrompt.userChoice;
     setDeferredPrompt(null);
   };
 

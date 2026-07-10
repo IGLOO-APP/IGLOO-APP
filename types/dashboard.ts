@@ -1,3 +1,6 @@
+import { Property } from './properties';
+import { Tenant } from './profiles';
+
 export interface DashboardMetrics {
   totalWealth: string;
   mrr: string;
@@ -46,14 +49,48 @@ export interface DashboardFinancialHistory {
   projected: boolean;
 }
 
+export interface PortfolioHealth {
+  yield: string;
+  vacancy: string;
+  delinquency: string;
+  delinquencyAbsolute: number;
+}
+
+export interface TopProperty {
+  id: string;
+  name: string;
+  image: string;
+  revenue: number;
+  yield: number;
+  status: string;
+}
+
+export interface WealthHistoryEntry {
+  month: string;
+  value: number;
+  events: { type: string; label: string }[];
+}
+
+export interface PendingAction {
+  id: string;
+  title: string;
+  type: string;
+  priority: string;
+  acao_pendente?: {
+    label: string;
+    endpoint: string;
+  };
+}
+
 export interface DashboardData {
   metrics: DashboardMetrics;
   risks: DashboardRisk[];
   activities: DashboardActivity[];
   financialHistory: DashboardFinancialHistory[];
-  properties: any[];
-  portfolioHealth: any;
-  topProperties: any[];
-  wealthHistory: any[];
-  pendingActions: any[];
+  properties: Property[];
+  tenants: Tenant[];
+  portfolioHealth: PortfolioHealth;
+  topProperties: TopProperty[];
+  wealthHistory: WealthHistoryEntry[];
+  pendingActions: PendingAction[];
 }

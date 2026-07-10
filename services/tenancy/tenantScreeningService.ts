@@ -3,6 +3,9 @@ import { supabase } from '../../lib/supabase';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = () => supabase as any;
 
+const isMissingTable = (err: unknown) =>
+  typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === 'PGRST205';
+
 export interface TenantScreening {
   id?: string;
   tenant_id: string;
@@ -52,7 +55,7 @@ export const tenantScreeningService = {
         ...DEFAULT_SCREENING,
       };
     } catch (err) {
-      console.error('[tenantScreeningService] Error fetching screening:', err);
+      if (!isMissingTable(err)) console.error('[tenantScreeningService] Error:', err);
       return {
         tenant_id: tenantId,
         property_id: propertyId,
@@ -82,8 +85,10 @@ export const tenantScreeningService = {
         if (error) throw error;
       }
     } catch (err) {
-      console.error('[tenantScreeningService] Error saving screening:', err);
-      throw err;
+      if (!isMissingTable(err)) {
+        console.error('[tenantScreeningService] Error saving:', err);
+        throw err;
+      }
     }
   },
 };

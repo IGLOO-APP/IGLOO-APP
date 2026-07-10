@@ -23,6 +23,8 @@ export interface ContractFormData {
   maintenanceFee: string;
   earlyTerminationFee: string;
   lockInPeriod: string;
+  condominiumValue: string;
+  iptuValue: string;
   landlordName: string;
 }
 
@@ -72,6 +74,10 @@ export interface ContractWizardData {
   maintenanceFee: string;
   earlyTerminationFee: string;
   lockInPeriod: string;
+  condominiumValue: string;
+  iptuValue: string;
+  ownerName: string;
+  ownerEmail: string;
   tenantName: string;
   tenantCpf: string;
   tenantEmail: string;
@@ -114,6 +120,8 @@ export function useContractWizard(
     maintenanceFee: '',
     earlyTerminationFee: '3',
     lockInPeriod: '6',
+    condominiumValue: '',
+    iptuValue: '',
     landlordName: currentUser?.name || 'Proprietário',
   });
 
@@ -131,6 +139,7 @@ export function useContractWizard(
   const [movingSignature, setMovingSignature] = useState<number | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [pendingSignatureRole, setPendingSignatureRole] = useState<'owner' | 'tenant'>('owner');
 
   const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
   const isDraggingRef = useRef(false);
@@ -144,7 +153,7 @@ export function useContractWizard(
           propertyService.getAll(),
           tenantService.getAll(),
         ]);
-        setProperties(propsData.filter((p) => p.status === 'DISPONÍVEL'));
+        setProperties(propsData);
         setTenants(tenantsData);
       } catch (error) {
         console.error('Error fetching data for wizard:', error);
@@ -191,8 +200,8 @@ export function useContractWizard(
       data_fim: getEndDate(),
       valor_aluguel: formData.rentValue || '0,00',
       dia_vencimento: formData.paymentDay || '10',
-      valor_condominio: 'Incluso',
-      valor_iptu: 'Incluso',
+      valor_condominio: formData.condominiumValue ? `R$ ${formData.condominiumValue}` : 'Incluso',
+      valor_iptu: formData.iptuValue ? `R$ ${formData.iptuValue}` : 'Incluso',
       valor_caucao: formData.depositValue || '0,00',
       valor_taxa_rateio:
         formData.hasMaintenanceFee && formData.maintenanceFee
@@ -311,6 +320,10 @@ export function useContractWizard(
       maintenanceFee: formData.maintenanceFee,
       earlyTerminationFee: formData.earlyTerminationFee,
       lockInPeriod: formData.lockInPeriod,
+      condominiumValue: formData.condominiumValue,
+      iptuValue: formData.iptuValue,
+      ownerName: formData.landlordName,
+      ownerEmail: '',
       tenantName: formData.tenantName,
       tenantCpf: formData.tenantCpf,
       tenantEmail: formData.tenantEmail,
@@ -364,10 +377,17 @@ export function useContractWizard(
     });
   };
 
-  const handleSignatureConfirm = (dataUrl: string) => {
+  const SIGNATURE_FIELDS = {
+    owner: { x: 244, y: 985 },
+    tenant: { x: 652, y: 985 },
+  };
+
+  const handleSignatureConfirm = (dataUrl: string, role?: 'owner' | 'tenant') => {
     const lastPageIndex = contractPages.length - 1;
+    const targetRole = role || pendingSignatureRole;
+    const pos = SIGNATURE_FIELDS[targetRole];
     setSignatures((prev) => ({ ...prev, [lastPageIndex]: dataUrl }));
-    setSignaturePositions((prev) => ({ ...prev, [lastPageIndex]: { x: 650, y: 900 } }));
+    setSignaturePositions((prev) => ({ ...prev, [lastPageIndex]: pos }));
     setShowSignatureModal(false);
     setMovingSignature(lastPageIndex);
   };
@@ -433,6 +453,8 @@ export function useContractWizard(
     addPage,
     removePage,
     handleSignatureConfirm,
+    pendingSignatureRole,
+    setPendingSignatureRole,
     scrollToClause,
   };
 }

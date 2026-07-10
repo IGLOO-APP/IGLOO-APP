@@ -93,7 +93,14 @@ export const tenantService = {
     if (error) {
       handleServiceError(error, 'Erro ao enviar convite');
     }
-    console.log(`[IGLOO] Convite enviado para ${tenantData.email}`);
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase.from('profiles').delete().eq('id', id);
+
+    if (error) {
+      handleServiceError(error, 'Erro ao excluir inquilino');
+    }
   },
 
   // Delegate to specialized services for backward compatibility if needed,

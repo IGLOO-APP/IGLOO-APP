@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   X,
   Calendar,
@@ -39,7 +39,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({
   );
   const [loadingAudience, setLoadingAudience] = useState(false);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
       const data = await announcementService.getAllForOwner(ownerId);
@@ -49,11 +49,11 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [ownerId]);
 
   useEffect(() => {
     if (isOpen) fetchHistory();
-  }, [isOpen, ownerId]);
+  }, [isOpen, fetchHistory]);
 
   const handleDelete = async (id: string) => {
     if (
