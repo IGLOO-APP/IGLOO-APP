@@ -10,6 +10,8 @@ export interface PropertyDocument {
   uploadDate: string;
   url?: string;
   preview_url?: string;
+  document_type?: string;
+  tenant_id?: string;
 }
 
 export const documentService = {
@@ -210,12 +212,10 @@ export const documentService = {
     return data.map((doc) => ({
       id: doc.id,
       name: doc.name,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      category: doc.category as any,
+      category: doc.category as PropertyDocument['category'],
       type: doc.type,
       size: doc.size || '0 KB',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: (doc.status as any) || 'Pendente',
+      status: (doc.status as PropertyDocument['status']) || 'Pendente',
       uploadDate: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : 'N/A',
       url: doc.url || undefined,
     }));
@@ -229,13 +229,15 @@ export const documentService = {
       .from('property_documents')
       .insert({
         property_id: propertyId,
-        name: docData.name,
-        category: docData.category,
-        type: docData.type,
-        size: docData.size,
+        name: docData.name || '',
+        category: docData.category || 'Outros',
+        type: docData.type || '',
+        size: docData.size || '0 KB',
         status: docData.status || 'Pendente',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+        url: docData.url,
+        document_type: docData.document_type,
+        tenant_id: docData.tenant_id,
+      })
       .select()
       .single();
 
@@ -247,12 +249,74 @@ export const documentService = {
     return {
       id: data.id,
       name: data.name,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      category: data.category as any,
+      category: data.category as PropertyDocument['category'],
       type: data.type,
       size: data.size || '0 KB',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: data.status as any,
+      status: (data.status as PropertyDocument['status']) || 'Pendente',
+      uploadDate: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : 'N/A',
+      url: data.url || undefined,
+    };
+  },
+
+  async getPaymentReceipt(tenantId: string): Promise<any | null> {
+    const { data, error } = await supabase
+      .from('property_documents')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('document_type', 'payment_receipt')
+      .maybeSingle();
+
+    if (error) {
+      console.error('[documentService] Error fetching payment receipt:', error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    return {
+      id: data.id,
+      name: data.name,
+      category: data.category,
+      type: data.type,
+      size: data.size || '0 KB',
+      status: data.status || 'Pendente',
+      uploadDate: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : 'N/A',
+      url: data.url || undefined,
+    };
+  },
+
+  async updatePropertyDocument(
+    id: string,
+    updates: Partial<PropertyDocument>
+  ): Promise<PropertyDocument | null> {
+    const { data, error } = await supabase
+      .from('property_documents')
+      .update({
+        name: updates.name,
+        category: updates.category,
+        type: updates.type,
+        size: updates.size,
+        status: updates.status,
+        url: updates.url,
+        document_type: updates.document_type,
+        tenant_id: updates.tenant_id,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[documentService] Error updating property doc:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      category: data.category as PropertyDocument['category'],
+      type: data.type,
+      size: data.size || '0 KB',
+      status: (data.status as PropertyDocument['status']) || 'Pendente',
       uploadDate: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : 'N/A',
       url: data.url || undefined,
     };

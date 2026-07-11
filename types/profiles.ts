@@ -32,6 +32,7 @@ export interface Tenant {
   email: string;
   phone: string;
   cpf?: string;
+  rg?: string;
   image?: string;
   status: 'active' | 'late' | 'inactive';
   property?: string;
@@ -64,6 +65,16 @@ export interface Tenant {
     parking?: number;
     price?: string;
   };
+  // Employment / Income fields
+  company_name?: string;
+  company_cnpj?: string;
+  company_address?: string;
+  occupation?: string;
+  monthly_income?: number;
+  admission_date?: string;
+  // Guarantee
+  guarantee_type?: 'fiador' | 'seguro_fianca' | 'deposito_caucao' | 'outros';
+  // Onboarding
   onboarding_stage?: string;
   has_completed_onboarding?: boolean;
   onboarding_profile_status?: string;
@@ -77,7 +88,50 @@ export interface Tenant {
     rg_name?: string;
     income_url?: string;
     income_name?: string;
+    residence_url?: string;
+    residence_name?: string;
+    guarantee_url?: string;
+    guarantee_name?: string;
   };
+}
+
+export interface Guarantor {
+  id?: string;
+  tenant_id?: string;
+  property_id?: string;
+  name: string;
+  cpf?: string;
+  rg?: string;
+  birth_date?: string;
+  phone?: string;
+  email?: string;
+  income_url?: string;
+  income_name?: string;
+  residence_url?: string;
+  residence_name?: string;
+  rg_document_url?: string;
+  income_proof_url?: string;
+  status?: 'pendente' | 'aprovado' | 'reprovado';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface OwnerPaymentConfig {
+  id?: string;
+  owner_id: string;
+  accepts_deposit: boolean;
+  accepts_guarantor: boolean;
+  pix_enabled: boolean;
+  pix_key_type?: string;
+  pix_key?: string;
+  bank_transfer_enabled: boolean;
+  bank_name?: string;
+  bank_agency?: string;
+  bank_account?: string;
+  bank_account_type?: string;
+  account_holder_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export type RequirementStatus = 'required' | 'optional' | 'hidden';

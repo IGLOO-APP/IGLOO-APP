@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, User, Upload, PenTool, ClipboardCheck, Key } from 'lucide-react';
-import { Tenant } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { Tenant, Guarantor } from '../../types';
 import { fixDocumentUrl } from '../../utils/mappingUtils';
 import { OnboardingProgress, StepCard, ErrorAlert } from '../onboarding';
 import type { OnboardingStepConfig } from '../onboarding';
@@ -12,6 +11,9 @@ import { DocumentStepContent } from './onboarding/DocumentStepContent';
 import { ContractStepContent } from './onboarding/ContractStepContent';
 import { InspectionStepContent } from './onboarding/InspectionStepContent';
 import { KeysStepContent } from './onboarding/KeysStepContent';
+import { documentService, PropertyDocument } from '../../services/documentService';
+import { profileService } from '../../services/profileService';
+import { contractService } from '../../services/tenancy/contractService';
 
 interface OwnerOnboardingReviewChecklistProps {
   tenant: Tenant;
@@ -100,15 +102,35 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
   >({
     name: { status: 'pending' },
     cpf: { status: 'pending' },
+    rg: { status: 'pending' },
     phone: { status: 'pending' },
     email: { status: 'pending' },
+    company_name: { status: 'pending' },
+    company_cnpj: { status: 'pending' },
+    company_address: { status: 'pending' },
+    occupation: { status: 'pending' },
+    monthly_income: { status: 'pending' },
+    admission_date: { status: 'pending' },
   });
   const [documentsStatus, setDocumentsStatus] = useState<
     Record<string, { status: 'pending' | 'approved' | 'rejected'; reason?: string }>
   >({
     rg: { status: 'pending' },
     income: { status: 'pending' },
+    residence: { status: 'pending' },
+    guarantee: { status: 'pending' },
   });
+  const [guarantorData, setGuarantorData] = useState<Guarantor | null>(null);
+  const [paymentReceipt, setPaymentReceipt] = useState<PropertyDocument | null>(null);
+
+  useEffect(() => {
+    if (tenant?.id) {
+      import('../../services/tenancy/guarantorService').then(({ guarantorService }) => {
+        guarantorService.getByTenant(tenant.id).then(setGuarantorData);
+      });
+      documentService.getPaymentReceipt(tenant.id).then(setPaymentReceipt);
+    }
+  }, [tenant?.id]);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editingDoc, setEditingDoc] = useState<string | null>(null);
   const [fieldReason, setFieldReason] = useState<string>('');
@@ -123,6 +145,19 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
       const activeStep = steps.find((s) => s.status === 'submitted');
       if (activeStep) setExpandedStep(activeStep.id);
     }
+    // Sync employment profile fields
+    if (tenant.company_name && profileFields.company_name.status === 'pending') {
+      setProfileFields((prev) => ({ ...prev, company_name: { status: 'approved' } }));
+    }
+    if (tenant.occupation && profileFields.occupation.status === 'pending') {
+      setProfileFields((prev) => ({ ...prev, occupation: { status: 'approved' } }));
+    }
+    if (tenant.monthly_income && profileFields.monthly_income.status === 'pending') {
+      setProfileFields((prev) => ({ ...prev, monthly_income: { status: 'approved' } }));
+    }
+    if (tenant.admission_date && profileFields.admission_date.status === 'pending') {
+      setProfileFields((prev) => ({ ...prev, admission_date: { status: 'approved' } }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     tenant.onboarding_profile_status,
@@ -130,6 +165,10 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
     tenant.onboarding_contract_status,
     tenant.onboarding_inspection_status,
     tenant.onboarding_stage,
+    tenant.company_name,
+    tenant.occupation,
+    tenant.monthly_income,
+    tenant.admission_date,
   ]);
 
   const toggleExpand = (stepId: string) => {
@@ -160,15 +199,17 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
         case 'documents':
           updates.onboarding_documents_status = 'approved';
           updates.onboarding_stage = 'contract';
+          // Auto-approve guarantor if fiador
+          if (tenant.guarantee_type === 'fiador' && guarantorData?.id) {
+            const { guarantorService } = await import('../../services/tenancy/guarantorService');
+            await guarantorService.updateStatus(guarantorData.id, 'aprovado');
+          }
           break;
         case 'contract':
           updates.onboarding_contract_status = 'approved';
           updates.onboarding_stage = 'inspection';
           if (tenant.contract?.id)
-            await supabase
-              .from('contracts')
-              .update({ status: 'active' })
-              .eq('id', tenant.contract.id.toString());
+            await contractService.updateStatus(tenant.contract.id.toString(), 'active');
           break;
         case 'inspection':
           updates.onboarding_inspection_status = 'approved';
@@ -178,14 +219,92 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
           updates.onboarding_stage = 'completed';
           break;
       }
-      await supabase
-        .from('profiles')
-        .update(updates)
-        .or(`email.eq.${tenant.email},id.eq.${tenant.id}`);
+      await profileService.updateByEmail(
+        tenant.email,
+        updates as Record<string, string | boolean | null>
+      );
       onRefresh();
       setExpandedStep(null);
     } catch {
       setErrorMsg('Erro ao aprovar etapa. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkAndAutoApproveDocuments = async () => {
+    // After guarantee action, check if all docs are approved and auto-advance
+    const allDocsApproved = Object.values(documentsStatus).every((d) => d.status === 'approved');
+    if (allDocsApproved) {
+      await handleApproveStep('documents');
+    }
+  };
+
+  const handleConfirmReceipt = async () => {
+    if (!paymentReceipt?.id) return;
+    setLoading(true);
+    try {
+      await documentService.updatePropertyDocument(paymentReceipt.id, { status: 'Validado' });
+      setPaymentReceipt((prev) => (prev ? { ...prev, status: 'Validado' } : prev));
+      await checkAndAutoApproveDocuments();
+    } catch {
+      setErrorMsg('Erro ao confirmar recibo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectReceipt = async () => {
+    if (!paymentReceipt?.id) return;
+    setLoading(true);
+    try {
+      await documentService.updatePropertyDocument(paymentReceipt.id, { status: 'Pendente' });
+      setPaymentReceipt((prev) => (prev ? { ...prev, status: 'Pendente' } : prev));
+      // Also mark onboarding docs as pending resubmission
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_documents_status: 'rejected',
+        onboarding_documents_rejected_reason:
+          'Comprovante de depósito inválido. Por favor, reenvie.',
+      });
+      onRefresh();
+    } catch {
+      setErrorMsg('Erro ao solicitar reenvio do comprovante.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveGuarantor = async () => {
+    if (!guarantorData?.id) return;
+    setLoading(true);
+    try {
+      const { guarantorService } = await import('../../services/tenancy/guarantorService');
+      await guarantorService.updateStatus(guarantorData.id, 'aprovado');
+      setGuarantorData((prev: any) => ({ ...prev, status: 'aprovado' }));
+      await checkAndAutoApproveDocuments();
+    } catch {
+      setErrorMsg('Erro ao aprovar fiador.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectGuarantor = async () => {
+    if (!guarantorData?.id) return;
+    setLoading(true);
+    try {
+      const { guarantorService } = await import('../../services/tenancy/guarantorService');
+      await guarantorService.updateStatus(guarantorData.id, 'reprovado');
+      setGuarantorData((prev) => (prev ? { ...prev, status: 'reprovado' } : prev));
+      // Mark docs as rejected too
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_documents_status: 'rejected',
+        onboarding_documents_rejected_reason:
+          'Fiador reprovado. Por favor, indique um novo fiador.',
+      });
+      onRefresh();
+    } catch {
+      setErrorMsg('Erro ao reprovar fiador.');
     } finally {
       setLoading(false);
     }
@@ -210,15 +329,12 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
     const compiledReason = `Ajustes necessários nos seguintes dados:\n${rejectedFields.map((f) => `• ${f}`).join('\n')}`;
     setLoading(true);
     try {
-      await supabase
-        .from('profiles')
-        .update({
-          onboarding_profile_status: 'rejected',
-          onboarding_profile_rejected_reason: compiledReason,
-          onboarding_stage: 'profile',
-          has_completed_onboarding: false,
-        })
-        .or(`email.eq.${tenant.email},id.eq.${tenant.id}`);
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_profile_status: 'rejected',
+        onboarding_profile_rejected_reason: compiledReason,
+        onboarding_stage: 'profile',
+        has_completed_onboarding: false,
+      });
       onRefresh();
       setExpandedStep(null);
     } catch {
@@ -235,6 +351,8 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
         const map: Record<string, string> = {
           rg: 'Documento de Identidade',
           income: 'Comprovante de Renda',
+          residence: 'Comprovante de Residência',
+          guarantee: 'Garantia Locatícia',
         };
         return `${map[k] || k}: ${v.reason}`;
       });
@@ -245,15 +363,12 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
     const compiledReason = `Ajustes necessários nos seguintes documentos:\n${rejectedDocs.map((d) => `• ${d}`).join('\n')}`;
     setLoading(true);
     try {
-      await supabase
-        .from('profiles')
-        .update({
-          onboarding_documents_status: 'rejected',
-          onboarding_documents_rejected_reason: compiledReason,
-          onboarding_stage: 'documents',
-          has_completed_onboarding: false,
-        })
-        .or(`email.eq.${tenant.email},id.eq.${tenant.id}`);
+      await profileService.updateByEmail(tenant.email, {
+        onboarding_documents_status: 'rejected',
+        onboarding_documents_rejected_reason: compiledReason,
+        onboarding_stage: 'documents',
+        has_completed_onboarding: false,
+      });
       onRefresh();
       setExpandedStep(null);
     } catch {
@@ -296,10 +411,10 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
           updates.has_completed_onboarding = false;
           break;
       }
-      await supabase
-        .from('profiles')
-        .update(updates)
-        .or(`email.eq.${tenant.email},id.eq.${tenant.id}`);
+      await profileService.updateByEmail(
+        tenant.email,
+        updates as Record<string, string | boolean | null>
+      );
       onRefresh();
       setExpandedStep(null);
       setShowRejectModal(null);
@@ -377,6 +492,12 @@ export const OwnerOnboardingReviewChecklist: React.FC<OwnerOnboardingReviewCheck
         onStepApprove={() => handleApproveStep('documents')}
         onStepReject={handleRejectDocs}
         onPreview={handlePreview}
+        guarantor={guarantorData}
+        paymentReceipt={paymentReceipt}
+        onConfirmReceipt={handleConfirmReceipt}
+        onRejectReceipt={handleRejectReceipt}
+        onApproveGuarantor={handleApproveGuarantor}
+        onRejectGuarantor={handleRejectGuarantor}
       />
     ),
     contract: () => (

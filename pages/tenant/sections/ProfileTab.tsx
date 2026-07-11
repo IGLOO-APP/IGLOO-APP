@@ -22,6 +22,7 @@ interface ProfileTabProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleAvatarChange?: any;
   isSaving?: boolean;
+  calculateTimeAtCompany?: () => string;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -39,6 +40,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   avatarInputRef: _avatarInputRef,
   handleAvatarChange: _handleAvatarChange,
   isSaving: _isSaving,
+  calculateTimeAtCompany,
 }) => {
   return (
     <div className='animate-fadeIn pb-8 space-y-6'>
@@ -328,12 +330,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           <div className='absolute top-0 left-0 w-1 h-full bg-purple-500'></div>
           <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
             <Briefcase size={18} className='text-purple-500' />
-            Renda e Profissão
+            Vínculo Empregatício
           </h3>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                Profissão / Empregador
+                Nome da Empresa
               </label>
               <input
                 type='text'
@@ -345,7 +347,34 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </div>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                Cargo / Ocupação
+                CNPJ <span className='text-slate-300'>(opcional)</span>
+              </label>
+              <input
+                type='text'
+                value={profileData.company_cnpj}
+                readOnly={!isEditing}
+                onChange={(e) => setProfileData({ ...profileData, company_cnpj: e.target.value })}
+                className={getFieldClass(profileData.company_cnpj)}
+                placeholder='00.000.000/0000-00'
+              />
+            </div>
+            <div className='space-y-2 md:col-span-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Endereço da Empresa
+              </label>
+              <input
+                type='text'
+                value={profileData.company_address}
+                readOnly={!isEditing}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, company_address: e.target.value })
+                }
+                className={getFieldClass(profileData.company_address)}
+              />
+            </div>
+            <div className='space-y-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Cargo
               </label>
               <input
                 type='text'
@@ -357,7 +386,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </div>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                Renda Mensal
+                Salário
               </label>
               <input
                 type='text'
@@ -366,6 +395,32 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 onChange={(e) => setProfileData({ ...profileData, monthlyIncome: e.target.value })}
                 className={getFieldClass(profileData.monthlyIncome)}
               />
+            </div>
+            <div className='space-y-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Data de Admissão
+              </label>
+              <input
+                type='date'
+                value={profileData.admission_date}
+                readOnly={!isEditing}
+                onChange={(e) => setProfileData({ ...profileData, admission_date: e.target.value })}
+                className={getFieldClass(profileData.admission_date)}
+              />
+            </div>
+            <div className='space-y-2'>
+              <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                Tempo de Empresa
+              </label>
+              <div
+                className={`flex items-center h-[48px] px-4 rounded-xl border text-sm font-bold bg-slate-50 dark:bg-white/5 border-transparent text-slate-600 dark:text-slate-400 ${isEditing ? 'border-primary/30' : ''}`}
+              >
+                {calculateTimeAtCompany
+                  ? calculateTimeAtCompany()
+                  : profileData.admission_date
+                    ? 'Calculando...'
+                    : '—'}
+              </div>
             </div>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>

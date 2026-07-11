@@ -1,5 +1,13 @@
 import React from 'react';
-import { ArrowLeft, ShieldAlert, TrendingUp, DollarSign, ShieldCheck, Clock, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ShieldAlert,
+  TrendingUp,
+  DollarSign,
+  ShieldCheck,
+  Clock,
+  Trash2,
+} from 'lucide-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
 import { OwnerOnboardingReviewChecklist } from '../components/tenants/OwnerOnboardingReviewChecklist';
 import { useTenantDetails } from './tenant/hooks/useTenantDetails';
@@ -151,9 +159,8 @@ const TenantDetailsPage: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Inquilino?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação irá remover permanentemente o perfil de{' '}
-              <strong>{tenant.name}</strong>. Os dados de contratos e financeiros
-              permanecerão para registro.
+              Esta ação irá remover permanentemente o perfil de <strong>{tenant.name}</strong>. Os
+              dados de contratos e financeiros permanecerão para registro.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className='space-y-2'>

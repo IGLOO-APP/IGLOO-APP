@@ -32,7 +32,12 @@ interface DbContractRow {
 
 const parseJsonArray = <T>(val: unknown): T[] => {
   if (Array.isArray(val)) return val;
-  if (typeof val === 'string') try { return JSON.parse(val); } catch { return []; }
+  if (typeof val === 'string')
+    try {
+      return JSON.parse(val);
+    } catch {
+      return [];
+    }
   return [];
 };
 
@@ -225,10 +230,11 @@ export const contractService = {
       history?: ContractHistoryEvent[];
     }
   ): Promise<void> {
-    const dbUpdates: Record<string, unknown> = { ...updates };
-    if (updates.signers) dbUpdates.signers = JSON.stringify(updates.signers);
-    if (updates.history) dbUpdates.history = JSON.stringify(updates.history);
-
+    const dbUpdates = {
+      ...updates,
+      signers: updates.signers ? JSON.stringify(updates.signers) : undefined,
+      history: updates.history ? JSON.stringify(updates.history) : undefined,
+    };
     const { error } = await supabase.from('contracts').update(dbUpdates).eq('id', id);
 
     if (error) {

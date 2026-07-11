@@ -20,6 +20,16 @@ create table public.profiles (
   last_login_at timestamp with time zone,
   last_login_ip text,
   managed_by_admin_id uuid references public.profiles(id),
+  -- Employment / Income
+  company_name text,
+  company_cnpj text,
+  company_address text,
+  occupation text,
+  monthly_income numeric,
+  admission_date date,
+  rg text,
+  -- Guarantee
+  guarantee_type text check (guarantee_type in ('fiador', 'seguro_fianca', 'deposito_caucao', 'outros')),
   -- Subscription
   subscription_plan text default 'free',
   subscription_status text check (subscription_status in ('active', 'trialing', 'past_due', 'canceled', 'expired')) default 'trialing',
@@ -671,6 +681,90 @@ create policy "Owners can manage property documents" on public.property_document
     ) or is_admin()
   );
 
+-- GUARANTORS (Fiadores)
+create table if not exists public.guarantors (
+  id uuid default uuid_generate_v4() primary key,
+  tenant_id text not null references public.profiles(id) on delete cascade,
+  property_id uuid references public.properties(id),
+  name text not null,
+  cpf text,
+  rg text,
+  birth_date date,
+  phone text,
+  email text,
+  income_url text,
+  income_name text,
+  residence_url text,
+  residence_name text,
+  rg_document_url text,
+  income_proof_url text,
+  status text check (status in ('pendente', 'aprovado', 'reprovado')) default 'pendente',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.guarantors enable row level security;
+
+create policy "Users involved can view guarantors" on public.guarantors
+  for select using (
+    tenant_id = (auth.jwt() ->> 'sub')::text
+    or exists (
+      select 1 from public.contracts
+      where contracts.tenant_id = guarantors.tenant_id
+      and contracts.owner_id = (auth.jwt() ->> 'sub')::text
+    )
+    or is_admin()
+  );
+
+create policy "Tenants can manage own guarantors" on public.guarantors
+  for all using (tenant_id = (auth.jwt() ->> 'sub')::text)
+  with check (tenant_id = (auth.jwt() ->> 'sub')::text);
+
+create policy "Owners can manage tenant guarantors" on public.guarantors
+  for all using (
+    exists (
+      select 1 from public.contracts
+      where contracts.tenant_id = guarantors.tenant_id
+      and contracts.owner_id = (auth.jwt() ->> 'sub')::text
+    )
+    or is_admin()
+  );
+
+-- OWNER PAYMENT CONFIG (garantia settings per owner)
+create table if not exists public.owner_payment_config (
+  id uuid default uuid_generate_v4() primary key,
+  owner_id text not null unique references public.profiles(id),
+  accepts_deposit boolean default false,
+  accepts_guarantor boolean default false,
+  pix_enabled boolean default false,
+  pix_key_type text,
+  pix_key text,
+  bank_transfer_enabled boolean default false,
+  bank_name text,
+  bank_agency text,
+  bank_account text,
+  bank_account_type text,
+  account_holder_name text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.owner_payment_config enable row level security;
+
+create policy "Owners can manage own payment config" on public.owner_payment_config
+  for all using (owner_id = (auth.jwt() ->> 'sub')::text)
+  with check (owner_id = (auth.jwt() ->> 'sub')::text);
+
+create policy "Tenants can view owner payment config" on public.owner_payment_config
+  for select using (
+    exists (
+      select 1 from public.contracts c
+      where c.owner_id = owner_payment_config.owner_id
+      and c.tenant_id = (auth.jwt() ->> 'sub')::text
+      and c.status = 'active'
+    )
+  );
+
 create policy "Tenants can insert onboarding property documents" on public.property_documents
   for insert with check (
     exists (
@@ -768,4 +862,45 @@ create policy "Owners can view own screenings" on public.tenant_screenings
 
 create policy "Owners can manage screenings" on public.tenant_screenings
   for all using ((auth.jwt() ->> 'sub')::text = owner_id or is_admin());
+
+-- Storage RLS: inspection-photos bucket
+-- Policy: Authenticated users can upload inspection photos
+drop policy if exists "Users can upload inspection photos" on storage.objects;
+create policy "Users can upload inspection photos" on storage.objects
+  for insert
+  with check (
+    bucket_id = 'inspection-photos'
+    and auth.role() = 'authenticated'
+  );
+
+-- Policy: Authenticated users can view inspection photos
+drop policy if exists "Users can view inspection photos" on storage.objects;
+create policy "Users can view inspection photos" on storage.objects
+  for select
+  using (
+    bucket_id = 'inspection-photos'
+    and auth.role() = 'authenticated'
+  );
+
+-- Policy: Authenticated users can update inspection photos
+drop policy if exists "Users can update inspection photos" on storage.objects;
+create policy "Users can update inspection photos" on storage.objects
+  for update
+  with check (
+    bucket_id = 'inspection-photos'
+    and auth.role() = 'authenticated'
+  );
+
+-- Policy: Only admins can delete inspection photos
+drop policy if exists "Admins can delete inspection photos" on storage.objects;
+create policy "Admins can delete inspection photos" on storage.objects
+  for delete
+  using (
+    bucket_id = 'inspection-photos'
+    and exists (
+      select 1 from public.profiles
+      where id = (auth.jwt() ->> 'sub')::text
+      and role = 'admin'
+    )
+  );
 

@@ -32,6 +32,15 @@ const TenantProfile: React.FC = () => {
     completionPercent,
     getStatusBadge,
     getFieldClass,
+    guarantorData,
+    setGuarantorData,
+    guaranteeType,
+    setGuaranteeType,
+    guarantorFileIncome,
+    setGuarantorFileIncome,
+    guarantorFileResidence,
+    setGuarantorFileResidence,
+    calculateTimeAtCompany,
   } = useTenantProfile();
 
   return (
@@ -141,6 +150,7 @@ const TenantProfile: React.FC = () => {
             avatarInputRef={avatarInputRef}
             handleAvatarChange={handleAvatarChange}
             isSaving={isSaving}
+            calculateTimeAtCompany={calculateTimeAtCompany}
           />
         )}
 
@@ -150,6 +160,15 @@ const TenantProfile: React.FC = () => {
             config={config}
             getStatusBadge={getStatusBadge}
             handleDocUpload={handleDocUpload}
+            guaranteeType={guaranteeType}
+            setGuaranteeType={setGuaranteeType}
+            guarantorData={guarantorData}
+            setGuarantorData={setGuarantorData}
+            guarantorFileIncome={guarantorFileIncome}
+            setGuarantorFileIncome={setGuarantorFileIncome}
+            guarantorFileResidence={guarantorFileResidence}
+            setGuarantorFileResidence={setGuarantorFileResidence}
+            isEditing={isEditing}
           />
         )}
 

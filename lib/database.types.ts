@@ -11,11 +11,15 @@ export type Database = {
       contracts: {
         Row: {
           contract_number: string | null;
+          condominium_value: number | null;
+          contract_text: string | null;
           created_at: string;
           end_date: string;
           history: Json | null;
           id: string;
+          iptu_value: number | null;
           monthly_value: number;
+          security_deposit: number | null;
           owner_id: string;
           payment_day: number | null;
           pdf_url: string | null;
@@ -27,9 +31,13 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          condominium_value?: number | null;
           contract_number?: string | null;
+          contract_text?: string | null;
           created_at?: string;
           end_date: string;
+          iptu_value?: number | null;
+          security_deposit?: number | null;
           history?: Json | null;
           id?: string;
           monthly_value: number;
@@ -44,9 +52,13 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          condominium_value?: number | null;
           contract_number?: string | null;
+          contract_text?: string | null;
           created_at?: string;
           end_date?: string;
+          iptu_value?: number | null;
+          security_deposit?: number | null;
           history?: Json | null;
           id?: string;
           monthly_value?: number;
@@ -196,6 +208,7 @@ export type Database = {
       faqs: {
         Row: {
           answer: string;
+          category: string | null;
           created_at: string;
           id: string;
           is_active: boolean | null;
@@ -204,6 +217,7 @@ export type Database = {
         };
         Insert: {
           answer: string;
+          category?: string | null;
           created_at?: string;
           id?: string;
           is_active?: boolean | null;
@@ -212,6 +226,7 @@ export type Database = {
         };
         Update: {
           answer?: string;
+          category?: string | null;
           created_at?: string;
           id?: string;
           is_active?: boolean | null;
@@ -413,6 +428,7 @@ export type Database = {
           sender_id: string;
           sender_role: string | null;
           type: string | null;
+          updated_at: string | null;
           url: string | null;
         };
         Insert: {
@@ -423,6 +439,7 @@ export type Database = {
           sender_id: string;
           sender_role?: string | null;
           type?: string | null;
+          updated_at?: string | null;
           url?: string | null;
         };
         Update: {
@@ -433,6 +450,7 @@ export type Database = {
           sender_id?: string;
           sender_role?: string | null;
           type?: string | null;
+          updated_at?: string | null;
           url?: string | null;
         };
         Relationships: [
@@ -452,6 +470,7 @@ export type Database = {
           description: string | null;
           id: string;
           images: string[] | null;
+          owner_id: string | null;
           priority: string | null;
           property_id: string;
           status: string | null;
@@ -465,6 +484,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           images?: string[] | null;
+          owner_id?: string | null;
           priority?: string | null;
           property_id: string;
           status?: string | null;
@@ -478,6 +498,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           images?: string[] | null;
+          owner_id?: string | null;
           priority?: string | null;
           property_id?: string;
           status?: string | null;
@@ -547,6 +568,7 @@ export type Database = {
           paid_date: string | null;
           payment_method: string | null;
           status: string | null;
+          user_id: string | null;
         };
         Insert: {
           amount: number;
@@ -558,6 +580,7 @@ export type Database = {
           paid_date?: string | null;
           payment_method?: string | null;
           status?: string | null;
+          user_id?: string | null;
         };
         Update: {
           amount?: number;
@@ -569,6 +592,7 @@ export type Database = {
           paid_date?: string | null;
           payment_method?: string | null;
           status?: string | null;
+          user_id?: string | null;
         };
         Relationships: [
           {
@@ -585,6 +609,13 @@ export type Database = {
           admin_type: string | null;
           avatar_url: string | null;
           company_name: string | null;
+          company_cnpj: string | null;
+          company_address: string | null;
+          occupation: string | null;
+          monthly_income: number | null;
+          admission_date: string | null;
+          rg: string | null;
+          guarantee_type: string | null;
           converted_at: string | null;
           cpf: string | null;
           created_at: string;
@@ -601,6 +632,9 @@ export type Database = {
           plan: string | null;
           role: string | null;
           suspended_at: string | null;
+          subscription_expires_at: string | null;
+          subscription_plan: string | null;
+          subscription_status: string | null;
           suspended_reason: string | null;
           trial_end_date: string | null;
           trial_started_at: string | null;
@@ -619,6 +653,13 @@ export type Database = {
           admin_type?: string | null;
           avatar_url?: string | null;
           company_name?: string | null;
+          company_cnpj?: string | null;
+          company_address?: string | null;
+          occupation?: string | null;
+          monthly_income?: number | null;
+          admission_date?: string | null;
+          rg?: string | null;
+          guarantee_type?: string | null;
           converted_at?: string | null;
           cpf?: string | null;
           created_at?: string;
@@ -634,6 +675,9 @@ export type Database = {
           phone?: string | null;
           plan?: string | null;
           role?: string | null;
+          subscription_expires_at?: string | null;
+          subscription_plan?: string | null;
+          subscription_status?: string | null;
           suspended_at?: string | null;
           suspended_reason?: string | null;
           trial_end_date?: string | null;
@@ -653,6 +697,13 @@ export type Database = {
           admin_type?: string | null;
           avatar_url?: string | null;
           company_name?: string | null;
+          company_cnpj?: string | null;
+          company_address?: string | null;
+          occupation?: string | null;
+          monthly_income?: number | null;
+          admission_date?: string | null;
+          rg?: string | null;
+          guarantee_type?: string | null;
           converted_at?: string | null;
           cpf?: string | null;
           created_at?: string;
@@ -668,6 +719,9 @@ export type Database = {
           phone?: string | null;
           plan?: string | null;
           role?: string | null;
+          subscription_expires_at?: string | null;
+          subscription_plan?: string | null;
+          subscription_status?: string | null;
           suspended_at?: string | null;
           suspended_reason?: string | null;
           trial_end_date?: string | null;
@@ -691,6 +745,7 @@ export type Database = {
           area: number | null;
           bathrooms: number | null;
           bedrooms: number | null;
+          condominium: string | null;
           created_at: string;
           description: string | null;
           id: string;
@@ -708,6 +763,7 @@ export type Database = {
           area?: number | null;
           bathrooms?: number | null;
           bedrooms?: number | null;
+          condominium?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
@@ -725,6 +781,7 @@ export type Database = {
           area?: number | null;
           bathrooms?: number | null;
           bedrooms?: number | null;
+          condominium?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
@@ -743,33 +800,39 @@ export type Database = {
         Row: {
           category: string;
           created_at: string | null;
+          document_type: string | null;
           id: string;
           name: string;
           property_id: string | null;
           size: string | null;
           status: string | null;
+          tenant_id: string | null;
           type: string;
           url: string | null;
         };
         Insert: {
           category: string;
           created_at?: string | null;
+          document_type?: string | null;
           id?: string;
           name: string;
           property_id?: string | null;
           size?: string | null;
           status?: string | null;
+          tenant_id?: string | null;
           type: string;
           url?: string | null;
         };
         Update: {
           category?: string;
           created_at?: string | null;
+          document_type?: string | null;
           id?: string;
           name?: string;
           property_id?: string | null;
           size?: string | null;
           status?: string | null;
+          tenant_id?: string | null;
           type?: string;
           url?: string | null;
         };

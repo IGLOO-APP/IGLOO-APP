@@ -5,7 +5,10 @@ import { supabase } from '../../lib/supabase';
 const db = () => supabase as any;
 
 const isMissingTable = (err: unknown) =>
-  typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === 'PGRST205';
+  typeof err === 'object' &&
+  err !== null &&
+  'code' in err &&
+  (err as { code: string }).code === 'PGRST205';
 
 export type { TenantProfileConfig };
 

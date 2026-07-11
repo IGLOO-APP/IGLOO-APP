@@ -8,9 +8,21 @@ import {
   Loader,
   ThumbsDown,
   ThumbsUp,
+  User,
+  Shield,
+  MapPin,
+  Banknote,
+  RotateCcw,
 } from 'lucide-react';
-import { Tenant } from '../../../types';
+import { Tenant, Guarantor } from '../../../types';
 import { isValidUrl } from '../../../utils/validation';
+
+interface PaymentReceipt {
+  id: string;
+  name: string;
+  url?: string;
+  status: string;
+}
 
 interface DocumentStepContentProps {
   tenant: Tenant;
@@ -26,6 +38,12 @@ interface DocumentStepContentProps {
   onStepApprove: () => void;
   onStepReject: () => void;
   onPreview: (url: string, title: string, id?: string) => void;
+  guarantor?: Guarantor | null;
+  paymentReceipt?: PaymentReceipt | null;
+  onConfirmReceipt?: () => Promise<void>;
+  onRejectReceipt?: () => Promise<void>;
+  onApproveGuarantor?: () => Promise<void>;
+  onRejectGuarantor?: () => Promise<void>;
 }
 
 export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
@@ -42,6 +60,12 @@ export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
   onStepApprove,
   onStepReject,
   onPreview,
+  guarantor,
+  paymentReceipt,
+  onConfirmReceipt,
+  onRejectReceipt,
+  onApproveGuarantor,
+  onRejectGuarantor,
 }) => {
   const renderDocViewer = (url: string | undefined, label: string) => (
     <div className='flex gap-2'>
@@ -129,7 +153,7 @@ export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
               Documento de Identidade
             </p>
             <p className='text-sm font-bold text-slate-900 dark:text-white mb-3'>{urls.rg_name}</p>
-            {documentsStatus.rg.status === 'rejected' && (
+            {documentsStatus.rg?.status === 'rejected' && (
               <div className='text-xs font-medium text-rose-500 bg-rose-500/5 px-2 py-1.5 rounded-lg border border-rose-500/10 mb-3'>
                 ⚠️ Incorreto: {documentsStatus.rg.reason}
               </div>
@@ -150,7 +174,7 @@ export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
             <p className='text-sm font-bold text-slate-900 dark:text-white mb-3'>
               {urls.income_name}
             </p>
-            {documentsStatus.income.status === 'rejected' && (
+            {documentsStatus.income?.status === 'rejected' && (
               <div className='text-xs font-medium text-rose-500 bg-rose-500/5 px-2 py-1.5 rounded-lg border border-rose-500/10 mb-3'>
                 ⚠️ Incorreto: {documentsStatus.income.reason}
               </div>
@@ -163,6 +187,206 @@ export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Comprovante de Residência */}
+      {urls.residence_url && (
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl flex flex-col justify-between'>
+            <div>
+              <p className='text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1'>
+                <MapPin size={12} className='text-emerald-500' /> Comprovante de Residência
+              </p>
+              <p className='text-sm font-bold text-slate-900 dark:text-white mb-3'>
+                {urls.residence_name}
+              </p>
+            </div>
+            <div className='space-y-3'>
+              {renderDocViewer(urls.residence_url, 'Comprovante de Residência')}
+              {tenant.onboarding_documents_status === 'submitted' &&
+                renderDocApproval('residence', 'Residência', 'Motivo da recusa do comprovante...')}
+            </div>
+          </div>
+
+          {/* Garantia Locatícia */}
+          {(urls.guarantee_url || tenant.guarantee_type) && (
+            <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl flex flex-col justify-between'>
+              <div>
+                <p className='text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1'>
+                  <Shield size={12} className='text-amber-500' /> Garantia Locatícia
+                </p>
+                {tenant.guarantee_type && (
+                  <p className='text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2'>
+                    {tenant.guarantee_type === 'fiador'
+                      ? 'Fiador'
+                      : tenant.guarantee_type === 'seguro_fianca'
+                        ? 'Seguro Fiança'
+                        : tenant.guarantee_type === 'deposito_caucao'
+                          ? 'Depósito / Caução'
+                          : 'Outros'}
+                  </p>
+                )}
+                {urls.guarantee_name && (
+                  <p className='text-sm font-bold text-slate-900 dark:text-white mb-3'>
+                    {urls.guarantee_name}
+                  </p>
+                )}
+              </div>
+              {urls.guarantee_url && (
+                <div className='space-y-3'>{renderDocViewer(urls.guarantee_url, 'Garantia')}</div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Depósito Caução section */}
+      {tenant.guarantee_type === 'deposito_caucao' && (
+        <div className='p-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl space-y-3'>
+          <p className='text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5'>
+            <Banknote size={12} className='text-[#13c8ec]' /> Comprovante de Depósito Caução
+          </p>
+          {paymentReceipt ? (
+            <>
+              <p className='text-sm font-bold text-slate-900 dark:text-white'>{paymentReceipt.name}</p>
+              {/* Status badge */}
+              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                paymentReceipt.status === 'Confirmado' ? 'bg-emerald-500/10 text-emerald-500' :
+                paymentReceipt.status === 'Reenvio Solicitado' ? 'bg-rose-500/10 text-rose-500' :
+                'bg-amber-500/10 text-amber-600'
+              }`}>
+                {paymentReceipt.status === 'Confirmado' ? <Check size={10} /> :
+                 paymentReceipt.status === 'Reenvio Solicitado' ? <X size={10} /> :
+                 <Loader size={10} />}
+                {paymentReceipt.status === 'Confirmado' ? 'CONFIRMADO' :
+                 paymentReceipt.status === 'Reenvio Solicitado' ? 'REENVIO SOLICITADO' : 'AGUARDANDO ANÁLISE'}
+              </div>
+              {paymentReceipt.url && renderDocViewer(paymentReceipt.url, 'Comprovante de Depósito')}
+              {tenant.onboarding_documents_status === 'submitted' && paymentReceipt.status !== 'Confirmado' && (
+                <div className='flex gap-2 pt-2'>
+                  <button
+                    onClick={() => void onConfirmReceipt?.()}
+                    disabled={loading}
+                    className='flex-1 h-10 bg-[#13c8ec]/10 text-[#13c8ec] border border-[#13c8ec]/30 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#13c8ec]/20 transition-colors disabled:opacity-50'
+                  >
+                    <Check size={14} /> Confirmar Recebimento
+                  </button>
+                  <button
+                    onClick={() => void onRejectReceipt?.()}
+                    disabled={loading}
+                    className='flex-1 h-10 bg-transparent text-rose-500 border border-rose-500/40 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-rose-500/10 transition-colors disabled:opacity-50'
+                  >
+                    <RotateCcw size={14} /> Solicitar Reenvio
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className='text-xs text-slate-400 font-medium'>Nenhum comprovante enviado ainda.</p>
+          )}
+        </div>
+      )}
+      {/* Fiador Information */}
+      {guarantor && tenant.guarantee_type === 'fiador' && (
+        <div className='p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl space-y-3'>
+          <p className='text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-widest flex items-center gap-1.5'>
+            <User size={14} /> Dados do Fiador
+          </p>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-3 text-xs'>
+            <div>
+              <span className='text-slate-400 font-medium'>Nome:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>{guarantor.name}</span>
+            </div>
+            <div>
+              <span className='text-slate-400 font-medium'>CPF:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>
+                {guarantor.cpf
+                  ? guarantor.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                  : '\u2014'}
+              </span>
+            </div>
+            <div>
+              <span className='text-slate-400 font-medium'>RG:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>
+                {guarantor.rg || '\u2014'}
+              </span>
+            </div>
+            <div>
+              <span className='text-slate-400 font-medium'>Data de Nascimento:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>
+                {guarantor.birth_date
+                  ? new Date(guarantor.birth_date).toLocaleDateString('pt-BR')
+                  : '\u2014'}
+              </span>
+            </div>
+            <div>
+              <span className='text-slate-400 font-medium'>Telefone:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>
+                {guarantor.phone || '\u2014'}
+              </span>
+            </div>
+            <div>
+              <span className='text-slate-400 font-medium'>E-mail:</span>{' '}
+              <span className='font-bold text-slate-700 dark:text-slate-300'>
+                {guarantor.email || '\u2014'}
+              </span>
+            </div>
+            {guarantor.status && (
+              <div className='md:col-span-2 flex items-center gap-2'>
+                <span className='text-slate-400 font-medium'>Status:</span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${
+                    guarantor.status === 'aprovado'
+                      ? 'bg-emerald-500/10 text-emerald-500'
+                      : guarantor.status === 'reprovado'
+                        ? 'bg-rose-500/10 text-rose-500'
+                        : 'bg-amber-500/10 text-amber-600'
+                  }`}
+                >
+                  {guarantor.status === 'aprovado' ? 'APROVADO' : guarantor.status === 'reprovado' ? 'REPROVADO' : 'PENDENTE'}
+                </span>
+              </div>
+            )}
+          </div>
+          {/* Fiador docs */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-3 pt-2'>
+            {guarantor.rg_document_url && (
+              <div className='flex flex-col gap-2'>
+                <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                  RG do Fiador
+                </p>
+                {renderDocViewer(guarantor.rg_document_url, 'RG do Fiador')}
+              </div>
+            )}
+            {guarantor.income_proof_url && (
+              <div className='flex flex-col gap-2'>
+                <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                  Comp. Renda do Fiador
+                </p>
+                {renderDocViewer(guarantor.income_proof_url, 'Comprovante de Renda do Fiador')}
+              </div>
+            )}
+          </div>
+          {/* Guarantor action buttons */}
+          {tenant.onboarding_documents_status === 'submitted' && guarantor.status === 'pendente' && (
+            <div className='flex gap-2 pt-2 border-t border-amber-100 dark:border-amber-900/30'>
+              <button
+                onClick={() => void onApproveGuarantor?.()}
+                disabled={loading}
+                className='flex-1 h-10 bg-[#13c8ec]/10 text-[#13c8ec] border border-[#13c8ec]/30 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-[#13c8ec]/20 transition-colors disabled:opacity-50'
+              >
+                <ThumbsUp size={14} /> Aprovar Fiador
+              </button>
+              <button
+                onClick={() => void onRejectGuarantor?.()}
+                disabled={loading}
+                className='flex-1 h-10 bg-transparent text-rose-500 border border-rose-500/40 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-rose-500/10 transition-colors disabled:opacity-50'
+              >
+                <ThumbsDown size={14} /> Reprovar Fiador
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {tenant.onboarding_documents_status === 'rejected' && (
         <div className='p-4 bg-red-50 dark:bg-red-900/15 border border-red-100 dark:border-red-900/30 rounded-2xl text-red-800 dark:text-red-350 text-xs flex gap-2'>
@@ -180,7 +404,12 @@ export const DocumentStepContent: React.FC<DocumentStepContentProps> = ({
         <div className='flex gap-3 mt-4'>
           <button
             onClick={onStepApprove}
-            disabled={loading || Object.values(documentsStatus).some((d) => d.status === 'pending')}
+            disabled={
+              loading ||
+              Object.values(documentsStatus).some((d) => d.status === 'pending') ||
+              (tenant.guarantee_type === 'fiador' && guarantor?.status !== 'aprovado') ||
+              (tenant.guarantee_type === 'deposito_caucao' && paymentReceipt?.status !== 'Confirmado')
+            }
             className='flex-1 h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-[0.1em] flex items-center justify-center gap-2 transition-all disabled:opacity-30 hover:scale-[1.02] shadow-lg'
           >
             {loading ? <Loader className='animate-spin' size={16} /> : <ThumbsUp size={16} />}{' '}

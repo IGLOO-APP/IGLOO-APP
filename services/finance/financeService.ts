@@ -81,7 +81,7 @@ export const financeService = {
   },
 
   async create(
-    transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>
+    transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at' | 'hasAttachment'>
   ): Promise<FinancialTransaction> {
     const { data, error } = await supabase
       .from('financial_transactions')
@@ -96,7 +96,10 @@ export const financeService = {
   /**
    * Updates an existing transaction.
    */
-  async update(id: string, updates: Partial<FinancialTransaction>): Promise<FinancialTransaction> {
+  async update(
+    id: string,
+    updates: Omit<Partial<FinancialTransaction>, 'hasAttachment'>
+  ): Promise<FinancialTransaction> {
     const { data, error } = await supabase
       .from('financial_transactions')
       .update({ ...updates, updated_at: new Date().toISOString() })

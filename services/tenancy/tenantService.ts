@@ -66,6 +66,19 @@ export const tenantService = {
       role: 'tenant',
       phone: tenantData.phone,
       cpf: tenantData.cpf,
+      rg: tenantData.rg,
+      company_name: tenantData.companyName || tenantData.company_name,
+      company_cnpj: tenantData.companyCnpj || tenantData.company_cnpj,
+      company_address: tenantData.companyAddress || tenantData.company_address,
+      occupation: tenantData.occupation || tenantData.profession,
+      monthly_income: tenantData.monthlyIncome
+        ? parseFloat(
+            String(tenantData.monthlyIncome)
+              .replace(/[^0-9,.]/g, '')
+              .replace(',', '.')
+          )
+        : null,
+      admission_date: tenantData.admissionDate || tenantData.admission_date,
       property_id: tenantData.propertyId,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
@@ -84,6 +97,19 @@ export const tenantService = {
       role: 'tenant',
       phone: tenantData.phone,
       cpf: tenantData.cpf,
+      rg: tenantData.rg,
+      company_name: tenantData.companyName || tenantData.company_name,
+      company_cnpj: tenantData.companyCnpj || tenantData.company_cnpj,
+      company_address: tenantData.companyAddress || tenantData.company_address,
+      occupation: tenantData.occupation || tenantData.profession,
+      monthly_income: tenantData.monthlyIncome
+        ? parseFloat(
+            String(tenantData.monthlyIncome)
+              .replace(/[^0-9,.]/g, '')
+              .replace(',', '.')
+          )
+        : null,
+      admission_date: tenantData.admissionDate || tenantData.admission_date,
       property_id: tenantData.propertyId,
       is_pending: true,
       created_at: new Date().toISOString(),

@@ -56,7 +56,13 @@ export function useSettings() {
   const { openUserProfile } = useClerk();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<
-    'general' | 'financial' | 'maintenance' | 'notifications' | 'subscription' | 'tenantProfile'
+    | 'general'
+    | 'financial'
+    | 'guarantee'
+    | 'maintenance'
+    | 'notifications'
+    | 'subscription'
+    | 'tenantProfile'
   >('general');
 
   useEffect(() => {

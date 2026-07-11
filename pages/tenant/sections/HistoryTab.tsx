@@ -148,7 +148,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
                     <span className='text-[9px] font-bold text-slate-400 text-right leading-tight'>
                       {new Date(ev.date).toLocaleDateString('pt-BR')}
                       <br />
-                      {new Date(ev.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(ev.date).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </span>
                   </div>
                   <p className='text-xs text-slate-500 leading-normal font-semibold'>{ev.desc}</p>

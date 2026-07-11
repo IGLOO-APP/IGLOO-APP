@@ -4,6 +4,7 @@ import {
   CreditCard,
   Crown,
   Bell,
+  ShieldCheck,
   Settings as SettingsIcon,
   Save,
   CheckCircle,
@@ -26,6 +27,7 @@ import { CheckoutModal } from './settings/modals/CheckoutModal';
 import { GeneralTab } from './settings/sections/GeneralTab';
 import { FinancialTab } from './settings/sections/FinancialTab';
 import { SubscriptionTab } from './settings/sections/SubscriptionTab';
+import { GuaranteeTab } from './settings/sections/GuaranteeTab';
 import { subscriptionService } from '../services/subscriptionService';
 
 function SaveBtn({ h }: { h: ReturnType<typeof useSettings> }) {
@@ -58,6 +60,7 @@ const Settings: React.FC = () => {
     ...(h.user?.role === 'owner' || h.user?.role === 'admin'
       ? [
           { id: 'financial', label: 'Financeiro', icon: CreditCard },
+          { id: 'guarantee', label: 'Garantias', icon: ShieldCheck },
           { id: 'subscription', label: 'Assinatura', icon: Crown },
           { id: 'maintenance', label: 'Manutenção', icon: SettingsIcon },
         ]
@@ -96,6 +99,11 @@ const Settings: React.FC = () => {
             <div className='flex justify-end'>
               <SaveBtn h={h} />
             </div>
+          </>
+        )}
+        {h.activeTab === 'guarantee' && (
+          <>
+            <GuaranteeTab />
           </>
         )}
         {h.activeTab === 'subscription' && (

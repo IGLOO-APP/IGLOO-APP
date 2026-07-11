@@ -49,9 +49,7 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
   const contractsArr = Array.isArray(contracts)
     ? (contracts as Record<string, unknown>[])
     : undefined;
-  const activeContract = contractsArr
-    ? contractsArr.find((c) => c.status === 'active')
-    : undefined;
+  const activeContract = contractsArr ? contractsArr.find((c) => c.status === 'active') : undefined;
 
   const propertyData = activeContract?.property;
   const property = (Array.isArray(propertyData) ? propertyData[0] : propertyData) as
@@ -64,6 +62,14 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
     email: t.email as string,
     phone: (t.phone as string) || '',
     cpf: t.cpf as string | undefined,
+    rg: t.rg as string | undefined,
+    company_name: t.company_name as string | undefined,
+    company_cnpj: t.company_cnpj as string | undefined,
+    company_address: t.company_address as string | undefined,
+    occupation: t.occupation as string | undefined,
+    monthly_income: t.monthly_income as number | undefined,
+    admission_date: t.admission_date as string | undefined,
+    guarantee_type: t.guarantee_type as Tenant['guarantee_type'],
     image: t.avatar_url as string | undefined,
     status: (!activeContract
       ? 'inactive'

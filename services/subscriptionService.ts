@@ -127,7 +127,7 @@ export const subscriptionService = {
         subscription_plan: planId,
         subscription_status: 'active',
         subscription_expires_at: periodEnd,
-      } as Record<string, unknown>)
+      })
       .eq('id', userId);
 
     if (error) throw error;
@@ -143,7 +143,7 @@ export const subscriptionService = {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ subscription_status: 'canceled' } as Record<string, unknown>)
+        .update({ subscription_status: 'canceled' })
         .eq('id', userId);
 
       if (error) throw error;

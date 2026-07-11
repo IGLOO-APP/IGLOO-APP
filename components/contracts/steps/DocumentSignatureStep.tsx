@@ -115,7 +115,10 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
                   };
                   const onMouseUp = () => {
                     isDraggingRef.current = false;
-                    const nearest = snapToNearestField(signaturePositions[index].x, signaturePositions[index].y);
+                    const nearest = snapToNearestField(
+                      signaturePositions[index].x,
+                      signaturePositions[index].y
+                    );
                     signaturePositions[index] = { x: nearest.x, y: nearest.y };
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);

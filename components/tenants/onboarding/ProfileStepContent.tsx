@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, X, Loader, ThumbsDown, ThumbsUp, XCircle } from 'lucide-react';
+import { Check, X, Loader, ThumbsDown, ThumbsUp, XCircle, Briefcase } from 'lucide-react';
 import { Tenant } from '../../../types';
 
 interface ProfileStepContentProps {
@@ -34,8 +34,30 @@ export const ProfileStepContent: React.FC<ProfileStepContentProps> = ({
   const fields = [
     { key: 'name', label: 'Nome Completo', value: tenant.name },
     { key: 'cpf', label: 'CPF', value: tenant.cpf || 'Não informado' },
+    { key: 'rg', label: 'RG', value: tenant.rg || 'Não informado' },
     { key: 'phone', label: 'Celular', value: tenant.phone || 'Não informado' },
     { key: 'email', label: 'E-mail', value: tenant.email },
+  ];
+
+  const employmentFields = [
+    { key: 'company_name', label: 'Empresa', value: tenant.company_name || 'Não informado' },
+    { key: 'company_cnpj', label: 'CNPJ', value: tenant.company_cnpj || 'Não informado' },
+    {
+      key: 'company_address',
+      label: 'End. Empresa',
+      value: tenant.company_address || 'Não informado',
+    },
+    { key: 'occupation', label: 'Cargo', value: tenant.occupation || 'Não informado' },
+    {
+      key: 'monthly_income',
+      label: 'Salário',
+      value: tenant.monthly_income ? `R$ ${tenant.monthly_income.toFixed(2)}` : 'Não informado',
+    },
+    {
+      key: 'admission_date',
+      label: 'Data Admissão',
+      value: tenant.admission_date || 'Não informado',
+    },
   ];
 
   return (
@@ -103,6 +125,36 @@ export const ProfileStepContent: React.FC<ProfileStepContentProps> = ({
                   )}
                 </div>
               )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Employment Fields */}
+      <div className='bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl p-5 space-y-4'>
+        <h4 className='text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2'>
+          <Briefcase size={14} /> Dados Empregatícios
+        </h4>
+        {employmentFields.map((field) => {
+          const statusObj = profileFields[field.key] || { status: 'pending' };
+          return (
+            <div
+              key={field.key}
+              className='flex flex-col md:flex-row md:items-center justify-between gap-4 py-2 border-b border-slate-100 dark:border-white/5 last:border-0 pb-4 last:pb-0'
+            >
+              <div className='space-y-1'>
+                <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>
+                  {field.label}
+                </span>
+                <span className='text-sm font-bold text-slate-800 dark:text-slate-200'>
+                  {field.value}
+                </span>
+                {statusObj.status === 'rejected' && (
+                  <span className='text-xs font-medium text-rose-500 block bg-rose-500/5 px-2 py-1 rounded-lg border border-rose-500/10 mt-1'>
+                    ⚠️ Rejeitado: {statusObj.reason}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
