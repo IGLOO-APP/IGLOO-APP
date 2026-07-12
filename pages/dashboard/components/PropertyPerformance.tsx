@@ -39,7 +39,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
               onClick={() => navigate('/properties')}
               variant='link'
               size='sm'
-              className='text-[10px] font-black uppercase tracking-widest'
+              className='text-xs font-semibold'
             >
               Ver Todos
             </Button>
@@ -50,13 +50,13 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
         <div className='overflow-x-auto'>
           <Table>
             <TableHeader>
-              <TableRow className='text-[9px] font-black text-slate-400 uppercase tracking-widest border-none'>
-                <TableHead className='pb-1.5 pl-2 text-slate-400'>Propriedade</TableHead>
-                <TableHead className='pb-1.5 text-right text-slate-400'>Receita Mensal</TableHead>
-                <TableHead className='pb-1.5 text-right px-3 text-slate-400'>
+              <TableRow className='text-xs font-semibold text-muted-foreground border-none'>
+                <TableHead className='pb-1.5 pl-2 text-muted-foreground'>Propriedade</TableHead>
+                <TableHead className='pb-1.5 text-right text-muted-foreground'>Receita Mensal</TableHead>
+                <TableHead className='pb-1.5 text-right px-3 text-muted-foreground'>
                   <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger className='cursor-help border-b border-dotted border-slate-300 pb-0.5'>
+                      <TooltipTrigger className='cursor-help border-b border-dotted border-border pb-0.5'>
                         Yield (a.m)
                       </TooltipTrigger>
                       <TooltipContent side='top'>
@@ -65,7 +65,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                     </Tooltip>
                   </TooltipProvider>
                 </TableHead>
-                <TableHead className='pb-2 text-center text-slate-400'>Status</TableHead>
+                <TableHead className='pb-2 text-center text-muted-foreground'>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,7 +78,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                     <TableRow
                       key={prop.id}
                       onClick={() => navigate(`/properties?id=${prop.id}`)}
-                      className='group hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-all duration-300 cursor-pointer border-none'
+                      className='group hover:bg-accent/50 transition-all duration-200 cursor-pointer border-none'
                     >
                       <TableCell className='py-2 pl-2 rounded-l-2xl'>
                         <div className='flex items-center gap-2.5'>
@@ -88,22 +88,22 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                               style={{ backgroundImage: `url(${prop.image})` }}
                             />
                           ) : (
-                            <div className='w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 shrink-0'>
+                            <div className='w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0'>
                               <Home size={15} />
                             </div>
                           )}
-                          <span className='text-xs font-black text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-primary transition-colors'>
+                          <span className='text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors'>
                             {prop.name}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className='py-2 text-right text-xs font-bold text-slate-500 dark:text-slate-300'>
+                      <TableCell className='py-2 text-right text-xs font-bold text-muted-foreground'>
                         {formatCurrency(revenueVal)}
                       </TableCell>
                       <TableCell className='py-2 text-right px-3'>
                         <div className='flex items-center justify-end gap-1'>
                           <span
-                            className={`font-black ${yieldVal > 0.5 ? 'text-emerald-500' : 'text-amber-500'}`}
+                            className={`font-bold ${yieldVal > 0.5 ? 'text-emerald-500' : 'text-amber-500'}`}
                           >
                             {yieldVal > 0 ? `${yieldVal}%` : '0%'}
                           </span>
@@ -169,7 +169,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             variant='ghost'
             size='sm'
             onClick={() => navigate('/financials')}
-            className='text-[9px] font-black text-slate-400 uppercase tracking-widest'
+            className='text-xs font-medium text-muted-foreground'
           >
             Análise Completa{' '}
             <ChevronRight

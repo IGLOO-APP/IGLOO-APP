@@ -105,8 +105,8 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                     const repasseData = payload[0].payload.repasse_previsto_data;
 
                     return (
-                      <div className='bg-slate-950/95 backdrop-blur-md text-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[160px] sm:min-w-[220px]'>
-                        <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2 flex justify-between items-center'>
+                      <div className='bg-popover text-popover-foreground p-3 sm:p-4 rounded-2xl shadow-2xl border-border min-w-[160px] sm:min-w-[220px]'>
+                        <p className='font-bold text-[10px] mb-3 text-muted-foreground border-b border-border pb-2 flex justify-between items-center'>
                           {label}
                           {isProjected && (
                             <span className='text-amber-500 text-[8px]'>PROJEÇÃO</span>
@@ -117,11 +117,11 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                           <div className='flex justify-between items-center'>
                             <div className='flex items-center gap-2'>
                               <div className='w-1.5 h-1.5 rounded-full bg-emerald-500' />
-                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                              <span className='text-xs font-medium text-muted-foreground'>
                                 Receita
                               </span>
                             </div>
-                            <span className='text-xs font-black text-white'>
+                            <span className='text-xs font-bold text-popover-foreground'>
                               {new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
                                 currency: 'BRL',
@@ -132,11 +132,11 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                           <div className='flex justify-between items-center'>
                             <div className='flex items-center gap-2'>
                               <div className='w-1.5 h-1.5 rounded-full bg-red-500' />
-                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                              <span className='text-xs font-medium text-muted-foreground'>
                                 Despesa
                               </span>
                             </div>
-                            <span className='text-xs font-black text-white'>
+                            <span className='text-xs font-bold text-popover-foreground'>
                               {new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
                                 currency: 'BRL',
@@ -145,25 +145,25 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
                           </div>
 
                           {repasseData && (
-                            <div className='flex justify-between items-center pt-1 border-t border-white/5'>
-                              <span className='text-[9px] font-bold text-slate-400 uppercase tracking-widest'>
+                            <div className='flex justify-between items-center pt-1 border-t border-border'>
+                              <span className='text-xs font-medium text-muted-foreground'>
                                 Repasse Previsto
                               </span>
-                              <span className='text-xs font-bold text-white'>
+                              <span className='text-xs font-bold text-popover-foreground'>
                                 {new Date(repasseData).toLocaleDateString('pt-BR')}
                               </span>
                             </div>
                           )}
 
-                          <div className='pt-2 mt-2 border-t border-white/5'>
+                          <div className='pt-2 mt-2 border-t border-border'>
                             <div className='flex justify-between items-center'>
                               <div className='flex items-center gap-2'>
                                 <div className='w-1.5 h-1.5 rounded-full bg-indigo-500' />
-                                <span className='text-[9px] font-black text-indigo-400 uppercase tracking-widest'>
+                                <span className='text-xs font-semibold text-indigo-500'>
                                   Líquido
                                 </span>
                               </div>
-                              <span className='text-sm font-black text-indigo-400'>
+                              <span className='text-sm font-bold text-indigo-400'>
                                 {new Intl.NumberFormat('pt-BR', {
                                   style: 'currency',
                                   currency: 'BRL',
@@ -246,19 +246,19 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
         <div className='flex items-center gap-2 sm:gap-4 mt-3 px-2 flex-wrap'>
           <div className='flex items-center gap-2'>
             <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
-            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+            <span className='text-xs font-medium text-muted-foreground'>
               Receita
             </span>
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-3 h-3 rounded-full bg-red-500'></div>
-            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+            <span className='text-xs font-medium text-muted-foreground'>
               Despesa
             </span>
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-6 h-[2px] bg-indigo-500'></div>
-            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+            <span className='text-xs font-medium text-muted-foreground'>
               Resultado Líquido
             </span>
           </div>

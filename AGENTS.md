@@ -1,5 +1,9 @@
 # iGloo Property Manager — AGENTS.md
 
+## Design system
+
+There is an `impeccable` skill loaded at `.opencode/skills/impeccable/`. Always load it before creating or improving any UI. It enforces product-grade design: no side-stripes, no gradient text, no glassmorphism as default, consistent component vocabulary, restrained color, fixed rem scale, and motion that conveys state not decoration.
+
 ## Commands
 
 - `npm run dev` — Vite dev server on port 5176

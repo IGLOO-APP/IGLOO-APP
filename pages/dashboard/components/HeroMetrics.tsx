@@ -5,11 +5,31 @@ import {
   Home,
   Activity,
   Users,
-  AlertTriangle,
-  FileText,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { HeroCard } from '../../../components/ui/DashboardComponents';
+import { Card } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
+import { Progress } from '../../../components/ui/progress';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '../../../components/ui/tooltip';
+
+interface WealthHistoryEntry {
+  month: string;
+  value: number;
+}
+
+interface FinancialHistoryEntry {
+  month: string;
+  income: number;
+  expense: number;
+  net: number;
+  projected?: boolean;
+}
 
 interface HeroMetricsProps {
   metrics: {
@@ -34,169 +54,237 @@ interface HeroMetricsProps {
       mrr: number[];
     };
   };
+  portfolioHealth?: { yield: string; vacancy: string; delinquency: string; delinquencyAbsolute: number };
+  wealthHistory?: WealthHistoryEntry[];
+  financialHistory?: FinancialHistoryEntry[];
+  propertyCount?: number;
   navigate: (path: string, state?: Record<string, unknown>) => void;
+  className?: string;
+}
+
+function AreaSparkline({ data, color }: { data: number[]; color: string }) {
+  if (data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 104;
+  const h = 36;
+  const pts = data
+    .map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`)
+    .join(' ');
+  const area = `${pts} ${w},${h} 0,${h}`;
+  const gradId = `grad-${color.replace('#', '')}`;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className='shrink-0 transition-all duration-200'>
+      <defs>
+        <linearGradient id={gradId} x1='0' y1='0' x2='0' y2='1'>
+          <stop offset='0%' stopColor={color} stopOpacity={0.2} />
+          <stop offset='100%' stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill={`url(#${gradId})`} />
+      <polyline points={pts} fill='none' stroke={color} strokeWidth={2} strokeLinecap='round' strokeLinejoin='round' />
+    </svg>
+  );
+}
+
+function DonutRing({ value, color, size = 48 }: { value: number; color: string; size?: number }) {
+  const r = size / 2 - 4;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / 100) * circ;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className='shrink-0'>
+      <circle cx={size / 2} cy={size / 2} r={r} fill='none' stroke='hsl(var(--muted))' strokeWidth={5} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill='none'
+        stroke={color}
+        strokeWidth={5}
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        strokeLinecap='round'
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+
+function MiniBarChart({ data, color }: { data: number[]; color: string }) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const gap = 2;
+  const barW = Math.max(6, (88 - gap * (data.length - 1)) / data.length);
+  return (
+    <svg width={88} height={32} viewBox='0 0 88 32' className='shrink-0'>
+      {data.map((v, i) => (
+        <rect
+          key={i}
+          x={i * (barW + gap)}
+          y={32 - (v / max) * 28}
+          width={barW}
+          height={Math.max((v / max) * 28, 3)}
+          rx={barW / 2}
+          fill={color}
+          opacity={0.5 + (i / data.length) * 0.5}
+        />
+      ))}
+    </svg>
+  );
 }
 
 const fallbackSpark = [100, 90, 95, 92, 97, 94, 99];
 
-export const HeroMetrics: React.FC<HeroMetricsProps> = ({ metrics, navigate }) => {
+export const HeroMetrics: React.FC<HeroMetricsProps> = ({
+  metrics,
+  portfolioHealth,
+  propertyCount,
+  navigate,
+  className = '',
+}) => {
   const wealthSpark =
     metrics.sparkData?.wealth?.length >= 2 ? metrics.sparkData.wealth : fallbackSpark;
   const mrrSpark = metrics.sparkData?.mrr?.length >= 2 ? metrics.sparkData.mrr : fallbackSpark;
 
+  const occRate = metrics.occupancyPhysicalRate ?? metrics.occupancyRate;
+  const occFinRate = metrics.occupancyFinancialRate ?? metrics.occupancyRate;
+  const occLow = occRate < 70 && occFinRate < 90;
+
   return (
-    <section className='space-y-4'>
-      <div className='grid grid-cols-2 gap-3 md:gap-6 items-stretch'>
-        <HeroCard
-          title='Patrimônio Total'
-          value={metrics.totalWealth}
-          subtext='vs. mês anterior'
-          trend={metrics.trends.wealth}
-          trendUp={true}
-          icon={TrendingUp}
-          color='text-indigo-500'
-          sparkData={wealthSpark}
-          tooltip='Soma do valor de mercado estimado de todos os seus imóveis cadastrados. Ajuda a entender a evolução do seu equity imobiliário.'
-        />
-
-        <HeroCard
-          title='Receita Recorrente (MRR)'
-          value={metrics.mrr}
-          subtext={
-            metrics.mrr_liquido && metrics.mrr_bruto && metrics.mrr_liquido !== metrics.mrr_bruto
-              ? `Líquido: R$ ${metrics.mrr_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-              : 'vs. mês anterior'
-          }
-          trend={metrics.trends.mrr}
-          trendUp={true}
-          icon={DollarSign}
-          color='text-emerald-500'
-          sparkData={mrrSpark}
-          tooltip={
-            metrics.mrr_liquido && metrics.mrr_bruto && metrics.mrr_liquido !== metrics.mrr_bruto
-              ? `MRR Bruto: R$ ${metrics.mrr_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Deduções aplicadas.`
-              : 'Monthly Recurring Revenue. É a soma de todos os aluguéis ativos no mês atual. Representa a previsibilidade do seu fluxo de caixa.'
-          }
-        />
-
-        <HeroCard
-          title='Ocupação'
-          value={`${metrics.occupancyPhysicalRate ?? metrics.occupancyRate}% física`}
-          subtext={`${metrics.occupancyFinancialRate ?? metrics.occupancyRate}% financeira`}
-          trend={metrics.trends.occupancy}
-          trendUp={(metrics.occupancyPhysicalRate ?? metrics.occupancyRate) >= 80}
-          icon={Home}
-          color={
-            (metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 &&
-            (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90
-              ? 'text-red-500'
-              : 'text-emerald-500'
-          }
-          variant={
-            (metrics.occupancyPhysicalRate ?? metrics.occupancyRate) < 70 &&
-            (metrics.occupancyFinancialRate ?? metrics.occupancyRate) < 90
-              ? 'critical'
-              : 'default'
-          }
-          tooltip='Percentual de imóveis alugados em relação ao total da sua carteira (física) vs impacto financeiro real (financeira).'
-        />
-
-        <HeroCard
-          title='ROI Médio Anual'
-          value={metrics.avgRoi === '0%' || !metrics.avgRoi ? '--' : metrics.avgRoi}
-          subtext={metrics.avgRoi === '0%' ? 'Sem imóveis alugados' : 'Acima da inflação'}
-          trend={metrics.trends.roi}
-          trendUp={true}
-          icon={Activity}
-          color={metrics.avgRoi === '0%' ? 'text-slate-400' : 'text-cyan-500'}
-          variant={metrics.avgRoi === '0%' || !metrics.avgRoi ? 'muted' : 'default'}
-          tooltip='Retorno sobre Investimento anualizado. Calcula quanto o aluguel rende em relação ao valor de mercado do imóvel (Yield anual).'
-        />
-      </div>
-
-      {/* Secondary stats row: Inquilinos + Alertas */}
-      <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-        <Button
-          onClick={() => navigate('/tenants')}
-          variant='outline'
-          className='flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left'
-        >
-          <div className='p-2 rounded-lg bg-primary/10 text-primary shrink-0'>
-            <Users size={16} />
+    <section className={'h-full ' + className}>
+      <div className='grid grid-cols-4 gap-3 h-full grid-rows-3 items-stretch'>
+        {/* Patrimônio: hero card with area chart */}
+        <Card className='col-span-4 p-5 flex items-center justify-between gap-4'>
+          <div className='space-y-1.5'>
+            <div className='flex items-center gap-2'>
+              <TrendingUp size={16} className='text-indigo-500' />
+              <span className='text-xs font-medium text-muted-foreground'>Patrimônio Total</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className='w-3 h-3 rounded-full bg-muted-foreground/10 text-muted-foreground flex items-center justify-center text-[7px] font-bold cursor-help'>
+                    ?
+                  </TooltipTrigger>
+                  <TooltipContent side='top'>
+                    <p className='text-xs font-medium'>Soma do valor de mercado estimado de todos os seus imóveis cadastrados.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <h3 className='text-2xl font-bold tracking-tight text-foreground text-balance'>{metrics.totalWealth}</h3>
+            <div className='flex items-center gap-2 flex-wrap'>
+              <Badge variant='default'>
+                <ArrowUp size={10} /> {metrics.trends.wealth}
+              </Badge>
+              <span className='text-xs text-muted-foreground/60'>vs. mês anterior</span>
+              {portfolioHealth?.yield && (
+                <span className='text-xs text-muted-foreground/40'>&middot; Yield {portfolioHealth.yield}%</span>
+              )}
+            </div>
           </div>
-          <div>
-            <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight'>
-              Inquilinos
-            </p>
-            <p className='text-sm font-black text-slate-900 dark:text-white'>
-              {metrics.totalTenants ?? 0}
-            </p>
-          </div>
-        </Button>
+          <AreaSparkline data={wealthSpark} color='#6366f1' />
+        </Card>
 
-        <Button
-          onClick={() => navigate('/properties')}
-          variant='outline'
-          className={`flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left ${
-            metrics.occupancyRate < 80
-              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50'
-              : 'bg-white dark:bg-surface-dark opacity-60'
-          }`}
-        >
-          <div
-            className={`p-2 rounded-lg ${
-              metrics.occupancyRate < 80
-                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                : 'bg-slate-100 dark:bg-white/5 text-slate-400'
-            }`}
-          >
-            <AlertTriangle size={16} />
+        {/* Ocupação: progress bar + donut + vacancy status */}
+        <Card className={`col-span-2 p-5 flex flex-col justify-between ${occLow ? 'border-destructive/50' : ''}`}>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-1.5'>
+                <Home size={14} className={occLow ? 'text-destructive' : 'text-emerald-500'} />
+                <span className='text-xs font-medium text-muted-foreground'>Ocupação</span>
+              </div>
+              <DonutRing value={occRate} color={occLow ? '#ef4444' : '#10b981'} size={40} />
+            </div>
+            <div className='space-y-2'>
+              <Progress value={occRate} className={occLow ? 'bg-destructive/20 [&>div]:bg-destructive' : ''} />
+              <div className='flex justify-between text-xs text-muted-foreground'>
+                <span>Física {occRate}%</span>
+                <span className='text-muted-foreground/60'>Financeira {occFinRate}%</span>
+              </div>
+            </div>
           </div>
-          <div className='text-left'>
-            <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight'>
-              Vacância Crítica
-            </p>
-            {metrics.occupancyRate < 80 ? (
-              <p className='text-sm font-black text-red-600 dark:text-red-400'>
-                {100 - metrics.occupancyRate}% vagos
-              </p>
-            ) : (
-              <p className='text-sm font-bold text-slate-400 italic'>Tudo em ordem</p>
+          <div className='mt-3 flex flex-wrap items-center gap-2'>
+            <Badge variant={occLow ? 'destructive' : 'default'}>
+              {Number(metrics.trends.occupancy) >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{' '}
+              {metrics.trends.occupancy}
+            </Badge>
+            <span className={`text-xs font-medium ${occLow ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {metrics.occupancyRate < 80 ? `${100 - metrics.occupancyRate}% vagos` : 'Carteira cheia'}
+            </span>
+            {propertyCount != null && (
+              <span className='text-xs text-muted-foreground/40'>&middot; {propertyCount} imóveis</span>
             )}
           </div>
-        </Button>
+        </Card>
 
-        <Button
-          onClick={() => navigate('/contracts')}
-          variant='outline'
-          className={`flex items-center gap-3 px-4 py-3 h-auto shadow-sm text-left ${
-            (metrics.expiringContractsCount ?? 0) > 0
-              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
-              : 'bg-white dark:bg-surface-dark opacity-60'
-          }`}
-        >
-          <div
-            className={`p-2 rounded-lg ${
-              (metrics.expiringContractsCount ?? 0) > 0
-                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                : 'bg-slate-100 dark:bg-white/5 text-slate-400'
-            }`}
-          >
-            <FileText size={16} />
-          </div>
-          <div className='text-left'>
-            <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest leading-tight'>
-              Contratos Vencendo
-            </p>
-            {(metrics.expiringContractsCount ?? 0) > 0 ? (
-              <p className='text-sm font-black text-amber-600 dark:text-amber-400'>
-                {metrics.expiringContractsCount} pendentes
-              </p>
-            ) : (
-              <p className='text-sm font-bold text-slate-400 italic'>Em dia</p>
+        {/* ROI: yield comparison + contratos */}
+        <Card className={`col-span-2 p-5 flex flex-col justify-between ${metrics.avgRoi === '0%' || !metrics.avgRoi ? 'opacity-70 border-dashed' : ''}`}>
+          <div className='space-y-2'>
+            <div className='flex items-center gap-1.5'>
+              <Activity size={14} className={metrics.avgRoi === '0%' ? 'text-muted-foreground' : 'text-cyan-500'} />
+              <span className='text-xs font-medium text-muted-foreground'>ROI Anual</span>
+            </div>
+            <h3 className='text-lg font-bold tracking-tight text-foreground text-balance'>
+              {metrics.avgRoi === '0%' || !metrics.avgRoi ? '--' : metrics.avgRoi}
+            </h3>
+            {portfolioHealth?.yield && metrics.avgRoi !== '0%' && (
+              <div className='flex items-center gap-2 text-xs'>
+                <span className='text-muted-foreground/60'>Yield carteira:</span>
+                <span className='font-medium text-muted-foreground'>{portfolioHealth.yield}%</span>
+              </div>
             )}
           </div>
-        </Button>
+          <div className='mt-2 flex flex-wrap items-center gap-2'>
+            <Badge variant={metrics.avgRoi === '0%' ? 'outline' : 'default'}>
+              <ArrowUp size={10} /> {metrics.trends.roi}
+            </Badge>
+            {(metrics.expiringContractsCount ?? 0) > 0 && (
+              <span className='text-xs font-medium text-amber-600 dark:text-amber-400'>
+                {metrics.expiringContractsCount} contratos vencendo
+              </span>
+            )}
+            {portfolioHealth?.delinquency != null && Number(portfolioHealth.delinquency) > 0 && (
+              <span className='text-xs text-muted-foreground/40'>
+                &middot; Inadimplência {portfolioHealth.delinquency}%
+              </span>
+            )}
+          </div>
+        </Card>
+
+        {/* MRR: bar chart + tenant count */}
+        <Card className='col-span-4 p-5 flex flex-row items-center justify-between gap-6'>
+          <div className='flex items-start justify-between flex-1'>
+            <div>
+              <div className='flex items-center gap-1.5 mb-1'>
+                <DollarSign size={14} className='text-emerald-500' />
+                <span className='text-xs font-medium text-muted-foreground'>Receita Recorrente</span>
+              </div>
+              <h3 className='text-lg font-bold tracking-tight text-foreground text-balance'>{metrics.mrr}</h3>
+              <div className='flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground'>
+                {metrics.mrr_bruto != null && (
+                  <span>Bruto: R$ {metrics.mrr_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                )}
+                {metrics.mrr_liquido != null && metrics.mrr_liquido !== metrics.mrr_bruto && (
+                  <span className='text-muted-foreground/60'>Líquido: R$ {metrics.mrr_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                )}
+                <span className='text-muted-foreground/40'>&middot;</span>
+                <span><Users size={12} className='inline mr-0.5' />{metrics.totalTenants ?? 0} inquilinos</span>
+                {portfolioHealth?.vacancy != null && Number(portfolioHealth.vacancy) > 0 && (
+                  <>
+                    <span className='text-muted-foreground/40'>&middot;</span>
+                    <span className='text-destructive/70'>{portfolioHealth.vacancy}% vacância financeira</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className='flex items-center gap-3 shrink-0'>
+            <Badge variant='default'>
+              <ArrowUp size={10} /> {metrics.trends.mrr}
+            </Badge>
+            <MiniBarChart data={mrrSpark} color='#10b981' />
+          </div>
+        </Card>
       </div>
     </section>
   );

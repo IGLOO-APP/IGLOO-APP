@@ -55,11 +55,19 @@ export default {
           foreground: 'var(--popover-foreground)',
         },
       },
+      zIndex: {
+        dropdown: '30',
+        sticky: '40',
+        sidebar: '50',
+        modal: '60',
+        popover: '70',
+        tooltip: '80',
+        toast: '90',
+      },
       boxShadow: {
         premium: '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 4px 10px -5px rgba(0, 0, 0, 0.02)',
         'premium-hover':
           '0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.04)',
-        'cyan-glow': '0 0 20px rgba(19, 200, 236, 0.15)',
       },
       fontFamily: {
         sans: ['Manrope', 'sans-serif'],

@@ -76,12 +76,12 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
         <div className='flex flex-col bg-background text-foreground'>
           <div>
             {/* Explanation Banner */}
-            <div className='px-6 py-3 bg-primary/10 border-b border-primary/20 flex items-center gap-3'>
-              <div className='w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0'>
+            <div className='px-6 py-3 bg-muted border-b border-border flex items-center gap-3'>
+              <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
                 <Info size={16} />
               </div>
               <div className='flex-1'>
-                <p className='text-[10px] font-bold text-primary uppercase tracking-widest'>
+                <p className='text-[10px] font-bold text-muted-foreground uppercase tracking-widest'>
                   O que são FAQs?
                 </p>
                 <p className='text-[11px] text-muted-foreground font-medium'>

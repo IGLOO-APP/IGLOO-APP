@@ -14,6 +14,8 @@ import {
   Bell,
   BellOff,
   Check,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { announcementService } from '../../services/announcementService';
@@ -29,6 +31,8 @@ interface CommunicationHubProps {
   onDuplicate?: (announcement: OwnerAnnouncement) => void;
   tenantPropertyId?: string;
   condoName?: string;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 // ─── Type metadata ────────────────────────────────────────────────────────────
@@ -113,7 +117,7 @@ const AnnouncementRow: React.FC<{
         {/* Title row */}
         <div className='flex items-start justify-between gap-1'>
           <h4
-            className={`text-xs font-black leading-tight uppercase tracking-tight line-clamp-1 transition-colors ${
+            className={`text-sm font-semibold leading-tight line-clamp-1 transition-colors ${
               isActive
                 ? 'text-slate-900 dark:text-white'
                 : 'text-slate-700 dark:text-slate-300 group-hover/row:text-slate-900 dark:group-hover/row:text-white'
@@ -143,7 +147,7 @@ const AnnouncementRow: React.FC<{
             onClick={(e) => handleAction(e, (ann as any).acao_pendente.endpoint)}
             variant='outline'
             size='sm'
-            className='mt-2 w-full text-[10px] font-black uppercase tracking-widest rounded-lg'
+            className='mt-2 w-full text-xs font-semibold rounded-lg'
           >
             {(ann as any).acao_pendente.label}
           </Button>
@@ -154,11 +158,11 @@ const AnnouncementRow: React.FC<{
           <Badge variant='outline' className={meta.color}>
             {meta.icon} {meta.label}
           </Badge>
-          <span className='inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
+          <span className='inline-flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground'>
             {targetMeta.icon} {targetMeta.label}
           </span>
           {ann.views_count != null && (
-            <span className='inline-flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest'>
+            <span className='inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium'>
               <Eye size={11} /> {ann.views_count}
             </span>
           )}
@@ -174,8 +178,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
   onDuplicate,
   tenantPropertyId,
   condoName,
+  expanded = false,
+  onToggleExpand,
 }) => {
-  const ITEMS_PER_PAGE = 2;
+  const ITEMS_PER_PAGE = expanded ? 3 : 2;
 
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<OwnerAnnouncement[]>([]);
@@ -232,27 +238,41 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
               <Megaphone size={16} />
             </div>
             <div>
-              <p className='text-[10px] font-black uppercase tracking-widest text-slate-400'>
+              <p className='text-xs font-medium text-muted-foreground'>
                 Governance Hub
               </p>
-              <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight mt-0.5'>
+              <h3 className='text-sm font-bold text-foreground tracking-tight mt-0.5'>
                 Comunicações
               </h3>
             </div>
           </div>
 
-          {isOwner && (
-            <Button
+          <div className='flex items-center gap-1.5'>
+            <button
               onClick={(e) => {
                 e.stopPropagation();
-                onNewAnnouncement?.();
+                onToggleExpand?.();
               }}
-              size='icon'
-              className='rounded-xl shadow-lg shadow-primary/20'
+              className='w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all'
+              title={expanded ? 'Recolher' : 'Expandir'}
             >
-              <Plus size={18} />
-            </Button>
-          )}
+              {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </button>
+
+            {isOwner && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNewAnnouncement?.();
+                }}
+                variant='outline'
+                size='sm'
+                className='rounded-2xl text-xs font-semibold'
+              >
+                <Plus size={14} /> Novo
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ── List ────────────────────────────────────────────────────────── */}
@@ -263,7 +283,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 <BellOff size={22} />
               </div>
               <div>
-                <p className='text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider'>
+                <p className='text-xs font-semibold text-muted-foreground'>
                   Sem comunicados
                 </p>
                 <p className='text-[10px] text-slate-400 dark:text-slate-600 mt-1 font-medium'>
@@ -275,7 +295,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                   onClick={onNewAnnouncement}
                   variant='default'
                   size='sm'
-                  className='rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20'
+                  className='rounded-2xl text-xs font-semibold shadow-lg shadow-primary/20'
                 >
                   <Plus size={14} /> Criar Comunicado
                 </Button>
@@ -315,7 +335,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
             onClick={() => setShowHistoryModal(true)}
             variant='outline'
             size='sm'
-            className='rounded-2xl text-[10px] font-black uppercase tracking-widest'
+            className='rounded-2xl text-xs font-semibold'
           >
             <History size={16} /> Histórico
           </Button>

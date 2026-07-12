@@ -24,11 +24,11 @@ interface PortfolioHealthProps {
 const ShadTooltipTrigger = ({ title, description }: { title: string; description: string }) => (
   <TooltipProvider>
     <Tooltip>
-      <TooltipTrigger className='w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[7px] font-bold leading-none cursor-help'>
+      <TooltipTrigger className='w-3 h-3 rounded-full bg-muted-foreground/10 text-muted-foreground flex items-center justify-center text-[7px] font-bold leading-none cursor-help'>
         ?
       </TooltipTrigger>
       <TooltipContent side='top' className='max-w-52'>
-        <p className='text-[9px] font-black uppercase tracking-[0.15em] mb-1'>{title}</p>
+        <p className='text-[9px] font-semibold mb-1'>{title}</p>
         <p className='text-[10px] leading-snug font-medium'>{description}</p>
       </TooltipContent>
     </Tooltip>
@@ -52,12 +52,12 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
       <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2.5'>
-            <div className='p-2 rounded-xl bg-primary/10 text-primary transition-transform hover:scale-110 duration-300'>
+            <div className='p-2 rounded-xl bg-primary/10 text-primary'>
               <TrendingUp size={15} />
             </div>
             <div>
               <div className='flex items-center gap-1.5 mb-0.5'>
-                <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                <p className='text-xs font-medium text-muted-foreground'>
                   Yield Médio
                 </p>
                 <ShadTooltipTrigger
@@ -66,7 +66,7 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
                 />
               </div>
               <div className='flex items-center gap-1.5'>
-                <p className='text-base font-black text-slate-900 dark:text-white'>
+                <p className='text-base font-bold text-foreground'>
                   {health?.yield || '0'}%
                 </p>
                 <Badge variant='outline' className='items-center gap-0.5'>
@@ -83,13 +83,13 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
       <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center gap-2.5'>
           <div
-            className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+            className={`p-2 rounded-xl ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
           >
             <AlertCircle size={16} />
           </div>
           <div>
             <div className='flex items-center gap-1.5 mb-0.5'>
-              <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+              <p className='text-xs font-medium text-muted-foreground'>
                 Vacância Financeira
               </p>
               <ShadTooltipTrigger
@@ -103,14 +103,14 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
               </Badge>
             ) : (
               <div className='flex items-center gap-3'>
-                <p className='text-base font-black text-slate-900 dark:text-white'>
+                <p className='text-base font-bold text-foreground'>
                   {health?.vacancy || '0'}%
                 </p>
                 <Button
                   onClick={() => navigate('/properties')}
                   variant='link'
                   size='sm'
-                  className='text-[9px] font-black uppercase tracking-widest'
+                  className='text-xs font-semibold'
                 >
                   Agir Agora
                 </Button>
@@ -124,13 +124,13 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
       <div className='flex-1 w-full p-3 relative'>
         <div className='flex items-center gap-2.5'>
           <div
-            className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+            className={`p-2 rounded-xl ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
           >
             <ShieldCheck size={16} />
           </div>
           <div>
             <div className='flex items-center gap-1.5 mb-0.5'>
-              <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+              <p className='text-xs font-medium text-muted-foreground'>
                 Inadimplência
               </p>
               <ShadTooltipTrigger
@@ -144,7 +144,7 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
               </Badge>
             ) : (
               <div className='flex items-center gap-1.5'>
-                <p className='text-base font-black text-red-500'>{health?.delinquency || '0'}%</p>
+                <p className='text-base font-bold text-red-500'>{health?.delinquency || '0'}%</p>
                 <span className='text-[9px] font-bold text-red-500/70'>
                   ({formatCurrency(health?.delinquencyAbsolute || 0)})
                 </span>

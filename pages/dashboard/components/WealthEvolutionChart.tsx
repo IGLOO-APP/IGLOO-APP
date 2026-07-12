@@ -79,16 +79,16 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                   const data = payload[0].payload;
                   const value = payload[0].value as number;
 
-                  return (
-                    <div className='bg-slate-950/95 backdrop-blur-md text-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[160px] sm:min-w-[220px]'>
-                      <p className='font-black text-[10px] mb-3 uppercase tracking-[0.2em] text-slate-400 border-b border-white/5 pb-2'>
-                        {label}
-                      </p>
-                      <div className='mb-3'>
-                        <p className='text-[9px] font-bold text-cyan-500 uppercase tracking-widest mb-1'>
-                          Valor Patrimonial
+                    return (
+                      <div className='bg-popover text-popover-foreground p-3 sm:p-4 rounded-2xl shadow-2xl border-border min-w-[160px] sm:min-w-[220px]'>
+                        <p className='font-bold text-[10px] mb-3 text-muted-foreground border-b border-border pb-2'>
+                          {label}
                         </p>
-                        <p className='text-xl font-black text-white'>
+                        <div className='mb-3'>
+                          <p className='text-xs font-medium text-cyan-500 mb-1'>
+                            Valor Patrimonial
+                          </p>
+                          <p className='text-xl font-bold text-popover-foreground'>
                           {new Intl.NumberFormat('pt-BR', {
                             style: 'currency',
                             currency: 'BRL',
@@ -98,8 +98,8 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                       </div>
 
                       {data.events && data.events.length > 0 && (
-                        <div className='mt-2 space-y-2 py-2 border-t border-white/5'>
-                          <p className='text-[8px] font-black text-slate-500 uppercase tracking-widest'>
+                        <div className='mt-2 space-y-2 py-2 border-t border-border'>
+                          <p className='text-xs font-semibold text-muted-foreground'>
                             Eventos do Período
                           </p>
                           {data.events.map((e: any, i: number) => (
@@ -107,7 +107,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                               key={i}
                               className='flex items-center gap-2 text-[10px] font-bold text-slate-200'
                             >
-                              <div className='p-1 rounded-md bg-white/5'>
+                              <div className='p-1 rounded-md bg-muted'>
                                 {e.type === 'property' ? (
                                   <Home size={10} className='text-cyan-400' />
                                 ) : (
@@ -159,15 +159,15 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
       <div className='flex items-center gap-2 sm:gap-4 mt-4 px-2 flex-wrap'>
         <div className='flex items-center gap-2'>
           <div className='w-4 h-[3px] bg-cyan-500 rounded-full'></div>
-          <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+          <span className='text-xs font-medium text-muted-foreground'>
             Valor Patrimonial
           </span>
         </div>
         <div className='flex items-center gap-2'>
-          <div className='w-4 h-4 rounded-full bg-slate-900 border border-white/20 flex items-center justify-center text-white'>
+          <div className='w-4 h-4 rounded-full bg-foreground/10 border border-border flex items-center justify-center text-foreground/40'>
             <Home size={8} />
           </div>
-          <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+          <span className='text-xs font-medium text-muted-foreground'>
             Evento Relevante
           </span>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, AlertTriangle } from 'lucide-react';
+import { Plus, AlertTriangle, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +39,7 @@ const Dashboard: React.FC = () => {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [announcementToDuplicate, setAnnouncementToDuplicate] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [governanceExpanded, setGovernanceExpanded] = useState(false);
   // Local guard so the wizard doesn't re-open in the same session
   // after the user completes it (the auth refresh will confirm later)
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
@@ -87,7 +88,7 @@ const Dashboard: React.FC = () => {
 
   if (isError || !dashboardData) {
     return (
-      <div className='flex h-screen flex-col items-center justify-center bg-background-light dark:bg-background-dark p-6 text-center'>
+      <div className='flex h-screen flex-col items-center justify-center bg-background p-6 text-center'>
         <Card className='w-16 h-16 flex items-center justify-center text-red-500 mb-4'>
           <AlertTriangle size={32} />
         </Card>
@@ -116,7 +117,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div
-      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={`flex flex-col w-full max-w-[1600px] mx-auto transition-opacity duration-200 motion-safe:transition-opacity motion-safe:duration-200 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
     >
       {showOnboarding && (
         <OwnerOnboardingWizard
@@ -139,41 +140,74 @@ const Dashboard: React.FC = () => {
 
       <div className='px-4 md:px-6 py-4 md:py-5 space-y-5 pb-20'>
         {/* Top Section: Metrics & Communication Integrated */}
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
-          {/* Main Area (Left) - 2x2 Grid */}
-          <div className='lg:col-span-8 flex flex-col gap-4'>
-            <HeroMetrics metrics={metrics} navigate={navigate} />
-          </div>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch'>
+          {governanceExpanded ? (
+            <>
+              <div className='lg:col-span-12 h-full'>
+                <CommunicationHub
+                  expanded
+                  onToggleExpand={() => setGovernanceExpanded(false)}
+                  onNewAnnouncement={() => {
+                    setAnnouncementToDuplicate(null);
+                    setShowAnnouncementModal(true);
+                  }}
+                  onDuplicate={(ann) => {
+                    setAnnouncementToDuplicate(ann);
+                    setShowAnnouncementModal(true);
+                  }}
+                />
+              </div>
+              <div className='lg:col-span-12 flex flex-col gap-4'>
+                <HeroMetrics metrics={metrics} navigate={navigate} />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Main Area (Left) - 2x2 Grid */}
+              <div className='lg:col-span-8 flex flex-col'>
+                <HeroMetrics
+                  metrics={metrics}
+                  navigate={navigate}
+                  portfolioHealth={portfolioHealth}
+                  propertyCount={properties?.length}
+                  className='h-full'
+                />
+              </div>
 
-          {/* Side Hub (Right) - 4/12 Columns */}
-          <div className='lg:col-span-4 h-full'>
-            <CommunicationHub
-              onNewAnnouncement={() => {
-                setAnnouncementToDuplicate(null);
-                setShowAnnouncementModal(true);
-              }}
-              onDuplicate={(ann) => {
-                setAnnouncementToDuplicate(ann);
-                setShowAnnouncementModal(true);
-              }}
-            />
-          </div>
+              {/* Side Hub (Right) - 4/12 Columns */}
+              <div className='lg:col-span-4 h-full'>
+                <CommunicationHub
+                  onToggleExpand={() => setGovernanceExpanded(true)}
+                  onNewAnnouncement={() => {
+                    setAnnouncementToDuplicate(null);
+                    setShowAnnouncementModal(true);
+                  }}
+                  onDuplicate={(ann) => {
+                    setAnnouncementToDuplicate(ann);
+                    setShowAnnouncementModal(true);
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <PortfolioHealth health={portfolioHealth} />
 
         {/* Row 3: Assets & Wealth Evolution (SIDE BY SIDE) */}
         <div className='grid grid-cols-1 lg:grid-cols-12 items-stretch'>
-          <section className='lg:col-span-5 flex flex-col gap-0 relative'>
-            <SectionHeader title='Gestão de Ativos' subtitle='Patrimônio ativo' />
-            <Button
-              onClick={() => navigate('/properties')}
-              variant='link'
-              size='sm'
-              className='self-center -mt-2 mb-0.5'
-            >
-              Ver todos
-            </Button>
+          <section className='lg:col-span-5 flex flex-col gap-3'>
+            <div className='flex items-center justify-between'>
+              <SectionHeader title='Gestão de Ativos' subtitle='Patrimônio ativo' />
+              <Button
+                onClick={() => navigate('/properties')}
+                variant='link'
+                size='sm'
+                className='text-xs font-semibold text-muted-foreground'
+              >
+                Ver Todos <ChevronRight size={12} />
+              </Button>
+            </div>
             <div className='relative group/carousel'>
               {properties.length > 0 ? (
                 <Carousel
@@ -186,7 +220,7 @@ const Dashboard: React.FC = () => {
                 >
                   <CarouselContent className='ml-0'>
                     {properties.slice(0, 5).map((prop: any) => (
-                      <CarouselItem key={prop.id} className='basis-full p-2'>
+                      <CarouselItem key={prop.id} className='basis-full p-1'>
                         <PropertyCard
                           property={prop}
                           onClick={(p: any) => navigate(`/properties?id=${p.id}`)}
@@ -197,7 +231,7 @@ const Dashboard: React.FC = () => {
                     ))}
                   </CarouselContent>
                   {properties.length > 1 && (
-                    <div className='absolute -right-2 -top-12 flex gap-2'>
+                    <div className='flex gap-2 mt-3 justify-center'>
                       <CarouselPrevious className='static translate-y-0 h-8 w-8' />
                       <CarouselNext className='static translate-y-0 h-8 w-8' />
                     </div>
@@ -235,12 +269,12 @@ const Dashboard: React.FC = () => {
         <div className='grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch'>
           {/* Left: Activity Timeline */}
           <div className='lg:col-span-8 flex flex-col'>
-            <ActivityTimeline activities={activities || []} />
+            <ActivityTimeline activities={activities || []} onActionComplete={() => refetch()} />
           </div>
 
           {/* Right: AI Insights */}
           <div className='lg:col-span-4 flex flex-col'>
-            <DashboardAIInsights metrics={metrics} />
+            <DashboardAIInsights metrics={metrics} onActionComplete={() => refetch()} />
           </div>
         </div>
 

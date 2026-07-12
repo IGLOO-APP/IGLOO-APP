@@ -98,15 +98,15 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
         <div className='flex-1 overflow-y-auto custom-scrollbar'>
           {/* Explanation Banner */}
-          <div className='px-6 py-4 bg-orange-500/5 border-b border-orange-500/10 flex items-center gap-4'>
-            <div className='w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0'>
+          <div className='px-6 py-4 bg-muted border-b border-border flex items-center gap-4'>
+            <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
               <Info size={16} />
             </div>
             <div className='flex-1'>
-              <p className='text-[10px] font-black text-orange-500 uppercase tracking-widest'>
+              <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
                 Para que servem as Categorias?
               </p>
-              <p className='text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed'>
+              <p className='text-[11px] text-muted-foreground font-medium leading-relaxed'>
                 As categorias ajudam a organizar as solicitações dos locatários. Ao classificar um
                 chamado (ex: Elétrica, Hidráulica), você consegue filtrar demandas e gerar
                 relatórios precisos sobre o que mais exige atenção nos seus imóveis.

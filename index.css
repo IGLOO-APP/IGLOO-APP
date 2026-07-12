@@ -64,8 +64,8 @@
 
   /* Custom Scrollbar for Dark/Light Mode */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -73,58 +73,64 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #94a3b8;
-    border-radius: 4px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
+    background: color-mix(in srgb, currentColor 20%, transparent);
   }
 
-  .dark ::-webkit-scrollbar-thumb {
-    background: #334155;
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    border-radius: 2px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, currentColor 16%, transparent);
   }
   .theme {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
   }
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
+    --background: oklch(0.975 0.008 220);
+    --foreground: oklch(0.12 0.01 220);
+    --card: oklch(0.982 0.006 220);
+    --card-foreground: oklch(0.12 0.01 220);
+    --popover: oklch(0.982 0.006 220);
+    --popover-foreground: oklch(0.12 0.01 220);
     --primary: oklch(0.205 0 0);
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.945 0.01 220);
+    --secondary-foreground: oklch(0.12 0.01 220);
+    --muted: oklch(0.945 0.01 220);
+    --muted-foreground: oklch(0.45 0.01 220);
+    --accent: oklch(0.945 0.01 220);
+    --accent-foreground: oklch(0.12 0.01 220);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.885 0.012 220);
+    --input: oklch(0.885 0.012 220);
+    --ring: oklch(0.7 0.01 220);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar: oklch(0.97 0.008 220);
+    --sidebar-foreground: oklch(0.12 0.01 220);
     --sidebar-primary: oklch(0.205 0 0);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar-accent: oklch(0.935 0.01 220);
+    --sidebar-accent-foreground: oklch(0.12 0.01 220);
+    --sidebar-border: oklch(0.885 0.012 220);
+    --sidebar-ring: oklch(0.7 0.01 220);
     --card-bg: rgba(0, 0, 0, 0.04);
     --card-border: rgba(0, 0, 0, 0.1);
     --card-radius: 12px;
@@ -172,6 +178,10 @@
 }
 
 @layer utilities {
+  .label-tiny {
+    @apply text-[9px] font-black uppercase tracking-widest;
+  }
+
   @keyframes shimmer {
     0% {
       background-position: -1000px 0;
