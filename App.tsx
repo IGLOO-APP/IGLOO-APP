@@ -41,6 +41,7 @@ const OwnerMessages = lazy(() => import('./pages/OwnerMessages'));
 const OwnerProfile = lazy(() => import('./pages/OwnerProfile'));
 const PropertyDetailsPage = lazy(() => import('./pages/properties/PropertyDetailsPage'));
 const Settings = lazy(() => import('./pages/Settings'));
+const GovernanceHub = lazy(() => import('./pages/GovernanceHub'));
 const PendingAccess = lazy(() => import('./pages/PendingAccess'));
 
 // Tenant Pages
@@ -176,6 +177,7 @@ const router = createBrowserRouter(
             { path: 'tenants', element: <Tenants /> },
             { path: 'tenants/:id', element: <TenantDetailsPage /> },
             { path: 'messages', element: <OwnerMessages /> },
+            { path: 'governance', element: <GovernanceHub /> },
             { path: 'profile', element: <OwnerProfile /> },
             { path: 'contracts', element: <Contracts /> },
             { path: 'financials', element: <Financials /> },

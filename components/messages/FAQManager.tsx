@@ -81,10 +81,10 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                 <Info size={16} />
               </div>
               <div className='flex-1'>
-                <p className='text-[10px] font-bold text-muted-foreground uppercase tracking-widest'>
+                <p className='text-xs font-medium text-muted-foreground'>
                   O que são FAQs?
                 </p>
-                <p className='text-[11px] text-muted-foreground font-medium'>
+                <p className='text-sm text-muted-foreground'>
                   São atalhos de texto para perguntas frequentes. Ao conversar com um locatário,
                   você poderá enviar estas respostas completas com apenas um clique, economizando
                   tempo.
@@ -96,10 +96,10 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
             <div className='p-6 border-b border-border bg-card'>
               <div className='flex items-center justify-between mb-4'>
                 <div>
-                  <h3 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight'>
+                  <h3 className='text-sm font-semibold text-foreground'>
                     {editingFaq ? 'Editar Resposta' : 'Nova Resposta Rápida'}
                   </h3>
-                  <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                  <p className='text-xs text-muted-foreground'>
                     Atalhos de produtividade
                   </p>
                 </div>
@@ -108,7 +108,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
 
               <div className='space-y-4'>
                 <div className='space-y-1.5'>
-                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1'>
+                  <label className='text-xs font-medium text-muted-foreground ml-1'>
                     Título / Gatilho
                   </label>
                   <input
@@ -120,12 +120,12 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                         ? setEditingFaq({ ...editingFaq, question: e.target.value })
                         : setNewFaq({ ...newFaq, question: e.target.value })
                     }
-                    className='w-full px-4 py-3 rounded-2xl bg-muted border-none text-sm font-bold text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
+                    className='w-full px-4 py-3 rounded-2xl bg-muted border-none text-sm font-medium text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
                   />
                 </div>
 
                 <div className='space-y-1.5'>
-                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1'>
+                  <label className='text-xs font-medium text-muted-foreground ml-1'>
                     Conteúdo da Resposta
                   </label>
                   <textarea
@@ -136,20 +136,20 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                         ? setEditingFaq({ ...editingFaq, answer: e.target.value })
                         : setNewFaq({ ...newFaq, answer: e.target.value })
                     }
-                    className='w-full px-4 py-3 rounded-2xl bg-muted border-none text-sm font-medium text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary outline-none h-28 resize-none transition-all'
+                    className='w-full px-4 py-3 rounded-2xl bg-muted border-none text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary outline-none h-28 resize-none transition-all'
                   />
                 </div>
 
                 <div className='flex items-center justify-between gap-3 pt-2'>
                   <div className='flex items-center gap-2 overflow-x-auto pb-1 max-w-[60%] custom-scrollbar no-scrollbar'>
-                    <p className='text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0'>
+                    <p className='text-xs font-medium text-muted-foreground shrink-0'>
                       Sugestões:
                     </p>
                     {faqExamples.map((ex, i) => (
                       <button
                         key={i}
                         onClick={() => setNewFaq(ex)}
-                        className='shrink-0 px-2 py-1 rounded-lg bg-muted border border-border text-[9px] font-bold text-muted-foreground hover:text-primary hover:border-primary/30 transition-all'
+                        className='shrink-0 px-2 py-1 rounded-lg bg-muted border border-border text-xs font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-all'
                       >
                         {ex.question}
                       </button>
@@ -160,14 +160,14 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                     {editingFaq && (
                       <button
                         onClick={() => setEditingFaq(null)}
-                        className='px-4 py-2.5 rounded-xl text-[10px] font-black text-muted-foreground uppercase tracking-widest hover:bg-muted transition-all'
+                        className='px-4 py-2.5 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted transition-all'
                       >
                         Cancelar
                       </button>
                     )}
                     <button
                       onClick={onSave}
-                      className='px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-2'
+                      className='px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2'
                     >
                       <Save size={12} />
                       {editingFaq ? 'Salvar' : 'Criar Atalho'}
@@ -179,7 +179,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
 
             {/* List Section */}
             <div className='p-6 space-y-4'>
-              <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center justify-between'>
+              <h3 className='text-xs font-medium text-muted-foreground px-1 flex items-center justify-between'>
                 <span>Respostas Cadastradas</span>
                 <span className='bg-muted px-2 py-0.5 rounded text-muted-foreground'>
                   {faqs.length}
@@ -191,10 +191,10 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                   <div className='w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4 shadow-sm'>
                     <Lightbulb size={32} className='text-primary opacity-50' />
                   </div>
-                  <h4 className='text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2'>
+                  <h4 className='text-sm font-semibold text-foreground mb-2'>
                     Base de Conhecimento Vazia
                   </h4>
-                  <p className='text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-[280px] mb-6'>
+                  <p className='text-sm text-muted-foreground leading-relaxed max-w-[280px] mb-6'>
                     Comece criando respostas para as dúvidas que você mais recebe. Isso vai
                     transformar seu atendimento em algo instantâneo e profissional.
                   </p>
@@ -208,13 +208,13 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                       >
                         <div className='flex items-center gap-3'>
                           <div className='w-2 h-2 rounded-full bg-primary/30 group-hover:bg-primary transition-colors' />
-                          <span className='text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider'>
+                          <span className='text-xs font-medium text-muted-foreground'>
                             {ex.question}
                           </span>
                         </div>
                         <ChevronRight
                           size={14}
-                          className='text-slate-300 group-hover:text-primary transition-all'
+                          className='text-muted-foreground/40 group-hover:text-primary transition-all'
                         />
                       </button>
                     ))}
@@ -228,31 +228,31 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                       className={`p-4 rounded-2xl border transition-all group ${faq.is_active ? 'bg-card border-border shadow-sm' : 'bg-muted/30 border-transparent opacity-60'}`}
                     >
                       <div className='flex justify-between items-start gap-4 mb-2'>
-                        <p className='text-sm font-bold text-slate-900 dark:text-white tracking-tight'>
+                        <p className='text-sm font-medium text-foreground'>
                           {faq.question}
                         </p>
                         <div className='flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity'>
                           <button
                             onClick={() => onToggleStatus(faq)}
-                            className={`p-2 rounded-xl transition-all ${faq.is_active ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-muted-foreground hover:bg-muted'}`}
+                            className={`p-2 rounded-xl transition-all ${faq.is_active ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-muted-foreground hover:bg-muted'}`}
                           >
                             <CheckCircle2 size={16} />
                           </button>
                           <button
                             onClick={() => setEditingFaq(faq)}
-                            className='p-2 rounded-xl text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all'
+                            className='p-2 rounded-xl text-blue-500 hover:bg-blue-500/10 transition-all'
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => onDelete(faq.id)}
-                            className='p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all'
+                            className='p-2 rounded-xl text-destructive hover:bg-destructive/10 transition-all'
                           >
                             <Trash2 size={16} />
                           </button>
                         </div>
                       </div>
-                      <p className='text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium'>
+                      <p className='text-sm text-muted-foreground leading-relaxed'>
                         {faq.answer}
                       </p>
                     </div>

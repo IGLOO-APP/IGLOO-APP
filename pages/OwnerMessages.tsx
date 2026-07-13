@@ -87,7 +87,7 @@ const OwnerMessages: React.FC = () => {
           <div className='flex items-center gap-1.5 md:gap-2 flex-wrap sm:flex-nowrap shrink-0'>
             <button
               onClick={() => setShowFAQManager(true)}
-              className='flex items-center justify-center gap-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-xl font-bold text-[10px] transition-all active:scale-95 shrink-0'
+              className='flex items-center justify-center gap-1 bg-muted hover:bg-accent text-muted-foreground px-2 py-1.5 rounded-xl font-semibold text-xs transition-all active:scale-95 shrink-0'
               title='Gerenciar FAQs'
             >
               <HelpCircle size={12} className='text-primary' />
@@ -96,7 +96,7 @@ const OwnerMessages: React.FC = () => {
 
             <button
               onClick={() => setShowCategoryManager(true)}
-              className='flex items-center justify-center gap-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-xl font-bold text-[10px] transition-all active:scale-95 shrink-0'
+              className='flex items-center justify-center gap-1 bg-muted hover:bg-accent text-muted-foreground px-2 py-1.5 rounded-xl font-semibold text-xs transition-all active:scale-95 shrink-0'
               title='Gerenciar Categorias'
             >
               <Filter size={12} className='text-orange-500' />
@@ -105,7 +105,7 @@ const OwnerMessages: React.FC = () => {
 
             <button
               onClick={() => setShowAnnouncementModal(true)}
-              className='flex items-center justify-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white px-2.5 py-1.5 rounded-xl font-bold text-[10px] shadow-md shadow-indigo-500/20 transition-all active:scale-95 shrink-0'
+              className='flex items-center justify-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground px-2.5 py-1.5 rounded-xl font-semibold text-xs shadow-md transition-all active:scale-95 shrink-0'
               title='Novo Comunicado'
             >
               <Megaphone size={12} />
@@ -114,15 +114,6 @@ const OwnerMessages: React.FC = () => {
           </div>
         </TopBar>
       </div>
-
-      {loading && (
-        <div className='absolute inset-0 z-[60] bg-white/80 dark:bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center'>
-          <div className='w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4'></div>
-          <p className='text-sm font-bold text-slate-900 dark:text-white'>
-            Carregando mensagens...
-          </p>
-        </div>
-      )}
 
       <div className='flex flex-1 overflow-hidden relative min-h-0 bg-background border-t border-border'>
         <ChatSidebar
@@ -150,6 +141,7 @@ const OwnerMessages: React.FC = () => {
           handleMouseMove={handleMouseMove}
           isDragging={isDragging}
           setIsCreateSupportOpen={setShowCreateSupportModal}
+          loading={loading}
         />
 
         {activeChat ? (
@@ -189,6 +181,7 @@ const OwnerMessages: React.FC = () => {
                   isStatusLocked={isStatusLocked}
                   setIsStatusLocked={setIsStatusLocked}
                   onStatusChange={handleStatusChange}
+                  onCloseSupportTicket={() => setActiveChatId(null)}
                 />
               </>
             )}
@@ -196,33 +189,33 @@ const OwnerMessages: React.FC = () => {
         ) : (
           <div className='hidden md:flex flex-1 flex-col items-center justify-center p-8 text-center bg-muted/20'>
             <div className='max-w-md space-y-3 flex flex-col items-center'>
-              <h2 className='text-lg font-black text-slate-900 dark:text-white tracking-tighter'>
-                Central de Mensagens Igloo
+              <h2 className='text-lg font-semibold text-foreground'>
+                Central de Mensagens
               </h2>
-              <p className='text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed'>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
                 Gerencie todos os seus chamados de manutenção, dúvidas financeiras e conversas
                 gerais em um só lugar.
-                <span className='block mt-1 font-bold text-slate-700 dark:text-slate-300'>
+                <span className='block mt-1 font-medium text-foreground/70'>
                   Selecione um chat ao lado para começar.
                 </span>
               </p>
               <button
                 onClick={() => setShowCreateSupportModal(true)}
-                className='mt-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 font-bold text-[9px] uppercase tracking-wider transition-all hover:scale-[1.01] active:scale-95 flex items-center gap-1.5'
+                className='mt-2 px-4 py-2 rounded-xl border border-border text-muted-foreground hover:bg-muted transition-all active:scale-95 text-xs font-medium flex items-center gap-1.5'
               >
-                <Shield size={11} className='text-primary' />
+                <Shield size={11} />
                 Precisa de ajuda? Suporte Técnico
               </button>
             </div>
 
             <div className='w-full max-w-4xl mt-8'>
               <div className='flex items-center justify-between mb-4 px-2'>
-                <h3 className='text-[9px] font-black uppercase tracking-[0.3em] text-slate-400'>
+                <h3 className='text-xs font-medium text-muted-foreground'>
                   Tipos de Chamados Ativos
                 </h3>
                 <button
                   onClick={() => setShowCategoryManager(true)}
-                  className='flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all text-[9px] font-black uppercase tracking-widest'
+                  className='flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xs font-semibold'
                 >
                   <Plus size={12} /> Adicionar
                 </button>
@@ -234,12 +227,12 @@ const OwnerMessages: React.FC = () => {
                   return (
                     <div
                       key={cat.id}
-                      className='group relative p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 flex flex-col items-center justify-center gap-3 hover:border-primary/40 hover:bg-white/10 transition-all cursor-default'
+                      className='group relative p-4 bg-card rounded-2xl border border-border flex flex-col items-center justify-center gap-3 hover:border-primary/40 hover:bg-accent/50 transition-all cursor-default'
                     >
                       <div className={`p-3 rounded-2xl ${cat.bg_class} ${cat.color_class}`}>
                         <Icon size={20} strokeWidth={2.5} />
                       </div>
-                      <span className='text-[9px] font-black uppercase tracking-widest text-slate-900 dark:text-white'>
+                      <span className='text-xs font-semibold text-foreground'>
                         {cat.name}
                       </span>
 
@@ -248,7 +241,7 @@ const OwnerMessages: React.FC = () => {
                           e.stopPropagation();
                           handleDeleteCategory(cat.id);
                         }}
-                        className='absolute -top-1.5 -right-1.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-md'
+                        className='absolute -top-1.5 -right-1.5 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-md'
                         title='Excluir categoria'
                       >
                         <Trash2 size={10} strokeWidth={3} />
@@ -258,7 +251,7 @@ const OwnerMessages: React.FC = () => {
                 })}
 
                 {categories.length === 0 && (
-                  <div className='col-span-full p-8 text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-white/5 rounded-2xl border-2 border-dashed border-white/5 flex items-center justify-center'>
+                  <div className='col-span-full p-8 text-muted-foreground text-xs font-medium bg-card/50 rounded-2xl border-2 border-dashed border-border flex items-center justify-center'>
                     Nenhuma categoria configurada
                   </div>
                 )}

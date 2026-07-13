@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, FilePlus2, Bed, Bath, Square, Clock, Eye, User } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Property } from '../../types';
+import { LiquidGlassCard } from '../../components/ui/LiquidGlassCard';
 
 interface PropertyCardProps {
   property: Property;
@@ -146,7 +147,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   /* ─── GRID CARD ─────────────────────────────────────────── */
   if (viewMode === 'grid') {
     return (
-      <Card
+      <LiquidGlassCard
         onClick={() => !isTenant && onClick(property)}
         className={`group relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} h-[360px] w-full p-0 gap-0 ${borderClass} ${className}`}
       >
@@ -275,7 +276,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             )}
           </div>
         </div>
-      </Card>
+      </LiquidGlassCard>
     );
   }
 

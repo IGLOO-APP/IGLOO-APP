@@ -39,6 +39,7 @@ interface ChatSidebarProps {
   handleMouseMove: (e: React.MouseEvent) => void;
   isDragging: boolean;
   setIsCreateSupportOpen?: (open: boolean) => void;
+  loading?: boolean;
 }
 
 export const ChatSidebar = React.memo(
@@ -66,6 +67,7 @@ export const ChatSidebar = React.memo(
     handleMouseMove,
     isDragging,
     setIsCreateSupportOpen,
+    loading = false,
   }: ChatSidebarProps) => {
     const getAvatarColor = (name: string) => {
       const colors = [
@@ -89,10 +91,10 @@ export const ChatSidebar = React.memo(
         <div className='p-4 border-b border-border bg-background sticky top-0 z-30'>
           <div className='flex items-center justify-between mb-3'>
             <div className='flex flex-col'>
-              <h1 className='text-lg md:text-xl font-bold text-slate-900 dark:text-white tracking-tight'>
+              <h1 className='text-lg font-semibold text-foreground tracking-tight'>
                 Mensagens
               </h1>
-              <p className='text-[10px] font-medium text-slate-400'>Central de comunicação</p>
+              <p className='text-xs text-muted-foreground'>Central de comunicação</p>
             </div>
           </div>
 
@@ -106,13 +108,13 @@ export const ChatSidebar = React.memo(
                 className='w-full h-10 pl-10 pr-3 rounded-2xl bg-muted/50 border border-input text-xs text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
               />
               <Search
-                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400'
+                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground'
                 size={15}
               />
             </div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-muted/50 text-muted-foreground hover:text-foreground border border-input'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-primary-foreground shadow-lg' : 'bg-muted/50 text-muted-foreground hover:text-foreground border border-input'}`}
             >
               <Filter size={16} />
             </button>
@@ -121,61 +123,47 @@ export const ChatSidebar = React.memo(
           {showAdvancedFilters && (
             <div className='p-3 rounded-2xl bg-muted/30 border border-border space-y-3 animate-slideDown mb-3'>
               <div className='space-y-1.5'>
-                <label className='text-[9px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                <label className='text-xs font-medium text-muted-foreground px-1'>
                   Prioridade
                 </label>
                 <div className='relative'>
                   <select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value)}
-                    className='w-full pl-3 pr-9 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
-                    style={{ colorScheme: 'dark' }}
+                    className='w-full pl-3 pr-9 py-2 bg-background border border-input rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
                   >
-                    <option value='all' className='dark:bg-slate-800'>
-                      Todas as Prioridades
-                    </option>
-                    <option value='urgent' className='dark:bg-slate-800'>
-                      Urgente
-                    </option>
-                    <option value='high' className='dark:bg-slate-800'>
-                      Alta
-                    </option>
-                    <option value='medium' className='dark:bg-slate-800'>
-                      Média
-                    </option>
-                    <option value='low' className='dark:bg-slate-800'>
-                      Baixa
-                    </option>
+                    <option value='all'>Todas as Prioridades</option>
+                    <option value='urgent'>Urgente</option>
+                    <option value='high'>Alta</option>
+                    <option value='medium'>Média</option>
+                    <option value='low'>Baixa</option>
                   </select>
                   <ChevronDown
-                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none'
                     size={12}
                   />
                 </div>
               </div>
 
               <div className='space-y-1.5'>
-                <label className='text-[9px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                <label className='text-xs font-medium text-muted-foreground px-1'>
                   Imóvel
                 </label>
                 <div className='relative'>
                   <select
                     value={propertyFilter}
                     onChange={(e) => setPropertyFilter(e.target.value)}
-                    className='w-full pl-3 pr-9 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
-                    style={{ colorScheme: 'dark' }}
+                    className='w-full pl-3 pr-9 py-2 bg-background border border-input rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
                   >
-                    <option value='all' className='dark:bg-slate-800'>
-                      Todos os Imóveis
-                    </option>
+                    <option value='all'>Todos os Imóveis</option>
                     {Array.from(new Set(chats.map((c) => c.property))).map((prop) => (
-                      <option key={prop} value={prop} className='dark:bg-slate-800'>
+                      <option key={prop} value={prop}>
                         {prop}
                       </option>
                     ))}
                   </select>
                   <ChevronDown
-                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none'
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none'
                     size={12}
                   />
                 </div>
@@ -188,7 +176,7 @@ export const ChatSidebar = React.memo(
                   setActiveFilter('all');
                   setSearchTerm('');
                 }}
-                className='w-full py-2 text-[9px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all uppercase tracking-widest'
+                className='w-full py-2 text-xs font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-all'
               >
                 Limpar Filtros
               </button>
@@ -214,10 +202,10 @@ export const ChatSidebar = React.memo(
               <button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
-                className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   activeFilter === filter.id
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-                    : 'bg-slate-100/50 dark:bg-white/5 text-slate-500 dark:text-slate-400'
+                    ? 'bg-foreground text-background shadow-md'
+                    : 'bg-muted/50 text-muted-foreground'
                 }`}
               >
                 {filter.icon} {filter.label}
@@ -229,7 +217,7 @@ export const ChatSidebar = React.memo(
             <div className='px-1 mb-1.5'>
               <button
                 onClick={() => setIsCreateSupportOpen(true)}
-                className='w-full py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-1.5 active:scale-95'
+                className='w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95'
               >
                 <Plus size={12} strokeWidth={3} />
                 Novo Chamado
@@ -239,6 +227,27 @@ export const ChatSidebar = React.memo(
         </div>
 
         <div className='flex-1 overflow-y-auto custom-scrollbar min-h-0 pb-20 md:pb-0'>
+          {loading ? (
+            <div className='p-4 space-y-4'>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className='flex items-start gap-3 animate-pulse'>
+                  <div className='w-10 h-10 rounded-full bg-muted shrink-0' />
+                  <div className='flex-1 space-y-2'>
+                    <div className='flex justify-between'>
+                      <div className='h-3 w-24 bg-muted rounded' />
+                      <div className='h-3 w-8 bg-muted rounded' />
+                    </div>
+                    <div className='flex gap-1.5'>
+                      <div className='h-4 w-16 bg-muted rounded' />
+                      <div className='h-4 w-20 bg-muted rounded' />
+                    </div>
+                    <div className='h-3 w-full bg-muted rounded' />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+          <>
           {/* Recommended Contacts Section (Search Mode) */}
           {searchTerm && (
             <div className='mb-1.5'>
@@ -254,10 +263,10 @@ export const ChatSidebar = React.memo(
                   <div
                     key={tenant.id}
                     onClick={() => handleSelectTenant(tenant.id)}
-                    className='px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-primary/5 border-b border-gray-100 dark:border-white/5 group'
+                    className='px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-accent/50 border-b border-border group'
                   >
                     <div
-                      className={`w-8 h-8 rounded-full ${getAvatarColor(tenant.name)} flex items-center justify-center text-white font-bold text-xs shadow-sm opacity-80 group-hover:opacity-100 transition-all`}
+                      className={`w-8 h-8 rounded-full ${getAvatarColor(tenant.name)} flex items-center justify-center text-white font-semibold text-xs shadow-sm opacity-80 group-hover:opacity-100 transition-all`}
                     >
                       {tenant.avatar_url ? (
                         <img
@@ -271,18 +280,18 @@ export const ChatSidebar = React.memo(
                     </div>
                     <div className='flex-1 min-w-0'>
                       <div className='flex items-center justify-between'>
-                        <h4 className='text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-primary transition-colors'>
+                        <h4 className='text-xs font-medium text-foreground group-hover:text-primary transition-colors'>
                           {tenant.name}
                         </h4>
-                        <span className='px-1 py-0.5 rounded bg-primary/10 text-primary text-[7px] font-black uppercase tracking-widest'>
+                        <span className='px-1 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium'>
                           Novo
                         </span>
                       </div>
-                      <p className='text-[9px] text-slate-400 font-medium truncate'>
+                      <p className='text-xs text-muted-foreground truncate'>
                         {tenant.email}
                       </p>
                     </div>
-                    <div className='w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all'>
+                    <div className='w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all'>
                       <Plus size={11} strokeWidth={3} />
                     </div>
                   </div>
@@ -292,8 +301,8 @@ export const ChatSidebar = React.memo(
 
           {/* Existing Chats Section */}
           {searchTerm && filteredChats.length > 0 && (
-            <div className='px-4 py-2 bg-slate-50 dark:bg-white/[0.02]'>
-              <span className='text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]'>
+            <div className='px-4 py-2 bg-muted/30'>
+              <span className='text-xs font-medium text-muted-foreground'>
                 Conversas Ativas
               </span>
             </div>
@@ -303,10 +312,10 @@ export const ChatSidebar = React.memo(
             <div
               key={chat.id}
               onClick={() => setActiveChatId(chat.id)}
-              className={`group px-4 py-3 flex items-start gap-3 cursor-pointer transition-all relative border-b border-gray-100 dark:border-white/5 ${
+              className={`group px-4 py-3 flex items-start gap-3 cursor-pointer transition-all relative border-b border-border ${
                 activeChatId === chat.id
-                  ? 'bg-slate-50 dark:bg-white/5'
-                  : 'hover:bg-gray-50 dark:hover:bg-white/[0.02]'
+                  ? 'bg-accent/50'
+                  : 'hover:bg-accent/30'
               }`}
             >
               {/* Indicador de não lido */}
@@ -315,18 +324,18 @@ export const ChatSidebar = React.memo(
               )}
 
               {activeChatId === chat.id && (
-                <div className='absolute left-0 top-0 bottom-0 w-0.5 bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]'></div>
+                <div className='absolute left-0 top-0 bottom-0 w-0.5 bg-primary'></div>
               )}
 
               {/* Avatar Profissional com Iniciais */}
               <div className='relative shrink-0'>
                 {chat.category === 'support' ? (
-                  <div className='w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md border border-cyan-400/30 ring-2 ring-cyan-500/20'>
-                    <Shield size={16} className='text-white animate-pulse' />
+                  <div className='w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white shadow-sm'>
+                    <Shield size={16} />
                   </div>
                 ) : (
                   <div
-                    className={`w-10 h-10 rounded-full ${getAvatarColor(chat.tenantName)} flex items-center justify-center text-white font-bold text-base shadow-sm border border-white/20`}
+                    className={`w-10 h-10 rounded-full ${getAvatarColor(chat.tenantName)} flex items-center justify-center text-white font-semibold text-base shadow-sm`}
                   >
                     {chat.tenantAvatar ? (
                       <img
@@ -344,11 +353,11 @@ export const ChatSidebar = React.memo(
               <div className='flex-1 min-w-0'>
                 <div className='flex justify-between items-baseline mb-0.5'>
                   <h3
-                    className={`text-xs truncate tracking-tight ${chat.unreadCount > 0 ? 'font-bold text-slate-900 dark:text-white' : 'font-semibold text-slate-700 dark:text-slate-300'}`}
+                    className={`text-xs truncate tracking-tight ${chat.unreadCount > 0 ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground'}`}
                   >
                     {chat.tenantName}
                   </h3>
-                  <span className='text-[9px] text-slate-400 font-medium opacity-80'>
+                  <span className='text-[10px] text-muted-foreground/60'>
                     {chat.lastMessageTime === 'AGORA' ? 'Recém' : chat.lastMessageTime}
                   </span>
                 </div>
@@ -356,13 +365,13 @@ export const ChatSidebar = React.memo(
                 {/* Labels Legíveis */}
                 <div className='flex items-center gap-1.5 mb-1'>
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider ${
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                       chat.category === 'maintenance'
                         ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
                         : chat.category === 'finance'
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                           : chat.category === 'support'
-                            ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20'
+                            ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400'
                             : 'bg-primary/10 text-primary'
                     }`}
                   >
@@ -371,22 +380,22 @@ export const ChatSidebar = React.memo(
                       : chat.category === 'finance'
                         ? 'Financeiro'
                         : chat.category === 'support'
-                          ? '🛡️ Suporte'
+                          ? 'Suporte'
                           : 'Geral'}
                   </span>
-                  <p className='text-[9px] font-medium text-slate-400 truncate'>{chat.property}</p>
+                  <p className='text-xs text-muted-foreground/60 truncate'>{chat.property}</p>
                 </div>
 
                 <div className='flex justify-between items-end gap-2'>
                   <div className='flex-1 min-w-0'>
                     <p
-                      className={`text-[11px] leading-snug truncate ${chat.unreadCount > 0 ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}
+                      className={`text-xs leading-snug truncate ${chat.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground/70'}`}
                     >
                       {chat.lastMessage}
                     </p>
                   </div>
                   {chat.unreadCount > 0 && (
-                    <div className='px-1.5 py-0.5 min-w-[16px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[8px] font-black flex items-center justify-center rounded shadow-md'>
+                    <div className='px-1.5 py-0.5 min-w-[16px] bg-foreground text-background text-[10px] font-semibold flex items-center justify-center rounded shadow-sm'>
                       {chat.unreadCount}
                     </div>
                   )}
@@ -394,6 +403,29 @@ export const ChatSidebar = React.memo(
               </div>
             </div>
           ))}
+
+            {!loading && filteredChats.length === 0 && !searchTerm && (
+              <div className='flex flex-col items-center justify-center py-12 px-6 text-center'>
+                <MessageSquare size={28} className='text-muted-foreground/30 mb-3' />
+                <p className='text-sm font-medium text-muted-foreground mb-1'>
+                  Nenhuma conversa ativa
+                </p>
+                <p className='text-xs text-muted-foreground/60'>
+                  Selecione um inquilino acima para iniciar
+                </p>
+              </div>
+            )}
+
+            {!loading && filteredChats.length === 0 && searchTerm && (
+              <div className='flex flex-col items-center justify-center py-12 px-6 text-center'>
+                <Search size={24} className='text-muted-foreground/30 mb-3' />
+                <p className='text-sm font-medium text-muted-foreground'>
+                  Nenhum resultado para "{searchTerm}"
+                </p>
+              </div>
+            )}
+          </>
+        )}
         </div>
       </div>
     );

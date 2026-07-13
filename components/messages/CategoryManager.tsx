@@ -14,6 +14,13 @@ import {
   Wrench,
   Info,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface Category {
   id: string;
@@ -31,6 +38,29 @@ interface CategoryManagerProps {
   onDelete: (id: string) => Promise<void>;
 }
 
+const iconOptions = [
+  { name: 'Droplets', icon: Droplets },
+  { name: 'Zap', icon: Zap },
+  { name: 'Home', icon: Home },
+  { name: 'CloudRain', icon: CloudRain },
+  { name: 'Shield', icon: Shield },
+  { name: 'Smartphone', icon: Smartphone },
+  { name: 'Sparkles', icon: Sparkles },
+  { name: 'DollarSign', icon: DollarSign },
+  { name: 'Wrench', icon: Wrench },
+];
+
+const colorOptions = [
+  { name: 'Blue', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  { name: 'Yellow', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
+  { name: 'Orange', color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+  { name: 'Cyan', color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
+  { name: 'Red', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
+  { name: 'Purple', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
+  { name: 'Emerald', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+  { name: 'Amber', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+];
+
 export const CategoryManager: React.FC<CategoryManagerProps> = ({
   show,
   onClose,
@@ -40,87 +70,53 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 }) => {
   const [newCat, setNewCat] = useState({ name: '', icon_name: 'Wrench' });
   const [isAdding, setIsAdding] = useState(false);
-
-  const iconOptions = [
-    { name: 'Droplets', icon: Droplets },
-    { name: 'Zap', icon: Zap },
-    { name: 'Home', icon: Home },
-    { name: 'CloudRain', icon: CloudRain },
-    { name: 'Shield', icon: Shield },
-    { name: 'Smartphone', icon: Smartphone },
-    { name: 'Sparkles', icon: Sparkles },
-    { name: 'DollarSign', icon: DollarSign },
-    { name: 'Wrench', icon: Wrench },
-  ];
-
-  const colorOptions = [
-    { name: 'Blue', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-    { name: 'Yellow', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
-    { name: 'Orange', color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-    { name: 'Cyan', color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
-    { name: 'Red', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
-    { name: 'Purple', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-    { name: 'Emerald', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-    { name: 'Amber', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
-  ];
-
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
 
   if (!show) return null;
 
+  const handleSave = () => {
+    onSave({
+      name: newCat.name,
+      icon_name: newCat.icon_name,
+      color_class: selectedColor.color,
+      bg_class: selectedColor.bg,
+    });
+    setNewCat({ name: '', icon_name: 'Wrench' });
+    setIsAdding(false);
+  };
+
   return (
-    <div className='fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6'>
-      <div className='absolute inset-0 bg-black/60 backdrop-blur-md' onClick={onClose} />
-
-      <div className='relative w-full max-w-xl bg-white dark:bg-[#0A0B0D] rounded-[40px] shadow-2xl border border-white/5 overflow-hidden flex flex-col max-h-[90vh] animate-fadeInUp'>
-        {/* Header */}
-        <div className='p-6 border-b border-white/5 flex items-center justify-between'>
-          <div className='flex items-center gap-4'>
-            <div className='w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500'>
-              <Sparkles size={20} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase'>
-                Gerenciar Categorias
-              </h2>
-              <p className='text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5'>
-                Personalize os tipos de chamados
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className='p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all'
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className='flex-1 overflow-y-auto custom-scrollbar'>
-          {/* Explanation Banner */}
-          <div className='px-6 py-4 bg-muted border-b border-border flex items-center gap-4'>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 max-w-xl'
+        showCloseButton={true}
+      >
+        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+          <DialogTitle className='text-lg font-semibold'>Gerenciar Categorias</DialogTitle>
+          <DialogDescription />
+        </DialogHeader>
+        <div className='bg-background text-foreground'>
+          <div className='px-6 py-3 bg-muted border-b border-border flex items-center gap-3'>
             <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
               <Info size={16} />
             </div>
             <div className='flex-1'>
-              <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
+              <p className='text-xs font-medium text-muted-foreground'>
                 Para que servem as Categorias?
               </p>
-              <p className='text-[11px] text-muted-foreground font-medium leading-relaxed'>
+              <p className='text-sm text-muted-foreground leading-relaxed'>
                 As categorias ajudam a organizar as solicitações dos locatários. Ao classificar um
-                chamado (ex: Elétrica, Hidráulica), você consegue filtrar demandas e gerar
-                relatórios precisos sobre o que mais exige atenção nos seus imóveis.
+                chamado, você consegue filtrar demandas e gerar relatórios precisos.
               </p>
             </div>
           </div>
 
           <div className='p-6 space-y-6'>
-            {/* Add Form */}
             {isAdding ? (
-              <div className='p-6 rounded-[32px] bg-primary/5 border border-primary/20 space-y-6 animate-fadeIn'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                  <div className='space-y-2'>
-                    <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>
+              <div className='p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-5'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+                  <div className='space-y-1.5'>
+                    <label className='text-xs font-medium text-muted-foreground'>
                       Nome da Categoria
                     </label>
                     <input
@@ -128,11 +124,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       value={newCat.name}
                       onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
                       placeholder='Ex: Pintura, Jardinagem...'
-                      className='w-full h-12 bg-white dark:bg-black/40 border-none rounded-xl px-4 text-sm font-bold text-white focus:ring-2 focus:ring-primary/30 transition-all'
+                      className='w-full h-11 bg-background border border-input rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
                     />
                   </div>
-                  <div className='space-y-2'>
-                    <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>
+                  <div className='space-y-1.5'>
+                    <label className='text-xs font-medium text-muted-foreground'>
                       Cor Temática
                     </label>
                     <div className='flex flex-wrap gap-2'>
@@ -148,43 +144,37 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   </div>
                 </div>
 
-                <div className='space-y-2'>
-                  <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest px-1'>
+                <div className='space-y-1.5'>
+                  <label className='text-xs font-medium text-muted-foreground'>
                     Selecione um Ícone
                   </label>
                   <div className='grid grid-cols-5 sm:grid-cols-9 gap-3'>
-                    {iconOptions.map((opt) => (
-                      <button
-                        key={opt.name}
-                        onClick={() => setNewCat({ ...newCat, icon_name: opt.name })}
-                        className={`p-3 rounded-xl flex items-center justify-center transition-all ${newCat.icon_name === opt.name ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white/5 text-slate-500 hover:text-white'}`}
-                      >
-                        <opt.icon size={20} />
-                      </button>
-                    ))}
+                    {iconOptions.map((opt) => {
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.name}
+                          onClick={() => setNewCat({ ...newCat, icon_name: opt.name })}
+                          className={`p-3 rounded-xl flex items-center justify-center transition-all ${newCat.icon_name === opt.name ? 'bg-primary text-primary-foreground scale-110 shadow-md' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                        >
+                          <Icon size={20} />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div className='flex gap-3 pt-2'>
                   <button
-                    onClick={() => {
-                      onSave({
-                        name: newCat.name,
-                        icon_name: newCat.icon_name,
-                        color_class: selectedColor.color,
-                        bg_class: selectedColor.bg,
-                      });
-                      setNewCat({ name: '', icon_name: 'Wrench' });
-                      setIsAdding(false);
-                    }}
+                    onClick={handleSave}
                     disabled={!newCat.name}
-                    className='flex-1 h-12 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-50'
+                    className='flex-1 h-11 bg-primary text-primary-foreground rounded-xl font-semibold text-xs transition-all active:scale-95 disabled:opacity-50'
                   >
                     Salvar Categoria
                   </button>
                   <button
                     onClick={() => setIsAdding(false)}
-                    className='px-6 h-12 bg-white/5 text-slate-500 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all'
+                    className='px-6 h-11 bg-muted text-muted-foreground rounded-xl text-xs font-medium hover:bg-accent transition-all'
                   >
                     Cancelar
                   </button>
@@ -193,40 +183,39 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             ) : (
               <button
                 onClick={() => setIsAdding(true)}
-                className='w-full p-6 rounded-[32px] border-2 border-dashed border-white/10 text-slate-500 hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group'
+                className='w-full p-6 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group'
               >
                 <Plus size={24} className='group-hover:scale-110 transition-transform' />
-                <span className='text-xs font-black uppercase tracking-widest'>
+                <span className='text-xs font-medium'>
                   Adicionar Nova Categoria
                 </span>
               </button>
             )}
 
-            {/* List */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
               {categories.map((cat) => {
                 const Icon = iconOptions.find((i) => i.name === cat.icon_name)?.icon || Wrench;
                 return (
                   <div
                     key={cat.id}
-                    className='p-5 rounded-[32px] bg-white/5 border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-all'
+                    className='p-4 rounded-2xl bg-card border border-border flex items-center justify-between group hover:bg-accent/50 transition-all'
                   >
-                    <div className='flex items-center gap-4'>
-                      <div className={`p-3 rounded-2xl ${cat.bg_class} ${cat.color_class}`}>
-                        <Icon size={20} />
+                    <div className='flex items-center gap-3'>
+                      <div className={`p-2.5 rounded-xl ${cat.bg_class} ${cat.color_class}`}>
+                        <Icon size={18} />
                       </div>
                       <div>
-                        <h4 className='text-sm font-black text-white uppercase tracking-tight'>
+                        <h4 className='text-sm font-medium text-foreground'>
                           {cat.name}
                         </h4>
-                        <p className='text-[8px] font-bold text-slate-500 uppercase tracking-widest'>
+                        <p className='text-xs text-muted-foreground'>
                           {cat.icon_name}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => onDelete(cat.id)}
-                      className='p-2 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all'
+                      className='p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all'
                     >
                       <Trash2 size={16} />
                     </button>
@@ -236,7 +225,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -214,6 +214,7 @@ export const announcementService = {
 
   async getTemplates() {
     return [
+      // ── Manutenção ──
       {
         title: 'Manutenção Preventiva',
         content:
@@ -221,28 +222,48 @@ export const announcementService = {
         type: 'maintenance',
       },
       {
+        title: 'Manutenção do Elevador',
+        content:
+          'O elevador estará temporariamente desligado no dia [DATA] das [HORA] às [HORA] para manutenção programada. Utilize as escadas durante este período.',
+        type: 'maintenance',
+      },
+      {
+        title: 'Troca de Lâmpadas',
+        content:
+          'Realizaremos a troca das lâmpadas das áreas comuns no dia [DATA] às [HORA]. Pode haver pequenas interrupções na iluminação dos corredores.',
+        type: 'maintenance',
+      },
+      {
+        title: 'Pintura da Fachada',
+        content:
+          'A pintura externa do prédio terá início no dia [DATA]. As unidades próximas ao andaime receberão aviso individual com os detalhes.',
+        type: 'maintenance',
+      },
+      {
+        title: "Limpeza da Caixa D'Água",
+        content:
+          "Informamos que a limpeza da caixa d'água será realizada no dia [DATA] das [HORA] às [HORA]. O fornecimento será temporariamente suspenso.",
+        type: 'maintenance',
+      },
+      {
+        title: 'Reparo no Interfone',
+        content:
+          'Técnicos estarão no prédio no dia [DATA] para reparo no sistema de interfone. Caso não esteja em casa, autorizamos a entrada mediante identificação.',
+        type: 'maintenance',
+      },
+      {
+        title: 'Fechamento de Área de Lazer',
+        content:
+          'A área de lazer estará fechada no dia [DATA] para manutenção geral. Pedimos desculpas pelo transtorno.',
+        type: 'maintenance',
+      },
+
+      // ── Alerta ──
+      {
         title: 'Corte de Água Programado',
         content:
           'Haverá uma interrupção no fornecimento de água para manutenção da rede no dia [DATA], com previsão de retorno às [HORA].',
         type: 'warning',
-      },
-      {
-        title: 'Dedetização das Áreas Comuns',
-        content:
-          'Informamos que as áreas comuns passarão por dedetização no dia [DATA]. Recomendamos evitar a circulação de pets nas áreas externas durante este período.',
-        type: 'info',
-      },
-      {
-        title: 'Reunião de Condomínio',
-        content:
-          'Convidamos todos para a reunião extraordinária que ocorrerá no dia [DATA] às [HORA], no salão de festas. Pauta: [ASSUNTO].',
-        type: 'event',
-      },
-      {
-        title: 'Vistoria Periódica',
-        content:
-          'Comunicamos que a vistoria periódica do imóvel será realizada no dia [DATA] às [HORA]. Pedimos que agende um horário conosco.',
-        type: 'info',
       },
       {
         title: 'Aviso de Obras',
@@ -251,16 +272,122 @@ export const announcementService = {
         type: 'warning',
       },
       {
-        title: 'Fechamento de Área de Lazer',
+        title: 'Cuidado com Golpes',
         content:
-          'A área de lazer estará fechada no dia [DATA] para manutenção geral. Pedimos desculpas pelo transtorno.',
-        type: 'maintenance',
+          'Alertamos que não enviamos boletos por WhatsApp ou email. Desconsidere cobranças suspeitas e denuncie à administração.',
+        type: 'warning',
+      },
+      {
+        title: 'Alerta de Tempestade',
+        content:
+          'A previsão do tempo indica ventos fortes para o dia [DATA]. Recomendamos recolher objetos de varandas e janelas.',
+        type: 'warning',
+      },
+      {
+        title: 'Uso Indevido de Vagas',
+        content:
+          'Lembramos que as vagas de garagem são de uso exclusivo das unidades. Veículos estacionados em vagas alheias serão removidos.',
+        type: 'warning',
+      },
+      {
+        title: 'Horário de Silêncio',
+        content:
+          'O horário de silêncio é das 22h às 7h. Denúncias de perturbação serão encaminhadas à autoridade competente.',
+        type: 'warning',
+      },
+      {
+        title: 'Furto na Região',
+        content:
+          'Registramos ocorrências de furto na vizinhança. Reforçamos a importância de manter portas e portões trancados.',
+        type: 'warning',
+      },
+
+      // ── Informativo ──
+      {
+        title: 'Dedetização das Áreas Comuns',
+        content:
+          'Informamos que as áreas comuns passarão por dedetização no dia [DATA]. Recomendamos não circular com pets nas áreas externas durante este período.',
+        type: 'info',
+      },
+      {
+        title: 'Vistoria Periódica',
+        content:
+          'Comunicamos que a vistoria periódica do imóvel será realizada no dia [DATA] às [HORA]. Pedimos que agende um horário conosco.',
+        type: 'info',
       },
       {
         title: 'Alteração no Regimento Interno',
         content:
           'Comunicamos a todos que o [ASSUNTO] foi atualizado. Confira as novas regras no quadro de avisos.',
         type: 'info',
+      },
+      {
+        title: 'Novo Horário da Portaria',
+        content:
+          'Informamos que o horário da portaria será estendido a partir do dia [DATA], funcionando das [HORA] às [HORA].',
+        type: 'info',
+      },
+      {
+        title: 'Campanha de Vacinação',
+        content:
+          'No dia [DATA] das [HORA] às [HORA] ocorrerá campanha de vacinação para pets no [LOCAL]. Traga a carteirinha do seu pet.',
+        type: 'info',
+      },
+      {
+        title: 'Coleta de Lixo - Alteração',
+        content:
+          'O calendário de coleta de lixo será alterado a partir de [DATA]. Confira os novos dias e horários no mural.',
+        type: 'info',
+      },
+      {
+        title: 'Dicas de Economia',
+        content:
+          'Compartilhamos dicas para reduzir o consumo de água e energia neste mês. Pequenas mudanças fazem diferença na conta do condomínio. [ASSUNTO]',
+        type: 'info',
+      },
+      {
+        title: 'Novo Sistema de Segurança',
+        content:
+          'Instalamos câmeras com reconhecimento de placas na entrada do condomínio. O sistema entra em operação no dia [DATA].',
+        type: 'info',
+      },
+
+      // ── Evento ──
+      {
+        title: 'Reunião de Condomínio',
+        content:
+          'Convidamos todos para a reunião extraordinária que ocorrerá no dia [DATA] às [HORA], no salão de festas. Pauta: [ASSUNTO].',
+        type: 'event',
+      },
+      {
+        title: 'Festa de Confraternização',
+        content:
+          'Teremos nossa festa de confraternização no dia [DATA] às [HORA] no [LOCAL]. Confirme presença até o dia [DATA].',
+        type: 'event',
+      },
+      {
+        title: 'Mutirão de Limpeza',
+        content:
+          'Participe do mutirão de limpeza do condomínio no dia [DATA] às [HORA]. Vamos cuidar juntos do nosso espaço!',
+        type: 'event',
+      },
+      {
+        title: 'Feira de Adoção de Pets',
+        content:
+          'No dia [DATA] das [HORA] às [HORA] teremos feira de adoção no [LOCAL]. Venha conhecer os animaizinhos.',
+        type: 'event',
+      },
+      {
+        title: 'Workshop de Jardinagem',
+        content:
+          'Aprenda técnicas básicas de jardinagem no workshop do dia [DATA] às [HORA], no jardim do condomínio. Vagas limitadas.',
+        type: 'event',
+      },
+      {
+        title: 'Café da Manhã Comunitário',
+        content:
+          'No domingo, dia [DATA] às [HORA], teremos café da manhã comunitário no salão de festas. Traga seu prato favorito!',
+        type: 'event',
       },
     ];
   },

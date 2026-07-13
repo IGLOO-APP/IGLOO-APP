@@ -5,6 +5,7 @@ import { User } from '../../types';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { Sidebar as SidebarRoot } from '../ui/sidebar';
 import { preloadRoute } from '../../lib/routePreloader';
+import { FlickeringGrid } from '../ui/FlickeringGrid';
 
 interface SidebarProps {
   navItems: { path: string; label: string; icon: React.ElementType }[];
@@ -28,9 +29,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <SidebarRoot
       collapsible='none'
-      className='hidden md:flex h-screen sticky top-0 !w-80 flex-col py-6 justify-between select-none bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-colors duration-200'
+      className='hidden md:flex h-screen sticky top-0 !w-80 flex-col py-6 justify-between select-none text-sidebar-foreground border-r border-sidebar-border transition-colors duration-200 relative overflow-hidden'
     >
-      <div className='flex flex-col flex-grow'>
+      {/* Flickering grid background */}
+      <div className='absolute inset-0 bg-card'>
+        <FlickeringGrid squareSize={4} gridGap={6} maxOpacity={0.35} color='#6B7280' />
+      </div>
+
+      <div className='flex flex-col flex-grow relative z-10'>
         {/* Header */}
         <div className='px-6 mb-8 mt-4'>
           <Link to='/' className='inline-block'>
@@ -116,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Section: Profile & Actions */}
-      <div className='px-4 flex flex-col gap-4 pt-4 border-t border-sidebar-border mx-3 mt-auto'>
+      <div className='px-4 flex flex-col gap-4 pt-4 border-t border-sidebar-border mx-3 mt-auto relative z-10'>
         {/* Profile */}
         <Link to='/settings' className='flex items-center gap-3 group/profile'>
           {user?.avatar_url || user?.avatar ? (

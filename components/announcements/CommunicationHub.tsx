@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Megaphone,
   Plus,
-  History,
   Wrench,
   CalendarDays,
+  Calendar,
   TriangleAlert,
   Info,
   Users,
@@ -23,16 +24,14 @@ import { OwnerAnnouncement, AnnouncementType } from '../../types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card } from '../ui/card';
-import AnnouncementsHistoryModal from './AnnouncementsHistoryModal';
 import { executeWorkflowAction } from '../../services/workflow/workflowActions';
 
 interface CommunicationHubProps {
   onNewAnnouncement?: () => void;
-  onDuplicate?: (announcement: OwnerAnnouncement) => void;
+  onToggleExpand?: () => void;
+  expanded?: boolean;
   tenantPropertyId?: string;
   condoName?: string;
-  expanded?: boolean;
-  onToggleExpand?: () => void;
 }
 
 // ─── Type metadata ────────────────────────────────────────────────────────────
@@ -153,6 +152,35 @@ const AnnouncementRow: React.FC<{
           </Button>
         )}
 
+        {/* Date row */}
+        <div className='flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[10px] text-muted-foreground font-medium'>
+          <span className='inline-flex items-center gap-1'>
+            <Calendar size={10} />{' '}
+            {new Date(ann.created_at).toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+          {ann.expires_at && (
+            <>
+              <span className='text-slate-300 dark:text-slate-600'>|</span>
+              <span className='inline-flex items-center gap-1'>
+                <CalendarDays size={10} /> Expira{' '}
+                {new Date(ann.expires_at).toLocaleString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </>
+          )}
+        </div>
+
         {/* Meta & Stats row */}
         <div className='flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 pt-1.5 border-t border-slate-100/50 dark:border-white/5'>
           <Badge variant='outline' className={meta.color}>
@@ -175,11 +203,10 @@ const AnnouncementRow: React.FC<{
 // ─── Main Component ───────────────────────────────────────────────────────────
 const CommunicationHub: React.FC<CommunicationHubProps> = ({
   onNewAnnouncement,
-  onDuplicate,
+  onToggleExpand,
+  expanded = false,
   tenantPropertyId,
   condoName,
-  expanded = false,
-  onToggleExpand,
 }) => {
   const ITEMS_PER_PAGE = expanded ? 3 : 2;
 
@@ -187,7 +214,6 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
   const [announcements, setAnnouncements] = useState<OwnerAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -196,7 +222,9 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
         user.role === 'owner'
           ? await announcementService.getForOwner(user.id)
           : await announcementService.getForTenant(user.id, tenantPropertyId, condoName);
-      setAnnouncements(data || []);
+      setAnnouncements(
+        (data || []).filter((a) => !a.expires_at || new Date(a.expires_at) > new Date())
+      );
     } catch (_error) {
       console.error('Error fetching communication data:', _error);
     } finally {
@@ -224,10 +252,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
   );
 
   return (
-    <div className='relative group h-full cursor-default'>
+    <motion.div layout className='relative group h-full cursor-default'>
       <Card className='h-full flex flex-col relative overflow-hidden'>
         {/* Subtle bg icon */}
-        <div className='absolute top-2 right-3 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity text-primary pointer-events-none'>
+        <div className='absolute bottom-2 right-3 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity text-primary pointer-events-none'>
           <Megaphone className='w-20 h-20' />
         </div>
 
@@ -238,9 +266,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
               <Megaphone size={16} />
             </div>
             <div>
-              <p className='text-xs font-medium text-muted-foreground'>
-                Governance Hub
-              </p>
+              <p className='text-xs font-medium text-muted-foreground'>Governance Hub</p>
               <h3 className='text-sm font-bold text-foreground tracking-tight mt-0.5'>
                 Comunicações
               </h3>
@@ -283,9 +309,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 <BellOff size={22} />
               </div>
               <div>
-                <p className='text-xs font-semibold text-muted-foreground'>
-                  Sem comunicados
-                </p>
+                <p className='text-xs font-semibold text-muted-foreground'>Sem comunicados</p>
                 <p className='text-[10px] text-slate-400 dark:text-slate-600 mt-1 font-medium'>
                   Nenhum aviso ativo no momento.
                 </p>
@@ -302,15 +326,29 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
               )}
             </div>
           ) : (
-            paginatedAnnouncements.map((ann) => (
-              <AnnouncementRow
-                key={ann.id}
-                ann={ann}
-                isActive={false}
-                onClick={() => {}}
-                fetchData={fetchData}
-              />
-            ))
+            <AnimatePresence mode='popLayout'>
+              {paginatedAnnouncements.map((ann, i) => (
+                <motion.div
+                  key={ann.id}
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 300,
+                    damping: 30,
+                    delay: i * 0.06,
+                  }}
+                >
+                  <AnnouncementRow
+                    ann={ann}
+                    isActive={false}
+                    onClick={() => {}}
+                    fetchData={fetchData}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           )}
         </div>
 
@@ -330,17 +368,8 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
         )}
 
         {/* ── Footer ──────────────────────────────────────────────────────── */}
-        <div className='px-3 py-2 border-t border-slate-100 dark:border-white/5 flex justify-between items-center'>
-          <Button
-            onClick={() => setShowHistoryModal(true)}
-            variant='outline'
-            size='sm'
-            className='rounded-2xl text-xs font-semibold'
-          >
-            <History size={16} /> Histórico
-          </Button>
-
-          {totalPages > 1 && (
+        {totalPages > 1 && (
+          <div className='px-3 py-2 border-t border-slate-100 dark:border-white/5 flex justify-center items-center'>
             <div className='flex items-center gap-2'>
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
@@ -372,19 +401,10 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
                 <ChevronRight size={14} />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </Card>
-
-      {user && (
-        <AnnouncementsHistoryModal
-          isOpen={showHistoryModal}
-          onClose={() => setShowHistoryModal(false)}
-          ownerId={user.id}
-          onDuplicate={onDuplicate}
-        />
-      )}
-    </div>
+    </motion.div>
   );
 };
 

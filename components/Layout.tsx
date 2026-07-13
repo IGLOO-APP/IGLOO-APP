@@ -16,6 +16,7 @@ import { useTheme } from '../hooks/useTheme';
 import { Sidebar } from './layout/Sidebar';
 import { MobileNav } from './layout/MobileNav';
 import { SidebarProvider } from './ui/sidebar';
+import { FlickeringGrid } from './ui/FlickeringGrid';
 
 const navItems = [
   { path: '/', label: 'Início', icon: LayoutDashboard },
@@ -42,7 +43,7 @@ const Layout: React.FC = () => {
 
   return (
     <SidebarProvider className='h-full w-full overflow-hidden'>
-      <div className='flex h-full w-full overflow-hidden bg-background text-foreground'>
+      <div className='flex h-full w-full overflow-hidden bg-card text-foreground'>
         <div className='hidden md:block shrink-0'>
           <Sidebar
             navItems={navItems}
@@ -55,7 +56,10 @@ const Layout: React.FC = () => {
           />
         </div>
 
-        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-background text-foreground'>
+        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-card text-foreground'>
+          <FlickeringGrid squareSize={4} gridGap={6} maxOpacity={0.35} color='#6B7280' />
+
+          <div className='relative z-10 flex flex-col flex-1 min-h-0'>
           {impersonatingFrom && (
             <div className='bg-amber-500 text-white px-6 py-2 flex items-center justify-between shadow-lg z-50 animate-slideDown'>
               <div className='flex items-center gap-3'>
@@ -91,7 +95,8 @@ const Layout: React.FC = () => {
             <Outlet />
           </div>
 
-          <MobileNav navItems={mobileNavItems} />
+            <MobileNav navItems={mobileNavItems} />
+          </div>
         </main>
       </div>
     </SidebarProvider>
