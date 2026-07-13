@@ -5,8 +5,15 @@ import App from './App';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+// Captura global de erros para diagnóstico
+window.addEventListener('error', (event) => {
+  console.error('[Global Error]', event.error?.message || event.message, event.error?.stack);
+});
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[Unhandled Promise]', event.reason?.message || event.reason, event.reason?.stack);
+});
+
 // Limpeza automática de Service Workers em ambiente de desenvolvimento
-// Isso evita que o modo offline (PWA) de builds anteriores interfira no localhost
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     for (const registration of registrations) {

@@ -52,10 +52,12 @@ export function FlickeringGrid({
       dpr = window.devicePixelRatio || 1
       const w = canvas.clientWidth
       const h = canvas.clientHeight
+      if (!w || !h) return
       canvas.width = w * dpr
       canvas.height = h * dpr
       cols = Math.floor(w / (cfg.squareSize + cfg.gridGap))
       rows = Math.floor(h / (cfg.squareSize + cfg.gridGap))
+      if (cols < 1 || rows < 1) return
       squares = new Float32Array(cols * rows)
       for (let i = 0; i < squares.length; i++)
         squares[i] = Math.random() * cfg.maxOpacity

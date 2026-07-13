@@ -18,15 +18,6 @@ const GlobalErrorElement: React.FC = () => {
 
   return (
     <div className='min-h-screen flex items-center justify-center p-6 bg-background-light dark:bg-background-dark font-sans'>
-      {/* Elementos visuais suaves de fundo */}
-      <div className='absolute inset-0 pointer-events-none overflow-hidden'>
-        <div className='absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px] animate-pulse' />
-        <div
-          className='absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/5 blur-[120px] animate-pulse'
-          style={{ animationDelay: '1s' }}
-        />
-      </div>
-
       <div className='max-w-md w-full relative z-10'>
         <div className='bg-white/70 dark:bg-surface-dark/60 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/5 text-center'>
           <div className='inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary/10 text-primary mb-8'>
@@ -37,7 +28,7 @@ const GlobalErrorElement: React.FC = () => {
             Ocorreu um imprevisto
           </h1>
 
-          <p className='text-slate-500 dark:text-slate-400 mb-10 text-sm leading-relaxed font-medium'>
+          <p className='text-slate-500 dark:text-slate-400 mb-6 text-sm leading-relaxed font-medium'>
             {typeof errorMessage === 'string' || typeof errorMessage === 'number'
               ? errorMessage
               : 'Ocorreu um erro inesperado no processamento dos dados.'}
@@ -46,6 +37,18 @@ const GlobalErrorElement: React.FC = () => {
               Código do erro: {errorStatus}
             </span>
           </p>
+
+          {error instanceof Error && (
+            <details className='mb-6 text-left'>
+              <summary className='cursor-pointer text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium'>
+                Detalhes do erro
+              </summary>
+              <pre className='mt-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs text-slate-600 dark:text-slate-300 overflow-auto max-h-32'>
+                {error.message}
+                {error.stack?.split('\n').slice(0, 6).join('\n')}
+              </pre>
+            </details>
+          )}
 
           <div className='space-y-3'>
             <button

@@ -183,3 +183,22 @@ On every session start, run `npx tsc --noEmit --skipLibCheck` and fix any syntax
 - `index.css` — removed duplicate `@import '@fontsource-variable/geist'`
 
 **Result:** `tsc --noEmit --skipLibCheck` passes cleanly. `ModalWrapper`, `InfoTooltip`, `Toast` — all 3 custom components removed from `components/ui/`.
+### 2026-07-13 — PWA resilience + error diagnostics
+
+**Scope:**
+- Fix PWA refresh crash (error on page reload in standalone mode)
+- Improve error diagnostics across the app
+
+**Changes:**
+
+1. **`vite.config.ts`** — Added `navigationPreload: true` for faster SW navigation recovery; added runtime caching for JS/CSS with `StaleWhileRevalidate` strategy (30d cache, 60 entries) so assets survive SW transitions
+
+2. **`components/ui/FlickeringGrid.tsx`** — Added zero-dimension guard in `setup()` (`if (!w || !h) return` and `if (cols < 1 || rows < 1) return`) to prevent `createImageData` crash when canvas has no layout on refresh
+
+3. **`components/ErrorBoundary.tsx`** — Added collapsible `<details>` section showing `error.message` + first 6 stack lines; stores error in state for display
+
+4. **`components/GlobalErrorElement.tsx`** — Added same collapsible error details section
+
+5. **`index.tsx`** — Added global `window.addEventListener('error', ...)` and `window.addEventListener('unhandledrejection', ...)` handlers to capture any errors that escape React's boundary
+
+**Result:** `tsc --noEmit --skipLibCheck` passes cleanly. Build succeeds with PWA precache (158 entries, 5520 KiB). No new lint errors.
