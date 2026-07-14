@@ -21,6 +21,19 @@ const Properties: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Global cursor spotlight: delegates to all .lg-card and .lg-topbar elements on the page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('.lg-card, .lg-topbar') as HTMLElement | null;
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      target.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   // Filters State
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
@@ -205,38 +218,38 @@ const Properties: React.FC = () => {
             <div className='flex-1 overflow-y-auto'>
               <TopBar title='Meus Ativos' subtitle={`${filteredProperties.length} imóveis`}>
                 <div className='flex items-center gap-2'>
-                  <Button onClick={() => setShowAddForm(true)} variant='default' size='default'>
-                    <Plus size={16} />
+                  <Button onClick={() => setShowAddForm(true)} variant='glass' size='default'>
+                    <Plus size={16} strokeWidth={1.8} />
                     <span className='hidden sm:inline'>Novo Imóvel</span>
                   </Button>
-                  <div className='flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 md:p-1 border border-slate-200 dark:border-slate-700'>
+                  <div className='flex bg-white/5 backdrop-blur-xl rounded-xl p-0.5 md:p-1 border border-white/10'>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                      className={`p-1.5 md:p-2 rounded-lg transition-all active-tap ${viewMode === 'list' ? 'bg-white/20 shadow-sm text-primary' : 'text-slate-400 hover:text-slate-300'}`}
                       title='Lista'
                     >
-                      <List size={18} className='md:size-5' />
+                      <List size={18} className='md:size-5' strokeWidth={1.8} />
                     </button>
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                      className={`p-1.5 md:p-2 rounded-lg transition-all active-tap ${viewMode === 'grid' ? 'bg-white/20 shadow-sm text-primary' : 'text-slate-400 hover:text-slate-300'}`}
                       title='Grade'
                     >
-                      <Grid size={18} className='md:size-5' />
+                      <Grid size={18} className='md:size-5' strokeWidth={1.8} />
                     </button>
                     <button
                       onClick={() => setViewMode('map')}
-                      className={`p-1 md:p-1.5 rounded-md transition-all active-tap ${(viewMode as string) === 'map' ? 'bg-white dark:bg-slate-600 shadow-sm text-primary' : 'text-slate-400'}`}
+                      className={`p-1.5 md:p-2 rounded-lg transition-all active-tap ${(viewMode as string) === 'map' ? 'bg-white/20 shadow-sm text-primary' : 'text-slate-400 hover:text-slate-300'}`}
                       title='Mapa'
                     >
-                      <Map size={18} className='md:size-5' />
+                      <Map size={18} className='md:size-5' strokeWidth={1.8} />
                     </button>
                   </div>
                 </div>
               </TopBar>
               <div className='px-6'>
                 <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
-                  <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                  <div className='lg-card lg-card-lift p-4 min-w-[110px] flex-1 transition-colors'>
                     <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
                       Total
                     </p>
@@ -244,7 +257,7 @@ const Properties: React.FC = () => {
                       {properties.length}
                     </p>
                   </div>
-                  <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                  <div className='lg-card lg-card-lift p-4 min-w-[110px] flex-1 transition-colors'>
                     <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
                       Alugados
                     </p>
@@ -252,7 +265,7 @@ const Properties: React.FC = () => {
                       {properties.filter((p) => p.status === 'ALUGADO').length}
                     </p>
                   </div>
-                  <div className='min-w-[110px] flex-1 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-gray-200/60 dark:border-gray-800 transition-colors'>
+                  <div className='lg-card lg-card-lift p-4 min-w-[110px] flex-1 transition-colors'>
                     <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>
                       Livres
                     </p>
@@ -266,25 +279,25 @@ const Properties: React.FC = () => {
                 <div className='flex gap-2'>
                   <div className='relative flex-1'>
                     <div className='absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400'>
-                      <Search size={20} />
+                      <Search size={20} strokeWidth={1.8} />
                     </div>
                     <input
                       type='text'
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className='block w-full rounded-xl border-none bg-white dark:bg-surface-dark py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 shadow-sm ring-1 ring-inset ring-gray-200 dark:ring-gray-800 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all'
+                      className='block w-full rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6 transition-all'
                       placeholder='Buscar por apelido ou endereço...'
                     />
                   </div>
                   <button
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors active-tap ${showAdvancedFilters ? 'bg-primary/10 border-primary text-primary' : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-800 text-slate-500'}`}
+                    className={`px-3.5 rounded-xl border flex items-center justify-center transition-colors active-tap ${showAdvancedFilters ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 backdrop-blur-xl border-white/10 text-slate-400 hover:text-slate-300'}`}
                   >
-                    <Filter size={20} />
+                    <Filter size={20} strokeWidth={1.8} />
                   </button>
                 </div>
                 {showAdvancedFilters && (
-                  <div className='animate-slideUp p-6 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 shadow-md space-y-6'>
+                  <div className='animate-slideUp p-6 lg-card lg-card-lift rounded-2xl space-y-6'>
                     <div className='flex justify-between items-center'>
                       <h4 className='text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider'>
                         Filtros Avançados
@@ -370,7 +383,7 @@ const Properties: React.FC = () => {
                     <button
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
-                      className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 shadow-sm transition-colors text-xs font-bold active-tap ${activeFilter === filter ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-gray-200 dark:ring-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                      className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 transition-colors text-xs font-bold active-tap ${activeFilter === filter ? 'bg-white/20 text-primary shadow-sm' : 'bg-white/5 backdrop-blur-xl text-slate-400 border border-white/10 hover:bg-white/10'}`}
                     >
                       {filter}
                     </button>
@@ -379,8 +392,8 @@ const Properties: React.FC = () => {
               </div>
               <div className='px-6 pb-24'>
                 {loading ? (
-                  <div className='flex flex-col items-center justify-center py-20 text-slate-400'>
-                    <Loader2 className='animate-spin mb-2' size={32} />
+                  <div className='lg-card lg-card-lift flex flex-col items-center justify-center py-20 text-slate-400'>
+                    <Loader2 className='animate-spin mb-2' size={32} strokeWidth={1.8} />
                     <p>Carregando imóveis...</p>
                   </div>
                 ) : filteredProperties.length > 0 ? (
@@ -404,9 +417,9 @@ const Properties: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className='flex flex-col items-center justify-center py-10 text-center pt-4'>
-                    <div className='bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3'>
-                      <Search className='text-gray-400' size={32} />
+                  <div className='lg-card lg-card-lift flex flex-col items-center justify-center py-10 text-center pt-4'>
+                    <div className='bg-white/5 p-4 rounded-full mb-3'>
+                      <Search className='text-slate-400' size={32} strokeWidth={1.8} />
                     </div>
                     <p className='text-slate-900 dark:text-white font-bold'>
                       Nenhum imóvel encontrado

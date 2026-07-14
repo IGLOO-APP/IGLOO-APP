@@ -90,7 +90,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                             />
                           ) : (
                             <div className='w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0'>
-                              <Home size={15} />
+                              <Home size={15} strokeWidth={1.8} />
                             </div>
                           )}
                           <span className='text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors'>
@@ -109,9 +109,17 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
                             {yieldVal > 0 ? `${yieldVal}%` : '0%'}
                           </span>
                           {yieldVal > 0.6 ? (
-                            <TrendingUp size={12} className='text-emerald-500/50' />
+                            <TrendingUp
+                              size={12}
+                              strokeWidth={1.8}
+                              className='text-emerald-500/50'
+                            />
                           ) : (
-                            <TrendingDown size={12} className='text-amber-500/50' />
+                            <TrendingDown
+                              size={12}
+                              strokeWidth={1.8}
+                              className='text-amber-500/50'
+                            />
                           )}
                         </div>
                       </TableCell>
@@ -175,6 +183,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             Análise Completa{' '}
             <ChevronRight
               size={12}
+              strokeWidth={1.8}
               className='ml-1 group-hover:translate-x-1 transition-transform'
             />
           </Button>

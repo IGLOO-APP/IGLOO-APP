@@ -112,9 +112,13 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                               >
                                 <div className='p-1 rounded-md bg-muted'>
                                   {e.type === 'property' ? (
-                                    <Home size={10} className='text-cyan-400' />
+                                    <Home size={10} strokeWidth={1.8} className='text-cyan-400' />
                                   ) : (
-                                    <FileText size={10} className='text-emerald-400' />
+                                    <FileText
+                                      size={10}
+                                      strokeWidth={1.8}
+                                      className='text-emerald-400'
+                                    />
                                   )}
                                 </div>
                                 {e.label}
@@ -153,7 +157,11 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
                         />
                         <foreignObject x={cx - 10} y={cy - 28} width={20} height={20}>
                           <div className='flex items-center justify-center text-white bg-slate-900 rounded-full w-5 h-5 shadow-lg border border-white/20'>
-                            {isProperty ? <Home size={10} /> : <FileText size={10} />}
+                            {isProperty ? (
+                              <Home size={10} strokeWidth={1.8} />
+                            ) : (
+                              <FileText size={10} strokeWidth={1.8} />
+                            )}
                           </div>
                         </foreignObject>
                       </g>
@@ -173,7 +181,7 @@ export const WealthEvolutionChart: React.FC<WealthEvolutionChartProps> = ({
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-4 h-4 rounded-full bg-foreground/10 border border-border flex items-center justify-center text-foreground/40'>
-              <Home size={8} />
+              <Home size={8} strokeWidth={1.8} />
             </div>
             <span className='text-xs font-medium text-muted-foreground'>Evento Relevante</span>
           </div>

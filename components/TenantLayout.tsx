@@ -155,14 +155,14 @@ const TenantLayout: React.FC = () => {
 
   if (loadingOnboarding) {
     return (
-      <div className='flex h-screen items-center justify-center bg-background-light dark:bg-background-dark'>
+      <div className='flex h-screen items-center justify-center'>
         <div className='flex flex-col items-center gap-4'>
           <div className='relative'>
             <div className='w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center'>
               <div className='w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin' />
             </div>
           </div>
-          <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]'>
+          <p className='text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em]'>
             Carregando...
           </p>
         </div>
@@ -171,30 +171,29 @@ const TenantLayout: React.FC = () => {
   }
 
   return (
-    <div className='flex h-full w-full overflow-hidden bg-background-light dark:bg-background-dark'>
+    <div
+      className='flex h-full w-full overflow-hidden text-foreground relative p-5 gap-5'
+      style={{ background: 'transparent' }}
+    >
+      {/* Blob background */}
+      <div className='lg-blob-field' aria-hidden='true' />
+      <div className='lg-blob-3' aria-hidden='true' />
+
       {/* ─── Desktop Sidebar ─── */}
-      <aside className='hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-gray-200 dark:border-white/5 h-full shrink-0 z-50'>
-        <div className='p-6 flex items-center gap-3 mb-2'>
-          <Link
-            to='/tenant'
-            className='flex items-center gap-3 hover:opacity-80 transition-opacity group'
-          >
-            <div className='w-9 h-9 bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 rounded-xl flex items-center justify-center text-white dark:text-slate-900 font-bold shadow-lg shadow-black/10 group-hover:scale-105 transition-transform'>
-              I
-            </div>
-            <div>
-              <h1 className='text-xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none'>
-                Igloo
-              </h1>
-              <span className='text-[9px] font-black text-primary uppercase tracking-[0.18em] leading-none'>
-                Portal Inquilino
-              </span>
-            </div>
+      <aside
+        className='hidden md:flex flex-col w-64 shrink-0 relative z-10 lg-sidebar'
+        style={{ background: 'transparent' }}
+      >
+        <div className='px-6 mb-6 mt-4'>
+          <Link to='/tenant' className='inline-block'>
+            <h1 className='font-sans text-4xl font-bold tracking-tight text-foreground transition-colors duration-200'>
+              Igloo
+            </h1>
           </Link>
         </div>
 
-        <nav className='flex-1 px-4 space-y-1.5 overflow-y-auto'>
-          <div className='mb-6'>
+        <nav className='flex-1 overflow-y-auto scroll-smooth custom-scrollbar'>
+          <ul className='flex flex-col gap-0.5 px-6'>
             <p className='px-4 mb-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]'>
               Menu Principal
             </p>
@@ -203,88 +202,80 @@ const TenantLayout: React.FC = () => {
 
               if (isDisabled) {
                 return (
-                  <div
-                    key={item.path}
-                    title='Complete o onboarding para desbloquear este menu'
-                    className='group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl text-slate-300 dark:text-slate-700 cursor-not-allowed select-none'
-                  >
-                    <item.icon size={20} strokeWidth={2} />
-                    <span className='text-sm font-medium tracking-wide'>{item.label}</span>
-                    <Lock size={12} className='ml-auto shrink-0' />
-                  </div>
+                  <li key={item.path}>
+                    <div
+                      title='Complete o onboarding para desbloquear este menu'
+                      className='flex items-center gap-4 px-6 py-3 rounded-xl text-sidebar-foreground/40 cursor-not-allowed select-none'
+                    >
+                      <item.icon size={20} strokeWidth={1.8} />
+                      <span className='text-sm font-medium'>{item.label}</span>
+                      <Lock size={12} strokeWidth={1.8} className='ml-auto shrink-0' />
+                    </div>
+                  </li>
                 );
               }
 
               return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/tenant'}
-                  onMouseEnter={() => preloadRoute(item.path)}
-                  className={({ isActive }) =>
-                    `group relative flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 ease-out ${
-                      isActive
-                        ? 'bg-primary/5 dark:bg-white/10 text-slate-main dark:text-white shadow-premium ring-1 ring-primary/10 dark:ring-white/5'
-                        : 'text-slate-body dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-main dark:hover:text-white'
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <div
-                        className={`transition-colors duration-300 ${isActive ? 'text-primary drop-shadow-sm' : 'group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}
-                      >
-                        <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                      </div>
-                      <span
-                        className={`text-sm font-medium tracking-wide ${isActive ? 'font-bold' : ''}`}
-                      >
-                        {item.label}
-                      </span>
-                      {isActive && (
-                        <div className='absolute right-4 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(19,200,236,0.6)] animate-scaleUp' />
-                      )}
-                    </>
-                  )}
-                </NavLink>
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    end={item.path === '/tenant'}
+                    onMouseEnter={() => preloadRoute(item.path)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-4 px-6 py-3 rounded-xl transition-all duration-200 ${
+                        isActive
+                          ? 'sidebar-item-active'
+                          : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <item.icon
+                          size={20}
+                          strokeWidth={1.8}
+                          className={`transition-colors duration-200 ${
+                            isActive ? 'text-white' : 'text-sidebar-foreground/50'
+                          }`}
+                        />
+                        <span className='text-sm font-medium'>{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                </li>
               );
             })}
-          </div>
-
-          {isOnboardingRequired && (
-            <div className='px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200/60 dark:border-amber-500/20'>
-              <div className='flex items-center gap-2'>
-                <Zap size={13} className='text-amber-500 shrink-0' />
-                <span className='text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.1em]'>
-                  Complete o cadastro
-                </span>
-              </div>
-            </div>
-          )}
+            {isOnboardingRequired && (
+              <li className='px-6 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20'>
+                <div className='flex items-center gap-2'>
+                  <Zap size={13} strokeWidth={1.8} className='text-amber-500 shrink-0' />
+                  <span className='text-[10px] font-semibold text-amber-400 uppercase tracking-[0.1em]'>
+                    Complete o cadastro
+                  </span>
+                </div>
+              </li>
+            )}
+          </ul>
         </nav>
 
-        <div className='p-4 mx-4 mb-4 border-t border-gray-100 dark:border-white/5 space-y-1'>
-          <Link
-            to='/tenant/settings'
-            className='flex items-center gap-3 px-4 py-3 rounded-2xl border border-transparent hover:bg-slate-50 dark:hover:bg-white/5 transition-all group'
-          >
-            <div className='pointer-events-none'>
+        {/* Bottom Section: Profile */}
+        <div className='px-6 flex flex-col gap-2 pt-3 border-t border-sidebar-border mt-auto relative z-10'>
+          <Link to='/tenant/settings' className='flex items-center gap-3 group/profile'>
+            <div className='pointer-events-none transition-transform duration-200 group-hover/profile:scale-105'>
               <UserButton
                 appearance={{
                   elements: {
-                    userButtonAvatarBox: 'w-10 h-10 rounded-xl',
+                    userButtonAvatarBox: 'w-9 h-9 rounded-full',
                     userButtonTrigger: 'pointer-events-none',
                   },
                 }}
               />
             </div>
             <div className='flex flex-col min-w-0'>
-              <span className='text-sm font-bold text-slate-main dark:text-slate-200 truncate'>
+              <span className='text-sm font-semibold text-foreground truncate group-hover/profile:text-primary transition-colors duration-200'>
                 {user?.name || 'Carregando...'}
               </span>
-              <span className='text-[10px] font-medium text-slate-body dark:text-slate-400 capitalize'>
-                Inquilino
-              </span>
+              <span className='text-xs text-muted-foreground capitalize'>Inquilino</span>
             </div>
           </Link>
         </div>
@@ -292,7 +283,7 @@ const TenantLayout: React.FC = () => {
 
       {/* ─── Main Content ─── */}
       <main
-        className={`flex-1 ${
+        className={`flex-1 lg-card p-0 ${
           isMaintenanceRoute ? 'overflow-hidden' : 'overflow-y-auto'
         } flex flex-col relative h-full w-full custom-scrollbar`}
       >

@@ -46,7 +46,10 @@ const Layout: React.FC = () => {
       <div className='lg-blob-field' aria-hidden='true' />
       <div className='lg-blob-3' aria-hidden='true' />
 
-      <div className='flex h-full w-full overflow-hidden text-foreground relative' style={{ background: 'transparent' }}>
+      <div
+        className='flex h-full w-full overflow-hidden text-foreground relative p-5 gap-5'
+        style={{ background: 'transparent' }}
+      >
         <div className='hidden md:block shrink-0 relative z-10'>
           <Sidebar
             navItems={navItems}

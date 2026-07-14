@@ -97,7 +97,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
   return (
     <div className='animate-fadeIn space-y-6'>
       {/* Units Section */}
-      <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 p-5'>
+      <div className='lg-card lg-card-lift p-5'>
         <div className='flex items-center justify-between mb-4'>
           <div>
             <h3 className='text-sm font-black text-slate-900 dark:text-white'>Unidades</h3>
@@ -107,23 +107,23 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
             onClick={() => setShowAddUnit(!showAddUnit)}
             className='flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all active:scale-95'
           >
-            <Plus size={12} /> Unidade
+            <Plus size={12} strokeWidth={1.8} /> Unidade
           </button>
         </div>
 
         {showAddUnit && (
-          <div className='flex items-center gap-2 mb-4 p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
+          <div className='flex items-center gap-2 mb-4 p-3 bg-white/5 rounded-xl'>
             <input
               type='text'
               value={newUnitName}
               onChange={(e) => setNewUnitName(e.target.value)}
               placeholder='Ex: Kitnet 1, Quarto A, AP 101...'
-              className='flex-1 px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
-              onKeyDown={(e) => e.key === 'Enter' && handleAddUnit()}
-            />
-            <button
+                  className='flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddUnit()}
+                />
+                <button
               onClick={handleAddUnit}
-              className='px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all'
+              className='px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all'
             >
               Adicionar
             </button>
@@ -142,11 +142,11 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
             {units.map((unit) => (
               <div
                 key={unit.id}
-                className='flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl'
+                className='flex items-center justify-between p-3 bg-white/5 rounded-xl'
               >
                 <div className='flex items-center gap-3'>
                   <div className='p-1.5 rounded-lg bg-primary/10 text-primary'>
-                    <Users size={14} />
+                    <Users size={14} strokeWidth={1.8} />
                   </div>
                   <div>
                     <p className='text-sm font-black text-slate-900 dark:text-white'>{unit.name}</p>
@@ -160,7 +160,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   onClick={() => handleDeleteUnit(unit.id)}
                   className='p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all'
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={14} strokeWidth={1.8} />
                 </button>
               </div>
             ))}
@@ -169,7 +169,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
       </div>
 
       {/* Add Bill Section */}
-      <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 p-5'>
+      <div className='lg-card lg-card-lift p-5'>
         <div className='flex items-center justify-between mb-4'>
           <div>
             <h3 className='text-sm font-black text-slate-900 dark:text-white'>Rateio de Conta</h3>
@@ -184,12 +184,12 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
             }}
             className='flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all active:scale-95'
           >
-            <Plus size={12} /> Nova Conta
+            <Plus size={12} strokeWidth={1.8} /> Nova Conta
           </button>
         </div>
 
         {showAddBill && (
-          <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-xl space-y-4'>
+          <div className='p-4 bg-white/5 rounded-xl space-y-4'>
             <div className='flex gap-3'>
               {(['water', 'electricity', 'gas'] as const).map((type) => {
                 const Icon = BILL_ICONS[type];
@@ -200,10 +200,10 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                       billType === type
                         ? 'bg-primary text-white shadow-md'
-                        : 'bg-white dark:bg-surface-dark text-slate-400 border border-gray-200 dark:border-white/10'
+                        : 'bg-white/5 text-slate-400 border border-white/10'
                     }`}
                   >
-                    <Icon size={14} /> {BILL_LABELS[type]}
+                    <Icon size={14} strokeWidth={1.8} /> {BILL_LABELS[type]}
                   </button>
                 );
               })}
@@ -219,7 +219,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   value={billAmount}
                   onChange={(e) => setBillAmount(e.target.value)}
                   placeholder='0,00'
-                  className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
+                  className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
                 />
               </div>
               <div>
@@ -230,7 +230,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   type='date'
                   value={billDate}
                   onChange={(e) => setBillDate(e.target.value)}
-                  className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
+                  className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
                 />
               </div>
             </div>
@@ -245,7 +245,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   className={`flex-1 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     method === 'fixed'
                       ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-                      : 'bg-white dark:bg-surface-dark text-slate-400 border border-gray-200 dark:border-white/10'
+                      : 'bg-white/5 text-slate-400 border border-white/10'
                   }`}
                 >
                   Por Unidade
@@ -255,7 +255,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   className={`flex-1 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     method === 'people'
                       ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-                      : 'bg-white dark:bg-surface-dark text-slate-400 border border-gray-200 dark:border-white/10'
+                      : 'bg-white/5 text-slate-400 border border-white/10'
                   }`}
                 >
                   Por Pessoa
@@ -281,7 +281,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                   {apportionmentResult.distribution.map((d, i) => (
                     <div
                       key={i}
-                      className='flex items-center justify-between px-3 py-2 bg-white dark:bg-surface-dark rounded-xl'
+                      className='flex items-center justify-between px-3 py-2 bg-white/5 rounded-xl'
                     >
                       <div>
                         <p className='text-sm font-bold text-slate-900 dark:text-white'>{d.name}</p>
@@ -292,7 +292,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
                       </p>
                     </div>
                   ))}
-                  <div className='flex items-center justify-between px-3 py-2 bg-amber-50 dark:bg-amber-950/20 rounded-xl'>
+                  <div className='flex items-center justify-between px-3 py-2 bg-amber-500/10 rounded-xl'>
                     <p className='text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest'>
                       Custo do Proprietário
                     </p>
@@ -315,7 +315,7 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
 
       {/* Bills History */}
       {bills.length > 0 && (
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 p-5'>
+        <div className='lg-card lg-card-lift p-5'>
           <h3 className='text-sm font-black text-slate-900 dark:text-white mb-4'>
             Histórico de Contas
           </h3>
@@ -325,11 +325,11 @@ export const UtilitiesTab: React.FC<UtilitiesTabProps> = ({ property }) => {
               return (
                 <div
                   key={bill.id}
-                  className='flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl'
+                  className='flex items-center justify-between p-3 bg-white/5 rounded-xl'
                 >
                   <div className='flex items-center gap-3'>
                     <div className='p-1.5 rounded-lg bg-primary/10 text-primary'>
-                      <Icon size={14} />
+                      <Icon size={14} strokeWidth={1.8} />
                     </div>
                     <div>
                       <div className='flex items-center gap-2'>

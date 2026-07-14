@@ -33,15 +33,15 @@ const StatusSelector = ({
   currentStatus: RequirementStatus;
   onStatusChange: (section: any, field: string, status: RequirementStatus) => void;
 }) => (
-  <div className='flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl gap-1'>
+  <div className='flex bg-white/10 p-1 rounded-xl gap-1 border border-white/10'>
     {(['required', 'optional', 'hidden'] as RequirementStatus[]).map((s) => (
       <button
         key={s}
         onClick={() => onStatusChange(section, field, s)}
         className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
           currentStatus === s
-            ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm'
-            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+            ? 'bg-white/20 text-white shadow-sm'
+            : 'text-slate-400 hover:text-white'
         }`}
       >
         {s === 'required' ? 'Obrigatório' : s === 'optional' ? 'Opcional' : 'Oculto'}
@@ -223,7 +223,7 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
   return (
     <div className='space-y-8 animate-fadeIn pb-10'>
       {/* Template Selector (Premium Custom Dropdown) */}
-      <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+      <div className='bg-white/5 rounded-2xl border border-white/10 p-6'>
         <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1'>
           Template de Configuração
         </label>
@@ -231,17 +231,19 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
         <div className='relative'>
           <button
             onClick={() => setIsTemplateMenuOpen(!isTemplateMenuOpen)}
-            className={`w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 dark:bg-black/20 border rounded-xl text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-white/5 active:scale-[0.99] group ${isTemplateMenuOpen ? 'border-primary ring-2 ring-primary/10' : 'border-slate-100 dark:border-white/5'}`}
+            className={`w-full flex items-center justify-between px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-white/10 active:scale-[0.99] group ${isTemplateMenuOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white/10'}`}
           >
             <span className='flex items-center gap-2'>
               <RefreshCw
                 size={14}
+                strokeWidth={1.8}
                 className={`text-primary transition-all duration-500 ${isTemplateMenuOpen ? 'rotate-180' : 'opacity-0 group-hover:opacity-100'}`}
               />
               {currentTemplate.label}
             </span>
             <ChevronDown
               size={18}
+              strokeWidth={1.8}
               className={`text-slate-400 transition-transform duration-300 ${isTemplateMenuOpen ? 'rotate-180' : ''}`}
             />
           </button>
@@ -249,13 +251,13 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
           {isTemplateMenuOpen && (
             <>
               <div className='fixed inset-0 z-40' onClick={() => setIsTemplateMenuOpen(false)} />
-              <div className='absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-scaleUp origin-top backdrop-blur-xl'>
+              <div className='absolute top-full left-0 right-0 mt-2 z-50 lg-card overflow-hidden animate-scaleUp origin-top'>
                 <div className='p-2 space-y-1'>
                   {Object.entries(TEMPLATES).map(([key, t]) => (
                     <button
                       key={key}
                       onClick={() => applyTemplate(key as any)}
-                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between hover:bg-primary/5 group ${currentTemplate.label === t.label ? 'text-primary bg-primary/5' : 'text-slate-600 dark:text-slate-300 hover:text-primary'}`}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between hover:bg-white/5 group ${currentTemplate.label === t.label ? 'text-primary bg-white/10' : 'text-slate-400 hover:text-primary'}`}
                     >
                       {t.label}
                       {currentTemplate.label === t.label && (
@@ -273,25 +275,25 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Personal Info */}
       <section className='space-y-4'>
         <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2'>
-          <User size={14} className='text-blue-500' /> Informações Pessoais
+          <User size={14} strokeWidth={1.8} className='text-blue-500' /> Informações Pessoais
         </h3>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between opacity-50'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+        <div className='bg-white/5 rounded-2xl border border-white/10 overflow-hidden'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between opacity-50'>
+            <span className='text-sm font-bold text-slate-300'>
               Nome Completo
             </span>
             <span className='text-[10px] font-black text-primary uppercase tracking-widest'>
               Obrigatório (Fixo)
             </span>
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between opacity-50'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>CPF</span>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between opacity-50'>
+            <span className='text-sm font-bold text-slate-300'>CPF</span>
             <span className='text-[10px] font-black text-primary uppercase tracking-widest'>
               Obrigatório (Fixo)
             </span>
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>Profissão</span>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>Profissão</span>
             <StatusSelector
               section='personal'
               field='occupation'
@@ -305,11 +307,11 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Residential Info */}
       <section className='space-y-4'>
         <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2'>
-          <Car size={14} className='text-emerald-500' /> Dados Residenciais
+          <Car size={14} strokeWidth={1.8} className='text-emerald-500' /> Dados Residenciais
         </h3>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+        <div className='bg-white/5 rounded-2xl border border-white/10 overflow-hidden'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>
               Veículo (Placa)
             </span>
             <StatusSelector
@@ -319,8 +321,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               onStatusChange={handleStatusChange}
             />
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>Pets</span>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>Pets</span>
             <StatusSelector
               section='residential'
               field='pets'
@@ -328,8 +330,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               onStatusChange={handleStatusChange}
             />
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>Moradores</span>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>Moradores</span>
             <StatusSelector
               section='residential'
               field='residents'
@@ -343,10 +345,10 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Emergency Section */}
       <section className='space-y-4'>
         <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2'>
-          <Activity size={14} className='text-red-500' /> Contato de Emergência
+          <Activity size={14} strokeWidth={1.8} className='text-red-500' /> Contato de Emergência
         </h3>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden p-4 flex items-center justify-between'>
-          <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+        <div className='bg-white/5 rounded-2xl border border-white/10 p-4 flex items-center justify-between'>
+          <span className='text-sm font-bold text-slate-300'>
             Seção de Emergência
           </span>
           <StatusSelector
@@ -361,11 +363,11 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Required Documents */}
       <section className='space-y-4'>
         <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2'>
-          <FileText size={14} className='text-indigo-500' /> Documentos Exigidos do Inquilino
+          <FileText size={14} strokeWidth={1.8} className='text-indigo-500' /> Documentos Exigidos do Inquilino
         </h3>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>RG ou CNH</span>
+        <div className='bg-white/5 rounded-2xl border border-white/10 overflow-hidden'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>RG ou CNH</span>
             <StatusSelector
               section='requiredDocs'
               field='id_card'
@@ -373,8 +375,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               onStatusChange={handleStatusChange}
             />
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>
               Comprovante de Renda
             </span>
             <StatusSelector
@@ -384,8 +386,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               onStatusChange={handleStatusChange}
             />
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>
               Comp. de Residência
             </span>
             <StatusSelector
@@ -395,8 +397,8 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
               onStatusChange={handleStatusChange}
             />
           </div>
-          <div className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'>
-            <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+          <div className='p-4 border-b border-white/10 flex items-center justify-between'>
+            <span className='text-sm font-bold text-slate-300'>
               Apólice / Garantia
             </span>
             <StatusSelector
@@ -409,17 +411,17 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
           {config.sections.requiredDocs.custom.map((custom) => (
             <div
               key={custom.id}
-              className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between group'
+              className='p-4 border-b border-white/10 flex items-center justify-between group'
             >
               <div className='flex items-center gap-3'>
                 <button
                   onClick={() => removeCustomRequiredDoc(custom.id)}
                   className='text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all'
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={16} strokeWidth={1.8} />
                 </button>
                 <div className='flex flex-col'>
-                  <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+                  <span className='text-sm font-bold text-slate-300'>
                     {custom.label}
                   </span>
                   <span className='text-[10px] text-slate-400 font-medium'>
@@ -436,26 +438,26 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
             </div>
           ))}
           {/* Add Custom Required Doc */}
-          <div className='p-4 bg-slate-50 dark:bg-white/5 space-y-3'>
+          <div className='p-4 bg-white/5 space-y-3 border-t border-white/10'>
             <div className='flex gap-3'>
               <input
                 type='text'
                 placeholder='Título do novo documento (ex: Declaração de IR)'
-                className='flex-1 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary'
+                className='flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary text-white placeholder-slate-500'
                 value={newRequiredDoc.label}
                 onChange={(e) => setNewRequiredDoc({ ...newRequiredDoc, label: e.target.value })}
               />
               <button
                 onClick={addCustomRequiredDoc}
-                className='px-4 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary-dark transition-all'
+                className='px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] hover:brightness-110 active:scale-95 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-2'
               >
-                <Plus size={16} /> Adicionar
+                <Plus size={16} strokeWidth={1.8} /> Adicionar
               </button>
             </div>
             <input
               type='text'
               placeholder='Descrição breve (opcional)'
-              className='w-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-xs outline-none focus:ring-1 focus:ring-primary'
+              className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-primary text-white placeholder-slate-500'
               value={newRequiredDoc.description}
               onChange={(e) =>
                 setNewRequiredDoc({ ...newRequiredDoc, description: e.target.value })
@@ -468,9 +470,9 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Shared Documents */}
       <section className='space-y-4'>
         <h3 className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2'>
-          <Key size={14} className='text-primary' /> Documentos Compartilhados (Proprietário)
+          <Key size={14} strokeWidth={1.8} className='text-primary' /> Documentos Compartilhados (Proprietário)
         </h3>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden'>
+        <div className='bg-white/5 rounded-2xl border border-white/10 overflow-hidden'>
           {[
             { id: 'contract', label: 'Contrato de Locação' },
             { id: 'inspection', label: 'Laudo de Vistoria' },
@@ -478,9 +480,9 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
           ].map((doc) => (
             <div
               key={doc.id}
-              className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between'
+              className='p-4 border-b border-white/10 flex items-center justify-between'
             >
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+              <span className='text-sm font-bold text-slate-300'>
                 {doc.label}
               </span>
               <button
@@ -488,9 +490,9 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
                 className={`p-1 rounded-full transition-colors ${config.sections.sharedDocs[doc.id as keyof typeof config.sections.sharedDocs] ? 'text-primary' : 'text-slate-300'}`}
               >
                 {config.sections.sharedDocs[doc.id as keyof typeof config.sections.sharedDocs] ? (
-                  <ToggleRight size={32} />
+                  <ToggleRight size={32} strokeWidth={1.8} />
                 ) : (
-                  <ToggleLeft size={32} />
+                  <ToggleLeft size={32} strokeWidth={1.8} />
                 )}
               </button>
             </div>
@@ -498,16 +500,16 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
           {config.sections.sharedDocs.custom.map((custom) => (
             <div
               key={custom.id}
-              className='p-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between group'
+              className='p-4 border-b border-white/10 flex items-center justify-between group'
             >
               <div className='flex items-center gap-3'>
                 <button
-                  onClick={() => removeCustomSharedDoc(custom.id)}
-                  className='text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all'
-                >
-                  <Trash2 size={16} />
+                onClick={() => removeCustomSharedDoc(custom.id)}
+                className='text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all'
+              >
+                <Trash2 size={16} strokeWidth={1.8} />
                 </button>
-                <span className='text-sm font-bold text-slate-700 dark:text-slate-300'>
+                <span className='text-sm font-bold text-slate-300'>
                   {custom.label}
                 </span>
               </div>
@@ -515,24 +517,24 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
                 onClick={() => handleToggleSharedDoc(custom.id)}
                 className={`p-1 rounded-full transition-colors ${custom.active ? 'text-primary' : 'text-slate-300'}`}
               >
-                {custom.active ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                {custom.active ? <ToggleRight size={32} strokeWidth={1.8} /> : <ToggleLeft size={32} strokeWidth={1.8} />}
               </button>
             </div>
           ))}
           {/* Add Custom Shared Doc */}
-          <div className='p-4 bg-slate-50 dark:bg-white/5 flex gap-3'>
+          <div className='p-4 bg-white/5 flex gap-3 border-t border-white/10'>
             <input
               type='text'
               placeholder='Nome do documento personalizado'
-              className='flex-1 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary'
+              className='flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-primary text-white placeholder-slate-500'
               value={newSharedDoc}
               onChange={(e) => setNewSharedDoc(e.target.value)}
             />
             <button
               onClick={addCustomSharedDoc}
-              className='px-4 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary-dark transition-all'
+              className='px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] hover:brightness-110 active:scale-95 transition-all text-xs font-black uppercase tracking-widest flex items-center gap-2'
             >
-              <Plus size={16} /> Adicionar
+              <Plus size={16} strokeWidth={1.8} /> Adicionar
             </button>
           </div>
         </div>
@@ -541,9 +543,9 @@ export const TenantProfileConfigPanel: React.FC<TenantProfileConfigPanelProps> =
       {/* Save Button */}
       <button
         onClick={handleSave}
-        className='w-full h-14 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.98] flex items-center justify-center gap-2'
+        className='w-full h-14 rounded-full text-white font-semibold bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 font-black uppercase tracking-widest'
       >
-        <Save size={20} /> Salvar Configurações
+        <Save size={20} strokeWidth={1.8} /> Salvar Configurações
       </button>
       {/* Toaster is rendered globally in App.tsx */}
     </div>

@@ -59,10 +59,10 @@ const Dashboard: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
-  // Global cursor spotlight: delegates to all .lg-card elements on the page
+  // Global cursor spotlight: delegates to all .lg-card and .lg-topbar elements on the page
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const target = (e.target as Element).closest('.lg-card') as HTMLElement | null;
+      const target = (e.target as Element).closest('.lg-card, .lg-topbar') as HTMLElement | null;
       if (!target) return;
       const r = target.getBoundingClientRect();
       target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);

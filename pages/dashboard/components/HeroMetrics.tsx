@@ -57,44 +57,6 @@ interface HeroMetricsProps {
   className?: string;
 }
 
-function AreaSparkline({ data, color }: { data: number[]; color: string }) {
-  if (data.length < 2) return null;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const w = 104;
-  const h = 36;
-  const pts = data
-    .map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`)
-    .join(' ');
-  const area = `${pts} ${w},${h} 0,${h}`;
-  const gradId = `grad-${color.replace('#', '')}`;
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      className='shrink-0 transition-all duration-200'
-    >
-      <defs>
-        <linearGradient id={gradId} x1='0' y1='0' x2='0' y2='1'>
-          <stop offset='0%' stopColor={color} stopOpacity={0.2} />
-          <stop offset='100%' stopColor={color} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <polygon points={area} fill={`url(#${gradId})`} />
-      <polyline
-        points={pts}
-        fill='none'
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap='round'
-        strokeLinejoin='round'
-      />
-    </svg>
-  );
-}
-
 function DonutRing({ value, color, size = 48 }: { value: number; color: string; size?: number }) {
   const r = size / 2 - 4;
   const circ = 2 * Math.PI * r;
@@ -125,31 +87,6 @@ function DonutRing({ value, color, size = 48 }: { value: number; color: string; 
   );
 }
 
-function MiniBarChart({ data, color }: { data: number[]; color: string }) {
-  if (data.length < 2) return null;
-  const max = Math.max(...data, 1);
-  const gap = 2;
-  const barW = Math.max(6, (88 - gap * (data.length - 1)) / data.length);
-  return (
-    <svg width={88} height={32} viewBox='0 0 88 32' className='shrink-0'>
-      {data.map((v, i) => (
-        <rect
-          key={i}
-          x={i * (barW + gap)}
-          y={32 - (v / max) * 28}
-          width={barW}
-          height={Math.max((v / max) * 28, 3)}
-          rx={barW / 2}
-          fill={color}
-          opacity={0.5 + (i / data.length) * 0.5}
-        />
-      ))}
-    </svg>
-  );
-}
-
-const fallbackSpark = [100, 90, 95, 92, 97, 94, 99];
-
 export const HeroMetrics: React.FC<HeroMetricsProps> = ({
   metrics,
   portfolioHealth,
@@ -157,10 +94,6 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
   navigate,
   className = '',
 }) => {
-  const wealthSpark =
-    metrics.sparkData?.wealth?.length >= 2 ? metrics.sparkData.wealth : fallbackSpark;
-  const mrrSpark = metrics.sparkData?.mrr?.length >= 2 ? metrics.sparkData.mrr : fallbackSpark;
-
   const occRate = metrics.occupancyPhysicalRate ?? metrics.occupancyRate;
   const occFinRate = metrics.occupancyFinancialRate ?? metrics.occupancyRate;
   const occLow = occRate < 70 && occFinRate < 90;
@@ -189,7 +122,7 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
           <div className='flex items-center justify-between gap-4 w-full relative z-10'>
             <div className='space-y-1.5'>
               <div className='flex items-center gap-1.5'>
-                <TrendingUp size={14} className='text-indigo-500' />
+                <TrendingUp size={16} strokeWidth={1.8} className='text-indigo-500' />
                 <span className='text-xs font-medium text-muted-foreground'>Patrimônio Total</span>
                 <TooltipProvider>
                   <Tooltip>
@@ -209,7 +142,7 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
               </h3>
               <div className='flex items-center gap-2 flex-wrap'>
                 <Badge variant='default'>
-                  <ArrowUp size={10} /> {metrics.trends.wealth}
+                  <ArrowUp size={10} strokeWidth={1.8} /> {metrics.trends.wealth}
                 </Badge>
                 <span className='text-xs text-muted-foreground/60'>vs. mês anterior</span>
                 {portfolioHealth?.yield && (
@@ -219,15 +152,17 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
                 )}
               </div>
             </div>
-            <AreaSparkline data={wealthSpark} color='#6366f1' />
           </div>
         </div>
-
         {/* Ocupação */}
         <div className={`col-span-2 lg-card lg-card-lift`}>
-          <div className='p-5 flex flex-col h-full gap-4 w-full relative z-10'>
+          <div className='p-6 flex flex-col h-full gap-4 w-full relative z-10'>
             <div className='flex items-center gap-1.5'>
-              <Home size={14} className={occLow ? 'text-destructive' : 'text-emerald-500'} />
+              <Home
+                size={16}
+                strokeWidth={1.8}
+                className={occLow ? 'text-destructive' : 'text-emerald-500'}
+              />
               <span className='text-xs font-medium text-muted-foreground'>Ocupação</span>
             </div>
 
@@ -255,9 +190,9 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
             <div className='flex items-center gap-2 mt-auto'>
               <Badge variant={occLow ? 'destructive' : 'default'}>
                 {Number(metrics.trends.occupancy) >= 0 ? (
-                  <ArrowUp size={10} />
+                  <ArrowUp size={10} strokeWidth={1.8} />
                 ) : (
-                  <ArrowDown size={10} />
+                  <ArrowDown size={10} strokeWidth={1.8} />
                 )}{' '}
                 {metrics.trends.occupancy}
               </Badge>
@@ -279,11 +214,12 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
         <div
           className={`col-span-2 lg-card lg-card-lift ${metrics.avgRoi === '0%' || !metrics.avgRoi ? 'opacity-70' : ''}`}
         >
-          <div className='p-5 flex flex-col justify-between h-full w-full relative z-10'>
+          <div className='p-6 flex flex-col justify-between h-full w-full relative z-10'>
             <div className='space-y-2'>
               <div className='flex items-center gap-1.5'>
                 <Activity
-                  size={14}
+                  size={16}
+                  strokeWidth={1.8}
                   className={metrics.avgRoi === '0%' ? 'text-muted-foreground' : 'text-cyan-500'}
                 />
                 <span className='text-xs font-medium text-muted-foreground'>ROI Anual</span>
@@ -302,7 +238,7 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
             </div>
             <div className='mt-2 flex flex-wrap items-center gap-2'>
               <Badge variant={metrics.avgRoi === '0%' ? 'outline' : 'default'}>
-                <ArrowUp size={10} /> {metrics.trends.roi}
+                <ArrowUp size={10} strokeWidth={1.8} /> {metrics.trends.roi}
               </Badge>
               {(metrics.expiringContractsCount ?? 0) > 0 && (
                 <span className='text-xs font-medium text-amber-600 dark:text-amber-400'>
@@ -320,11 +256,11 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
 
         {/* MRR */}
         <div className='col-span-4 lg-card lg-card-lift'>
-          <div className='p-5 flex flex-row items-center justify-between gap-6 w-full relative z-10'>
+          <div className='p-6 flex flex-row items-center justify-between gap-6 w-full relative z-10'>
             <div className='flex items-start justify-between flex-1'>
               <div>
                 <div className='flex items-center gap-1.5 mb-1'>
-                  <DollarSign size={14} className='text-emerald-500' />
+                  <DollarSign size={16} strokeWidth={1.8} className='text-emerald-500' />
                   <span className='text-xs font-medium text-muted-foreground'>
                     Receita Recorrente
                   </span>
@@ -347,7 +283,7 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
                   )}
                   <span className='text-muted-foreground/40'>&middot;</span>
                   <span>
-                    <Users size={12} className='inline mr-0.5' />
+                    <Users size={12} strokeWidth={1.8} className='inline mr-0.5' />
                     {metrics.totalTenants ?? 0} inquilinos
                   </span>
                   {portfolioHealth?.vacancy != null && Number(portfolioHealth.vacancy) > 0 && (
@@ -363,9 +299,8 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
             </div>
             <div className='flex items-center gap-3 shrink-0'>
               <Badge variant='default'>
-                <ArrowUp size={10} /> {metrics.trends.mrr}
+                <ArrowUp size={10} strokeWidth={1.8} /> {metrics.trends.mrr}
               </Badge>
-              <MiniBarChart data={mrrSpark} color='#10b981' />
             </div>
           </div>
         </div>

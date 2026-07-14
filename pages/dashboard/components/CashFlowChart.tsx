@@ -46,7 +46,7 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
             <div className='flex items-center gap-3'>
               <PeriodSelector options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
               <Button variant='ghost' size='icon' className='rounded-xl'>
-                <Download size={18} />
+                <Download size={18} strokeWidth={1.8} />
               </Button>
             </div>
           }

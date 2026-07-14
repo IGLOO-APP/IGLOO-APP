@@ -47,19 +47,24 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0'>
-        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 border border-white/10 rounded-[22px]' style={{ background: 'rgba(12,14,26,0.92)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' }}>
+        <div aria-hidden='true' className='absolute inset-0 overflow-hidden pointer-events-none' style={{ borderRadius: 'inherit' }}>
+          <div className='absolute w-[50vw] h-[50vw] top-[-20%] left-[-20%] rounded-full opacity-50' style={{ background: 'radial-gradient(circle, var(--lg-blob-1), transparent 70%)', filter: 'blur(90px)' }} />
+          <div className='absolute w-[42vw] h-[42vw] bottom-[-20%] right-[-20%] rounded-full opacity-50' style={{ background: 'radial-gradient(circle, var(--lg-blob-2), transparent 70%)', filter: 'blur(80px)' }} />
+        </div>
+        <div className='relative z-10'>
+        <DialogHeader className='px-6 py-4 border-b border-white/10 flex-shrink-0'>
           <DialogTitle className='text-xl font-bold'>Exportar DIMOB / Carnê-Leão</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         <div className='space-y-5 p-6'>
-          <div className='flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-2xl border border-blue-100 dark:border-blue-900/50'>
-            <Info size={18} className='text-blue-500 shrink-0 mt-0.5' />
+          <div className='flex items-start gap-3 p-4 bg-blue-950/20 rounded-2xl border border-blue-900/50'>
+            <Info size={18} strokeWidth={1.8} className='text-blue-400 shrink-0 mt-0.5' />
             <div>
-              <p className='text-[10px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-widest'>
+              <p className='text-[10px] font-black text-blue-300 uppercase tracking-widest'>
                 Dados para Imposto de Renda
               </p>
-              <p className='text-[9px] text-blue-600/70 dark:text-blue-400/70 mt-1 leading-relaxed'>
+              <p className='text-[9px] text-blue-400/70 mt-1 leading-relaxed'>
                 Gere um relatório completo de Carnê-Leão com os recebimentos de aluguel do ano
                 selecionado. Os dados são extraídos automaticamente dos pagamentos registrados no
                 sistema.
@@ -78,10 +83,10 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                   setYear(Number(e.target.value));
                   setReport(null);
                 }}
-                className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
+                className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
               >
                 {[currentYear, currentYear - 1, currentYear - 2, currentYear - 3].map((y) => (
-                  <option key={y} value={y}>
+                  <option key={y} value={y} className='bg-[#0c0e1a]'>
                     {y}
                   </option>
                 ))}
@@ -97,16 +102,16 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                 max={10}
                 value={dependents}
                 onChange={(e) => setDependents(Number(e.target.value))}
-                className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
+                className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-primary/30'
               />
             </div>
             <div className='flex items-end'>
               <button
                 onClick={handleGenerate}
                 disabled={loading}
-                className='w-full px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2'
+                className='w-full px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest'
               >
-                <Calculator size={14} />
+                <Calculator size={14} strokeWidth={1.8} />
                 {loading ? 'Calculando...' : 'Calcular'}
               </button>
             </div>
@@ -115,45 +120,45 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
           {report && (
             <>
               <div className='grid grid-cols-2 gap-3'>
-                <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-2xl'>
+                <div className='p-4 bg-white/5 rounded-2xl border border-white/10'>
                   <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
                     Total Bruto
                   </p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white mt-1'>
+                  <p className='text-xl font-black text-white mt-1'>
                     {formatCurrency(report.totalBruto)}
                   </p>
                 </div>
-                <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-2xl'>
+                <div className='p-4 bg-white/5 rounded-2xl border border-white/10'>
                   <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
                     Deduções
                   </p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white mt-1'>
+                  <p className='text-xl font-black text-white mt-1'>
                     {formatCurrency(report.totalDeducoes)}
                   </p>
                 </div>
-                <div className='p-4 bg-primary/5 rounded-2xl border border-primary/10'>
+                <div className='p-4 bg-primary/10 rounded-2xl border border-primary/20'>
                   <p className='text-[9px] font-black text-primary uppercase tracking-widest'>
                     Base de Cálculo
                   </p>
-                  <p className='text-xl font-black text-slate-900 dark:text-white mt-1'>
+                  <p className='text-xl font-black text-white mt-1'>
                     {formatCurrency(report.totalTributavel)}
                   </p>
                 </div>
                 <div
-                  className={`p-4 rounded-2xl border ${report.impostoDevido > 0 ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50' : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'}`}
+                  className={`p-4 rounded-2xl border ${report.impostoDevido > 0 ? 'bg-red-950/20 border-red-900/50' : 'bg-emerald-950/20 border-emerald-900/50'}`}
                 >
                   <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
                     Imposto Devido
                   </p>
                   <p
-                    className={`text-xl font-black mt-1 ${report.impostoDevido > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                    className={`text-xl font-black mt-1 ${report.impostoDevido > 0 ? 'text-red-400' : 'text-emerald-400'}`}
                   >
                     {formatCurrency(report.impostoDevido)}
                   </p>
                 </div>
               </div>
 
-              <div className='p-3 bg-slate-50 dark:bg-white/5 rounded-xl'>
+              <div className='p-3 bg-white/5 rounded-xl border border-white/10'>
                 <p className='text-[9px] font-black text-slate-400 uppercase tracking-widest text-center'>
                   Alíquota Efetiva: {report.aliquota.toFixed(1)}% &middot; Faixa: {report.faixa}
                 </p>
@@ -168,7 +173,7 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                   {report.monthlyBreakdown.map((m) => (
                     <div
                       key={m.monthNumber}
-                      className='flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-white/5 rounded-xl'
+                      className='flex items-center justify-between px-3 py-2 bg-white/5 rounded-xl border border-white/10'
                     >
                       <div className='flex items-center gap-3'>
                         <span className='text-xs font-black text-slate-500 w-20'>
@@ -179,7 +184,7 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                         </span>
                       </div>
                       <span
-                        className={`text-[10px] font-black ${m.imposto > 0 ? 'text-red-500' : 'text-emerald-500'}`}
+                        className={`text-[10px] font-black ${m.imposto > 0 ? 'text-red-400' : 'text-emerald-400'}`}
                       >
                         {m.imposto > 0 ? formatCurrency(m.imposto) : 'Isento'}
                       </span>
@@ -200,7 +205,7 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                       value={ownerCpf}
                       onChange={(e) => setOwnerCpf(e.target.value)}
                       placeholder='000.000.000-00'
-                      className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
+                      className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/30'
                     />
                   </div>
                   <div>
@@ -212,20 +217,21 @@ export const TaxExportModal: React.FC<TaxExportModalProps> = ({ ownerId, onClose
                       value={ownerName}
                       onChange={(e) => setOwnerName(e.target.value)}
                       placeholder='Seu nome'
-                      className='w-full px-3 py-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30'
+                      className='w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/30'
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleExportDimob}
                   disabled={!ownerCpf || !ownerName}
-                  className='w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30 flex items-center justify-center gap-2'
+                  className='w-full py-3 rounded-full text-white font-semibold bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] hover:brightness-110 transition-all disabled:opacity-30 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest'
                 >
-                  <Download size={16} /> Exportar CSV (DIMOB / Carnê-Leão)
+                  <Download size={16} strokeWidth={1.8} /> Exportar CSV (DIMOB / Carnê-Leão)
                 </button>
               </div>
             </>
           )}
+        </div>
         </div>
       </DialogContent>
     </Dialog>

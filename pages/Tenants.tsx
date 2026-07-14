@@ -239,7 +239,7 @@ const Tenants: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex h-screen items-center justify-center bg-background-light dark:bg-background-dark'>
+      <div className='flex h-screen items-center justify-center'>
         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div>
       </div>
     );
@@ -252,7 +252,7 @@ const Tenants: React.FC = () => {
           onClick={() => setShowAddForm(true)}
           className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
         >
-          <Plus size={16} className='md:size-[18px]' />
+          <Plus size={16} strokeWidth={1.8} className='md:size-[18px]' />
           <span className='hidden sm:inline'>Novo Inquilino</span>
         </button>
       </TopBar>
@@ -260,19 +260,19 @@ const Tenants: React.FC = () => {
       <div className='px-6 py-4 flex flex-col gap-4'>
         <div className='flex gap-3'>
           <div className='relative flex-1'>
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400'>
-              <Search size={20} />
+            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground'>
+              <Search size={18} strokeWidth={1.8} />
             </div>
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='block w-full h-12 pl-10 pr-4 text-sm border-none rounded-2xl bg-white dark:bg-surface-dark dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary shadow-sm ring-1 ring-gray-100 dark:ring-white/5 transition-all'
+              className='block w-full h-11 pl-10 pr-4 text-sm rounded-2xl bg-white/5 dark:bg-white/6 border border-white/10 text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary/50 transition-all'
               placeholder='Buscar por nome ou CPF...'
               type='text'
             />
           </div>
-          <button className='h-12 w-12 flex items-center justify-center rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 text-slate-500 shadow-sm'>
-            <Filter size={20} />
+          <button className='h-11 w-11 flex items-center justify-center rounded-2xl bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all'>
+            <Filter size={20} strokeWidth={1.8} />
           </button>
         </div>
 
@@ -282,10 +282,10 @@ const Tenants: React.FC = () => {
             <button
               key={filter}
               onClick={() => setStatusFilter(filter as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap active-tap ${
+              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap active-tap ${
                 statusFilter === filter
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
-                  : 'bg-white dark:bg-surface-dark text-slate-500 dark:text-slate-400 border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5'
+                  ? 'bg-white/10 text-foreground border border-white/20'
+                  : 'bg-transparent text-muted-foreground border border-transparent hover:text-foreground hover:bg-white/5'
               }`}
             >
               {filter}
@@ -311,7 +311,7 @@ const Tenants: React.FC = () => {
               <div
                 key={t.id}
                 onClick={() => navigate(`/tenants/${t.id}`)}
-                className='group relative flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-surface-dark-hover rounded-2xl border border-gray-200/50 dark:border-white/5 hover:border-primary/20 dark:hover:border-primary/20 p-4 gap-4 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm hover:shadow-md active-tap'
+                className='lg-card lg-card-lift p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer active-tap'
               >
                 {/* Bloco Esquerdo: Avatar + Nome & Imóvel */}
                 <div className='flex items-center gap-3 min-w-0 flex-1 sm:flex-initial sm:w-1/3'>
@@ -321,15 +321,15 @@ const Tenants: React.FC = () => {
                       style={{ backgroundImage: `url(${t.image})` }}
                     />
                   ) : (
-                    <div className='h-10 w-10 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-sm border border-slate-200 dark:border-white/10 shrink-0'>
+                    <div className='h-10 w-10 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center text-muted-foreground font-bold text-sm shrink-0'>
                       {t.name[0]}
                     </div>
                   )}
                   <div className='min-w-0'>
-                    <h3 className='text-slate-900 dark:text-white text-sm font-bold truncate leading-tight group-hover:text-primary transition-colors'>
+                    <h3 className='text-sm font-semibold text-foreground truncate leading-tight group-hover:text-primary transition-colors'>
                       {t.name}
                     </h3>
-                    <p className='text-xs text-slate-500 truncate mt-0.5'>
+                    <p className='text-xs text-muted-foreground truncate mt-0.5'>
                       {t.property || (t as any).contract?.property?.name || 'Sem imóvel'}
                     </p>
                   </div>
@@ -338,7 +338,7 @@ const Tenants: React.FC = () => {
                 {/* Bloco Central: Aluguel + Status + Tempo Contrato */}
                 <div className='flex flex-wrap items-center gap-3 sm:justify-center flex-1 min-w-0'>
                   {/* Aluguel */}
-                  <span className='text-slate-900 dark:text-white text-sm font-extrabold tracking-tight shrink-0'>
+                  <span className='text-sm font-bold text-foreground tracking-tight shrink-0'>
                     R${' '}
                     {Number((t as any).contract?.monthly_value || 0).toLocaleString('pt-BR', {
                       minimumFractionDigits: 2,
@@ -347,7 +347,7 @@ const Tenants: React.FC = () => {
 
                   {/* Badge Único de Status */}
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border shrink-0 ${
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border shrink-0 ${
                       isLate
                         ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                         : isUpcoming
@@ -373,7 +373,7 @@ const Tenants: React.FC = () => {
 
                   {/* Tempo de Contrato */}
                   {t.contract?.end_date && (
-                    <span className='inline-flex items-center gap-1 text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 shrink-0'>
+                    <span className='inline-flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 shrink-0'>
                       {getRemainingContractTime(t.contract.end_date)}
                     </span>
                   )}
@@ -389,9 +389,9 @@ const Tenants: React.FC = () => {
                     <button
                       onClick={(e) => handleWhatsAppInvite(e, t)}
                       title='WhatsApp'
-                      className='h-9 w-9 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-500 flex items-center justify-center transition-all duration-300 active:scale-95'
+                      className='h-9 w-9 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-500 flex items-center justify-center transition-all active:scale-95'
                     >
-                      <Phone size={16} />
+                      <Phone size={16} strokeWidth={1.8} />
                     </button>
                   ) : (
                     <button
@@ -400,9 +400,9 @@ const Tenants: React.FC = () => {
                         window.location.href = `/messages?tenantId=${t.id}`;
                       }}
                       title='Chat'
-                      className='h-9 w-9 rounded-xl bg-slate-50 hover:bg-primary/5 dark:bg-white/5 dark:hover:bg-primary/10 border border-slate-200/60 dark:border-white/10 hover:border-primary/30 dark:hover:border-primary/30 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary flex items-center justify-center transition-all duration-300 active:scale-95'
+                      className='h-9 w-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-95'
                     >
-                      <MessageCircle size={16} />
+                      <MessageCircle size={16} strokeWidth={1.8} />
                     </button>
                   )}
                 </div>
@@ -410,8 +410,8 @@ const Tenants: React.FC = () => {
             );
           })
         ) : (
-          <div className='flex flex-col items-center justify-center py-12 text-slate-500 dark:text-slate-400'>
-            <User size={48} className='mb-4 opacity-20' />
+          <div className='lg-card lg-card-lift p-12 flex flex-col items-center justify-center text-muted-foreground'>
+            <User size={48} strokeWidth={1.8} className='mb-4 opacity-20' />
             <p className='text-sm font-medium'>Nenhum inquilino encontrado</p>
           </div>
         )}
@@ -469,7 +469,7 @@ const Tenants: React.FC = () => {
           {isSuccess ? (
             <div className='flex-1 flex flex-col items-center justify-center px-8 py-12 text-center animate-fadeIn'>
               <div className='w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mb-6 animate-bounce'>
-                <CheckCircle size={40} />
+                <CheckCircle size={40} strokeWidth={1.8} />
               </div>
               <h2 className='text-2xl font-black text-slate-900 dark:text-white mb-2'>Sucesso!</h2>
               <p className='text-slate-500 dark:text-slate-400 text-sm mb-8'>
@@ -489,7 +489,7 @@ const Tenants: React.FC = () => {
                   }}
                   className='w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2'
                 >
-                  <FileText size={18} /> Gerar Contrato Agora
+                  <FileText size={18} strokeWidth={1.8} /> Gerar Contrato Agora
                 </button>
                 <button
                   onClick={() => {
@@ -521,6 +521,7 @@ const Tenants: React.FC = () => {
                       <User
                         className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors'
                         size={18}
+                        strokeWidth={1.8}
                       />
                       <input
                         value={newTenant.name}
@@ -542,6 +543,7 @@ const Tenants: React.FC = () => {
                       <Mail
                         className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors'
                         size={18}
+                        strokeWidth={1.8}
                       />
                       <input
                         value={newTenant.email}
@@ -566,6 +568,7 @@ const Tenants: React.FC = () => {
                       <Phone
                         className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors'
                         size={16}
+                        strokeWidth={1.8}
                       />
                       <input
                         value={newTenant.phone}
@@ -591,6 +594,7 @@ const Tenants: React.FC = () => {
                       <FileText
                         className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors'
                         size={16}
+                        strokeWidth={1.8}
                       />
                       <input
                         value={newTenant.cpf}
@@ -615,6 +619,7 @@ const Tenants: React.FC = () => {
                   <Briefcase
                     className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors'
                     size={18}
+                    strokeWidth={1.8}
                   />
                   <select
                     value={newTenant.propertyId}
@@ -634,7 +639,7 @@ const Tenants: React.FC = () => {
                     ))}
                   </select>
                   <div className='absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400'>
-                    <ChevronRight size={16} className='rotate-90' />
+                    <ChevronRight size={16} strokeWidth={1.8} className='rotate-90' />
                   </div>
                 </div>
               </div>
@@ -662,7 +667,7 @@ const Tenants: React.FC = () => {
                           : 'bg-slate-100 dark:bg-white/5 text-slate-400'
                       }`}
                     >
-                      <Mail size={20} />
+                      <Mail size={20} strokeWidth={1.8} />
                     </div>
                     <div>
                       <h3 className='text-slate-900 dark:text-white text-sm font-bold'>
@@ -680,7 +685,9 @@ const Tenants: React.FC = () => {
                         : 'border-slate-300 dark:border-white/20'
                     }`}
                   >
-                    {newTenant.sendInvite && <CheckCircle size={12} className='text-white' />}
+                    {newTenant.sendInvite && (
+                      <CheckCircle size={12} strokeWidth={1.8} className='text-white' />
+                    )}
                   </div>
                 </div>
               </div>
@@ -695,7 +702,7 @@ const Tenants: React.FC = () => {
                 <label className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-3xl cursor-pointer bg-white dark:bg-surface-dark hover:bg-primary/5 hover:border-primary/50 transition-all group'>
                   <div className='flex flex-col items-center justify-center'>
                     <div className='bg-primary/10 p-3 rounded-2xl mb-2 group-hover:scale-110 transition-transform'>
-                      <CloudUpload className='text-primary' size={24} />
+                      <CloudUpload className='text-primary' size={24} strokeWidth={1.8} />
                     </div>
                     <p className='text-xs text-slate-500 dark:text-slate-400 font-bold'>
                       Arraste ou toque para anexar documentos

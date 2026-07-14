@@ -56,7 +56,7 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
   return (
     <>
       {/* Communication Hub */}
-      <div className='px-6 mb-4'>
+      <div className='mb-4'>
         <CommunicationHub
           tenantPropertyId={tenantData?.property_id}
           condoName={
@@ -68,7 +68,7 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
       </div>
 
       {/* Property & Contract Info */}
-      <div className='px-6 mb-8 animate-fadeIn'>
+      <div className='mb-8 animate-fadeIn'>
         {tenantProperty ? (
           <PropertyCard
             property={tenantProperty}
@@ -77,8 +77,8 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
             isTenant={true}
           />
         ) : (
-          <div className='p-8 rounded-3xl bg-slate-50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 flex flex-col items-center gap-3'>
-            <MapPin size={32} className='text-slate-300' />
+          <div className='lg-card lg-card-lift p-8 flex flex-col items-center gap-3'>
+            <MapPin size={32} strokeWidth={1.8} className='text-muted-foreground/40' />
             <p className='text-sm font-bold text-slate-400 uppercase tracking-widest'>
               Imóvel não vinculado
             </p>
@@ -87,12 +87,12 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
       </div>
 
       {/* Contract Validity */}
-      <div className='px-6 mb-8'>
-        <div className='bg-white dark:bg-surface-dark rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-4'>
+      <div className='mb-8'>
+        <div className='lg-card lg-card-lift p-6 flex flex-col gap-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-500'>
-                <Calendar size={20} />
+              <div className='w-10 h-10 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center shrink-0'>
+                <Calendar size={20} strokeWidth={1.8} />
               </div>
               <div>
                 <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
@@ -160,9 +160,9 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
       </div>
 
       {/* Payment Card */}
-      <div className='px-6 mb-6'>
+      <div className='mb-6'>
         <div
-          className={`bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border-2 transition-all duration-300 relative overflow-hidden ${getFinancialCardBorder()}`}
+          className={`lg-card lg-card-lift p-6 transition-all duration-300 relative overflow-hidden ${getFinancialCardBorder()}`}
         >
           <div className='flex justify-between items-start mb-6'>
             <div>
@@ -190,24 +190,28 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
           <div className='space-y-3'>
             <button
               onClick={onCopyPix}
-              className='w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-slate-900/20 dark:shadow-none'
+              className='w-full h-12 bg-primary text-primary-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg'
             >
-              {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
+              {copied ? (
+                <CheckCircle size={18} strokeWidth={1.8} />
+              ) : (
+                <Copy size={18} strokeWidth={1.8} />
+              )}
               {copied ? 'Código Pix Copiado!' : 'Copiar Código Pix'}
             </button>
             <div className='flex gap-3'>
               <button
                 onClick={onOpenCreditCard}
-                className='flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all'
+                className='flex-1 h-12 bg-primary text-primary-foreground rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all'
               >
-                <CreditCard size={18} />
+                <CreditCard size={18} strokeWidth={1.8} />
                 Cartão
               </button>
               <button
                 onClick={onOpenInvoice}
-                className='flex-1 h-12 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors'
+                className='flex-1 h-12 bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all'
               >
-                <Barcode size={18} />
+                <Barcode size={18} strokeWidth={1.8} />
                 Boleto
               </button>
             </div>
@@ -235,11 +239,11 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
                     >
                       {p.status === 'paid' ? (
                         <>
-                          <CheckCircle size={14} /> Pago
+                          <CheckCircle size={14} strokeWidth={1.8} /> Pago
                         </>
                       ) : (
                         <>
-                          <AlertTriangle size={14} /> Pendente
+                          <AlertTriangle size={14} strokeWidth={1.8} /> Pendente
                         </>
                       )}
                     </span>
@@ -262,10 +266,13 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
       </div>
 
       {/* Tenant Score */}
-      <div className='px-6 mb-6'>
-        <div className='bg-slate-900 dark:bg-surface-dark rounded-3xl p-6 text-white shadow-xl relative overflow-hidden'>
+      <div className='mb-6'>
+        <div
+          className='lg-card lg-card-lift p-6 relative overflow-hidden'
+          style={{ background: 'rgba(3,5,18,0.85)' }}
+        >
           <div className='absolute right-0 top-0 p-6 opacity-10'>
-            <Award size={100} />
+            <Award size={100} strokeWidth={1.8} />
           </div>
           <div className='flex justify-between items-start relative z-10'>
             <div>
@@ -280,7 +287,8 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
                   <Star
                     key={s}
                     size={14}
-                    className='text-yellow-400 fill-yellow-400 shadow-yellow-400/20'
+                    strokeWidth={1.8}
+                    className='text-yellow-400 fill-yellow-400'
                   />
                 ))}
               </div>
@@ -313,7 +321,7 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
       </div>
 
       {/* Quick Access Grid */}
-      <div className='px-6 mb-6'>
+      <div className='mb-6'>
         <h3 className='text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 px-1'>
           Acesso Rápido
         </h3>
@@ -350,9 +358,9 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
           ].map((item, i) => (
             <button key={i} onClick={item.action} className='flex flex-col items-center group'>
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-sm ${item.color} dark:bg-opacity-20 mb-3`}
+                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all group-hover:scale-110 ${item.color} bg-opacity-20 mb-3`}
               >
-                <item.icon size={26} />
+                <item.icon size={26} strokeWidth={1.8} />
               </div>
               <span className='text-[11px] font-black text-slate-900 dark:text-white text-center leading-none mb-1'>
                 {item.label}

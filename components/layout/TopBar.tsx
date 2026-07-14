@@ -238,10 +238,10 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className='w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-accent text-muted-foreground transition-all active-tap group'
+              className='w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap group'
               title='Pesquisa Global (Ctrl+K)'
             >
-              <Search size={20} className='group-hover:text-primary transition-colors' />
+              <Search size={16} className='group-hover:text-primary transition-colors' />
             </button>
           )}
 
@@ -325,24 +325,24 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
         {/* Theme Toggle Mobile */}
         <button
           onClick={toggleTheme}
-          className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-accent text-muted-foreground transition-all active-tap'
+          className='md:hidden w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap'
         >
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
         {/* Notifications */}
         <div className='relative'>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active-tap relative ${
+            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active-tap relative ${
               showNotifications
                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                : 'hover:bg-accent text-muted-foreground'
+                : 'bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10'
             }`}
           >
-            <Bell size={20} />
+            <Bell size={16} />
             {unreadCount > 0 && (
-              <span className='absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark animate-pulse'></span>
+              <span className='absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark animate-pulse'></span>
             )}
           </button>
 

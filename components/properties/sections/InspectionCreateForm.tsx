@@ -65,7 +65,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
   return (
     <div className='flex-1 flex flex-col overflow-hidden'>
       {/* Header */}
-      <div className='flex justify-between items-center px-8 py-6 bg-white dark:bg-black/10 border-b border-gray-100 dark:border-white/5'>
+      <div className='flex justify-between items-center px-8 py-6 bg-white/5 border-b border-white/10'>
         <div>
           <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-wider'>
             Nova Vistoria
@@ -76,9 +76,9 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
         </div>
         <button
           onClick={onBack}
-          className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-white/10 transition-all'
+          className='p-2.5 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/10 transition-all'
         >
-          <X size={16} />
+          <X size={16} strokeWidth={1.8} />
         </button>
       </div>
 
@@ -86,16 +86,16 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
       <div className='flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar'>
         {/* SEÇÃO 1: Identificação */}
         <div className='space-y-4'>
-          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>
             Seção 1: Identificação
           </span>
-          <div className='grid md:grid-cols-2 gap-6 bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm'>
+          <div className='grid md:grid-cols-2 gap-6 lg-card lg-card-lift p-6'>
             {/* Tipo de Vistoria Segmented Toggle */}
             <div className='space-y-2'>
               <label className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>
                 Tipo de Vistoria
               </label>
-              <div className='flex bg-slate-50 dark:bg-black/40 p-1.5 rounded-xl border border-slate-200/50 dark:border-white/5 gap-1'>
+              <div className='flex bg-white/5 p-1.5 rounded-xl border border-white/10 gap-1'>
                 {(['entrada', 'periódica', 'saída'] as const).map((type) => (
                   <button
                     key={type}
@@ -103,8 +103,8 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                     onClick={() => setNewType(type)}
                     className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                       newType === type
-                        ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                        ? 'bg-primary text-white shadow-none'
+                        : 'text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {type}
@@ -122,7 +122,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                 type='date'
                 value={newDate}
                 onChange={(e) => setNewDate(e.target.value)}
-                className='w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-2.5 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all'
+                className='w-full bg-white/5 border border-white/10 p-2.5 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all'
               />
             </div>
 
@@ -136,7 +136,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                 value={newInspector}
                 onChange={(e) => setNewInspector(e.target.value)}
                 placeholder='Nome completo do inspetor...'
-                className='w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-2.5 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all'
+                className='w-full bg-white/5 border border-white/10 p-2.5 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all'
               />
             </div>
 
@@ -150,7 +150,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                   Controle de Acesso
                 </span>
               </div>
-              <div className='flex bg-slate-50 dark:bg-black/40 p-1.5 rounded-xl border border-slate-200/50 dark:border-white/5 gap-1'>
+              <div className='flex bg-white/5 p-1.5 rounded-xl border border-white/10 gap-1'>
                 {(['admin', 'tenant'] as const).map((vis) => (
                   <button
                     key={vis}
@@ -158,8 +158,8 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                     onClick={() => setNewVisibility(vis)}
                     className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
                       newVisibility === vis
-                        ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                        ? 'bg-primary text-white shadow-none'
+                        : 'text-slate-400 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {vis === 'admin' ? 'Apenas Admins' : 'Admin & Inquilino'}
@@ -172,7 +172,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
 
         {/* SEÇÃO 2: Cômodos e Itens (Accordions) */}
         <div className='space-y-4'>
-          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>
             Seção 2: Estado de Cômodos e Fotos
           </span>
           <div className='space-y-3'>
@@ -182,15 +182,15 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
               return (
                 <div
                   key={room.room_name}
-                  className='border border-slate-150 dark:border-white/5 bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm'
+                  className='lg-card lg-card-lift rounded-2xl overflow-hidden'
                 >
                   <button
                     type='button'
                     onClick={() => setExpandedRoom(isExpanded ? null : room.room_name)}
-                    className='w-full flex items-center justify-between p-5 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all'
+                    className='w-full flex items-center justify-between p-5 hover:bg-white/5 transition-all'
                   >
                     <div className='flex items-center gap-3'>
-                      <span className='text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider'>
+                      <span className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider'>
                         {room.room_name}
                       </span>
                       <span
@@ -199,7 +199,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                         {condInfo.label}
                       </span>
                       {room.photos.length > 0 && (
-                        <span className='text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase'>
+                        <span className='text-[9px] font-black text-slate-400 uppercase'>
                           ({room.photos.length} Fotos)
                         </span>
                       )}
@@ -211,15 +211,16 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                     </div>
                     <ChevronDown
                       size={16}
+                      strokeWidth={1.8}
                       className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </button>
 
                   {isExpanded && (
-                    <div className='p-6 bg-slate-50 dark:bg-black/20 border-t border-slate-150 dark:border-white/5 space-y-4'>
+                    <div className='p-6 bg-white/5 border-t border-white/10 space-y-4'>
                       {/* Item Condition Select */}
                       <div className='space-y-2'>
-                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400'>
                           Estado do Cômodo
                         </label>
                         <div className='flex gap-2'>
@@ -239,11 +240,11 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                                 className={`px-4 py-2 border rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
                                   active
                                     ? c === 'bom'
-                                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
+                                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                       : c === 'regular'
-                                        ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'
-                                        : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
-                                    : 'border-slate-200 dark:border-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-white'
+                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                        : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                    : 'border-white/10 text-slate-400 hover:text-white'
                                 }`}
                               >
                                 {c}
@@ -255,7 +256,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
 
                       {/* Notes */}
                       <div className='space-y-2'>
-                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400'>
                           Observações Detalhadas
                         </label>
                         <textarea
@@ -268,24 +269,30 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                             )
                           }
                           placeholder='Descreva o estado das paredes, tomadas, portas e acabamentos...'
-                          className='w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-20 resize-none'
+                          className='w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-20 resize-none'
                         />
                       </div>
 
                       {/* Photo Upload Area */}
                       <div className='space-y-3'>
-                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+                        <label className='text-[9px] font-bold uppercase tracking-wider text-slate-400'>
                           Fotos de Evidência (Máximo 5 fotos de 5MB)
                         </label>
                         <div className='grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3'>
                           {/* Upload Button */}
                           {room.photos.length < 5 && (
-                            <label className='aspect-square border border-dashed border-slate-200 dark:border-white/10 hover:border-primary bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.08] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3'>
+                            <label className='aspect-square border border-dashed border-white/10 hover:border-primary bg-white/5 hover:bg-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3'>
                               {uploadingRoom === room.room_name ? (
-                                <Loader2 className='w-5 h-5 text-primary animate-spin' />
+                                <Loader2
+                                  className='w-5 h-5 text-primary animate-spin'
+                                  strokeWidth={1.8}
+                                />
                               ) : (
                                 <>
-                                  <UploadCloud className='w-5 h-5 text-slate-400' />
+                                  <UploadCloud
+                                    className='w-5 h-5 text-slate-400'
+                                    strokeWidth={1.8}
+                                  />
                                   <span className='text-[8px] font-black uppercase text-slate-400 tracking-wider'>
                                     Enviar
                                   </span>
@@ -308,7 +315,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                           {room.photos.map((photo, pIdx) => (
                             <div
                               key={pIdx}
-                              className='aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative group'
+                              className='aspect-square rounded-xl overflow-hidden bg-white/5 border border-white/10 relative group'
                             >
                               <img
                                 src={photo}
@@ -320,7 +327,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                                 onClick={() => onRemovePhoto(room.room_name, photo)}
                                 className='absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-500 hover:text-rose-400 transition-opacity animate-fadeIn'
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={16} strokeWidth={1.8} />
                               </button>
                             </div>
                           ))}
@@ -330,18 +337,21 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                       {/* Video Upload Area */}
                       <div className='space-y-3 pt-2'>
                         <label className='text-[9px] font-bold uppercase tracking-wider text-[#13c8ec] flex items-center gap-1.5'>
-                          <Video size={12} /> Vídeos de Evidência (Máx. 3 vídeos de 50MB, até 2min,
-                          1080p)
+                          <Video size={12} strokeWidth={1.8} /> Vídeos de Evidência (Máx. 3 vídeos
+                          de 50MB, até 2min, 1080p)
                         </label>
                         <div className='grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3'>
                           {/* Upload Button */}
                           {room.videos.length < 3 && (
-                            <label className='aspect-square border border-dashed border-slate-200 dark:border-white/10 hover:border-[#13c8ec] bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.08] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3'>
+                            <label className='aspect-square border border-dashed border-white/10 hover:border-[#13c8ec] bg-white/5 hover:bg-white/5 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all gap-1.5 p-3'>
                               {uploadingVideoRoom === room.room_name ? (
-                                <Loader2 className='w-5 h-5 text-[#13c8ec] animate-spin' />
+                                <Loader2
+                                  className='w-5 h-5 text-[#13c8ec] animate-spin'
+                                  strokeWidth={1.8}
+                                />
                               ) : (
                                 <>
-                                  <Film className='w-5 h-5 text-slate-400' />
+                                  <Film className='w-5 h-5 text-slate-400' strokeWidth={1.8} />
                                   <span className='text-[8px] font-black uppercase text-slate-400 tracking-wider'>
                                     Vídeo
                                   </span>
@@ -364,7 +374,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                           {room.videos.map((video, vIdx) => (
                             <div
                               key={vIdx}
-                              className='aspect-square rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-white/10 relative group'
+                              className='aspect-square rounded-xl overflow-hidden bg-slate-900 border border-white/10 relative group'
                             >
                               <video
                                 src={video}
@@ -373,14 +383,14 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                                 preload='metadata'
                               />
                               <div className='absolute bottom-1 left-1 right-1 flex items-center justify-between px-1.5 py-0.5 bg-black/60 rounded text-[7px] text-white font-black uppercase tracking-wider'>
-                                <Film size={10} />
+                                <Film size={10} strokeWidth={1.8} />
                               </div>
                               <button
                                 type='button'
                                 onClick={() => onRemoveVideo(room.room_name, video)}
                                 className='absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-500 hover:text-rose-400 transition-opacity animate-fadeIn'
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={16} strokeWidth={1.8} />
                               </button>
                             </div>
                           ))}
@@ -396,10 +406,10 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
 
         {/* SEÇÃO 3: Conclusão */}
         <div className='space-y-4'>
-          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500'>
+          <span className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>
             Seção 3: Parecer e Conclusão
           </span>
-          <div className='space-y-4 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 p-6 rounded-2xl shadow-sm'>
+          <div className='space-y-4 lg-card lg-card-lift p-6'>
             <div className='space-y-2'>
               <label className='text-[10px] font-bold uppercase tracking-wider text-slate-400'>
                 Notas e Conclusão Geral
@@ -408,7 +418,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                 value={newGeneralNotes}
                 onChange={(e) => setNewGeneralNotes(e.target.value)}
                 placeholder='Escreva um resumo geral sobre o laudo...'
-                className='w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 resize-none'
+                className='w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 resize-none'
               />
             </div>
 
@@ -420,7 +430,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
                 value={newPendingItems}
                 onChange={(e) => setNewPendingItems(e.target.value)}
                 placeholder='Caso haja itens a consertar, liste-os aqui...'
-                className='w-full bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-20 resize-none'
+                className='w-full bg-white/5 border border-white/10 p-3 rounded-xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-20 resize-none'
               />
             </div>
           </div>
@@ -428,12 +438,12 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
       </div>
 
       {/* Form Actions Footer Sticky */}
-      <div className='sticky bottom-0 bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-white/8 px-8 py-4 flex justify-end gap-3 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'>
+      <div className='sticky bottom-0 bg-white/5 border-t border-white/10 px-8 py-4 flex justify-end gap-3 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'>
         <button
           type='button'
           disabled={isSubmitting}
           onClick={() => onSave('rascunho')}
-          className='px-6 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 text-[10px] font-black uppercase tracking-widest transition-all'
+          className='px-6 py-3 rounded-xl border border-white/10 text-slate-400 hover:bg-white/5 text-[10px] font-black uppercase tracking-widest transition-all'
         >
           Salvar Rascunho
         </button>

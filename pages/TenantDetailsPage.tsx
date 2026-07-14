@@ -32,9 +32,9 @@ const TenantDetailsPage: React.FC = () => {
 
   if (h.isLoading) {
     return (
-      <div className='p-8 space-y-6 bg-background-light dark:bg-background-dark min-h-screen animate-pulse'>
+      <div className='p-8 space-y-6 animate-pulse'>
         <div className='h-4 w-36 bg-gray-200 dark:bg-white/10 rounded' />
-        <div className='p-6 bg-white dark:bg-surface-dark rounded-3xl border border-gray-100 dark:border-white/5 flex items-center gap-6'>
+        <div className='lg-card lg-card-lift p-6 flex items-center gap-6'>
           <div className='w-16 h-16 rounded-2xl bg-gray-200 dark:bg-white/10' />
           <div className='space-y-2 flex-1'>
             <div className='h-5 w-48 bg-gray-200 dark:bg-white/10 rounded' />
@@ -52,9 +52,9 @@ const TenantDetailsPage: React.FC = () => {
 
   if (h.error || !h.tenant) {
     return (
-      <div className='p-8 flex flex-col items-center justify-center text-center space-y-4 bg-background-light dark:bg-background-dark min-h-screen'>
+      <div className='p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-screen'>
         <div className='w-20 h-20 rounded-full bg-red-100 dark:bg-red-950/20 text-red-500 flex items-center justify-center'>
-          <ShieldAlert size={40} />
+          <ShieldAlert size={40} strokeWidth={1.8} />
         </div>
         <div>
           <h2 className='text-xl font-bold text-slate-900 dark:text-white'>
@@ -68,7 +68,7 @@ const TenantDetailsPage: React.FC = () => {
           onClick={() => h.navigate('/tenants')}
           className='px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm shadow-md flex items-center gap-2 hover:scale-105 transition-transform'
         >
-          <ArrowLeft size={16} /> Voltar para Inquilinos
+          <ArrowLeft size={16} strokeWidth={1.8} /> Voltar para Inquilinos
         </button>
       </div>
     );
@@ -77,23 +77,23 @@ const TenantDetailsPage: React.FC = () => {
   const { tenant } = h;
 
   return (
-    <div className='flex flex-col min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-white'>
+    <div className='flex flex-col min-h-screen'>
       <div className='px-8 pt-6 pb-2 flex items-center justify-between'>
         <div className='flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-widest'>
           <button
             onClick={() => h.navigate('/tenants')}
             className='hover:text-primary transition-colors flex items-center gap-1'
           >
-            <ArrowLeft size={13} /> Inquilinos
+            <ArrowLeft size={13} strokeWidth={1.8} /> Inquilinos
           </button>
           <span>/</span>
           <span className='text-slate-700 dark:text-slate-200 font-black'>{tenant.name}</span>
         </div>
         <button
           onClick={() => h.setShowDeleteDialog(true)}
-          className='flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all'
+          className='flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-semibold uppercase tracking-widest transition-all'
         >
-          <Trash2 size={14} /> Excluir
+          <Trash2 size={14} strokeWidth={1.8} /> Excluir
         </button>
       </div>
 
@@ -115,7 +115,7 @@ const TenantDetailsPage: React.FC = () => {
         />
       </div>
 
-      <div className='flex-1 p-8 pb-32 relative'>
+      <div className='flex-1 p-6 pb-32 relative space-y-6'>
         {h.activeTab === 'overview' && (
           <div className='space-y-6'>
             <OverviewTab

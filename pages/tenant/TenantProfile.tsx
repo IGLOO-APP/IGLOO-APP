@@ -44,13 +44,13 @@ const TenantProfile: React.FC = () => {
   } = useTenantProfile();
 
   return (
-    <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
+    <div className='flex flex-col h-full p-6'>
       {/* Hidden inputs for uploads */}
       <input type='file' ref={fileInputRef} onChange={onFileSelected} className='hidden' />
       <input type='file' ref={avatarInputRef} onChange={handleAvatarChange} className='hidden' />
 
       {/* --- COMPACT HORIZONTAL HEADER --- */}
-      <div className='px-6 py-6 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark sticky top-0 z-30'>
+      <div className='lg-card lg-card-lift p-6 sticky top-0 z-30'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-4'>
             <div className='relative group'>
@@ -61,7 +61,7 @@ const TenantProfile: React.FC = () => {
               >
                 {isEditing && (
                   <div className='absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]'>
-                    <Camera size={16} className='text-white' />
+                    <Camera size={16} strokeWidth={1.8} className='text-white' />
                   </div>
                 )}
               </div>
@@ -96,7 +96,11 @@ const TenantProfile: React.FC = () => {
                   disabled={isSaving}
                   className='px-6 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all flex items-center gap-2 active:scale-95'
                 >
-                  {isSaving ? <Clock size={14} className='animate-spin' /> : <Save size={14} />}
+                  {isSaving ? (
+                    <Clock size={14} strokeWidth={1.8} className='animate-spin' />
+                  ) : (
+                    <Save size={14} strokeWidth={1.8} />
+                  )}
                   Salvar
                 </button>
               </>
@@ -105,7 +109,7 @@ const TenantProfile: React.FC = () => {
                 onClick={() => setIsEditing(true)}
                 className='px-6 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-black/10 dark:shadow-none'
               >
-                <Edit2 size={14} />
+                <Edit2 size={14} strokeWidth={1.8} />
                 Editar
               </button>
             )}
@@ -125,9 +129,9 @@ const TenantProfile: React.FC = () => {
               key={tab.id}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 min-w-[110px] py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`flex-1 min-w-[110px] py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white/10 text-foreground border border-white/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}`}
             >
-              <tab.icon size={14} /> {tab.label}
+              <tab.icon size={14} strokeWidth={1.8} /> {tab.label}
             </button>
           ))}
         </div>

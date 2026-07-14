@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ArrowLeft,
   Plus,
@@ -29,6 +29,19 @@ const Financials: React.FC = () => {
   const { user } = useAuth();
   const [showTaxExport, setShowTaxExport] = React.useState(false);
 
+  // Global cursor spotlight: delegates to all .lg-card elements on the page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('.lg-card') as HTMLElement | null;
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      target.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       <TopBar title='Lançamentos' subtitle='Fluxo de caixa e gestão'>
@@ -36,7 +49,7 @@ const Financials: React.FC = () => {
           <button
             onClick={h.handleExport}
             disabled={h.isExporting}
-            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 hover:shadow-lg hover:border-primary/30 transition-all disabled:opacity-50 group'
+            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:border-primary/30 transition-all disabled:opacity-50 group'
             title='Exportar Relatório'
           >
             {h.isExporting ? (
@@ -44,46 +57,47 @@ const Financials: React.FC = () => {
             ) : (
               <Download
                 size={18}
+                strokeWidth={1.8}
                 className='md:size-5 group-hover:scale-110 transition-transform'
               />
             )}
           </button>
           <button
             onClick={() => h.setShowImportModal(true)}
-            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
+            className='flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all group'
             title='Conciliação Bancária'
           >
-            <FileUp size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
+            <FileUp size={18} strokeWidth={1.8} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
           <button
             onClick={() => h.setShowApportionment(true)}
-            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all group'
+            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all group'
             title='Rateio de Despesas'
           >
-            <PieChart size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
+            <PieChart size={18} strokeWidth={1.8} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
           <button
             onClick={() => setShowTaxExport(true)}
-            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all group'
+            className='hidden sm:flex h-9 w-9 md:h-11 md:w-11 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all group'
             title='Exportar DIMOB / Carnê-Leão'
           >
-            <FileText size={18} className='md:size-5 group-hover:scale-110 transition-transform' />
+            <FileText size={18} strokeWidth={1.8} className='md:size-5 group-hover:scale-110 transition-transform' />
           </button>
-          <Button onClick={() => h.setShowAddForm(true)} variant='default' size='default'>
-            <Plus size={16} /> <span className='hidden sm:inline'>Nova Receita</span>
+          <Button onClick={() => h.setShowAddForm(true)} variant='glass' size='default'>
+            <Plus size={16} strokeWidth={1.8} /> <span className='hidden sm:inline'>Nova Receita</span>
           </Button>
         </div>
       </TopBar>
 
-      <div className='px-4 py-4 space-y-3 bg-background/95 backdrop-blur-sm border-b border-border'>
+      <div className='px-4 py-4 space-y-3 border-b border-white/10'>
         <div className='relative'>
-          <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} />
+          <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-400' size={18} strokeWidth={1.8} />
           <input
             type='text'
             placeholder='Buscar lançamentos (ex: aluguel, conserto...)'
             value={h.searchTerm}
             onChange={(e) => h.setSearchTerm(e.target.value)}
-            className='w-full pl-11 pr-4 py-2.5 rounded-full bg-muted border border-input text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring transition-all text-foreground shadow-sm'
+            className='w-full pl-11 pr-4 py-2.5 rounded-full bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-primary text-white placeholder-slate-500 transition-all'
           />
         </div>
 
@@ -92,11 +106,11 @@ const Financials: React.FC = () => {
             <select
               value={h.selectedPropertyId}
               onChange={(e) => h.setSelectedPropertyId(e.target.value)}
-              className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-muted border border-input text-sm font-semibold text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring shadow-sm cursor-pointer transition-colors'
+              className='appearance-none w-full h-11 pl-4 pr-10 rounded-full bg-white/5 border border-white/10 text-sm font-semibold text-white focus:outline-none focus:border-primary cursor-pointer transition-colors'
             >
-              <option value='all'>Todos os Imóveis</option>
+              <option value='all' className='bg-[#0c0e1a]'>Todos os Imóveis</option>
               {h.properties.map((p) => (
-                <option key={p.id} value={p.id}>
+                <option key={p.id} value={p.id} className='bg-[#0c0e1a]'>
                   {p.name}
                 </option>
               ))}
@@ -104,18 +118,19 @@ const Financials: React.FC = () => {
             <ChevronDown
               className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500'
               size={20}
+              strokeWidth={1.8}
             />
           </div>
-          <div className='h-11 px-2 rounded-full bg-muted border border-input text-sm font-semibold text-foreground flex items-center gap-1 shadow-sm whitespace-nowrap transition-colors'>
+          <div className='h-11 px-2 rounded-full bg-white/5 border border-white/10 text-sm font-semibold text-white flex items-center gap-1 whitespace-nowrap'>
             <button
               onClick={h.handlePrevMonth}
-              className='p-1.5 hover:bg-accent rounded-full transition-colors'
+              className='p-1.5 hover:bg-white/10 rounded-full transition-colors'
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={14} strokeWidth={1.8} />
             </button>
             <div className='flex items-center gap-2 px-1'>
-              <Calendar size={16} className='text-primary' />
-              <span className='min-w-[60px] text-center capitalize'>
+              <Calendar size={16} strokeWidth={1.8} className='text-primary' />
+              <span className='min-w-[60px] text-center capitalize text-slate-300'>
                 {h.selectedDate
                   .toLocaleString('pt-BR', { month: 'short', year: '2-digit' })
                   .replace('.', '')}
@@ -123,9 +138,9 @@ const Financials: React.FC = () => {
             </div>
             <button
               onClick={h.handleNextMonth}
-              className='p-1.5 hover:bg-accent rounded-full transition-colors'
+              className='p-1.5 hover:bg-white/10 rounded-full transition-colors'
             >
-              <ArrowUp size={14} className='rotate-90' />
+              <ArrowUp size={14} strokeWidth={1.8} className='rotate-90' />
             </button>
           </div>
         </div>

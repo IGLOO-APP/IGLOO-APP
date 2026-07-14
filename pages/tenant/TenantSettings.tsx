@@ -64,10 +64,10 @@ const TenantSettings: React.FC = () => {
       </div>
 
       {/* Aparência */}
-      <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex items-center gap-3 mb-4'>
-          <div className='p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30'>
-            <Sun className='w-5 h-5 text-purple-600 dark:text-purple-400' />
+          <div className='p-2.5 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm'>
+            <Sun className='w-5 h-5 text-purple-600 dark:text-purple-400' strokeWidth={1.8} />
           </div>
           <div>
             <h2 className='font-semibold text-gray-900 dark:text-white'>Aparência</h2>
@@ -77,9 +77,17 @@ const TenantSettings: React.FC = () => {
 
         <div className='grid grid-cols-3 gap-3'>
           {[
-            { value: 'light', label: 'Claro', icon: <Sun className='w-4 h-4' /> },
-            { value: 'dark', label: 'Escuro', icon: <Moon className='w-4 h-4' /> },
-            { value: 'system', label: 'Sistema', icon: <Smartphone className='w-4 h-4' /> },
+            { value: 'light', label: 'Claro', icon: <Sun className='w-4 h-4' strokeWidth={1.8} /> },
+            {
+              value: 'dark',
+              label: 'Escuro',
+              icon: <Moon className='w-4 h-4' strokeWidth={1.8} />,
+            },
+            {
+              value: 'system',
+              label: 'Sistema',
+              icon: <Smartphone className='w-4 h-4' strokeWidth={1.8} />,
+            },
           ].map((opt) => (
             <button
               key={opt.value}
@@ -88,7 +96,7 @@ const TenantSettings: React.FC = () => {
               className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all ${
                 theme === opt.value
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                  : 'bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10'
               }`}
             >
               {opt.icon}
@@ -99,10 +107,10 @@ const TenantSettings: React.FC = () => {
       </div>
 
       {/* Notificações */}
-      <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex items-center gap-3 mb-4'>
-          <div className='p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30'>
-            <Bell className='w-5 h-5 text-blue-600 dark:text-blue-400' />
+          <div className='p-2.5 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm'>
+            <Bell className='w-5 h-5 text-blue-600 dark:text-blue-400' strokeWidth={1.8} />
           </div>
           <div>
             <h2 className='font-semibold text-gray-900 dark:text-white'>Notificações</h2>
@@ -157,10 +165,10 @@ const TenantSettings: React.FC = () => {
       </div>
 
       {/* Idioma */}
-      <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex items-center gap-3 mb-4'>
-          <div className='p-2 rounded-lg bg-green-100 dark:bg-green-900/30'>
-            <Globe className='w-5 h-5 text-green-600 dark:text-green-400' />
+          <div className='p-2.5 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm'>
+            <Globe className='w-5 h-5 text-green-600 dark:text-green-400' strokeWidth={1.8} />
           </div>
           <div>
             <h2 className='font-semibold text-gray-900 dark:text-white'>Idioma</h2>
@@ -179,10 +187,10 @@ const TenantSettings: React.FC = () => {
       </div>
 
       {/* Segurança */}
-      <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex items-center gap-3 mb-4'>
-          <div className='p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30'>
-            <Lock className='w-5 h-5 text-orange-600 dark:text-orange-400' />
+          <div className='p-2.5 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm'>
+            <Lock className='w-5 h-5 text-orange-600 dark:text-orange-400' strokeWidth={1.8} />
           </div>
           <div>
             <h2 className='font-semibold text-gray-900 dark:text-white'>Segurança</h2>
@@ -213,19 +221,21 @@ const TenantSettings: React.FC = () => {
           onClick={handleSave}
           disabled={saving}
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all ${
-            saved ? 'bg-green-500 text-white' : 'bg-primary text-white hover:bg-primary/90'
+            saved
+              ? 'bg-green-500 text-white'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
           } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {saving ? (
             'Salvando...'
           ) : saved ? (
             <>
-              <CheckCircle className='w-4 h-4' />
+              <CheckCircle className='w-4 h-4' strokeWidth={1.8} />
               Salvo!
             </>
           ) : (
             <>
-              <Save className='w-4 h-4' />
+              <Save className='w-4 h-4' strokeWidth={1.8} />
               Salvar Preferências
             </>
           )}

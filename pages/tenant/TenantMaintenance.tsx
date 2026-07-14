@@ -294,9 +294,9 @@ const TenantMaintenance: React.FC = () => {
   };
 
   return (
-    <div className='flex h-full w-full overflow-hidden bg-[#050608]'>
+    <div className='flex h-full w-full overflow-hidden'>
       {/* ── Sidebar: Lista de Chamados (FIXA) ── */}
-      <div className='flex w-[320px] h-full flex-col border-r border-white/5 bg-[#0A0B0D] shrink-0 overflow-hidden'>
+      <div className='lg-card lg-card-lift p-4 flex w-[320px] h-full flex-col shrink-0 overflow-hidden'>
         <div className='p-6 space-y-6 shrink-0'>
           <div className='flex items-center justify-between'>
             <h1 className='text-xl font-black text-white tracking-tighter'>Atendimentos</h1>
@@ -318,7 +318,11 @@ const TenantMaintenance: React.FC = () => {
           </div>
 
           <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-600' size={14} />
+            <Search
+              className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-600'
+              size={14}
+              strokeWidth={1.8}
+            />
             <input
               type='text'
               placeholder='Buscar...'
@@ -333,7 +337,7 @@ const TenantMaintenance: React.FC = () => {
           {displayRequests.length === 0 && (
             <div className='flex flex-col items-center justify-center py-8 gap-2'>
               <div className='w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center'>
-                <Wrench size={14} className='text-slate-600' />
+                <Wrench size={14} strokeWidth={1.8} className='text-slate-600' />
               </div>
               <p className='text-[10px] font-bold text-slate-600 text-center'>
                 {isCreating
@@ -349,7 +353,7 @@ const TenantMaintenance: React.FC = () => {
             <button
               key={req.id}
               onClick={() => scrollToTicket(req.id)}
-              className='w-full p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.07] text-left transition-all group'
+              className='w-full p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.04] text-left transition-colors group'
             >
               <div className='flex justify-between items-start mb-2'>
                 <span className='text-[8px] font-black text-slate-500 uppercase tracking-widest'>
@@ -368,6 +372,7 @@ const TenantMaintenance: React.FC = () => {
                 </span>
                 <ChevronRight
                   size={12}
+                  strokeWidth={1.8}
                   className='text-slate-700 group-hover:translate-x-1 transition-transform'
                 />
               </div>
@@ -377,12 +382,12 @@ const TenantMaintenance: React.FC = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className='flex-1 flex flex-col bg-[#050608] relative overflow-hidden h-full min-h-0'>
+      <div className='lg-card lg-card-lift p-0 flex-1 flex flex-col relative overflow-hidden h-full min-h-0'>
         {/* Chat Header */}
         <div className='h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0A0B0D]/60 backdrop-blur-xl z-20'>
           <div className='flex items-center gap-3'>
             <div className='w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-              <MessageSquare size={18} />
+              <MessageSquare size={18} strokeWidth={1.8} />
             </div>
             <div>
               <h2 className='text-xs font-black text-white uppercase tracking-widest'>
@@ -410,7 +415,7 @@ const TenantMaintenance: React.FC = () => {
                     <div className='flex items-center justify-between'>
                       <div className='flex items-center gap-2'>
                         <div className='w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center'>
-                          <Wrench size={12} className='text-primary' />
+                          <Wrench size={12} strokeWidth={1.8} className='text-primary' />
                         </div>
                         <span className='text-[9px] font-black text-primary uppercase tracking-widest'>
                           Abertura de Chamado
@@ -429,7 +434,7 @@ const TenantMaintenance: React.FC = () => {
                       </p>
                     </div>
                     <div className='pt-2 flex items-center gap-1.5 text-[9px] font-bold text-slate-600 border-t border-white/5'>
-                      <Clock size={10} />
+                      <Clock size={10} strokeWidth={1.8} />
                       {new Date(msg.created_at).toLocaleString('pt-BR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -489,7 +494,7 @@ const TenantMaintenance: React.FC = () => {
           {allMessages.length === 0 && !isCreating && (
             <div className='flex flex-col items-center justify-center min-h-[350px] my-auto text-center animate-fadeIn'>
               <div className='w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6 shadow-2xl'>
-                <Wrench size={28} className='text-slate-500' />
+                <Wrench size={28} strokeWidth={1.8} className='text-slate-500' />
               </div>
               <h3 className='text-lg font-black text-white uppercase tracking-tight mb-2'>
                 Nenhum Chamado Ativo
@@ -505,16 +510,16 @@ const TenantMaintenance: React.FC = () => {
                 }}
                 className='px-6 py-3.5 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20 flex items-center gap-2'
               >
-                <Plus size={16} strokeWidth={3} />
+                <Plus size={16} strokeWidth={1.8} />
                 Abrir Novo Chamado
               </button>
             </div>
           )}
 
           {allMessages.length > 0 && !activeTicket && !isCreating && (
-            <div className='max-w-md mx-auto bg-white/[0.02] border border-white/5 rounded-3xl p-6 text-center shadow-xl space-y-4 my-8 animate-fadeIn'>
+            <div className='max-w-md mx-auto lg-card lg-card-lift p-6 text-center space-y-4 my-8 animate-fadeIn'>
               <div className='w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto'>
-                <Wrench size={20} className='text-slate-400' />
+                <Wrench size={20} strokeWidth={1.8} className='text-slate-400' />
               </div>
               <div>
                 <h4 className='text-sm font-black text-white uppercase tracking-wider'>
@@ -532,7 +537,7 @@ const TenantMaintenance: React.FC = () => {
                 }}
                 className='w-full py-3 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/10 flex items-center justify-center gap-2'
               >
-                <Plus size={14} strokeWidth={3} />
+                <Plus size={14} strokeWidth={1.8} />
                 Abrir Novo Chamado
               </button>
             </div>
@@ -556,12 +561,12 @@ const TenantMaintenance: React.FC = () => {
                         setNewCategory(cat.id);
                         setCreationStep('details');
                       }}
-                      className='p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4 hover:bg-white/10 hover:border-primary/40 transition-all group'
+                      className='p-4 rounded-2xl bg-transparent text-muted-foreground hover:text-foreground hover:bg-white/5 border border-white/5 flex items-center gap-4 transition-all group'
                     >
                       <div
                         className={`w-10 h-10 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center shrink-0`}
                       >
-                        <cat.icon size={18} />
+                        <cat.icon size={18} strokeWidth={1.8} />
                       </div>
                       <span className='text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white'>
                         {cat.label}
@@ -587,7 +592,7 @@ const TenantMaintenance: React.FC = () => {
                   }}
                   className='text-[9px] font-black text-slate-600 uppercase tracking-widest hover:text-red-500 transition-colors flex items-center gap-1.5'
                 >
-                  <X size={12} /> Cancelar abertura
+                  <X size={12} strokeWidth={1.8} /> Cancelar abertura
                 </button>
               </div>
             </div>
@@ -597,7 +602,7 @@ const TenantMaintenance: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className='p-6 pb-24 md:pb-6 bg-[#0A0B0D] border-t border-white/5 shrink-0'>
+        <div className='bg-white/5 border-t border-white/10 backdrop-blur-sm p-4 shrink-0'>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -620,7 +625,7 @@ const TenantMaintenance: React.FC = () => {
                 type='button'
                 className='p-2 text-slate-600 hover:text-primary transition-colors'
               >
-                <Paperclip size={20} />
+                <Paperclip size={20} strokeWidth={1.8} />
               </button>
             </div>
             <input
@@ -650,9 +655,9 @@ const TenantMaintenance: React.FC = () => {
               className='absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-30'
             >
               {createTicketMutation.isPending || sendMessageMutation.isPending ? (
-                <Loader2 className='animate-spin' size={18} />
+                <Loader2 className='animate-spin' size={18} strokeWidth={1.8} />
               ) : (
-                <Send size={18} />
+                <Send size={18} strokeWidth={1.8} />
               )}
             </button>
           </form>

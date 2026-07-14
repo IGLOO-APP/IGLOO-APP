@@ -9,11 +9,11 @@ interface AnnouncementsProps {
 export const Announcements: React.FC<AnnouncementsProps> = ({ announcements }) => {
   return (
     <div className='px-6 mb-24'>
-      <div className='bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-3xl p-6 shadow-sm'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex items-center justify-between mb-6'>
           <div className='flex items-center gap-2.5'>
-            <div className='w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500'>
-              <Info size={18} />
+            <div className='w-8 h-8 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center shrink-0'>
+              <Info size={18} strokeWidth={1.8} />
             </div>
             <h4 className='font-black text-slate-900 dark:text-white text-sm uppercase tracking-widest'>
               Avisos

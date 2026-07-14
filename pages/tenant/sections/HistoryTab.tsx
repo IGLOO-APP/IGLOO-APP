@@ -97,12 +97,10 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
     <div className='animate-fadeIn space-y-6'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
         <div>
-          <h3 className='text-[11px] font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-widest'>
-            <Clock size={14} className='text-primary' /> Linha do Tempo
+          <h3 className='text-xs font-semibold text-foreground flex items-center gap-2'>
+            <Clock size={14} strokeWidth={1.8} className='text-primary' /> Linha do Tempo
           </h3>
-          <p className='text-[9px] text-slate-400 font-bold uppercase mt-0.5'>
-            Histórico completo de eventos
-          </p>
+          <p className='text-xs text-muted-foreground mt-0.5'>Histórico completo de eventos</p>
         </div>
         <div className='flex items-center gap-2 flex-wrap'>
           {(
@@ -116,7 +114,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
             <button
               key={val}
               onClick={() => onFilterChange(val)}
-              className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all ${timelineFilter === val ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}
+              className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider transition-all ${timelineFilter === val ? 'bg-white/10 text-foreground border border-white/20' : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'}`}
             >
               {label}
             </button>
@@ -126,26 +124,28 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
 
       {filtered.length === 0 ? (
         <div className='py-16 text-center'>
-          <Clock size={36} className='text-slate-200 dark:text-white/10 mx-auto mb-3' />
-          <p className='text-slate-400 font-bold text-xs'>Sem registros históricos.</p>
+          <Clock
+            size={36}
+            strokeWidth={1.8}
+            className='text-slate-200 dark:text-white/10 mx-auto mb-3'
+          />
+          <p className='text-muted-foreground font-bold text-xs'>Sem registros históricos.</p>
         </div>
       ) : (
-        <div className='space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-white/5'>
+        <div className='space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-border/50'>
           {filtered.map(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (ev: any) => (
               <div key={ev.id} className='relative flex gap-5 items-start'>
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 z-10 border-4 border-background-light dark:border-background-dark ${ev.color}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 z-10 border-4 border-[var(--lg-page-bg)] ${ev.color}`}
                 >
-                  <ev.icon size={14} />
+                  <ev.icon size={14} strokeWidth={1.8} />
                 </div>
-                <div className='flex-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-[var(--card-radius)] p-[20px_24px] shadow-sm'>
+                <div className='flex-1 lg-card lg-card-lift p-6'>
                   <div className='flex justify-between items-start gap-2 mb-1'>
-                    <h4 className='text-xs font-black text-slate-800 dark:text-white'>
-                      {ev.title}
-                    </h4>
-                    <span className='text-[9px] font-bold text-slate-400 text-right leading-tight'>
+                    <h4 className='text-xs font-semibold text-foreground'>{ev.title}</h4>
+                    <span className='text-xs text-muted-foreground text-right leading-tight'>
                       {new Date(ev.date).toLocaleDateString('pt-BR')}
                       <br />
                       {new Date(ev.date).toLocaleTimeString('pt-BR', {
@@ -154,7 +154,9 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
                       })}
                     </span>
                   </div>
-                  <p className='text-xs text-slate-500 leading-normal font-semibold'>{ev.desc}</p>
+                  <p className='text-xs text-muted-foreground leading-normal font-semibold'>
+                    {ev.desc}
+                  </p>
                 </div>
               </div>
             )

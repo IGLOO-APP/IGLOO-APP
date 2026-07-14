@@ -48,22 +48,22 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
   return (
     <div className='w-full grid grid-cols-1 md:grid-cols-3 gap-3'>
       {/* Yield Médio */}
-      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
-        <div className='p-2 rounded-xl bg-primary/10 text-primary shrink-0 relative z-10'>
-          <TrendingUp size={15} />
+      <div className='lg-card lg-card-lift p-5 flex items-center gap-3'>
+        <div className='p-2.5 rounded-xl bg-primary/10 text-primary shrink-0 relative z-10'>
+          <TrendingUp size={16} strokeWidth={1.8} />
         </div>
         <div className='relative z-10 flex-1'>
-          <div className='flex items-center gap-1.5 mb-0.5'>
+          <div className='flex items-center gap-1.5 mb-1'>
             <p className='text-xs font-medium text-muted-foreground'>Yield Médio</p>
             <ShadTooltipTrigger
               title='Análise de Yield'
               description='Retorno anual médio da carteira. Calculado como (Receita Anual / Valor Patrimonial) × 100.'
             />
           </div>
-          <div className='flex items-center gap-1.5'>
+          <div className='flex items-center gap-2'>
             <p className='text-base font-bold text-foreground'>{health?.yield || '0'}%</p>
-            <Badge variant='outline' className='items-center gap-0.5'>
-              <ArrowUp size={9} />
+            <Badge variant='outline' className='items-center gap-0.5 text-[10px]'>
+              <ArrowUp size={9} strokeWidth={1.8} />
               0.2%
             </Badge>
           </div>
@@ -71,14 +71,14 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
       </div>
 
       {/* Vacância Financeira */}
-      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
+      <div className='lg-card lg-card-lift p-5 flex items-center gap-3'>
         <div
-          className={`p-2 rounded-xl shrink-0 relative z-10 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+          className={`p-2.5 rounded-xl shrink-0 relative z-10 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
         >
-          <AlertCircle size={16} />
+          <AlertCircle size={16} strokeWidth={1.8} />
         </div>
         <div className='relative z-10 flex-1'>
-          <div className='flex items-center gap-1.5 mb-0.5'>
+          <div className='flex items-center gap-1.5 mb-1'>
             <p className='text-xs font-medium text-muted-foreground'>Vacância Financeira</p>
             <ShadTooltipTrigger
               title='Cálculo de Vacância Financeira'
@@ -86,7 +86,7 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
             />
           </div>
           {isHealthyVacancy ? (
-            <Badge variant='outline' className='text-emerald-500 uppercase'>
+            <Badge variant='outline' className='text-emerald-500 uppercase text-[10px]'>
               Carteira 100% ocupada
             </Badge>
           ) : (
@@ -106,14 +106,14 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
       </div>
 
       {/* Inadimplência */}
-      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
+      <div className='lg-card lg-card-lift p-5 flex items-center gap-3'>
         <div
-          className={`p-2 rounded-xl shrink-0 relative z-10 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+          className={`p-2.5 rounded-xl shrink-0 relative z-10 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
         >
-          <ShieldCheck size={16} />
+          <ShieldCheck size={16} strokeWidth={1.8} />
         </div>
         <div className='relative z-10 flex-1'>
-          <div className='flex items-center gap-1.5 mb-0.5'>
+          <div className='flex items-center gap-1.5 mb-1'>
             <p className='text-xs font-medium text-muted-foreground'>Inadimplência</p>
             <ShadTooltipTrigger
               title='Inadimplência Real'
@@ -121,7 +121,7 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
             />
           </div>
           {isHealthyDelinquency ? (
-            <Badge variant='outline' className='text-emerald-500 uppercase'>
+            <Badge variant='outline' className='text-emerald-500 uppercase text-[10px]'>
               Sem inadimplência
             </Badge>
           ) : (

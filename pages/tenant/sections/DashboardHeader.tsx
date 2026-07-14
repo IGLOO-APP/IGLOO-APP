@@ -14,7 +14,14 @@ interface DashboardHeaderProps {
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
   onTriggerTestNotification: () => void;
-  notifications: any[];
+  notifications: Array<{
+    id: string;
+    is_read: boolean;
+    title: string;
+    message: string;
+    created_at: string;
+    link: string | null;
+  }>;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -32,7 +39,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   notifications,
 }) => {
   return (
-    <header className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm transition-colors'>
+    <header
+      className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 transition-colors'
+      style={{ background: 'transparent' }}
+    >
       <div className='flex items-center gap-4'>
         <button
           onClick={() => onNavigate('/tenant/profile')}
@@ -61,23 +71,23 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className='flex items-center gap-3 relative z-30'>
         <button
           onClick={onToggleTheme}
-          className='flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 text-slate-600 dark:text-slate-300 shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-95'
+          className='w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap'
         >
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          {isDark ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
         </button>
 
         <div className='relative'>
           <button
             onClick={onToggleNotifications}
-            className={`flex items-center justify-center w-10 h-10 rounded-full shadow-sm text-slate-800 dark:text-white relative transition-all ${
+            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active-tap relative ${
               showNotifications
-                ? 'bg-primary text-white shadow-primary/30'
-                : 'bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10'
             }`}
           >
-            <Bell size={20} />
+            <Bell size={16} strokeWidth={1.8} />
             {unreadCount > 0 && (
-              <span className='absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-surface-dark'></span>
+              <span className='absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark animate-pulse'></span>
             )}
           </button>
           {showNotifications && (
@@ -86,7 +96,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 className='fixed inset-0 z-20 cursor-default'
                 onClick={onCloseNotifications}
               ></div>
-              <div className='absolute top-full right-0 mt-2 w-80 bg-white dark:bg-surface-dark rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-scaleUp origin-top-right z-30 overflow-hidden'>
+              <div className='absolute top-full right-0 mt-2 w-80 backdrop-blur-xl bg-background/95 rounded-2xl shadow-2xl border border-border/50 py-2 animate-scaleUp origin-top-right z-30 overflow-hidden'>
                 <div className='px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5'>
                   <h3 className='text-sm font-bold text-slate-900 dark:text-white'>Notificações</h3>
                   {unreadCount > 0 && (

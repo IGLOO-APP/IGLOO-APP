@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <SidebarRoot
       collapsible='none'
-      className='hidden md:flex h-screen sticky top-0 !w-80 flex-col py-6 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
+      className='hidden md:flex sticky top-0 h-full !w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
     >
       {/* Background transparent para o gradiente unificado do Layout */}
 
@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Links */}
-        <ul className='flex flex-col gap-1 px-3 flex-grow overflow-y-auto scroll-smooth custom-scrollbar'>
+        <ul className='flex flex-col gap-0.5 px-6 flex-grow overflow-y-auto scroll-smooth custom-scrollbar'>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -52,10 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   to={item.path}
                   onMouseEnter={() => preloadRoute(item.path)}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 border-l-2 ${
+                    `flex items-center gap-4 px-6 py-3 rounded-xl transition-all duration-200 ${
                       isActive
-                          ? 'sidebar-item-active border-l-blue-500'
-                          : 'border-l-transparent text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
+                        ? 'sidebar-item-active'
+                        : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
                     }`
                   }
                 >
@@ -63,9 +63,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <>
                       <Icon
                         className={`transition-colors duration-200 ${
-                          isActive ? 'text-blue-500' : 'text-sidebar-foreground/50'
+                          isActive ? 'text-white' : 'text-sidebar-foreground/50'
                         }`}
                         size={20}
+                        strokeWidth={1.8}
                       />
                       <span className='text-sm font-medium'>{item.label}</span>
                     </>
@@ -90,10 +91,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       to={item.path}
                       onMouseEnter={() => preloadRoute(item.path)}
                       className={({ isActive }) =>
-                        `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 border-l-2 ${
+                        `flex items-center gap-4 px-6 py-3 rounded-xl transition-all duration-200 ${
                           isActive
-                            ? 'sidebar-item-active border-l-blue-500'
-                            : 'border-l-transparent text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
+                            ? 'sidebar-item-active'
+                            : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
                         }`
                       }
                     >
@@ -101,9 +102,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <>
                           <Icon
                             className={`transition-colors duration-200 ${
-                              isActive ? 'text-blue-500' : 'text-sidebar-foreground/50'
+                              isActive ? 'text-white' : 'text-sidebar-foreground/50'
                             }`}
                             size={20}
+                            strokeWidth={1.8}
                           />
                           <span className='text-sm font-medium'>{item.label}</span>
                         </>
@@ -118,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Bottom Section: Profile & Actions */}
-      <div className='px-4 flex flex-col gap-4 pt-4 border-t border-sidebar-border mx-3 mt-auto relative z-10'>
+      <div className='px-4 flex flex-col gap-1.5 pt-2 border-t border-sidebar-border mx-3 mt-auto relative z-10'>
         {/* Profile */}
         <Link to='/settings' className='flex items-center gap-3 group/profile'>
           {user?.avatar_url || user?.avatar ? (
@@ -154,19 +156,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </Link>
 
         {/* System Actions */}
-        <div className='flex flex-col gap-0.5 mt-1'>
+        <div className='flex flex-col gap-0.5'>
           <button
             onClick={toggleTheme}
             className='flex items-center gap-3 px-3 py-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-all duration-200 text-left w-full'
           >
             {isDark ? (
               <>
-                <Sun size={18} className='text-sidebar-foreground/50' />
+                <Sun size={18} strokeWidth={1.8} className='text-sidebar-foreground/50' />
                 <span className='text-sm font-medium'>Modo Claro</span>
               </>
             ) : (
               <>
-                <Moon size={18} className='text-sidebar-foreground/50' />
+                <Moon size={18} strokeWidth={1.8} className='text-sidebar-foreground/50' />
                 <span className='text-sm font-medium'>Modo Escuro</span>
               </>
             )}
@@ -175,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={logout}
             className='flex items-center gap-3 px-3 py-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200 text-left w-full'
           >
-            <LogOut size={18} />
+            <LogOut size={18} strokeWidth={1.8} />
             <span className='text-sm font-medium'>Sair</span>
           </button>
         </div>

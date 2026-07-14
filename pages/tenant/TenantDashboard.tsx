@@ -52,9 +52,9 @@ const TenantDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark'>
+      <div className='flex items-center justify-center min-h-screen'>
         <div className='flex flex-col items-center gap-4'>
-          <Loader className='animate-spin text-primary' size={40} />
+          <Loader className='animate-spin text-primary' size={40} strokeWidth={1.8} />
           <p className='text-sm font-bold text-slate-500 animate-pulse'>Carregando seu painel...</p>
         </div>
       </div>
@@ -63,7 +63,7 @@ const TenantDashboard: React.FC = () => {
 
   if (isOnboardingRequired) {
     return (
-      <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 py-6 custom-scrollbar'>
+      <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 py-6 custom-scrollbar p-6'>
         {currentTenant && (
           <TenantOnboardingChecklist
             tenant={currentTenant}
@@ -86,7 +86,7 @@ const TenantDashboard: React.FC = () => {
   }
 
   return (
-    <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 custom-scrollbar'>
+    <div className='h-full overflow-y-auto w-full max-w-md mx-auto md:max-w-4xl md:px-6 custom-scrollbar p-6'>
       <DashboardHeader
         user={user}
         isDark={isDark}
@@ -107,11 +107,11 @@ const TenantDashboard: React.FC = () => {
         <div className='px-6 mb-4'>
           <button
             onClick={() => setShowInspection(true)}
-            className='w-full bg-[#111111] dark:bg-black border border-orange-500/50 rounded-2xl p-5 flex items-center justify-between shadow-[0_0_15px_rgba(249,115,22,0.15)] hover:shadow-[0_0_20px_rgba(249,115,22,0.25)] hover:border-orange-500 cursor-pointer transition-all active:scale-[0.98] group text-left relative overflow-hidden'
+            className='w-full lg-card lg-card-lift p-5 flex items-center justify-between group text-left'
           >
             <div className='flex items-center gap-4 relative z-10'>
               <div className='w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0 border border-orange-500/20'>
-                <ClipboardCheck size={24} />
+                <ClipboardCheck size={24} strokeWidth={1.8} />
               </div>
               <div>
                 <h4 className='font-bold text-white text-base'>
@@ -126,6 +126,7 @@ const TenantDashboard: React.FC = () => {
             <ChevronRight
               className='text-orange-500 group-hover:translate-x-1 transition-transform'
               size={24}
+              strokeWidth={1.8}
             />
           </button>
         </div>

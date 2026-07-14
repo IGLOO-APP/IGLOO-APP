@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, FilePlus2, Bed, Bath, Square, Clock, Eye, User } from 'lucide-react';
-import { Card } from '../../components/ui/card';
 import { Property } from '../../types';
 
 interface PropertyCardProps {
@@ -15,41 +14,7 @@ interface PropertyCardProps {
   isTenant?: boolean;
 }
 
-// Derives the left-border accent color from status_operacional
-function getStatusBorder(property: Property): string {
-  if (property.status_operacional) {
-    const statusColors: Record<string, string> = {
-      ocupado: 'border-l-[4px] border-l-emerald-500',
-      vago: 'border-l-[4px] border-l-red-500',
-      manutencao: 'border-l-[4px] border-l-amber-500',
-      pendencia_assinatura: 'border-l-[4px] border-l-cyan-500',
-    };
-    return statusColors[property.status_operacional] || '';
-  }
-
-  // Fallback to existing logic if status_operacional is missing
-  if (property.status === 'DISPONÍVEL') return '';
-
-  if (property.contract) {
-    if (property.contract.status === 'expired') {
-      return 'border-l-[3px] border-l-red-500';
-    }
-    if (
-      property.contract.status === 'expiring_soon' ||
-      (property.contract.days_remaining !== undefined && property.contract.days_remaining <= 30)
-    ) {
-      return 'border-l-[3px] border-l-amber-400';
-    }
-  }
-
-  if (property.status === 'ALUGADO') {
-    return 'border-l-[3px] border-l-emerald-500';
-  }
-
-  return '';
-}
-
-// Vacancy time (mock 12d) or tenancy duration (mock 8m)
+// Vacancy time (mock 12d) or tenancy duration (mock 8m)  
 function getTimeLabel(property: Property): { label: string; sub: string } {
   if (property.status === 'DISPONÍVEL') {
     return { label: '12 d.', sub: 'tempo vago' };
@@ -88,7 +53,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   isTenant = false,
 }) => {
   const navigate = useNavigate();
-  const borderClass = getStatusBorder(property);
   const timeInfo = getTimeLabel(property);
   const isAvailable = property.status === 'DISPONÍVEL';
   const tenantName = property.tenant?.name;
@@ -96,19 +60,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   /* ─── COMPACT / DASHBOARD CARD ──────────────────────────── */
   if (viewMode === 'compact') {
     return (
-      <Card
+      <div
         onClick={() => !isTenant && onClick(property)}
-        className={`group relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} aspect-[4/5] p-0 gap-0 ${borderClass} ${className}`}
+        className={`lg-card lg-card-lift group flex flex-col overflow-hidden ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} aspect-[4/5] p-0 gap-0 ${className}`}
       >
         {/* Photo Container */}
-        <div className='h-full w-full relative overflow-hidden bg-slate-900'>
+        <div className='h-full w-full relative overflow-hidden rounded-2xl'>
           {property.image ? (
             <div
               className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105 will-change-transform'
               style={{ backgroundImage: `url(${property.image})` }}
             />
           ) : (
-            <div className='absolute inset-0 flex items-center justify-center'>
+            <div className='absolute inset-0 flex items-center justify-center bg-white/5'>
               <span className='text-white/10 text-[10px] font-black uppercase tracking-[0.3em] select-none'>
                 Meu Igloo
               </span>
@@ -119,9 +83,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
           {/* Content Over Photo */}
           <div className='absolute bottom-0 left-0 right-0 p-3'>
-            <span
-              className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[8px] font-bold ring-1 ring-inset uppercase tracking-wide mb-1.5 ${property.status_color || 'bg-muted text-muted-foreground'}`}
-            >
+            <span className='inline-flex items-center rounded-md px-1.5 py-0.5 text-[8px] font-bold bg-white/10 text-slate-300 border border-white/10 uppercase tracking-wide mb-1.5'>
               {property.status}
             </span>
             <h3 className='text-xs font-black text-white leading-tight line-clamp-1 uppercase tracking-tight'>
@@ -135,11 +97,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {/* Mini Edit Action on Hover */}
           <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
             <div className='bg-white/20 backdrop-blur-md p-1.5 rounded-lg text-white'>
-              <Eye size={12} />
+              <Eye size={12} strokeWidth={1.8} />
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -148,10 +110,10 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <div
         onClick={() => !isTenant && onClick(property)}
-        className={`lg-card lg-card-lift group flex flex-col ${!isTenant ? 'cursor-pointer active-tap' : 'cursor-default'} h-[360px] w-full p-0 gap-0 ${borderClass} ${className}`}
+        className={`lg-card lg-card-lift group flex flex-col ${!isTenant ? 'cursor-pointer active-tap' : 'cursor-default'} h-[360px] w-full p-0 gap-0 ${className}`}
       >
         {/* Photo Container */}
-        <div className='h-44 w-full shrink-0 relative overflow-hidden bg-slate-900 rounded-t-2xl'>
+        <div className='h-44 w-full shrink-0 relative overflow-hidden rounded-t-2xl'>
           {property.image ? (
             <div
               className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105 will-change-transform'
@@ -166,9 +128,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           )}
           {/* Status badge overlay */}
           <div className='absolute top-3 left-3'>
-            <span
-              className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wide backdrop-blur-sm ${property.status_color || 'bg-muted text-muted-foreground'}`}
-            >
+            <span className='inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold bg-white/10 text-slate-300 border border-white/10 uppercase tracking-wide backdrop-blur-sm'>
               {property.status}
             </span>
           </div>
@@ -180,9 +140,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 onEdit?.(property.id);
               }}
               aria-label='Editar'
-              className='flex h-7 w-7 items-center justify-center rounded-lg bg-card/90 text-muted-foreground hover:bg-accent shadow-sm transition-colors'
+              className='flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-400 hover:bg-white/20 transition-colors'
             >
-              <Edit2 size={13} />
+              <Edit2 size={13} strokeWidth={1.8} />
             </button>
             <button
               onClick={(e) => {
@@ -190,9 +150,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 onDelete?.(property.id);
               }}
               aria-label='Excluir'
-              className='flex h-7 w-7 items-center justify-center rounded-lg bg-red-50/90 dark:bg-red-900/70 text-red-600 dark:text-red-400 hover:bg-red-100 shadow-sm transition-colors'
+              className='flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors'
             >
-              <Trash2 size={13} />
+              <Trash2 size={13} strokeWidth={1.8} />
             </button>
           </div>
         </div>
@@ -201,11 +161,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className='flex flex-col flex-1 p-4'>
           {/* Name + address */}
           <div className='h-[50px] overflow-hidden'>
-            <h3 className='text-sm font-bold text-card-foreground leading-tight line-clamp-1'>
+            <h3 className='text-sm font-bold text-slate-900 dark:text-white leading-tight line-clamp-1'>
               {property.name}
             </h3>
             <p
-              className='text-[11px] text-muted-foreground mt-0.5 line-clamp-2'
+              className='text-[11px] text-slate-400 mt-0.5 line-clamp-2'
               title={property.address}
             >
               {property.address}
@@ -214,34 +174,34 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
           {/* Price — fixed height */}
           <div className='h-[46px] flex flex-col justify-center'>
-            <p className='text-lg font-extrabold text-card-foreground leading-none'>
+            <p className='text-lg font-extrabold text-slate-900 dark:text-white leading-none'>
               {property.status === 'ALUGADO'
                 ? property.contract?.value || property.price
                 : property.price}
             </p>
-            <p className='text-[9px] text-muted-foreground font-medium mt-0.5'>por mês</p>
+            <p className='text-[9px] text-slate-400 font-medium mt-0.5'>por mês</p>
           </div>
 
           {/* Compact metrics + tenant inline — fixed height */}
-          <div className='h-[24px] flex items-center gap-2 text-[11px] text-muted-foreground'>
+          <div className='h-[24px] flex items-center gap-2 text-[11px] text-slate-400'>
             {property.bedrooms ? (
               <span className='flex items-center gap-1'>
-                <Bed size={12} className='text-primary/70' />
-                <span className='font-bold text-card-foreground'>{property.bedrooms}</span>
+                <Bed size={12} strokeWidth={1.8} className='text-primary/70' />
+                <span className='font-bold text-slate-900 dark:text-white'>{property.bedrooms}</span>
               </span>
             ) : null}
             {property.area && property.area !== '0m²' && property.area !== 'nullm²' && (
               <>
-                <span className='w-px h-3 bg-border' />
+                <span className='w-px h-3 bg-white/10' />
                 <span className='flex items-center gap-1'>
-                  <Square size={12} className='text-primary/70' />
-                  <span className='font-bold text-card-foreground'>{property.area}</span>
+                  <Square size={12} strokeWidth={1.8} className='text-primary/70' />
+                  <span className='font-bold text-slate-900 dark:text-white'>{property.area}</span>
                 </span>
               </>
             )}
             {tenantName && (
               <>
-                <span className='w-px h-3 bg-border' />
+                <span className='w-px h-3 bg-white/10' />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -249,8 +209,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                   }}
                   className='flex items-center gap-1 hover:text-primary transition-colors'
                 >
-                  <User size={12} className='text-muted-foreground' />
-                  <span className='font-bold text-muted-foreground truncate max-w-[100px]'>
+                  <User size={12} strokeWidth={1.8} className='text-slate-400' />
+                  <span className='font-bold text-slate-400 truncate max-w-[100px]'>
                     {tenantName}
                   </span>
                 </button>
@@ -266,9 +226,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                   e.stopPropagation();
                   onCreateContract(property);
                 }}
-                className='w-full flex h-8 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active-tap'
+                className='w-full flex h-8 items-center justify-center gap-1.5 rounded-xl bg-white/10 border border-white/10 text-slate-300 hover:bg-white/20 text-xs font-bold transition-all active-tap'
               >
-                <FilePlus2 size={13} /> Criar Contrato
+                <FilePlus2 size={13} strokeWidth={1.8} /> Criar Contrato
               </button>
             ) : (
               <div className='h-8' />
@@ -281,21 +241,21 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
   /* ─── LIST CARD ──────────────────────────────────────────── */
   return (
-    <Card
+    <div
       onClick={() => !isTenant && onClick(property)}
-      className={`group relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-200 ${!isTenant ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} p-0 gap-0 ${borderClass} ${className}`}
+      className={`lg-card lg-card-lift group flex flex-col overflow-hidden ${!isTenant ? 'cursor-pointer active-tap' : 'cursor-default'} p-0 gap-0 ${className}`}
     >
       {/* ── ZONE SUPERIOR ──────────────────────────────────── */}
       <div className='flex items-stretch'>
         {/* Photo Container */}
-        <div className='w-[120px] shrink-0 relative overflow-hidden bg-slate-900 rounded-tl-2xl rounded-bl-2xl'>
+        <div className='w-[120px] shrink-0 relative overflow-hidden rounded-tl-2xl rounded-bl-2xl'>
           {property.image ? (
             <div
               className='absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110'
               style={{ backgroundImage: `url(${property.image})` }}
             />
           ) : (
-            <div className='absolute inset-0 flex items-center justify-center'>
+            <div className='absolute inset-0 flex items-center justify-center bg-white/5'>
               <span className='text-white/10 text-[8px] font-black uppercase tracking-[0.3em] select-none text-center px-2'>
                 Meu Igloo
               </span>
@@ -307,15 +267,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         <div className='flex flex-1 min-w-0 p-4 gap-4'>
           {/* Left column: badge + name + address */}
           <div className='flex-1 min-w-0 flex flex-col justify-center gap-1.5'>
-            <span
-              className={`inline-flex self-start items-center rounded-md px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wide ${property.status_color || 'bg-muted text-muted-foreground'}`}
-            >
+            <span className='inline-flex self-start items-center rounded-md px-2 py-0.5 text-[10px] font-bold bg-white/10 text-slate-300 border border-white/10 uppercase tracking-wide'>
               {property.status}
             </span>
-            <h3 className='text-lg font-bold text-card-foreground leading-tight line-clamp-1'>
+            <h3 className='text-lg font-bold text-slate-900 dark:text-white leading-tight line-clamp-1'>
               {property.name}
             </h3>
-            <p className='text-xs text-muted-foreground line-clamp-1'>{property.address}</p>
+            <p className='text-xs text-slate-400 line-clamp-1'>{property.address}</p>
           </div>
 
           {/* Right column: price + actions */}
@@ -324,19 +282,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
             {/* Price */}
             <div className='text-right'>
-              <p className='text-xl font-extrabold text-card-foreground leading-none'>
+              <p className='text-xl font-extrabold text-slate-900 dark:text-white leading-none'>
                 {property.status === 'ALUGADO'
                   ? property.contract?.value || property.price
                   : property.price}
               </p>
-              <p className='text-[10px] text-muted-foreground font-medium mt-0.5'>por mês</p>
+              <p className='text-[10px] text-slate-400 font-medium mt-0.5'>por mês</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── DIVISOR ────────────────────────────────────────── */}
-      <div className='mx-4 border-t border-border' />
+      <div className='mx-4 border-t border-white/10' />
 
       {/* ── ZONE INFERIOR — métricas + ação ────────────────── */}
       <div className='flex items-center px-4 py-3 gap-3'>
@@ -346,17 +304,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {property.bedrooms ? (
             <>
               <div className='flex items-center gap-1.5 pr-3'>
-                <Bed size={14} className='text-muted-foreground shrink-0' />
+                <Bed size={14} strokeWidth={1.8} className='text-slate-400 shrink-0' />
                 <div className='flex flex-col leading-none'>
-                  <span className='text-sm font-bold text-card-foreground'>
+                  <span className='text-sm font-bold text-slate-900 dark:text-white'>
                     {property.bedrooms}
                   </span>
-                  <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>
                     quartos
                   </span>
                 </div>
               </div>
-              <div className='w-px h-6 bg-border shrink-0 mx-0.5' />
+              <div className='w-px h-6 bg-white/10 shrink-0 mx-0.5' />
             </>
           ) : null}
 
@@ -364,17 +322,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {property.bathrooms ? (
             <>
               <div className='flex items-center gap-1.5 px-3'>
-                <Bath size={14} className='text-muted-foreground shrink-0' />
+                <Bath size={14} strokeWidth={1.8} className='text-slate-400 shrink-0' />
                 <div className='flex flex-col leading-none'>
-                  <span className='text-sm font-bold text-card-foreground'>
+                  <span className='text-sm font-bold text-slate-900 dark:text-white'>
                     {property.bathrooms}
                   </span>
-                  <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>
                     banheiros
                   </span>
                 </div>
               </div>
-              <div className='w-px h-6 bg-border shrink-0 mx-0.5' />
+              <div className='w-px h-6 bg-white/10 shrink-0 mx-0.5' />
             </>
           ) : null}
 
@@ -382,24 +340,24 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {property.area && property.area !== '0m²' && property.area !== 'nullm²' ? (
             <>
               <div className='flex items-center gap-1.5 px-3'>
-                <Square size={14} className='text-muted-foreground shrink-0' />
+                <Square size={14} strokeWidth={1.8} className='text-slate-400 shrink-0' />
                 <div className='flex flex-col leading-none'>
-                  <span className='text-sm font-bold text-card-foreground'>{property.area}</span>
-                  <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
+                  <span className='text-sm font-bold text-slate-900 dark:text-white'>{property.area}</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>
                     área total
                   </span>
                 </div>
               </div>
-              <div className='w-px h-6 bg-border shrink-0 mx-0.5' />
+              <div className='w-px h-6 bg-white/10 shrink-0 mx-0.5' />
             </>
           ) : null}
 
-          {/* Tempo / Visualizações */}
+          {/* Tempo */}
           <div className='flex items-center gap-1.5 px-3'>
-            <Clock size={14} className='text-muted-foreground shrink-0' />
+            <Clock size={14} strokeWidth={1.8} className='text-slate-400 shrink-0' />
             <div className='flex flex-col leading-none'>
-              <span className='text-sm font-bold text-card-foreground'>{timeInfo.label}</span>
-              <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
+              <span className='text-sm font-bold text-slate-900 dark:text-white'>{timeInfo.label}</span>
+              <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>
                 {timeInfo.sub}
               </span>
             </div>
@@ -407,14 +365,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
           {!isTenant && (
             <>
-              <div className='hidden sm:block w-px h-6 bg-border shrink-0 mx-0.5' />
+              <div className='hidden sm:block w-px h-6 bg-white/10 shrink-0 mx-0.5' />
 
               {/* Views */}
               <div className='hidden sm:flex items-center gap-1.5 pl-3'>
-                <Eye size={14} className='text-muted-foreground shrink-0' />
+                <Eye size={14} strokeWidth={1.8} className='text-slate-400 shrink-0' />
                 <div className='flex flex-col leading-none'>
-                  <span className='text-sm font-bold text-card-foreground'>24</span>
-                  <span className='text-[9px] text-muted-foreground font-medium uppercase tracking-wide'>
+                  <span className='text-sm font-bold text-slate-900 dark:text-white'>24</span>
+                  <span className='text-[9px] text-slate-400 font-medium uppercase tracking-wide'>
                     visitas
                   </span>
                 </div>
@@ -431,9 +389,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 e.stopPropagation();
                 onCreateContract(property);
               }}
-              className='flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-500/20 transition-all active-tap whitespace-nowrap'
+              className='flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-white/10 border border-white/10 text-slate-300 hover:bg-white/20 text-xs font-bold transition-all active-tap whitespace-nowrap'
             >
-              <FilePlus2 size={14} /> Criar Contrato
+              <FilePlus2 size={14} strokeWidth={1.8} /> Criar Contrato
             </button>
           ) : tenantName ? (
             <button
@@ -441,14 +399,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
                 e.stopPropagation();
                 navigate('/tenants');
               }}
-              className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted text-xs font-medium text-muted-foreground whitespace-nowrap max-w-[140px] hover:bg-accent/50 transition-colors'
+              className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-400 whitespace-nowrap max-w-[140px] hover:bg-white/10 transition-colors'
             >
-              <User size={13} className='text-muted-foreground shrink-0' />
+              <User size={13} strokeWidth={1.8} className='text-slate-400 shrink-0' />
               <span className='truncate'>{tenantName}</span>
             </button>
           ) : null}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

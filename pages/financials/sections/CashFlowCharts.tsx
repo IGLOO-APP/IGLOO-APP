@@ -27,11 +27,11 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
 }) => {
   return (
     <>
-      <div className='mt-2 mb-6 bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm'>
+      <div className='mt-2 mb-6 lg-card lg-card-lift p-4'>
         <Tooltip>
           <TooltipTrigger asChild>
-            <h3 className='text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2 cursor-help'>
-              <TrendingUp size={16} className='text-primary' /> Tendência Financeira
+            <h3 className='text-sm font-bold text-slate-300 mb-4 flex items-center gap-2 cursor-help'>
+              <TrendingUp size={16} strokeWidth={1.8} className='text-primary' /> Tendência Financeira
             </h3>
           </TooltipTrigger>
           <TooltipContent side='bottom' className='max-w-xs'>
@@ -98,25 +98,22 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
         <div className='flex items-center gap-4 mt-4 px-2'>
           <div className='flex items-center gap-2'>
             <div className='w-2.5 h-2.5 rounded-[2px] bg-[#10b981]' />
-            <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Receita</span>
+            <span className='text-xs font-medium text-slate-400'>Receita</span>
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-2.5 h-2.5 rounded-[2px] bg-[#ef4444]' />
-            <span className='text-xs font-medium text-slate-500 dark:text-slate-400'>Despesa</span>
+            <span className='text-xs font-medium text-slate-400'>Despesa</span>
           </div>
         </div>
       </div>
 
-      <div className='mb-6 bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm relative'>
-        <div className='absolute top-0 right-0 p-4 opacity-5'>
-          <TrendingUp size={80} className='text-primary' />
-        </div>
+      <div className='mb-6 lg-card lg-card-lift p-4 relative'>
         <div className='flex justify-between items-start mb-6 relative z-10'>
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
-                <h3 className='text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-help'>
-                  <Clock size={16} className='text-primary' /> Fluxo de Caixa (Forecast)
+                <h3 className='text-sm font-bold text-slate-300 flex items-center gap-2 cursor-help'>
+                  <Clock size={16} strokeWidth={1.8} className='text-primary' /> Fluxo de Caixa (Forecast)
                 </h3>
                 <p className='text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-1'>
                   Projeção dos próximos 3 meses
@@ -170,7 +167,7 @@ export const CashFlowCharts: React.FC<CashFlowChartsProps> = ({
         </div>
         <div className='grid grid-cols-3 gap-2 relative z-10'>
           {forecastData.map((item, idx) => (
-            <div key={idx} className='bg-muted/50 p-2 rounded-xl border border-border'>
+            <div key={idx} className='bg-white/5 p-2 rounded-xl border border-white/10'>
               <p className='text-[9px] font-black text-slate-400 uppercase'>{item.name}</p>
               <p className='text-xs font-bold text-slate-900 dark:text-white mt-0.5'>
                 {formatCurrency(item.valor)}

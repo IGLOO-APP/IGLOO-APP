@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -28,16 +28,29 @@ import { AddPropertyForm } from '../../components/properties/AddPropertyForm';
 const PropertyDetailsPage: React.FC = () => {
   const h = usePropertyDetails();
 
+  // Global cursor spotlight: delegates to all .lg-card elements on the page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('.lg-card, .lg-topbar') as HTMLElement | null;
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      target.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   if (h.isLoading) {
     return (
-      <div className='p-8 space-y-6 bg-background text-foreground min-h-screen animate-pulse'>
-        <div className='h-4 w-36 bg-gray-200 dark:bg-white/10 rounded' />
-        <div className='h-64 w-full bg-gray-200 dark:bg-white/10 rounded-[32px]' />
-        <div className='h-11 bg-gray-200 dark:bg-white/10 rounded-xl' />
+      <div className='p-8 space-y-6 animate-pulse'>
+        <div className='h-4 w-36 bg-white/5 rounded' />
+        <div className='h-64 w-full lg-card rounded-[32px]' />
+        <div className='h-11 bg-white/5 rounded-xl' />
         <div className='grid grid-cols-3 gap-4'>
-          <div className='h-24 bg-gray-200 dark:bg-white/10 rounded-2xl' />
-          <div className='h-24 bg-gray-200 dark:bg-white/10 rounded-2xl' />
-          <div className='h-24 bg-gray-200 dark:bg-white/10 rounded-2xl' />
+          <div className='h-24 lg-card rounded-2xl' />
+          <div className='h-24 lg-card rounded-2xl' />
+          <div className='h-24 lg-card rounded-2xl' />
         </div>
       </div>
     );
@@ -45,9 +58,9 @@ const PropertyDetailsPage: React.FC = () => {
 
   if (h.error || !h.property) {
     return (
-      <div className='p-8 flex flex-col items-center justify-center text-center space-y-4 bg-background text-foreground min-h-screen'>
-        <div className='w-20 h-20 rounded-full bg-red-100 dark:bg-red-950/20 text-red-500 flex items-center justify-center'>
-          <ShieldAlert size={40} />
+      <div className='p-8 flex flex-col items-center justify-center text-center space-y-4 min-h-screen'>
+        <div className='w-20 h-20 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center'>
+          <ShieldAlert size={40} strokeWidth={1.8} />
         </div>
         <h2 className='text-lg font-black text-slate-900 dark:text-white'>Imóvel não encontrado</h2>
         <p className='text-sm text-slate-500 max-w-md'>
@@ -55,7 +68,7 @@ const PropertyDetailsPage: React.FC = () => {
         </p>
         <Link
           to='/properties'
-          className='px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest'
+          className='px-6 py-3 bg-white/10 backdrop-blur-xl border border-white/10 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all'
         >
           Voltar para Imóveis
         </Link>
@@ -88,18 +101,18 @@ const PropertyDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className='flex flex-col h-full bg-background text-foreground overflow-hidden transition-colors duration-300'>
+    <div className='flex flex-col h-full overflow-hidden relative bg-transparent'>
       {/* Breadcrumb */}
-      <div className='px-8 pt-4 pb-1'>
+      <div className='px-8 pt-4 pb-1 relative z-10'>
         <div className='flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest'>
           <Link
             to='/properties'
             className='hover:text-primary transition-colors flex items-center gap-1'
           >
-            <ArrowLeft size={13} /> Imóveis
+            <ArrowLeft size={13} strokeWidth={1.8} /> Imóveis
           </Link>
           <span>/</span>
-          <span className='text-slate-700 dark:text-slate-200 font-black'>{property.name}</span>
+          <span className='text-slate-200 font-black'>{property.name}</span>
         </div>
       </div>
 
@@ -119,7 +132,7 @@ const PropertyDetailsPage: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className='flex-1 overflow-y-auto p-8 pt-4 pb-32'>
+      <div className='flex-1 overflow-y-auto p-8 pt-4 pb-32 relative z-10'>
         {h.activeTab === 'overview' && (
           <>
             {/* Photo Carousel */}
@@ -146,7 +159,7 @@ const PropertyDetailsPage: React.FC = () => {
                     onClick={h.prevImage}
                     className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={18} strokeWidth={1.8} />
                   </button>
                   <div className='flex gap-1.5 px-1'>
                     {h.images.map((_, i) => (
@@ -160,7 +173,7 @@ const PropertyDetailsPage: React.FC = () => {
                     onClick={h.nextImage}
                     className='p-1.5 rounded-xl hover:bg-white/10 text-white transition-all active:scale-90'
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={18} strokeWidth={1.8} />
                   </button>
                 </div>
               )}
@@ -183,7 +196,7 @@ const PropertyDetailsPage: React.FC = () => {
                       {property.name}
                     </h2>
                     <p className='text-white/80 text-[10px] flex items-center gap-1.5 mt-2 font-black uppercase tracking-[0.1em]'>
-                      <MapPin size={14} className='text-primary' /> {property.address}
+                      <MapPin size={14} strokeWidth={1.8} className='text-primary' /> {property.address}
                     </p>
                   </div>
                   <div className='flex items-center gap-2'>
@@ -192,7 +205,7 @@ const PropertyDetailsPage: React.FC = () => {
                       className='shrink-0 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl transition-all border border-white/10 hover:scale-105 active:scale-95 group shadow-lg'
                       title='Ampliar Foto'
                     >
-                      <Maximize2 size={16} />
+                      <Maximize2 size={16} strokeWidth={1.8} />
                     </button>
                     <button
                       onClick={h.openGoogleMaps}
@@ -201,6 +214,7 @@ const PropertyDetailsPage: React.FC = () => {
                     >
                       <ExternalLink
                         size={16}
+                        strokeWidth={1.8}
                         className='group-hover:rotate-12 transition-transform'
                       />
                     </button>
@@ -228,13 +242,21 @@ const PropertyDetailsPage: React.FC = () => {
             />
           </>
         )}
-        {h.activeTab === 'inspections' && <InspectionsTab property={property} />}
+        {h.activeTab === 'inspections' && (
+          <div className='lg-card lg-card-lift p-6'>
+            <InspectionsTab property={property} />
+          </div>
+        )}
         {h.activeTab === 'docs' && (
-          <div className='bg-white dark:bg-surface-dark rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm p-8'>
+          <div className='lg-card lg-card-lift p-8'>
             <DocsTab property={property} />
           </div>
         )}
-        {h.activeTab === 'tenantConfig' && <TenantConfigTab property={property} />}
+        {h.activeTab === 'tenantConfig' && (
+          <div className='lg-card lg-card-lift p-6'>
+            <TenantConfigTab property={property} />
+          </div>
+        )}
         {h.activeTab === 'utilities' && <UtilitiesTab property={property} />}
       </div>
 

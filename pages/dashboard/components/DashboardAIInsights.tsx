@@ -56,7 +56,7 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
       <div className='flex flex-row items-center justify-between p-6 pb-0 w-full gap-1.5'>
         <div className='flex items-center gap-3'>
           <div className='w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-            <Zap size={16} />
+            <Zap size={16} strokeWidth={1.8} />
           </div>
           <div>
             <h3 className='font-bold text-base text-foreground tracking-tight'>Igloo Insights</h3>
@@ -156,7 +156,7 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
             className='w-full text-xs font-semibold flex items-center justify-center gap-2'
           >
             Ver Recomendações
-            <ArrowUpRight size={14} />
+            <ArrowUpRight size={14} strokeWidth={1.8} />
           </Button>
         </div>
       </div>

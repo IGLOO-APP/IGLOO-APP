@@ -44,15 +44,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     <>
       <section className='mb-6'>
         <div className='flex overflow-x-auto gap-4 pb-4 hide-scrollbar'>
-          <div className='shrink-0 w-[240px] p-5 rounded-2xl bg-card text-card-foreground border border-border shadow-sm relative overflow-hidden transition-colors'>
-            <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 relative z-10'>
+          <div className='shrink-0 w-[240px] p-5 rounded-2xl lg-card lg-card-lift relative overflow-hidden'>
+            <p className='text-slate-400 text-sm font-medium mb-1 relative z-10'>
               Total Recebido
             </p>
             <p className='text-slate-900 dark:text-white text-2xl font-bold relative z-10'>
               {formatCurrency(totalReceived)}
             </p>
-            <div className='mt-4 flex items-center gap-1 text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 w-fit px-2 py-1 rounded-md'>
-              <ArrowUp size={16} />
+            <div className='mt-4 flex items-center gap-1 text-emerald-500 bg-emerald-500/10 w-fit px-2 py-1 rounded-md'>
+              <ArrowUp size={16} strokeWidth={1.8} />
               <span className='text-xs font-bold'>
                 {totalReceived > 0
                   ? `${formatCurrency(totalReceived)} neste período`
@@ -62,21 +62,22 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </div>
           <div
             onClick={onShowLateCalculator}
-            className='shrink-0 w-[240px] p-5 rounded-2xl bg-card text-card-foreground border border-border shadow-sm relative overflow-hidden transition-colors cursor-pointer group hover:border-orange-200 dark:hover:border-orange-900/50'
+            className='shrink-0 w-[240px] p-5 rounded-2xl lg-card lg-card-lift relative overflow-hidden cursor-pointer group'
           >
             <div className='absolute top-0 right-0 p-3 opacity-10'>
               <Calculator
                 size={64}
+                strokeWidth={1.8}
                 className='text-orange-500 group-hover:scale-110 transition-transform'
               />
             </div>
-            <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 relative z-10'>
+            <p className='text-slate-400 text-sm font-medium mb-1 relative z-10'>
               Total Pendente
             </p>
             <p className='text-slate-900 dark:text-white text-2xl font-bold relative z-10'>
               {formatCurrency(totalPending)}
             </p>
-            <div className='mt-4 flex items-center gap-1 text-orange-500 text-xs font-bold relative z-10 bg-orange-50 dark:bg-orange-900/20 w-fit px-2 py-1 rounded-md'>
+            <div className='mt-4 flex items-center gap-1 text-orange-500 text-xs font-bold relative z-10 bg-orange-900/20 w-fit px-2 py-1 rounded-md'>
               <span className='group-hover:hidden'>
                 {pendingCount} {pendingCount === 1 ? 'Fatura' : 'Faturas'}
               </span>
@@ -88,10 +89,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
       <section className='flex flex-col gap-2'>
         <div className='py-2 flex justify-between items-center'>
-          <h4 className='text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider'>
+          <h4 className='text-slate-400 text-sm font-bold uppercase tracking-wider'>
             Lançamentos Recentes
           </h4>
-          <span className='text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md'>
+          <span className='text-xs font-medium text-slate-400 bg-white/5 px-2 py-1 rounded-md'>
             {transactions.length} itens
           </span>
         </div>
@@ -99,12 +100,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         {transactions.map((tx) => (
           <div
             key={tx.id}
-            className='group flex items-center gap-4 p-4 rounded-xl bg-card text-card-foreground border border-border hover:border-primary/30 shadow-sm cursor-pointer transition-colors'
+            className='group flex items-center gap-4 p-4 rounded-xl lg-card cursor-pointer'
           >
             <div
-              className={`flex items-center justify-center rounded-xl shrink-0 size-12 ${tx.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'}`}
+              className={`flex items-center justify-center rounded-xl shrink-0 size-12 ${tx.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-orange-900/20 text-orange-400'}`}
             >
-              <Building2 size={24} />
+              <Building2 size={24} strokeWidth={1.8} />
             </div>
             <div className='flex flex-col flex-1 min-w-0'>
               <div className='flex justify-between items-start'>
@@ -132,10 +133,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onSelectVoucher(tx.attachment_url || null);
                       }}
-                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors'
+                      className='p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-primary transition-colors'
                       title='Ver Comprovante'
                     >
-                      <Eye size={14} />
+                      <Eye size={14} strokeWidth={1.8} />
                     </button>
                   )}
                   {tx.status === 'paid' && (
@@ -163,21 +164,21 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           />
                         }
                         fileName={`Recibo_${tx.title.replace(/\s+/g, '_')}_${tx.date}.pdf`}
-                        className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors flex items-center justify-center'
+                        className='p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-primary transition-colors flex items-center justify-center'
                         title='Baixar Recibo PDF'
                       >
                         {({ loading }) =>
                           loading ? (
                             <div className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent' />
                           ) : (
-                            <Download size={14} />
+                            <Download size={14} strokeWidth={1.8} />
                           )
                         }
                       </PDFDownloadLink>
                     </div>
                   )}
                   <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${tx.status === 'paid' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400'}`}
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${tx.status === 'paid' ? 'bg-emerald-900/30 text-emerald-400' : 'bg-orange-900/20 text-orange-400'}`}
                   >
                     {tx.status === 'paid' ? 'Pago' : 'Pendente'}
                   </span>
@@ -187,10 +188,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onEdit(tx);
                       }}
-                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-primary transition-colors'
+                      className='p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-primary transition-colors'
                       title='Editar'
                     >
-                      <Pencil size={14} />
+                      <Pencil size={14} strokeWidth={1.8} />
                     </button>
                   )}
                   {onDelete && (
@@ -199,10 +200,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         e.stopPropagation();
                         onDelete(tx.id);
                       }}
-                      className='p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-red-500 transition-colors'
+                      className='p-1.5 rounded-lg bg-white/5 text-slate-400 hover:text-red-500 transition-colors'
                       title='Excluir'
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} strokeWidth={1.8} />
                     </button>
                   )}
                 </div>
@@ -213,7 +214,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
         {transactions.length === 0 && (
           <div className='py-12 text-center text-slate-400'>
-            <Search size={40} className='mx-auto mb-3 opacity-20' />
+            <Search size={40} strokeWidth={1.8} className='mx-auto mb-3 opacity-20' />
             <p>Nenhum lançamento encontrado.</p>
           </div>
         )}

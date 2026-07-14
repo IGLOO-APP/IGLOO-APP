@@ -253,15 +253,15 @@ const TenantPayments: React.FC = () => {
           <p className='text-sm text-slate-500 dark:text-slate-400'>Histórico financeiro</p>
         </div>
         <button className='p-2 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors'>
-          <Download size={20} />
+          <Download size={20} strokeWidth={1.8} />
         </button>
       </header>
 
       <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6'>
         {/* Summary Card */}
-        <div className='bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden'>
+        <div className='lg-card lg-card-lift p-6' style={{ background: 'rgba(3,5,18,0.85)' }}>
           <div className='absolute top-0 right-0 p-4 opacity-10'>
-            <PieChart size={100} />
+            <PieChart size={100} strokeWidth={1.8} />
           </div>
           <div className='relative z-10'>
             <div className='flex justify-between items-start mb-4'>
@@ -277,7 +277,11 @@ const TenantPayments: React.FC = () => {
                 className='bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg flex items-center gap-2 cursor-pointer hover:bg-white/30 transition-colors'
                 onClick={handleAutoPayToggle}
               >
-                <RefreshCw size={14} className={isAutoPayEnabled ? 'animate-spin-slow' : ''} />
+                <RefreshCw
+                  size={14}
+                  strokeWidth={1.8}
+                  className={isAutoPayEnabled ? 'animate-spin-slow' : ''}
+                />
                 <span className='text-xs font-bold'>
                   {isAutoPayEnabled ? 'Débito Automático Ativo' : 'Ativar Débito Auto'}
                 </span>
@@ -309,7 +313,7 @@ const TenantPayments: React.FC = () => {
                   <p className='text-xs text-indigo-100'>Próximo</p>
                   <p className='font-bold text-sm'>{tenantData?.contract?.payment_day || '--'}</p>
                 </div>
-                <ArrowUpRight className='text-indigo-300' size={20} />
+                <ArrowUpRight className='text-indigo-300' size={20} strokeWidth={1.8} />
               </div>
             </div>
           </div>
@@ -324,8 +328,8 @@ const TenantPayments: React.FC = () => {
               onClick={() => setFilter(f as any)}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
                 filter === f
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-md'
-                  : 'bg-white dark:bg-surface-dark text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/5 hover:border-primary'
+                  ? 'bg-white/10 text-foreground border border-white/20'
+                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
               }`}
             >
               {f === 'all' ? 'Todos' : f === 'paid' ? 'Pagos / Finalizados' : 'Pendentes'}
@@ -343,7 +347,7 @@ const TenantPayments: React.FC = () => {
                 setStep('details');
                 setShowAddNewCard(false);
               }}
-              className='group bg-white dark:bg-surface-dark p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer relative overflow-hidden'
+              className='group relative overflow-hidden cursor-pointer lg-card lg-card-lift p-6'
             >
               <div
                 className={`absolute left-0 top-0 bottom-0 w-1.5 ${
@@ -379,11 +383,11 @@ const TenantPayments: React.FC = () => {
                     }`}
                   >
                     {payment.status === 'paid' ? (
-                      <CheckCircle size={10} />
+                      <CheckCircle size={10} strokeWidth={1.8} />
                     ) : payment.status === 'late' ? (
-                      <AlertTriangle size={10} />
+                      <AlertTriangle size={10} strokeWidth={1.8} />
                     ) : (
-                      <Clock size={10} />
+                      <Clock size={10} strokeWidth={1.8} />
                     )}
                     {payment.status === 'paid'
                       ? `Pago em ${payment.paid_date ? formatDate(payment.paid_date) : '-'}`
@@ -420,7 +424,7 @@ const TenantPayments: React.FC = () => {
                       className='p-2 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors'
                       title='Baixar Comprovante'
                     >
-                      <Download size={16} />
+                      <Download size={16} strokeWidth={1.8} />
                     </button>
                   ) : (
                     <button
@@ -430,7 +434,7 @@ const TenantPayments: React.FC = () => {
                       }}
                       className='px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all active:scale-95 flex items-center gap-2'
                     >
-                      <CreditCard size={14} />
+                      <CreditCard size={14} strokeWidth={1.8} />
                       Pagar agora
                     </button>
                   )}
@@ -454,7 +458,7 @@ const TenantPayments: React.FC = () => {
               </DialogTitle>
               <DialogDescription />
             </DialogHeader>
-            <div className='p-6 space-y-6 bg-background-light dark:bg-background-dark h-full overflow-y-auto'>
+            <div className='p-6 space-y-6 lg-card lg-card-lift'>
               {/* STEP 1: DETAILS */}
               {step === 'details' && (
                 <>
@@ -485,7 +489,7 @@ const TenantPayments: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className='bg-white dark:bg-surface-dark rounded-2xl p-5 border border-gray-100 dark:border-white/5 space-y-3'>
+                  <div className='lg-card lg-card-lift p-6 space-y-3'>
                     <h3 className='font-bold text-slate-900 dark:text-white text-sm mb-2 border-b border-gray-100 dark:border-white/5 pb-2'>
                       Composição
                     </h3>
@@ -523,11 +527,11 @@ const TenantPayments: React.FC = () => {
                         onClick={handlePayClick}
                         className='w-full h-12 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg active:scale-95'
                       >
-                        <CreditCard size={18} /> Pagar Agora
+                        <CreditCard size={18} strokeWidth={1.8} /> Pagar Agora
                       </button>
                     ) : (
                       <button className='w-full h-12 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold transition-all shadow-lg active:scale-95'>
-                        <Download size={18} /> Baixar Recibo
+                        <Download size={18} strokeWidth={1.8} /> Baixar Recibo
                       </button>
                     )}
                   </div>
@@ -572,7 +576,7 @@ const TenantPayments: React.FC = () => {
                             : `Pagar R$ ${Number(selectedPayment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                         </button>
                         <p className='text-center text-xs text-slate-400 mt-3 flex items-center justify-center gap-1'>
-                          <Lock size={12} /> Pagamento seguro via Stripe
+                          <Lock size={12} strokeWidth={1.8} /> Pagamento seguro via Stripe
                         </p>
                       </div>
                     </>
@@ -583,7 +587,7 @@ const TenantPayments: React.FC = () => {
                           onClick={() => setShowAddNewCard(false)}
                           className='p-1 rounded hover:bg-slate-100 dark:hover:bg-white/10'
                         >
-                          <X size={20} />
+                          <X size={20} strokeWidth={1.8} />
                         </button>
                         <h3 className='font-bold text-slate-900 dark:text-white'>Novo Cartão</h3>
                       </div>
@@ -601,7 +605,7 @@ const TenantPayments: React.FC = () => {
               {step === 'success' && (
                 <div className='flex flex-col items-center justify-center text-center space-y-4 py-8 animate-scaleUp'>
                   <div className='w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-500 dark:text-emerald-400 mb-2'>
-                    <CheckCircle size={48} />
+                    <CheckCircle size={48} strokeWidth={1.8} />
                   </div>
                   <h3 className='text-2xl font-bold text-slate-900 dark:text-white'>
                     Pagamento Confirmado!

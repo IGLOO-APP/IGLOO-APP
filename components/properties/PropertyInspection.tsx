@@ -71,7 +71,7 @@ export const PropertyInspection: React.FC<PropertyInspectionProps> = ({
   } = usePropertyInspection({ property, initialView, isTenant });
 
   return (
-    <div className='flex-1 overflow-hidden flex flex-col h-full bg-background-light dark:bg-background-dark text-slate-900 dark:text-white relative'>
+    <div className='flex-1 overflow-hidden flex flex-col h-full text-slate-900 dark:text-white relative'>
       {view === 'list' && (
         <InspectionListView
           inspections={inspections}

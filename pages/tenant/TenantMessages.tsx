@@ -86,14 +86,14 @@ const TenantMessages: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <div className='flex flex-col h-full w-full bg-background'>
+    <div className='flex flex-col h-full w-full'>
       <Navbar
         title='Mensagens'
         subtitle={propertyName || undefined}
         left={<NavbarBackLink onClick={() => navigate('/tenant')} />}
         right={
           <div className='w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-            <Megaphone size={18} />
+            <Megaphone size={18} strokeWidth={1.8} />
           </div>
         }
       />
@@ -106,7 +106,7 @@ const TenantMessages: React.FC = () => {
         ) : messages.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-20 text-center px-8'>
             <div className='w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground mb-4'>
-              <Megaphone size={24} />
+              <Megaphone size={24} strokeWidth={1.8} />
             </div>
             <p className='text-sm font-bold text-card-foreground'>Nenhuma mensagem</p>
             <p className='text-xs text-muted-foreground mt-1'>
@@ -119,7 +119,7 @@ const TenantMessages: React.FC = () => {
               <div className='max-w-[88%] md:max-w-[70%] flex flex-col items-start'>
                 {msg.isAnnouncement && (
                   <div className='flex items-center gap-1.5 mb-2 px-1 text-[10px] font-bold text-primary uppercase tracking-tight'>
-                    <Megaphone size={12} className='shrink-0' />
+                    <Megaphone size={12} strokeWidth={1.8} className='shrink-0' />
                     <span>Comunicado do proprietário</span>
                   </div>
                 )}
@@ -127,7 +127,7 @@ const TenantMessages: React.FC = () => {
                   className={`px-4 py-3 rounded-[20px] rounded-tl-none shadow-md ${
                     msg.isAnnouncement
                       ? 'bg-primary/5 dark:bg-primary/10 text-foreground border border-primary/10'
-                      : 'bg-white dark:bg-surface-dark text-slate-900 dark:text-white border border-slate-100 dark:border-white/5'
+                      : 'lg-card lg-card-lift p-4 text-slate-900 dark:text-white'
                   }`}
                 >
                   <p className='text-xs leading-relaxed font-medium whitespace-pre-wrap'>

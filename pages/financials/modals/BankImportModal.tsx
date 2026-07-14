@@ -45,17 +45,22 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
 
   return (
     <Dialog open={show} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-xl'>
-        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-xl border border-white/10 rounded-[22px]' style={{ background: 'rgba(12,14,26,0.92)', backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)' }}>
+        <div aria-hidden='true' className='absolute inset-0 overflow-hidden pointer-events-none' style={{ borderRadius: 'inherit' }}>
+          <div className='absolute w-[50vw] h-[50vw] top-[-20%] left-[-20%] rounded-full opacity-50' style={{ background: 'radial-gradient(circle, var(--lg-blob-1), transparent 70%)', filter: 'blur(90px)' }} />
+          <div className='absolute w-[42vw] h-[42vw] bottom-[-20%] right-[-20%] rounded-full opacity-50' style={{ background: 'radial-gradient(circle, var(--lg-blob-2), transparent 70%)', filter: 'blur(80px)' }} />
+        </div>
+        <div className='relative z-10'>
+        <DialogHeader className='px-6 py-4 border-b border-white/10 flex-shrink-0'>
           <DialogTitle className='text-xl font-bold'>Conciliação Bancária</DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <div className='p-6 bg-background-light dark:bg-background-dark space-y-6 h-[80vh] flex flex-col'>
+        <div className='p-6 space-y-6 h-[80vh] flex flex-col'>
           {!importResult.length ? (
             <div className='flex-1 flex flex-col justify-center space-y-6'>
               <div
                 onClick={() => bankFileInputRef.current?.click()}
-                className={`p-10 border-2 border-dashed rounded-2xl text-center bg-slate-50 dark:bg-white/5 group hover:border-primary transition-all cursor-pointer ${isProcessingFile ? 'opacity-50 pointer-events-none' : 'border-slate-200 dark:border-white/10'}`}
+                className={`p-10 border-2 border-dashed rounded-2xl text-center bg-white/5 group hover:border-primary transition-all cursor-pointer ${isProcessingFile ? 'opacity-50 pointer-events-none' : 'border-white/10'}`}
               >
                 <div className='w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform'>
                   {isProcessingFile ? (
@@ -64,7 +69,7 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
                     <FileUp className='text-primary' size={40} />
                   )}
                 </div>
-                <h4 className='text-xl font-bold text-slate-900 dark:text-white'>
+                <h4 className='text-xl font-bold text-white'>
                   {isProcessingFile ? 'Processando...' : 'Importar Extrato'}
                 </h4>
                 <p className='text-sm text-slate-500 mt-2 max-w-xs mx-auto'>
@@ -88,7 +93,7 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
                     (bank) => (
                       <div
                         key={bank}
-                        className='px-4 py-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2 shadow-sm'
+                        className='px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm font-medium text-slate-300 flex items-center gap-2'
                       >
                         <div className='w-2 h-2 rounded-full bg-emerald-500' />
                         {bank}
@@ -101,7 +106,7 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
           ) : (
             <div className='flex-1 flex flex-col overflow-hidden'>
               <div className='flex items-center justify-between mb-4'>
-                <h4 className='font-bold text-slate-900 dark:text-white'>
+                <h4 className='font-bold text-white'>
                   Transações Identificadas
                 </h4>
                 <span className='text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded-full'>
@@ -113,33 +118,33 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
                 {importResult.map((btx) => (
                   <div
                     key={btx.id}
-                    className='p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-white dark:bg-surface-dark shadow-sm'
+                    className='p-4 rounded-xl border border-white/10 bg-white/5'
                   >
                     <div className='flex justify-between items-start mb-2'>
                       <div>
                         <p className='text-xs font-bold text-slate-400 uppercase'>{btx.date}</p>
-                        <p className='text-sm font-bold text-slate-800 dark:text-white'>
+                        <p className='text-sm font-bold text-white'>
                           {btx.description}
                         </p>
                       </div>
                       <p
-                        className={`font-bold ${btx.amount > 0 ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}
+                        className={`font-bold ${btx.amount > 0 ? 'text-emerald-400' : 'text-white'}`}
                       >
                         {btx.amount > 0 ? '+' : ''} R$ {btx.amount.toFixed(2)}
                       </p>
                     </div>
-                    <div className='flex items-center justify-between pt-3 border-t border-slate-50 dark:border-white/5'>
+                    <div className='flex items-center justify-between pt-3 border-t border-white/10'>
                       <div className='flex items-center gap-2'>
                         {btx.matchStatus === 'perfect' ? (
-                          <span className='flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded'>
-                            <Check size={12} /> Conciliado
+                          <span className='flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-900/20 px-2 py-0.5 rounded'>
+                            <Check size={12} strokeWidth={1.8} /> Conciliado
                           </span>
                         ) : (
-                          <span className='flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 px-2 py-0.5 rounded'>
-                            <AlertTriangle size={12} /> Novo Lançamento
+                          <span className='flex items-center gap-1 text-[10px] font-bold text-orange-400 bg-orange-900/20 px-2 py-0.5 rounded'>
+                            <AlertTriangle size={12} strokeWidth={1.8} /> Novo Lançamento
                           </span>
                         )}
-                        <span className='text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded uppercase'>
+                        <span className='text-[10px] font-bold text-slate-400 bg-white/10 px-2 py-0.5 rounded uppercase'>
                           {btx.suggestedCategory}
                         </span>
                       </div>
@@ -151,19 +156,20 @@ export const BankImportModal: React.FC<BankImportModalProps> = ({
                 ))}
               </div>
 
-              <div className='pt-6 mt-auto border-t border-slate-100 dark:border-white/5 flex gap-3'>
+              <div className='pt-6 mt-auto border-t border-white/10 flex gap-3'>
                 <button
                   onClick={onClearResult}
-                  className='flex-1 h-12 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 font-bold'
+                  className='flex-1 h-12 rounded-xl bg-white/5 text-slate-300 font-bold hover:bg-white/10 transition-all'
                 >
                   Voltar
                 </button>
-                <button className='flex-1 h-12 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95'>
+                <button className='flex-1 h-12 rounded-full bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] text-white font-bold hover:brightness-110 transition-all active:scale-95'>
                   Efetivar Conciliação
                 </button>
               </div>
             </div>
           )}
+        </div>
         </div>
       </DialogContent>
     </Dialog>
