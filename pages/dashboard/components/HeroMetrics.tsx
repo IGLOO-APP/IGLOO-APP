@@ -1,16 +1,6 @@
 import React from 'react';
-import {
-  TrendingUp,
-  DollarSign,
-  Home,
-  Activity,
-  Users,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
-import { Card } from '../../../components/ui/card';
+import { TrendingUp, DollarSign, Home, Activity, Users, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from '../../../components/ui/badge';
-import { LiquidGlassCard } from '../../../components/ui/LiquidGlassCard';
 import {
   TooltipProvider,
   Tooltip,
@@ -54,7 +44,12 @@ interface HeroMetricsProps {
       mrr: number[];
     };
   };
-  portfolioHealth?: { yield: string; vacancy: string; delinquency: string; delinquencyAbsolute: number };
+  portfolioHealth?: {
+    yield: string;
+    vacancy: string;
+    delinquency: string;
+    delinquencyAbsolute: number;
+  };
   wealthHistory?: WealthHistoryEntry[];
   financialHistory?: FinancialHistoryEntry[];
   propertyCount?: number;
@@ -75,7 +70,12 @@ function AreaSparkline({ data, color }: { data: number[]; color: string }) {
   const area = `${pts} ${w},${h} 0,${h}`;
   const gradId = `grad-${color.replace('#', '')}`;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className='shrink-0 transition-all duration-200'>
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      className='shrink-0 transition-all duration-200'
+    >
       <defs>
         <linearGradient id={gradId} x1='0' y1='0' x2='0' y2='1'>
           <stop offset='0%' stopColor={color} stopOpacity={0.2} />
@@ -83,7 +83,14 @@ function AreaSparkline({ data, color }: { data: number[]; color: string }) {
         </linearGradient>
       </defs>
       <polygon points={area} fill={`url(#${gradId})`} />
-      <polyline points={pts} fill='none' stroke={color} strokeWidth={2} strokeLinecap='round' strokeLinejoin='round' />
+      <polyline
+        points={pts}
+        fill='none'
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap='round'
+        strokeLinejoin='round'
+      />
     </svg>
   );
 }
@@ -94,7 +101,14 @@ function DonutRing({ value, color, size = 48 }: { value: number; color: string; 
   const offset = circ - (value / 100) * circ;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className='shrink-0'>
-      <circle cx={size / 2} cy={size / 2} r={r} fill='none' stroke='hsl(var(--muted))' strokeWidth={5} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill='none'
+        stroke='hsl(var(--muted))'
+        strokeWidth={5}
+      />
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -153,10 +167,26 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
 
   return (
     <section className={'h-full ' + className}>
+      <svg className='absolute w-0 h-0' aria-hidden='true'>
+        <filter id='distorsion'>
+          <feTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='1' result='noise' />
+          <feDisplacementMap
+            in='SourceGraphic'
+            in2='noise'
+            scale='8'
+            xChannelSelector='R'
+            yChannelSelector='G'
+          />
+        </filter>
+      </svg>
       <div className='grid grid-cols-4 gap-3 h-full grid-rows-3 items-stretch'>
-        {/* Patrimônio: liquid glass hero card */}
-        <LiquidGlassCard className='col-span-4'>
-          <div className='p-5 flex items-center justify-between gap-4'>
+        {/* Patrimônio */}
+        <div
+          className='col-span-4 lg-card lg-card-lift flex items-center justify-center p-6'
+          onClick={() => navigate('/financials')}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className='flex items-center justify-between gap-4 w-full relative z-10'>
             <div className='space-y-1.5'>
               <div className='flex items-center gap-1.5'>
                 <TrendingUp size={14} className='text-indigo-500' />
@@ -167,29 +197,35 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
                       ?
                     </TooltipTrigger>
                     <TooltipContent side='top'>
-                      <p className='text-xs font-medium'>Soma do valor de mercado estimado de todos os seus imóveis cadastrados.</p>
+                      <p className='text-xs font-medium'>
+                        Soma do valor de mercado estimado de todos os seus imóveis cadastrados.
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <h3 className='text-2xl font-bold tracking-tight text-foreground text-balance'>{metrics.totalWealth}</h3>
+              <h3 className='text-2xl font-bold tracking-tight text-foreground text-balance'>
+                {metrics.totalWealth}
+              </h3>
               <div className='flex items-center gap-2 flex-wrap'>
                 <Badge variant='default'>
                   <ArrowUp size={10} /> {metrics.trends.wealth}
                 </Badge>
                 <span className='text-xs text-muted-foreground/60'>vs. mês anterior</span>
                 {portfolioHealth?.yield && (
-                  <span className='text-xs text-muted-foreground/40'>&middot; Yield {portfolioHealth.yield}%</span>
+                  <span className='text-xs text-muted-foreground/40'>
+                    &middot; Yield {portfolioHealth.yield}%
+                  </span>
                 )}
               </div>
             </div>
             <AreaSparkline data={wealthSpark} color='#6366f1' />
           </div>
-        </LiquidGlassCard>
+        </div>
 
-        {/* Ocupação: donut + physical/financial breakdown */}
-        <LiquidGlassCard className={`col-span-2 ${occLow ? 'border-destructive/50' : ''}`}>
-          <div className='p-5 flex flex-col h-full gap-4'>
+        {/* Ocupação */}
+        <div className={`col-span-2 lg-card lg-card-lift`}>
+          <div className='p-5 flex flex-col h-full gap-4 w-full relative z-10'>
             <div className='flex items-center gap-1.5'>
               <Home size={14} className={occLow ? 'text-destructive' : 'text-emerald-500'} />
               <span className='text-xs font-medium text-muted-foreground'>Ocupação</span>
@@ -198,10 +234,14 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
             <div className='flex items-center gap-4'>
               <DonutRing value={occRate} color={occLow ? '#ef4444' : '#10b981'} size={52} />
               <div>
-                <h3 className='text-2xl font-bold tracking-tight text-foreground text-balance'>{occRate}%</h3>
+                <h3 className='text-2xl font-bold tracking-tight text-foreground text-balance'>
+                  {occRate}%
+                </h3>
                 <div className='flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1'>
                   <span className='flex items-center gap-1.5 text-xs text-muted-foreground'>
-                    <span className={`w-1.5 h-1.5 rounded-full ${occLow ? 'bg-destructive' : 'bg-emerald-500'}`} />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${occLow ? 'bg-destructive' : 'bg-emerald-500'}`}
+                    />
                     Física {occRate}%
                   </span>
                   <span className='flex items-center gap-1.5 text-xs text-muted-foreground/60'>
@@ -214,91 +254,121 @@ export const HeroMetrics: React.FC<HeroMetricsProps> = ({
 
             <div className='flex items-center gap-2 mt-auto'>
               <Badge variant={occLow ? 'destructive' : 'default'}>
-                {Number(metrics.trends.occupancy) >= 0 ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{' '}
+                {Number(metrics.trends.occupancy) >= 0 ? (
+                  <ArrowUp size={10} />
+                ) : (
+                  <ArrowDown size={10} />
+                )}{' '}
                 {metrics.trends.occupancy}
               </Badge>
               <span className={`text-xs ${occLow ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {metrics.occupancyRate < 80 ? `${100 - metrics.occupancyRate}% vagos` : 'Carteira cheia'}
+                {metrics.occupancyRate < 80
+                  ? `${100 - metrics.occupancyRate}% vagos`
+                  : 'Carteira cheia'}
               </span>
               {propertyCount != null && (
-                <span className='text-xs text-muted-foreground/40 ml-auto'>{propertyCount} imóveis</span>
+                <span className='text-xs text-muted-foreground/40 ml-auto'>
+                  {propertyCount} imóveis
+                </span>
               )}
             </div>
           </div>
-        </LiquidGlassCard>
+        </div>
 
-        {/* ROI: yield comparison + contratos */}
-        <LiquidGlassCard className={`col-span-2 ${metrics.avgRoi === '0%' || !metrics.avgRoi ? 'opacity-70 border-dashed' : ''}`}>
-          <div className='p-5 flex flex-col justify-between h-full'>
-          <div className='space-y-2'>
-            <div className='flex items-center gap-1.5'>
-              <Activity size={14} className={metrics.avgRoi === '0%' ? 'text-muted-foreground' : 'text-cyan-500'} />
-              <span className='text-xs font-medium text-muted-foreground'>ROI Anual</span>
+        {/* ROI */}
+        <div
+          className={`col-span-2 lg-card lg-card-lift ${metrics.avgRoi === '0%' || !metrics.avgRoi ? 'opacity-70' : ''}`}
+        >
+          <div className='p-5 flex flex-col justify-between h-full w-full relative z-10'>
+            <div className='space-y-2'>
+              <div className='flex items-center gap-1.5'>
+                <Activity
+                  size={14}
+                  className={metrics.avgRoi === '0%' ? 'text-muted-foreground' : 'text-cyan-500'}
+                />
+                <span className='text-xs font-medium text-muted-foreground'>ROI Anual</span>
+              </div>
+              <h3 className='text-xl font-bold tracking-tight text-foreground text-balance'>
+                {metrics.avgRoi === '0%' || !metrics.avgRoi ? '--' : metrics.avgRoi}
+              </h3>
+              {portfolioHealth?.yield && metrics.avgRoi !== '0%' && (
+                <div className='flex items-center gap-2 text-xs'>
+                  <span className='text-muted-foreground/60'>Yield carteira:</span>
+                  <span className='font-medium text-muted-foreground'>
+                    {portfolioHealth.yield}%
+                  </span>
+                </div>
+              )}
             </div>
-            <h3 className='text-xl font-bold tracking-tight text-foreground text-balance'>
-              {metrics.avgRoi === '0%' || !metrics.avgRoi ? '--' : metrics.avgRoi}
-            </h3>
-            {portfolioHealth?.yield && metrics.avgRoi !== '0%' && (
-              <div className='flex items-center gap-2 text-xs'>
-                <span className='text-muted-foreground/60'>Yield carteira:</span>
-                <span className='font-medium text-muted-foreground'>{portfolioHealth.yield}%</span>
-              </div>
-            )}
-          </div>
-          <div className='mt-2 flex flex-wrap items-center gap-2'>
-            <Badge variant={metrics.avgRoi === '0%' ? 'outline' : 'default'}>
-              <ArrowUp size={10} /> {metrics.trends.roi}
-            </Badge>
-            {(metrics.expiringContractsCount ?? 0) > 0 && (
-              <span className='text-xs font-medium text-amber-600 dark:text-amber-400'>
-                {metrics.expiringContractsCount} contratos vencendo
-              </span>
-            )}
-            {portfolioHealth?.delinquency != null && Number(portfolioHealth.delinquency) > 0 && (
-              <span className='text-xs text-muted-foreground/40'>
-                &middot; Inadimplência {portfolioHealth.delinquency}%
-              </span>
-            )}
-          </div>
-          </div>
-        </LiquidGlassCard>
-
-        {/* MRR: bar chart + tenant count */}
-        <LiquidGlassCard className='col-span-4'>
-          <div className='p-5 flex flex-row items-center justify-between gap-6'>
-          <div className='flex items-start justify-between flex-1'>
-            <div>
-              <div className='flex items-center gap-1.5 mb-1'>
-                <DollarSign size={14} className='text-emerald-500' />
-                <span className='text-xs font-medium text-muted-foreground'>Receita Recorrente</span>
-              </div>
-              <h3 className='text-xl font-bold tracking-tight text-foreground text-balance'>{metrics.mrr}</h3>
-              <div className='flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground'>
-                {metrics.mrr_bruto != null && (
-                  <span>Bruto: R$ {metrics.mrr_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                )}
-                {metrics.mrr_liquido != null && metrics.mrr_liquido !== metrics.mrr_bruto && (
-                  <span className='text-muted-foreground/60'>Líquido: R$ {metrics.mrr_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                )}
-                <span className='text-muted-foreground/40'>&middot;</span>
-                <span><Users size={12} className='inline mr-0.5' />{metrics.totalTenants ?? 0} inquilinos</span>
-                {portfolioHealth?.vacancy != null && Number(portfolioHealth.vacancy) > 0 && (
-                  <>
-                    <span className='text-muted-foreground/40'>&middot;</span>
-                    <span className='text-destructive/70'>{portfolioHealth.vacancy}% vacância financeira</span>
-                  </>
-                )}
-              </div>
+            <div className='mt-2 flex flex-wrap items-center gap-2'>
+              <Badge variant={metrics.avgRoi === '0%' ? 'outline' : 'default'}>
+                <ArrowUp size={10} /> {metrics.trends.roi}
+              </Badge>
+              {(metrics.expiringContractsCount ?? 0) > 0 && (
+                <span className='text-xs font-medium text-amber-600 dark:text-amber-400'>
+                  {metrics.expiringContractsCount} contratos vencendo
+                </span>
+              )}
+              {portfolioHealth?.delinquency != null && Number(portfolioHealth.delinquency) > 0 && (
+                <span className='text-xs text-muted-foreground/40'>
+                  &middot; Inadimplência {portfolioHealth.delinquency}%
+                </span>
+              )}
             </div>
           </div>
-          <div className='flex items-center gap-3 shrink-0'>
-            <Badge variant='default'>
-              <ArrowUp size={10} /> {metrics.trends.mrr}
-            </Badge>
-            <MiniBarChart data={mrrSpark} color='#10b981' />
+        </div>
+
+        {/* MRR */}
+        <div className='col-span-4 lg-card lg-card-lift'>
+          <div className='p-5 flex flex-row items-center justify-between gap-6 w-full relative z-10'>
+            <div className='flex items-start justify-between flex-1'>
+              <div>
+                <div className='flex items-center gap-1.5 mb-1'>
+                  <DollarSign size={14} className='text-emerald-500' />
+                  <span className='text-xs font-medium text-muted-foreground'>
+                    Receita Recorrente
+                  </span>
+                </div>
+                <h3 className='text-xl font-bold tracking-tight text-foreground text-balance'>
+                  {metrics.mrr}
+                </h3>
+                <div className='flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground'>
+                  {metrics.mrr_bruto != null && (
+                    <span>
+                      Bruto: R${' '}
+                      {metrics.mrr_bruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  )}
+                  {metrics.mrr_liquido != null && metrics.mrr_liquido !== metrics.mrr_bruto && (
+                    <span className='text-muted-foreground/60'>
+                      Líquido: R${' '}
+                      {metrics.mrr_liquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  )}
+                  <span className='text-muted-foreground/40'>&middot;</span>
+                  <span>
+                    <Users size={12} className='inline mr-0.5' />
+                    {metrics.totalTenants ?? 0} inquilinos
+                  </span>
+                  {portfolioHealth?.vacancy != null && Number(portfolioHealth.vacancy) > 0 && (
+                    <>
+                      <span className='text-muted-foreground/40'>&middot;</span>
+                      <span className='text-destructive/70'>
+                        {portfolioHealth.vacancy}% vacância financeira
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className='flex items-center gap-3 shrink-0'>
+              <Badge variant='default'>
+                <ArrowUp size={10} /> {metrics.trends.mrr}
+              </Badge>
+              <MiniBarChart data={mrrSpark} color='#10b981' />
+            </div>
           </div>
-          </div>
-        </LiquidGlassCard>
+        </div>
       </div>
     </section>
   );

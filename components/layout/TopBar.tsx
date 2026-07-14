@@ -188,7 +188,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   }, [isSearchOpen, selectedIndex, query, properties, tenants]);
 
   return (
-    <header className='sticky top-0 z-40 bg-background/50 backdrop-blur-md border-b border-border px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px]'>
+    <header className='sticky top-0 z-40 lg-topbar px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px] overflow-hidden'>
       <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
         {!isDashboard && (
           <button

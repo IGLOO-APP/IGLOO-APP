@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Download, DollarSign } from 'lucide-react';
 import { SectionHeader, PeriodSelector } from '../../../components/ui/DashboardComponents';
 import { Button } from '../../../components/ui/button';
-import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import {
   ComposedChart,
   Line,
@@ -35,8 +34,8 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
   const displayData = [...slicedReal, ...projected];
 
   return (
-    <Card>
-      <CardHeader className='pb-0'>
+    <div className='lg-card lg-card-lift flex flex-col'>
+      <div className='flex flex-col gap-1.5 p-6 pb-0'>
         <SectionHeader
           title='Fluxo de Caixa & Projeção'
           subtitle='Histórico de transações e previsões contratuais'
@@ -52,8 +51,8 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
             </div>
           }
         />
-      </CardHeader>
-      <CardContent className='pt-4'>
+      </div>
+      <div className='p-6 pt-4'>
         <div className='h-[220px] sm:h-[300px] w-full'>
           <ResponsiveContainer width='100%' height='100%'>
             <ComposedChart data={displayData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
@@ -246,24 +245,18 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ financialHistory =
         <div className='flex items-center gap-2 sm:gap-4 mt-3 px-2 flex-wrap'>
           <div className='flex items-center gap-2'>
             <div className='w-3 h-3 rounded-full bg-emerald-500'></div>
-            <span className='text-xs font-medium text-muted-foreground'>
-              Receita
-            </span>
+            <span className='text-xs font-medium text-muted-foreground'>Receita</span>
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-3 h-3 rounded-full bg-red-500'></div>
-            <span className='text-xs font-medium text-muted-foreground'>
-              Despesa
-            </span>
+            <span className='text-xs font-medium text-muted-foreground'>Despesa</span>
           </div>
           <div className='flex items-center gap-2'>
             <div className='w-6 h-[2px] bg-indigo-500'></div>
-            <span className='text-xs font-medium text-muted-foreground'>
-              Resultado Líquido
-            </span>
+            <span className='text-xs font-medium text-muted-foreground'>Resultado Líquido</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

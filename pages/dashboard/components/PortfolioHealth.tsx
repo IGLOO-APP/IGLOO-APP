@@ -4,7 +4,6 @@ import { TrendingUp, AlertCircle, ShieldCheck, ArrowUp } from 'lucide-react';
 import { formatCurrency } from '../../../utils/formatters';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
-import { Card } from '../../../components/ui/card';
 import {
   Tooltip,
   TooltipContent,
@@ -47,112 +46,94 @@ export const PortfolioHealth: React.FC<PortfolioHealthProps> = ({ health }) => {
   const isHealthyDelinquency = parseVal(health?.delinquency) === 0;
 
   return (
-    <Card className='w-full flex flex-col md:flex-row items-center gap-0 divide-y md:divide-y-0 md:divide-x divide-border transition-all duration-500 p-0'>
+    <div className='w-full grid grid-cols-1 md:grid-cols-3 gap-3'>
       {/* Yield Médio */}
-      <div className='flex-1 w-full p-3 relative'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-2.5'>
-            <div className='p-2 rounded-xl bg-primary/10 text-primary'>
-              <TrendingUp size={15} />
-            </div>
-            <div>
-              <div className='flex items-center gap-1.5 mb-0.5'>
-                <p className='text-xs font-medium text-muted-foreground'>
-                  Yield Médio
-                </p>
-                <ShadTooltipTrigger
-                  title='Análise de Yield'
-                  description='Retorno anual médio da carteira. Calculado como (Receita Anual / Valor Patrimonial) × 100.'
-                />
-              </div>
-              <div className='flex items-center gap-1.5'>
-                <p className='text-base font-bold text-foreground'>
-                  {health?.yield || '0'}%
-                </p>
-                <Badge variant='outline' className='items-center gap-0.5'>
-                  <ArrowUp size={9} />
-                  0.2%
-                </Badge>
-              </div>
-            </div>
+      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
+        <div className='p-2 rounded-xl bg-primary/10 text-primary shrink-0 relative z-10'>
+          <TrendingUp size={15} />
+        </div>
+        <div className='relative z-10 flex-1'>
+          <div className='flex items-center gap-1.5 mb-0.5'>
+            <p className='text-xs font-medium text-muted-foreground'>Yield Médio</p>
+            <ShadTooltipTrigger
+              title='Análise de Yield'
+              description='Retorno anual médio da carteira. Calculado como (Receita Anual / Valor Patrimonial) × 100.'
+            />
+          </div>
+          <div className='flex items-center gap-1.5'>
+            <p className='text-base font-bold text-foreground'>{health?.yield || '0'}%</p>
+            <Badge variant='outline' className='items-center gap-0.5'>
+              <ArrowUp size={9} />
+              0.2%
+            </Badge>
           </div>
         </div>
       </div>
 
       {/* Vacância Financeira */}
-      <div className='flex-1 w-full p-3 relative'>
-        <div className='flex items-center gap-2.5'>
-          <div
-            className={`p-2 rounded-xl ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
-          >
-            <AlertCircle size={16} />
+      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
+        <div
+          className={`p-2 rounded-xl shrink-0 relative z-10 ${isHealthyVacancy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+        >
+          <AlertCircle size={16} />
+        </div>
+        <div className='relative z-10 flex-1'>
+          <div className='flex items-center gap-1.5 mb-0.5'>
+            <p className='text-xs font-medium text-muted-foreground'>Vacância Financeira</p>
+            <ShadTooltipTrigger
+              title='Cálculo de Vacância Financeira'
+              description='Percentual da receita potencial perdida por imóveis vagos. Diferente da ocupação física (número de imóveis), esta métrica reflete o impacto financeiro real na sua receita.'
+            />
           </div>
-          <div>
-            <div className='flex items-center gap-1.5 mb-0.5'>
-              <p className='text-xs font-medium text-muted-foreground'>
-                Vacância Financeira
-              </p>
-              <ShadTooltipTrigger
-                title='Cálculo de Vacância Financeira'
-                description='Percentual da receita potencial perdida por imóveis vagos. Diferente da ocupação física (número de imóveis), esta métrica reflete o impacto financeiro real na sua receita.'
-              />
+          {isHealthyVacancy ? (
+            <Badge variant='outline' className='text-emerald-500 uppercase'>
+              Carteira 100% ocupada
+            </Badge>
+          ) : (
+            <div className='flex items-center gap-3'>
+              <p className='text-base font-bold text-foreground'>{health?.vacancy || '0'}%</p>
+              <Button
+                onClick={() => navigate('/properties')}
+                variant='link'
+                size='sm'
+                className='text-xs font-semibold'
+              >
+                Agir Agora
+              </Button>
             </div>
-            {isHealthyVacancy ? (
-              <Badge variant='outline' className='text-emerald-500 uppercase'>
-                Carteira 100% ocupada
-              </Badge>
-            ) : (
-              <div className='flex items-center gap-3'>
-                <p className='text-base font-bold text-foreground'>
-                  {health?.vacancy || '0'}%
-                </p>
-                <Button
-                  onClick={() => navigate('/properties')}
-                  variant='link'
-                  size='sm'
-                  className='text-xs font-semibold'
-                >
-                  Agir Agora
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
       {/* Inadimplência */}
-      <div className='flex-1 w-full p-3 relative'>
-        <div className='flex items-center gap-2.5'>
-          <div
-            className={`p-2 rounded-xl ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
-          >
-            <ShieldCheck size={16} />
+      <div className='lg-card lg-card-lift p-4 flex items-center gap-3'>
+        <div
+          className={`p-2 rounded-xl shrink-0 relative z-10 ${isHealthyDelinquency ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}
+        >
+          <ShieldCheck size={16} />
+        </div>
+        <div className='relative z-10 flex-1'>
+          <div className='flex items-center gap-1.5 mb-0.5'>
+            <p className='text-xs font-medium text-muted-foreground'>Inadimplência</p>
+            <ShadTooltipTrigger
+              title='Inadimplência Real'
+              description='Percentual do valor total em aberto sobre a receita esperada do mês.'
+            />
           </div>
-          <div>
-            <div className='flex items-center gap-1.5 mb-0.5'>
-              <p className='text-xs font-medium text-muted-foreground'>
-                Inadimplência
-              </p>
-              <ShadTooltipTrigger
-                title='Inadimplência Real'
-                description='Percentual do valor total em aberto sobre a receita esperada do mês.'
-              />
+          {isHealthyDelinquency ? (
+            <Badge variant='outline' className='text-emerald-500 uppercase'>
+              Sem inadimplência
+            </Badge>
+          ) : (
+            <div className='flex items-center gap-1.5'>
+              <p className='text-base font-bold text-red-500'>{health?.delinquency || '0'}%</p>
+              <span className='text-[9px] font-bold text-red-500/70'>
+                ({formatCurrency(health?.delinquencyAbsolute || 0)})
+              </span>
             </div>
-            {isHealthyDelinquency ? (
-              <Badge variant='outline' className='text-emerald-500 uppercase'>
-                Sem inadimplência
-              </Badge>
-            ) : (
-              <div className='flex items-center gap-1.5'>
-                <p className='text-base font-bold text-red-500'>{health?.delinquency || '0'}%</p>
-                <span className='text-[9px] font-bold text-red-500/70'>
-                  ({formatCurrency(health?.delinquencyAbsolute || 0)})
-                </span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

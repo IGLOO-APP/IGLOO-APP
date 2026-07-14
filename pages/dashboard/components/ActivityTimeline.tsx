@@ -2,7 +2,6 @@ import React from 'react';
 import { DollarSign, MapPin, Wrench, FileText, Calendar } from 'lucide-react';
 import { SectionHeader, EmptyState } from '../../../components/ui/DashboardComponents';
 import { Button } from '../../../components/ui/button';
-import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { executeWorkflowAction } from '../../../services/workflow/workflowActions';
 
 interface ActivityTimelineProps {
@@ -10,7 +9,10 @@ interface ActivityTimelineProps {
   onActionComplete?: () => void;
 }
 
-export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, onActionComplete }) => {
+export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
+  activities,
+  onActionComplete,
+}) => {
   const handleAction = async (e: React.MouseEvent, endpoint: string) => {
     e.stopPropagation();
     try {
@@ -22,16 +24,16 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, 
   };
 
   return (
-    <Card className='flex flex-col'>
-      <CardHeader className='pb-0'>
+    <div className='lg-card lg-card-lift flex flex-col'>
+      <div className='flex flex-col gap-1.5 p-6 pb-0'>
         <SectionHeader
           title='Próximos Dias'
           subtitle='Agenda de Ativos'
           icon={Calendar}
           iconColor='text-slate-400'
         />
-      </CardHeader>
-      <CardContent className='pt-5 flex flex-col flex-grow'>
+      </div>
+      <div className='p-6 pt-5 flex flex-col flex-grow'>
         <div className='flex-grow space-y-0 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-slate-100 dark:before:bg-white/5'>
           {activities && activities.length > 0 ? (
             activities.map((act: any, index: number) => {
@@ -114,15 +116,11 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, 
         </div>
 
         <div className='mt-3'>
-          <Button
-            variant='secondary'
-            size='sm'
-            className='w-full text-xs font-semibold'
-          >
+          <Button variant='secondary' size='sm' className='w-full text-xs font-semibold'>
             Ver Agenda Completa
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

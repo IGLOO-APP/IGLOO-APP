@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, FilePlus2, Bed, Bath, Square, Clock, Eye, User } from 'lucide-react';
 import { Card } from '../../components/ui/card';
 import { Property } from '../../types';
-import { LiquidGlassCard } from '../../components/ui/LiquidGlassCard';
 
 interface PropertyCardProps {
   property: Property;
@@ -147,9 +146,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   /* ─── GRID CARD ─────────────────────────────────────────── */
   if (viewMode === 'grid') {
     return (
-      <LiquidGlassCard
+      <div
         onClick={() => !isTenant && onClick(property)}
-        className={`group relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-200 ${!isTenant ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer active-tap' : 'cursor-default'} h-[360px] w-full p-0 gap-0 ${borderClass} ${className}`}
+        className={`lg-card lg-card-lift group flex flex-col ${!isTenant ? 'cursor-pointer active-tap' : 'cursor-default'} h-[360px] w-full p-0 gap-0 ${borderClass} ${className}`}
       >
         {/* Photo Container */}
         <div className='h-44 w-full shrink-0 relative overflow-hidden bg-slate-900 rounded-t-2xl'>
@@ -276,7 +275,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             )}
           </div>
         </div>
-      </LiquidGlassCard>
+      </div>
     );
   }
 

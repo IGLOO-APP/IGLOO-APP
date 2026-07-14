@@ -59,6 +59,19 @@ const Dashboard: React.FC = () => {
     setIsLoaded(true);
   }, []);
 
+  // Global cursor spotlight: delegates to all .lg-card elements on the page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('.lg-card') as HTMLElement | null;
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      target.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   useEffect(() => {
     if (
       dashboardData &&
@@ -128,7 +141,7 @@ const Dashboard: React.FC = () => {
         <TopBar title='Dashboard' subtitle='Visão Geral do Patrimônio'>
           <Button
             onClick={() => navigate('/properties', { state: { openAdd: true } })}
-            variant='default'
+            variant='glass'
             size='default'
           >
             <Plus size={16} />
@@ -192,7 +205,7 @@ const Dashboard: React.FC = () => {
                   Ver Todos <ChevronRight size={12} />
                 </Button>
               </div>
-              <div className='relative group/carousel'>
+              <div className='lg-card group/carousel p-3'>
                 {properties.length > 0 ? (
                   <Carousel
                     className='w-full'

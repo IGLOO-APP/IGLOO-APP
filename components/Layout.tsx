@@ -16,7 +16,6 @@ import { useTheme } from '../hooks/useTheme';
 import { Sidebar } from './layout/Sidebar';
 import { MobileNav } from './layout/MobileNav';
 import { SidebarProvider } from './ui/sidebar';
-import { FlickeringGrid } from './ui/FlickeringGrid';
 
 const navItems = [
   { path: '/', label: 'Início', icon: LayoutDashboard },
@@ -43,8 +42,12 @@ const Layout: React.FC = () => {
 
   return (
     <SidebarProvider className='h-full w-full overflow-hidden'>
-      <div className='flex h-full w-full overflow-hidden bg-card text-foreground'>
-        <div className='hidden md:block shrink-0'>
+      {/* ── Liquid Glass coloured blobs — fixed behind everything ── */}
+      <div className='lg-blob-field' aria-hidden='true' />
+      <div className='lg-blob-3' aria-hidden='true' />
+
+      <div className='flex h-full w-full overflow-hidden text-foreground relative' style={{ background: 'transparent' }}>
+        <div className='hidden md:block shrink-0 relative z-10'>
           <Sidebar
             navItems={navItems}
             adminItems={adminItems}
@@ -56,44 +59,42 @@ const Layout: React.FC = () => {
           />
         </div>
 
-        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-card text-foreground'>
-          <FlickeringGrid squareSize={4} gridGap={6} maxOpacity={0.35} color='#6B7280' />
-
+        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full text-foreground'>
           <div className='relative z-10 flex flex-col flex-1 min-h-0'>
-          {impersonatingFrom && (
-            <div className='bg-amber-500 text-white px-6 py-2 flex items-center justify-between shadow-lg z-50 animate-slideDown'>
-              <div className='flex items-center gap-3'>
-                <div className='p-1.5 bg-white/20 rounded-lg'>
-                  <AlertTriangle size={18} className='animate-pulse' />
+            {impersonatingFrom && (
+              <div className='bg-amber-500 text-white px-6 py-2 flex items-center justify-between shadow-lg z-50 animate-slideDown'>
+                <div className='flex items-center gap-3'>
+                  <div className='p-1.5 bg-white/20 rounded-lg'>
+                    <AlertTriangle size={18} className='animate-pulse' />
+                  </div>
+                  <div className='text-sm leading-tight'>
+                    <span className='font-black uppercase tracking-wider text-[10px] opacity-80 block'>
+                      Modo Admin Ativo
+                    </span>
+                    <p className='font-bold'>
+                      Visualizando como:{' '}
+                      <span className='underline decoration-white/30 underline-offset-2'>
+                        {user?.name}
+                      </span>{' '}
+                      ({user?.email})
+                    </p>
+                  </div>
                 </div>
-                <div className='text-sm leading-tight'>
-                  <span className='font-black uppercase tracking-wider text-[10px] opacity-80 block'>
-                    Modo Admin Ativo
-                  </span>
-                  <p className='font-bold'>
-                    Visualizando como:{' '}
-                    <span className='underline decoration-white/30 underline-offset-2'>
-                      {user?.name}
-                    </span>{' '}
-                    ({user?.email})
-                  </p>
-                </div>
+                <button
+                  onClick={stopImpersonation}
+                  className='flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm'
+                >
+                  <LogOut size={14} />
+                  Parar Acesso
+                </button>
               </div>
-              <button
-                onClick={stopImpersonation}
-                className='flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm'
-              >
-                <LogOut size={14} />
-                Parar Acesso
-              </button>
-            </div>
-          )}
+            )}
 
-          <div
-            className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/messages' ? 'pb-0' : 'pb-24 md:pb-0'}`}
-          >
-            <Outlet />
-          </div>
+            <div
+              className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/messages' ? 'pb-0' : 'pb-24 md:pb-0'}`}
+            >
+              <Outlet />
+            </div>
 
             <MobileNav navItems={mobileNavItems} />
           </div>

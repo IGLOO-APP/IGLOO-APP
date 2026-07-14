@@ -23,7 +23,6 @@ import { announcementService } from '../../services/announcementService';
 import { OwnerAnnouncement, AnnouncementType } from '../../types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Card } from '../ui/card';
 import { executeWorkflowAction } from '../../services/workflow/workflowActions';
 
 interface CommunicationHubProps {
@@ -253,7 +252,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
 
   return (
     <motion.div layout className='relative group h-full cursor-default'>
-      <Card className='h-full flex flex-col relative overflow-hidden'>
+      <div className='h-full flex flex-col relative overflow-hidden lg-card'>
         {/* Subtle bg icon */}
         <div className='absolute bottom-2 right-3 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity text-primary pointer-events-none'>
           <Megaphone className='w-20 h-20' />
@@ -403,7 +402,7 @@ const CommunicationHub: React.FC<CommunicationHubProps> = ({
             </div>
           </div>
         )}
-      </Card>
+      </div>
     </motion.div>
   );
 };

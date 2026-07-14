@@ -5,7 +5,6 @@ import { User } from '../../types';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { Sidebar as SidebarRoot } from '../ui/sidebar';
 import { preloadRoute } from '../../lib/routePreloader';
-import { FlickeringGrid } from '../ui/FlickeringGrid';
 
 interface SidebarProps {
   navItems: { path: string; label: string; icon: React.ElementType }[];
@@ -29,12 +28,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <SidebarRoot
       collapsible='none'
-      className='hidden md:flex h-screen sticky top-0 !w-80 flex-col py-6 justify-between select-none text-sidebar-foreground border-r border-sidebar-border transition-colors duration-200 relative overflow-hidden'
+      className='hidden md:flex h-screen sticky top-0 !w-80 flex-col py-6 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
     >
-      {/* Flickering grid background */}
-      <div className='absolute inset-0 bg-card'>
-        <FlickeringGrid squareSize={4} gridGap={6} maxOpacity={0.35} color='#6B7280' />
-      </div>
+      {/* Background transparent para o gradiente unificado do Layout */}
 
       <div className='flex flex-col flex-grow relative z-10'>
         {/* Header */}
@@ -56,10 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   to={item.path}
                   onMouseEnter={() => preloadRoute(item.path)}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                    `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 border-l-2 ${
                       isActive
-                        ? 'bg-primary/15 backdrop-blur-md text-primary font-semibold shadow-sm'
-                        : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                          ? 'sidebar-item-active border-l-blue-500'
+                          : 'border-l-transparent text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
                     }`
                   }
                 >
@@ -67,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <>
                       <Icon
                         className={`transition-colors duration-200 ${
-                          isActive ? 'text-primary' : 'text-sidebar-foreground/50'
+                          isActive ? 'text-blue-500' : 'text-sidebar-foreground/50'
                         }`}
                         size={20}
                       />
@@ -94,10 +90,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       to={item.path}
                       onMouseEnter={() => preloadRoute(item.path)}
                       className={({ isActive }) =>
-                        `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                        `flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 border-l-2 ${
                           isActive
-                            ? 'bg-primary/15 backdrop-blur-md text-primary font-semibold shadow-sm'
-                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                            ? 'sidebar-item-active border-l-blue-500'
+                            : 'border-l-transparent text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
                         }`
                       }
                     >
@@ -105,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <>
                           <Icon
                             className={`transition-colors duration-200 ${
-                              isActive ? 'text-primary' : 'text-sidebar-foreground/50'
+                              isActive ? 'text-blue-500' : 'text-sidebar-foreground/50'
                             }`}
                             size={20}
                           />

@@ -4,7 +4,6 @@ import { Home, TrendingUp, TrendingDown, ChevronRight, BarChart3 } from 'lucide-
 import { SectionHeader, EmptyState } from '../../../components/ui/DashboardComponents';
 import { formatCurrency } from '../../../utils/formatters';
 import { Button } from '../../../components/ui/button';
-import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import {
   Table,
   TableBody,
@@ -28,8 +27,8 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
   const navigate = useNavigate();
 
   return (
-    <Card>
-      <CardHeader className='pb-0'>
+    <div className='lg-card lg-card-lift flex flex-col'>
+      <div className='flex flex-col gap-1.5 p-6 pb-0'>
         <SectionHeader
           title='Performance por Ativo'
           icon={BarChart3}
@@ -45,14 +44,16 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             </Button>
           }
         />
-      </CardHeader>
-      <CardContent className='pt-4'>
+      </div>
+      <div className='p-6 pt-4'>
         <div className='overflow-x-auto'>
           <Table>
             <TableHeader>
               <TableRow className='text-xs font-semibold text-muted-foreground border-none'>
                 <TableHead className='pb-1.5 pl-2 text-muted-foreground'>Propriedade</TableHead>
-                <TableHead className='pb-1.5 text-right text-muted-foreground'>Receita Mensal</TableHead>
+                <TableHead className='pb-1.5 text-right text-muted-foreground'>
+                  Receita Mensal
+                </TableHead>
                 <TableHead className='pb-1.5 text-right px-3 text-muted-foreground'>
                   <TooltipProvider>
                     <Tooltip>
@@ -178,7 +179,7 @@ export const PropertyPerformance: React.FC<PropertyPerformanceProps> = ({ topPro
             />
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
