@@ -28,8 +28,8 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
             <Megaphone size={12} className='shrink-0' />
             <span>Comunicado do proprietário</span>
           </div>
-          <div className='px-4 py-3 bg-primary/5 dark:bg-primary/10 text-foreground rounded-[20px] rounded-tl-none border border-primary/10 shadow-sm'>
-            <p className='text-sm leading-relaxed whitespace-pre-wrap'>{msg.text}</p>
+          <div className='px-4 py-3 text-foreground rounded-[20px] rounded-tl-none lg-card'>
+            <p className='text-sm leading-relaxed whitespace-pre-wrap break-words'>{msg.text}</p>
           </div>
           <span className='text-xs text-muted-foreground mt-1.5 px-1'>
             {formatDateTime(msg.created_at, msg.time)}
@@ -55,7 +55,7 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
           className={`px-4 py-2.5 shadow-sm relative group transition-all ${
             isMe
               ? 'bg-foreground text-background rounded-[20px] rounded-tr-none'
-              : 'bg-card text-foreground rounded-[20px] rounded-tl-none border border-border'
+              : 'text-foreground rounded-[20px] rounded-tl-none lg-card'
           }`}
         >
           {msg.type === 'image' ? (
@@ -71,7 +71,7 @@ export const MessageBubble = React.memo(({ msg }: MessageBubbleProps) => {
               </div>
             </div>
           ) : (
-            <p className='text-sm leading-relaxed'>{msg.text}</p>
+            <p className='text-sm leading-relaxed break-words'>{msg.text}</p>
           )}
         </div>
 

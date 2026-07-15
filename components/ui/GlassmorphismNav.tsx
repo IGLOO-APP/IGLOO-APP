@@ -27,15 +27,9 @@ export function GlassmorphismNav({ items, activeTab, onChange, className }: Glas
           'flex items-center w-full md:w-auto',
           'gap-1 py-1 px-1 rounded-full overflow-hidden',
           // Frosted glass pill
-          'bg-muted/80',
-          'border border-border',
-          'shadow-sm',
+          'lg-card',
           className
         )}
-        style={{
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        }}
       >
         {items.map((item) => {
           const Icon = item.icon;

@@ -188,7 +188,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   }, [isSearchOpen, selectedIndex, query, properties, tenants]);
 
   return (
-    <header className='sticky top-0 z-40 lg-topbar px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px] overflow-hidden'>
+    <header className='sticky top-0 z-40 lg-topbar px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px] overflow-visible'>
       <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
         {!isDashboard && (
           <button
@@ -238,7 +238,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className='w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap group'
+              className='w-9 h-9 flex items-center justify-center rounded-full bg-card/50 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-all active-tap group'
               title='Pesquisa Global (Ctrl+K)'
             >
               <Search size={16} className='group-hover:text-primary transition-colors' />
@@ -247,7 +247,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
           {/* Results Dropdown */}
           {isSearchOpen && (query || filteredItems.length > 0) && (
-            <div className='absolute top-full right-0 mt-2 w-[320px] max-w-[calc(100vw-2rem)] md:w-[400px] bg-card rounded-[32px] shadow-sm border border-border overflow-hidden animate-scaleUp origin-top-right z-50'>
+            <div className='absolute top-full right-0 mt-2 w-[320px] max-w-[calc(100vw-2rem)] md:w-[400px] bg-card border border-border rounded-[32px] shadow-lg animate-scaleUp origin-top-right z-50 overflow-hidden'>
               {filteredItems.length > 0 ? (
                 <div className='p-2 max-h-[60vh] overflow-y-auto custom-scrollbar'>
                   {filteredItems.map((item, index) => (
@@ -259,7 +259,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                       }}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
-                        index === selectedIndex ? 'bg-muted' : 'hover:bg-accent/50'
+                        index === selectedIndex ? 'bg-muted' : 'hover:bg-muted/50'
                       }`}
                     >
                       <div className='flex items-center gap-3 min-w-0'>
@@ -306,7 +306,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
               {/* Footer hints */}
               {filteredItems.length > 0 && (
-                <div className='px-4 py-2.5 bg-muted/50 border-t border-border flex items-center gap-3 text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>
+                <div className='px-4 py-2.5 bg-muted/30 border-t border-border flex items-center gap-3 text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>
                   <span className='flex items-center gap-1'>
                     <span className='px-1 py-0.5 bg-muted rounded text-[7px]'>↑↓</span> Navegar
                   </span>
@@ -325,7 +325,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
         {/* Theme Toggle Mobile */}
         <button
           onClick={toggleTheme}
-          className='md:hidden w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap'
+              className='md:hidden w-9 h-9 flex items-center justify-center rounded-full bg-card/50 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-all active-tap'
         >
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
@@ -337,19 +337,19 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
             className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active-tap relative ${
               showNotifications
                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                : 'bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10'
+                : 'bg-card/50 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground hover:bg-card'
             }`}
           >
             <Bell size={16} />
             {unreadCount > 0 && (
-              <span className='absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-surface-dark animate-pulse'></span>
+              <span className='absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-background animate-pulse'></span>
             )}
           </button>
 
           {showNotifications && (
             <>
               <div className='fixed inset-0 z-30' onClick={() => setShowNotifications(false)}></div>
-              <div className='absolute top-12 right-0 w-80 max-w-[calc(100vw-2rem)] bg-card rounded-[32px] shadow-2xl border border-border py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
+              <div className='absolute top-12 right-0 w-80 max-w-[calc(100vw-2rem)] bg-card border border-border rounded-[32px] shadow-2xl py-2 z-40 animate-scaleUp origin-top-right overflow-hidden'>
                 <div className='px-4 py-3 border-b border-border flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground'>
                   Notificações
                   {unreadCount > 0 && (
@@ -367,7 +367,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                           markAsRead(notif.id);
                           setShowNotifications(false);
                         }}
-                        className='px-4 py-3 hover:bg-accent cursor-pointer border-b border-border/50 last:border-0 group transition-colors'
+                        className='px-4 py-3 hover:bg-muted/50 cursor-pointer border-b border-border/50 last:border-0 group transition-colors'
                       >
                         <p className='text-sm font-bold text-foreground group-hover:text-primary transition-colors'>
                           {notif.title}

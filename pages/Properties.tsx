@@ -247,7 +247,7 @@ const Properties: React.FC = () => {
                   </div>
                 </div>
               </TopBar>
-              <div className='px-6'>
+              <div className='px-6 pt-6'>
                 <div className='flex gap-3 overflow-x-auto hide-scrollbar pb-2'>
                   <div className='lg-card lg-card-lift p-4 min-w-[110px] flex-1 transition-colors'>
                     <p className='text-slate-500 dark:text-slate-400 text-sm font-medium mb-1'>

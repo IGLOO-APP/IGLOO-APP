@@ -10,7 +10,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, subtitle }) => {
   return (
     <div className='min-h-screen relative overflow-hidden flex flex-col md:flex-row bg-[#060d0e]'>
       {/* Left Section: Message */}
-      <div className='hidden md:flex flex-1 flex-col items-start justify-center p-11 relative z-20 bg-[#0a1618]'>
+      <div className='hidden md:flex flex-1 min-w-0 flex-col items-start justify-center p-11 relative z-20 bg-[#0a1618]'>
         {/* Background Elements (Static & Subtler) */}
         <div className='absolute inset-0 pointer-events-none overflow-hidden'>
           <div
@@ -68,7 +68,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, subtitle }) => {
       </div>
 
       {/* Right Section: Auth Form */}
-      <div className='flex-1 flex items-center justify-center p-4 relative z-10 bg-[#060d0e] border-l border-white/[0.03]'>
+      <div className='flex-1 min-w-0 flex items-center justify-center p-4 relative z-10 bg-[#060d0e] border-l border-white/[0.03]'>
         <div className='w-full max-w-[400px]'>
           {/* Universal Brand Header (Smaller) */}
           <div className='text-center mb-6 group'>

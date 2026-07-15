@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { GlassmorphismNav } from '../../components/ui/GlassmorphismNav';
+import { StickyTabBar } from '../../components/ui/StickyTabBar';
 import { usePropertyDetails } from './hooks/usePropertyDetails';
 import { OverviewTab } from './sections/OverviewTab';
 import { InspectionsTab } from './sections/InspectionsTab';
@@ -101,38 +102,37 @@ const PropertyDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className='flex flex-col h-full overflow-hidden relative bg-transparent'>
-      {/* Breadcrumb */}
-      <div className='px-8 pt-4 pb-1 relative z-10'>
-        <div className='flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest'>
-          <Link
-            to='/properties'
-            className='hover:text-primary transition-colors flex items-center gap-1'
-          >
-            <ArrowLeft size={13} strokeWidth={1.8} /> Imóveis
-          </Link>
-          <span>/</span>
-          <span className='text-slate-200 font-black'>{property.name}</span>
+    <div className='flex flex-col h-full relative bg-transparent'>
+      {/* Content + Tabs (scroll container) — breadcrumb inside so it scrolls away */}
+      <div className='flex-1 overflow-y-auto relative z-10'>
+        {/* Breadcrumb */}
+        <div className='px-8 pt-4 pb-1'>
+          <div className='flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+            <Link
+              to='/properties'
+              className='hover:text-primary transition-colors flex items-center gap-1'
+            >
+              <ArrowLeft size={13} strokeWidth={1.8} /> Imóveis
+            </Link>
+            <span>/</span>
+            <span className='text-slate-200 font-black'>{property.name}</span>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className='px-8 pt-4 pb-2 flex justify-center'>
-        <GlassmorphismNav
-          activeTab={h.activeTab}
-          onChange={h.setActiveTab}
-          items={[
-            { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
-            { id: 'inspections', label: 'Vistorias', icon: ClipboardCheck },
-            { id: 'docs', label: 'Documentos', icon: FileText },
-            { id: 'tenantConfig', label: 'Perfil do Inquilino', icon: User },
-            { id: 'utilities', label: 'Utilidades', icon: Zap },
-          ]}
-        />
-      </div>
-
-      {/* Content */}
-      <div className='flex-1 overflow-y-auto p-8 pt-4 pb-32 relative z-10'>
+        <StickyTabBar>
+          <GlassmorphismNav
+            activeTab={h.activeTab}
+            onChange={h.setActiveTab}
+            items={[
+              { id: 'overview', label: 'Visão Geral', icon: TrendingUp },
+              { id: 'inspections', label: 'Vistorias', icon: ClipboardCheck },
+              { id: 'docs', label: 'Documentos', icon: FileText },
+              { id: 'tenantConfig', label: 'Perfil do Inquilino', icon: User },
+              { id: 'utilities', label: 'Utilidades', icon: Zap },
+            ]}
+          />
+        </StickyTabBar>
+        <div className='p-8 pt-4 pb-32'>
         {h.activeTab === 'overview' && (
           <>
             {/* Photo Carousel */}
@@ -258,6 +258,7 @@ const PropertyDetailsPage: React.FC = () => {
           </div>
         )}
         {h.activeTab === 'utilities' && <UtilitiesTab property={property} />}
+      </div>
       </div>
 
       {h.showFullscreenImage && (

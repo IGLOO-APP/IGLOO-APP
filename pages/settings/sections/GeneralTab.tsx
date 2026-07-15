@@ -29,7 +29,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
 
   return (
     <div className='animate-fadeIn space-y-6 max-w-2xl'>
-      <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+      <div className='space-y-4'>
         <div className='flex flex-col md:flex-row items-center gap-6 mb-8 p-4 bg-muted/50 rounded-2xl border border-dashed border-border'>
           <div className='relative'>
             <div className='w-24 h-24 rounded-full overflow-hidden border-4 border-background shadow-xl bg-muted'>
@@ -121,7 +121,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
           </div>
         </div>
       </div>
-      <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+      <div className='space-y-4'>
         <h3 className='font-bold text-foreground text-lg mb-4'>Segurança</h3>
         <p className='text-sm text-muted-foreground mb-6'>
           Gerencie sua senha, autenticação de dois fatores e sessões ativas.

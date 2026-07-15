@@ -126,7 +126,7 @@ const AdminLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full bg-background-light dark:bg-background-dark pointer-events-auto'>
+      <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full bg-background-light dark:bg-background-dark pointer-events-auto'>
         {/* Header */}
         <header className='h-20 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-8 shrink-0'>
           <div>

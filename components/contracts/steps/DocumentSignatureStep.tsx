@@ -66,7 +66,7 @@ export const DocumentSignatureStep: React.FC<DocumentSignatureStepProps> = ({
         <SignaturePad onClose={() => onShowSignatureModal(false)} onConfirm={onSignatureConfirm} />
       )}
 
-      <div className='flex-1 flex flex-col items-center gap-10 overflow-y-auto pr-2'>
+      <div className='flex-1 min-w-0 flex flex-col items-center gap-10 overflow-y-auto pr-2'>
         {contractPages.map((pageContent, index) => (
           <div
             key={index}

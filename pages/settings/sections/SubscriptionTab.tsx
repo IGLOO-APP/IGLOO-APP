@@ -31,15 +31,15 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
     return (
       <div className='p-10 flex flex-col items-center justify-center text-center'>
         <AlertTriangle className='text-amber-500 mb-4' size={40} />
-        <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
+        <h3 className='text-lg font-bold text-foreground'>
           Erro ao carregar assinatura
         </h3>
-        <p className='text-slate-500 mt-2 mb-6'>
+        <p className='text-muted-foreground mt-2 mb-6'>
           Não foi possível carregar os detalhes do plano. Tente novamente.
         </p>
         <button
           onClick={onLoadSubscription}
-          className='px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg font-bold shadow-lg'
+          className='px-6 py-2 bg-primary text-primary-foreground rounded-lg font-bold shadow-lg'
         >
           Tentar Novamente
         </button>
@@ -49,11 +49,11 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
 
   return (
     <div className='animate-fadeIn space-y-6 max-w-4xl'>
-      <div className='bg-white dark:bg-surface-dark rounded-3xl border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden'>
+      <div className='lg-card lg-card-lift rounded-3xl border border-border overflow-hidden'>
         <div className='p-6 md:p-8 flex flex-col md:flex-row justify-between gap-6'>
           <div>
             <div className='flex items-center gap-3 mb-2'>
-              <span className='text-sm font-bold text-slate-500 uppercase tracking-wider'>
+              <span className='text-sm font-bold text-muted-foreground uppercase tracking-wider'>
                 Plano Atual
               </span>
               {subscription.status === 'active' && (
@@ -67,16 +67,16 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
                 </span>
               )}
             </div>
-            <h2 className='text-3xl font-black text-slate-900 dark:text-white mb-2'>
+            <h2 className='text-3xl font-black text-foreground mb-2'>
               {currentPlanDetails.name}
             </h2>
-            <p className='text-slate-500 dark:text-slate-400 max-w-md text-sm'>
+            <p className='text-muted-foreground max-w-md text-sm'>
               {currentPlanDetails.description}
             </p>
             <div className='mt-6 flex flex-col gap-1'>
-              <p className='text-sm font-bold text-slate-900 dark:text-white'>
+              <p className='text-sm font-bold text-foreground'>
                 R$ {subscription.amount.toFixed(2)}{' '}
-                <span className='text-slate-400 font-normal'>
+                <span className='text-muted-foreground font-normal'>
                   /{' '}
                   {subscription.billingCycle === 'monthly'
                     ? 'mês'
@@ -85,7 +85,7 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
                       : 'ano'}
                 </span>
               </p>
-              <p className='text-xs text-slate-500'>
+              <p className='text-xs text-muted-foreground'>
                 {subscription.trialEndsAt
                   ? `Teste gratuito até ${new Date(subscription.trialEndsAt).toLocaleDateString('pt-BR')}`
                   : `Próxima cobrança em ${new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-BR')}`}
@@ -95,20 +95,20 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
           <div className='flex flex-col justify-center gap-3 min-w-[200px]'>
             <button
               onClick={onOpenPlanModal}
-              className='w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95'
+              className='w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all active:scale-95'
             >
               Alterar Plano
             </button>
             <button
               onClick={onCancelSubscription}
-              className='w-full py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-red-500 rounded-xl font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors'
+              className='w-full py-3 bg-card border border-border text-red-500 rounded-xl font-bold text-sm hover:bg-red-500/10 transition-colors'
             >
               Cancelar Assinatura
             </button>
           </div>
         </div>
-        <div className='bg-slate-50 dark:bg-black/20 p-6 border-t border-gray-200 dark:border-white/5'>
-          <h4 className='text-xs font-bold text-slate-500 uppercase mb-4'>Uso do Plano</h4>
+        <div className='bg-muted/50 p-6 border-t border-border'>
+          <h4 className='text-xs font-bold text-muted-foreground uppercase mb-4'>Uso do Plano</h4>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             {[
               {
@@ -132,7 +132,7 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
               },
             ].map((item) => (
               <div key={item.label}>
-                <div className='flex justify-between text-xs mb-2 font-bold text-slate-700 dark:text-slate-300'>
+                <div className='flex justify-between text-xs mb-2 font-bold text-foreground/80'>
                   <span>{item.label}</span>
                   <span>
                     {item.limit === -1
@@ -140,7 +140,7 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
                       : `${item.used} / ${item.limit}${item.suffix || ''}`}
                   </span>
                 </div>
-                <div className='w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+                <div className='w-full h-2 bg-muted rounded-full overflow-hidden'>
                   <div
                     className={`h-full ${item.color} rounded-full`}
                     style={{ width: `${item.limit === -1 ? 5 : (item.used / item.limit) * 100}%` }}
@@ -152,12 +152,12 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
         </div>
       </div>
       <div className='grid md:grid-cols-2 gap-6'>
-        <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm'>
-          <h3 className='font-bold text-slate-900 dark:text-white mb-4'>Método de Pagamento</h3>
+        <div className='lg-card lg-card-lift p-6 rounded-2xl border border-border'>
+          <h3 className='font-bold text-foreground mb-4'>Método de Pagamento</h3>
           {subscription.paymentMethod ? (
-            <div className='flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-white/5 bg-slate-50 dark:bg-black/20'>
+              <div className='flex items-center justify-between p-4 rounded-xl border border-border bg-muted/50'>
               <div className='flex items-center gap-3'>
-                <div className='p-1.5 bg-white dark:bg-white/10 rounded-lg shadow-sm text-slate-600 dark:text-slate-300'>
+                <div className='p-1.5 bg-background rounded-lg shadow-sm text-foreground/80'>
                   <svg
                     width='20'
                     height='20'
@@ -171,21 +171,21 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <p className='text-sm font-bold text-slate-900 dark:text-white capitalize'>
+                  <p className='text-sm font-bold text-foreground capitalize'>
                     {subscription.paymentMethod.brand} •••• {subscription.paymentMethod.last4}
                   </p>
-                  <p className='text-xs text-slate-500'>Padrão</p>
+                  <p className='text-xs text-muted-foreground'>Padrão</p>
                 </div>
               </div>
               <button className='text-xs font-bold text-primary hover:underline'>Alterar</button>
             </div>
           ) : (
-            <div className='text-sm text-slate-500'>Nenhum método salvo.</div>
+            <div className='text-sm text-muted-foreground'>Nenhum método salvo.</div>
           )}
         </div>
-        <div className='bg-white dark:bg-surface-dark p-6 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm'>
+        <div className='lg-card lg-card-lift p-6 rounded-2xl border border-border'>
           <div className='flex justify-between items-center mb-4'>
-            <h3 className='font-bold text-slate-900 dark:text-white'>Histórico de Faturas</h3>
+            <h3 className='font-bold text-foreground'>Histórico de Faturas</h3>
             <button className='text-xs font-bold text-primary hover:underline'>Ver tudo</button>
           </div>
           <div className='space-y-3'>
@@ -193,31 +193,31 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = ({
               invoices.slice(0, 3).map((inv: any) => (
                 <div
                   key={inv.id}
-                  className='flex items-center justify-between text-sm p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors'
+                  className='flex items-center justify-between text-sm p-2 hover:bg-muted rounded-lg transition-colors'
                 >
                   <div className='flex items-center gap-3'>
-                    <div className='p-1.5 bg-emerald-100 text-emerald-600 rounded-md'>
+                    <div className='p-1.5 bg-emerald-500/10 text-emerald-500 rounded-md'>
                       <CheckCircle size={14} />
                     </div>
                     <div>
-                      <p className='font-bold text-slate-700 dark:text-slate-200'>
+                      <p className='font-bold text-foreground/80'>
                         {new Date(inv.date).toLocaleDateString()}
                       </p>
-                      <p className='text-xs text-slate-500'>{inv.number}</p>
+                      <p className='text-xs text-muted-foreground'>{inv.number}</p>
                     </div>
                   </div>
                   <div className='flex items-center gap-3'>
-                    <span className='font-bold text-slate-900 dark:text-white'>
+                    <span className='font-bold text-foreground'>
                       R$ {inv.amount.toFixed(2)}
                     </span>
-                    <button className='text-slate-400 hover:text-primary'>
+                    <button className='text-muted-foreground hover:text-primary'>
                       <Download size={16} />
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <p className='text-sm text-slate-500 text-center py-4'>
+              <p className='text-sm text-muted-foreground text-center py-4'>
                 Nenhuma fatura gerada ainda.
               </p>
             )}

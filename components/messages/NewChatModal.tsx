@@ -83,7 +83,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({ show, onClose, onSel
                 placeholder='Buscar por nome ou e-mail...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='w-full h-12 pl-12 pr-6 rounded-2xl bg-muted border-none text-sm text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all shadow-inner'
+                className='w-full h-12 pl-12 pr-6 rounded-2xl text-sm text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all lg-card'
               />
               <Search
                 className='absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors'
@@ -114,7 +114,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({ show, onClose, onSel
                   <button
                     key={t.id}
                     onClick={() => onSelectTenant(t.id)}
-                    className='w-full p-4 rounded-2xl bg-card border border-border flex items-center gap-4 hover:border-primary/50 hover:bg-accent/50 hover:shadow-lg hover:shadow-black/5 transition-all group text-left relative'
+                    className='w-full p-4 rounded-2xl lg-card lg-card-lift flex items-center gap-4 transition-all group text-left relative'
                   >
                     <div className='shrink-0'>
                   <div
@@ -146,7 +146,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({ show, onClose, onSel
                 ))}
               </div>
             ) : (
-              <div className='py-20 flex flex-col items-center justify-center text-center px-8 border-2 border-dashed border-border rounded-3xl'>
+              <div className='py-20 flex flex-col items-center justify-center text-center px-8 lg-card rounded-3xl border-2 border-dashed border-border'>
                 <div className='w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4'>
                   <User size={32} />
                 </div>

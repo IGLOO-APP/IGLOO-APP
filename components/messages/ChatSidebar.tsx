@@ -86,18 +86,9 @@ export const ChatSidebar = React.memo(
 
     return (
       <div
-        className={`w-full md:w-64 lg:w-72 flex flex-col border-r border-border bg-background text-foreground transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
+        className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col border-r border-border text-foreground transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
       >
-        <div className='p-4 border-b border-border bg-background sticky top-0 z-30'>
-          <div className='flex items-center justify-between mb-3'>
-            <div className='flex flex-col'>
-              <h1 className='text-lg font-semibold text-foreground tracking-tight'>
-                Mensagens
-              </h1>
-              <p className='text-xs text-muted-foreground'>Central de comunicação</p>
-            </div>
-          </div>
-
+        <div className='p-4 border-b border-border bg-background sticky top-0 z-30 lg-card rounded-none border-x-0 border-t-0'>
           <div className='flex gap-2 mb-3'>
             <div className='relative flex-1'>
               <input
@@ -105,7 +96,7 @@ export const ChatSidebar = React.memo(
                 placeholder='Buscar conversa...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='w-full h-10 pl-10 pr-3 rounded-2xl bg-muted/50 border border-input text-xs text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
+                className='w-full h-10 pl-10 pr-3 rounded-2xl text-xs text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary outline-none transition-all lg-card'
               />
               <Search
                 className='absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground'
@@ -114,14 +105,14 @@ export const ChatSidebar = React.memo(
             </div>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-primary-foreground shadow-lg' : 'bg-muted/50 text-muted-foreground hover:text-foreground border border-input'}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all active:scale-90 ${showAdvancedFilters ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground lg-card'}`}
             >
               <Filter size={16} />
             </button>
           </div>
 
           {showAdvancedFilters && (
-            <div className='p-3 rounded-2xl bg-muted/30 border border-border space-y-3 animate-slideDown mb-3'>
+            <div className='p-3 rounded-2xl space-y-3 animate-slideDown mb-3 lg-card'>
               <div className='space-y-1.5'>
                 <label className='text-xs font-medium text-muted-foreground px-1'>
                   Prioridade
@@ -130,7 +121,7 @@ export const ChatSidebar = React.memo(
                   <select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value)}
-                    className='w-full pl-3 pr-9 py-2 bg-background border border-input rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    className='w-full pl-3 pr-9 py-2 rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer lg-card'
                   >
                     <option value='all'>Todas as Prioridades</option>
                     <option value='urgent'>Urgente</option>
@@ -153,7 +144,7 @@ export const ChatSidebar = React.memo(
                   <select
                     value={propertyFilter}
                     onChange={(e) => setPropertyFilter(e.target.value)}
-                    className='w-full pl-3 pr-9 py-2 bg-background border border-input rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
+                    className='w-full pl-3 pr-9 py-2 rounded-xl text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer lg-card'
                   >
                     <option value='all'>Todos os Imóveis</option>
                     {Array.from(new Set(chats.map((c) => c.property))).map((prop) => (
@@ -176,7 +167,7 @@ export const ChatSidebar = React.memo(
                   setActiveFilter('all');
                   setSearchTerm('');
                 }}
-                className='w-full py-2 text-xs font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-all'
+                className='w-full py-2 text-xs font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-all lg-card'
               >
                 Limpar Filtros
               </button>
@@ -205,7 +196,7 @@ export const ChatSidebar = React.memo(
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   activeFilter === filter.id
                     ? 'bg-foreground text-background shadow-md'
-                    : 'bg-muted/50 text-muted-foreground'
+                    : 'text-muted-foreground lg-card'
                 }`}
               >
                 {filter.icon} {filter.label}
@@ -217,7 +208,7 @@ export const ChatSidebar = React.memo(
             <div className='px-1 mb-1.5'>
               <button
                 onClick={() => setIsCreateSupportOpen(true)}
-                className='w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95'
+                className='w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95 hover:brightness-110'
               >
                 <Plus size={12} strokeWidth={3} />
                 Novo Chamado
@@ -263,7 +254,7 @@ export const ChatSidebar = React.memo(
                   <div
                     key={tenant.id}
                     onClick={() => handleSelectTenant(tenant.id)}
-                    className='px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-accent/50 border-b border-border group'
+                    className='px-4 py-3 flex items-center gap-3 cursor-pointer group lg-card rounded-none border-b'
                   >
                     <div
                       className={`w-8 h-8 rounded-full ${getAvatarColor(tenant.name)} flex items-center justify-center text-white font-semibold text-xs shadow-sm opacity-80 group-hover:opacity-100 transition-all`}
@@ -301,7 +292,7 @@ export const ChatSidebar = React.memo(
 
           {/* Existing Chats Section */}
           {searchTerm && filteredChats.length > 0 && (
-            <div className='px-4 py-2 bg-muted/30'>
+            <div className='px-4 py-2 lg-card rounded-none border-x-0 border-t-0'>
               <span className='text-xs font-medium text-muted-foreground'>
                 Conversas Ativas
               </span>
@@ -312,10 +303,10 @@ export const ChatSidebar = React.memo(
             <div
               key={chat.id}
               onClick={() => setActiveChatId(chat.id)}
-              className={`group px-4 py-3 flex items-start gap-3 cursor-pointer transition-all relative border-b border-border ${
+              className={`group px-4 py-3 flex items-start gap-3 cursor-pointer transition-all relative lg-card rounded-none border-b ${
                 activeChatId === chat.id
-                  ? 'bg-accent/50'
-                  : 'hover:bg-accent/30'
+                  ? 'bg-accent/30'
+                  : ''
               }`}
             >
               {/* Indicador de não lido */}
@@ -405,7 +396,7 @@ export const ChatSidebar = React.memo(
           ))}
 
             {!loading && filteredChats.length === 0 && !searchTerm && (
-              <div className='flex flex-col items-center justify-center py-12 px-6 text-center'>
+              <div className='flex flex-col items-center justify-center py-12 px-6 text-center lg-card rounded-none border-x-0 border-b-0 mx-2 mt-2'>
                 <MessageSquare size={28} className='text-muted-foreground/30 mb-3' />
                 <p className='text-sm font-medium text-muted-foreground mb-1'>
                   Nenhuma conversa ativa
@@ -417,7 +408,7 @@ export const ChatSidebar = React.memo(
             )}
 
             {!loading && filteredChats.length === 0 && searchTerm && (
-              <div className='flex flex-col items-center justify-center py-12 px-6 text-center'>
+              <div className='flex flex-col items-center justify-center py-12 px-6 text-center lg-card rounded-none border-x-0 border-b-0 mx-2 mt-2'>
                 <Search size={24} className='text-muted-foreground/30 mb-3' />
                 <p className='text-sm font-medium text-muted-foreground'>
                   Nenhum resultado para "{searchTerm}"

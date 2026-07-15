@@ -29,15 +29,15 @@ const renderPaymentFields = (
 ) => {
   if (method.id === 'pix') {
     return (
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 dark:bg-black/20 rounded-xl animate-fadeIn'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-muted/50 rounded-xl animate-fadeIn'>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>
             Tipo de Chave
           </label>
           <select
             value={method.fields.type}
             onChange={(e) => onUpdateField(method.id, 'type', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           >
             <option value='CPF'>CPF</option>
             <option value='CNPJ'>CNPJ</option>
@@ -47,11 +47,11 @@ const renderPaymentFields = (
           </select>
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>Chave Pix</label>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>Chave Pix</label>
           <input
             value={method.fields.key}
             onChange={(e) => onUpdateField(method.id, 'key', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white font-mono'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground font-mono'
             placeholder='Insira sua chave'
           />
         </div>
@@ -60,37 +60,37 @@ const renderPaymentFields = (
   }
   if (method.id === 'boleto') {
     return (
-      <div className='grid grid-cols-2 gap-4 mt-4 p-4 bg-slate-50 dark:bg-black/20 rounded-xl animate-fadeIn'>
+      <div className='grid grid-cols-2 gap-4 mt-4 p-4 bg-muted/50 rounded-xl animate-fadeIn'>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>Banco</label>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>Banco</label>
           <input
             value={method.fields.bank}
             onChange={(e) => onUpdateField(method.id, 'bank', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           />
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>Carteira</label>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>Carteira</label>
           <input
             value={method.fields.wallet}
             onChange={(e) => onUpdateField(method.id, 'wallet', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           />
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>Agência</label>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>Agência</label>
           <input
             value={method.fields.agency}
             onChange={(e) => onUpdateField(method.id, 'agency', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           />
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>Conta</label>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>Conta</label>
           <input
             value={method.fields.account}
             onChange={(e) => onUpdateField(method.id, 'account', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           />
         </div>
       </div>
@@ -98,15 +98,15 @@ const renderPaymentFields = (
   }
   if (method.id === 'credit_card') {
     return (
-      <div className='space-y-4 mt-4 p-4 bg-slate-50 dark:bg-black/20 rounded-xl animate-fadeIn'>
+      <div className='space-y-4 mt-4 p-4 bg-muted/50 rounded-xl animate-fadeIn'>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>
             Gateway de Pagamento
           </label>
           <select
             value={method.fields.gateway}
             onChange={(e) => onUpdateField(method.id, 'gateway', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           >
             <option value='Stripe'>Stripe</option>
             <option value='Mercado Pago'>Mercado Pago</option>
@@ -115,25 +115,25 @@ const renderPaymentFields = (
           </select>
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>
             Chave Pública (Public Key)
           </label>
           <input
             value={method.fields.publicKey}
             onChange={(e) => onUpdateField(method.id, 'publicKey', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white font-mono'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground font-mono'
             placeholder='pk_test_...'
             type='password'
           />
         </div>
         <div>
-          <label className='text-xs font-bold text-slate-500 uppercase mb-1 block'>
+          <label className='text-xs font-bold text-muted-foreground uppercase mb-1 block'>
             Parcelamento Máximo
           </label>
           <select
             value={method.fields.maxInstallments}
             onChange={(e) => onUpdateField(method.id, 'maxInstallments', e.target.value)}
-            className='w-full px-3 py-2 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-sm focus:border-primary outline-none dark:text-white'
+            className='w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:border-primary outline-none text-foreground'
           >
             <option value='1'>À vista (1x)</option>
             <option value='3'>Até 3x</option>
@@ -190,7 +190,7 @@ export const FinancialTab: React.FC<FinancialTabProps> = ({
           return (
             <div
               key={method.id}
-              className={`bg-white dark:bg-surface-dark rounded-2xl border transition-all duration-300 ${method.enabled ? 'border-primary shadow-md shadow-primary/5 ring-1 ring-primary/20' : 'border-gray-200 dark:border-white/5 opacity-80'}`}
+              className={`lg-card lg-card-lift rounded-2xl border transition-all duration-300 ${method.enabled ? 'border-primary shadow-md shadow-primary/5 ring-1 ring-primary/20' : 'border-border opacity-80'}`}
             >
               <div className='p-5'>
                 <div className='flex items-start justify-between'>
@@ -201,10 +201,10 @@ export const FinancialTab: React.FC<FinancialTabProps> = ({
                       <IconComp size={24} />
                     </div>
                     <div>
-                      <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
+                      <h3 className='text-lg font-bold text-foreground'>
                         {method.name}
                       </h3>
-                      <p className='text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1'>
+                      <p className='text-xs text-muted-foreground max-w-sm mt-1'>
                         {method.description}
                       </p>
                     </div>
@@ -214,14 +214,14 @@ export const FinancialTab: React.FC<FinancialTabProps> = ({
                       onClick={() =>
                         onExpandedChange(expandedMethodId === method.id ? null : method.id)
                       }
-                      className='p-2 text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 rounded-full transition-colors'
+                      className='p-2 text-muted-foreground hover:text-primary hover:bg-muted rounded-full transition-colors'
                       title='Configurar'
                     >
                       <Settings size={20} />
                     </button>
                     <button
                       onClick={() => onToggleMethod(method.id)}
-                      className={`transition-colors ${method.enabled ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-colors ${method.enabled ? 'text-primary' : 'text-muted-foreground/60'}`}
                       title={method.enabled ? 'Desativar' : 'Ativar'}
                     >
                       {method.enabled ? (
@@ -233,7 +233,7 @@ export const FinancialTab: React.FC<FinancialTabProps> = ({
                   </div>
                 </div>
                 {expandedMethodId === method.id && (
-                  <div className='border-t border-gray-100 dark:border-white/5 mt-4 pt-2'>
+                  <div className='border-t border-border mt-4 pt-2'>
                     {renderPaymentFields(method, onUpdateField)}
                   </div>
                 )}

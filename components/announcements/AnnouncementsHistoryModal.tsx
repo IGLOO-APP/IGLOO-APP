@@ -137,7 +137,7 @@ const AnnouncementsHistoryModal: React.FC<AnnouncementsHistoryModalProps> = ({
 
       <div className='flex-1 flex flex-col md:flex-row overflow-hidden relative'>
         {/* Main List Column */}
-        <div className='flex-1 flex flex-col border-r border-gray-100 dark:border-white/5 overflow-hidden'>
+        <div className='flex-1 min-w-0 flex flex-col border-r border-gray-100 dark:border-white/5 overflow-hidden'>
           {/* Search Bar */}
           <div className='px-6 sm:px-10 py-4 sm:py-6'>
             <div className='relative group'>

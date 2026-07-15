@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   User,
   CreditCard,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useClerk } from '@clerk/clerk-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
+import { StickyTabBar } from '../components/ui/StickyTabBar';
 import { TenantProfileConfigPanel } from '../components/properties/TenantProfileConfigPanel';
 import { useSettings } from './settings/hooks/useSettings';
 import { PlansModal } from './settings/modals/PlansModal';
@@ -35,7 +36,7 @@ function SaveBtn({ h }: { h: ReturnType<typeof useSettings> }) {
     <button
       onClick={h.handleSave}
       disabled={h.isSaving}
-      className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-lg transition-all active:scale-95 shrink-0 ${h.saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-slate-900/20'}`}
+      className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-lg transition-all active:scale-95 shrink-0 ${h.saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-primary text-primary-foreground shadow-lg'}`}
     >
       <span className='hidden sm:inline'>
         {h.isSaving ? 'Salvando...' : h.saveSuccess ? 'Salvo!' : 'Salvar Alterações'}
@@ -71,22 +72,33 @@ const Settings: React.FC = () => {
       : []),
   ];
 
-  return (
-    <div className='flex flex-col h-full w-full relative bg-background text-foreground'>
-      {/* Pill flutuante com vidro — igual ao menu inquilino */}
-      <div className='sticky top-4 z-40 flex justify-center px-4 md:px-8 pointer-events-none'>
-        <div className='pointer-events-auto'>
-          <GlassmorphismNav
-            activeTab={h.activeTab}
-            onChange={(id) => h.setActiveTab(id as typeof h.activeTab)}
-            items={tabs}
-          />
-        </div>
-      </div>
+  // Global cursor spotlight: delegates to all .lg-card elements on the page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const target = (e.target as Element).closest('.lg-card, .lg-topbar') as HTMLElement | null;
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      target.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+      target.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
-      <div className='flex-1 overflow-y-auto p-4 md:p-8 space-y-6'>
+  return (
+    <div className='flex flex-col min-h-full w-full text-foreground'>
+      {/* Pill flutuante com vidro — igual ao menu inquilino */}
+      <StickyTabBar className='z-40 pt-4'>
+        <GlassmorphismNav
+          activeTab={h.activeTab}
+          onChange={(id) => h.setActiveTab(id as typeof h.activeTab)}
+          items={tabs}
+        />
+      </StickyTabBar>
+
+      <div className='px-4 md:px-8 pb-8 pt-4 space-y-6'>
         {h.activeTab === 'financial' && (
-          <>
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn'>
             <FinancialTab
               paymentMethods={h.paymentMethods}
               onToggleMethod={h.togglePaymentMethod}
@@ -96,18 +108,18 @@ const Settings: React.FC = () => {
               stripeConnected={h.stripeConnected}
               onConnectStripe={h.handleConnectStripe}
             />
-            <div className='flex justify-end'>
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
         {h.activeTab === 'guarantee' && (
-          <>
+          <div className='lg-card lg-card-lift p-6 animate-fadeIn'>
             <GuaranteeTab />
-          </>
+          </div>
         )}
         {h.activeTab === 'subscription' && (
-          <>
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn'>
             <SubscriptionTab
               loadingSub={h.loadingSub}
               subscription={h.subscription}
@@ -117,24 +129,22 @@ const Settings: React.FC = () => {
               onLoadSubscription={h.loadSubscriptionData}
               onCancelSubscription={h.handleCancelSubscription}
             />
-            <div className='flex justify-end'>
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
         {h.activeTab === 'maintenance' && (
-          <>
-            <div className='animate-fadeIn space-y-8 max-w-4xl'>
-              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn max-w-4xl'>
+            <div className='space-y-6'>
+              <div>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
                     <SettingsIcon size={20} />
                   </div>
                   <div>
-                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
-                      Categorias de Chamados
-                    </h3>
-                    <p className='text-sm text-slate-500'>
+                    <h3 className='font-bold text-foreground text-lg'>Categorias de Chamados</h3>
+                    <p className='text-sm text-muted-foreground'>
                       Ative ou desative categorias que o inquilino pode selecionar.
                     </p>
                   </div>
@@ -145,9 +155,7 @@ const Settings: React.FC = () => {
                       key={cat.id}
                       className='flex items-center justify-between p-4 rounded-xl border border-border bg-muted/35'
                     >
-                      <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
-                        {cat.label}
-                      </span>
+                      <span className='font-bold text-sm text-foreground'>{cat.label}</span>
                       <button
                         onClick={() =>
                           h.setMaintenanceSettings({
@@ -157,7 +165,7 @@ const Settings: React.FC = () => {
                             ),
                           })
                         }
-                        className={`transition-all ${cat.enabled ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                        className={`transition-all ${cat.enabled ? 'text-primary' : 'text-muted-foreground/50'}`}
                       >
                         {cat.enabled ? (
                           <ToggleRight size={32} strokeWidth={1.5} />
@@ -169,16 +177,14 @@ const Settings: React.FC = () => {
                   ))}
                 </div>
               </div>
-              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+              <div className='pt-4 border-t border-border/50'>
                 <div className='flex items-center gap-3 mb-6'>
-                  <div className='w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center'>
+                  <div className='w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center'>
                     <AlertTriangle size={20} />
                   </div>
                   <div>
-                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
-                      Níveis de Urgência
-                    </h3>
-                    <p className='text-sm text-slate-500'>
+                    <h3 className='font-bold text-foreground text-lg'>Níveis de Urgência</h3>
+                    <p className='text-sm text-muted-foreground'>
                       Configure quais níveis de prioridade estarão disponíveis.
                     </p>
                   </div>
@@ -189,9 +195,7 @@ const Settings: React.FC = () => {
                       key={urg.id}
                       className='flex items-center justify-between p-4 rounded-xl border border-border bg-muted/35'
                     >
-                      <span className='font-bold text-sm text-slate-700 dark:text-slate-200'>
-                        {urg.id}
-                      </span>
+                      <span className='font-bold text-sm text-foreground'>{urg.id}</span>
                       <button
                         onClick={() =>
                           h.setMaintenanceSettings({
@@ -201,7 +205,7 @@ const Settings: React.FC = () => {
                             ),
                           })
                         }
-                        className={`transition-all ${urg.enabled ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                        className={`transition-all ${urg.enabled ? 'text-primary' : 'text-muted-foreground/50'}`}
                       >
                         {urg.enabled ? (
                           <ToggleRight size={32} strokeWidth={1.5} />
@@ -214,13 +218,13 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className='flex justify-end'>
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
         {h.activeTab === 'general' && (
-          <>
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn max-w-2xl'>
             <GeneralTab
               user={h.user}
               profileData={h.profileData}
@@ -229,36 +233,34 @@ const Settings: React.FC = () => {
               onAvatarUpload={h.handleAvatarUpload}
               onOpenUserProfile={h.openUserProfile}
             />
-            <div className='flex justify-end'>
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
         {h.activeTab === 'notifications' && (
-          <>
-            <div className='animate-fadeIn space-y-6 max-w-2xl'>
-              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn max-w-2xl'>
+            <div className='space-y-6'>
+              <div>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center'>
                     <Bell size={20} />
                   </div>
                   <div>
-                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>
-                      Canais de Envio
-                    </h3>
-                    <p className='text-sm text-slate-500'>
-                      Por onde voce deseja receber notificacoes?
+                    <h3 className='font-bold text-foreground text-lg'>Canais de Envio</h3>
+                    <p className='text-sm text-muted-foreground'>
+                      Por onde você deseja receber notificações?
                     </p>
                   </div>
                 </div>
                 <div className='space-y-3'>
                   <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
-                      <Mail className='text-slate-500' size={20} />
+                      <Mail className='text-muted-foreground' size={20} />
                       <div>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>E-mail</p>
-                        <p className='text-xs text-slate-500'>
-                          Resumos periodicos e alertas importantes
+                        <p className='font-bold text-sm text-foreground'>E-mail</p>
+                        <p className='text-xs text-muted-foreground'>
+                          Resumos periódicos e alertas importantes
                         </p>
                       </div>
                     </div>
@@ -269,7 +271,7 @@ const Settings: React.FC = () => {
                           email_alerts: !h.notifications.email_alerts,
                         })
                       }
-                      className={`transition-all ${h.notifications.email_alerts ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-all ${h.notifications.email_alerts ? 'text-primary' : 'text-muted-foreground/50'}`}
                     >
                       {h.notifications.email_alerts ? (
                         <ToggleRight size={32} strokeWidth={1.5} />
@@ -280,10 +282,10 @@ const Settings: React.FC = () => {
                   </div>
                   <div className='flex items-center justify-between p-4 rounded-xl bg-muted/35 border border-border'>
                     <div className='flex items-center gap-3'>
-                      <Smartphone className='text-slate-500' size={20} />
+                      <Smartphone className='text-muted-foreground' size={20} />
                       <div>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>SMS</p>
-                        <p className='text-xs text-slate-500'>
+                        <p className='font-bold text-sm text-foreground'>SMS</p>
+                        <p className='text-xs text-muted-foreground'>
                           Alertas urgentes via mensagem de texto
                         </p>
                       </div>
@@ -295,7 +297,7 @@ const Settings: React.FC = () => {
                           sms_alerts: !h.notifications.sms_alerts,
                         })
                       }
-                      className={`transition-all ${h.notifications.sms_alerts ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-all ${h.notifications.sms_alerts ? 'text-primary' : 'text-muted-foreground/50'}`}
                     >
                       {h.notifications.sms_alerts ? (
                         <ToggleRight size={32} strokeWidth={1.5} />
@@ -306,15 +308,15 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className='bg-card text-card-foreground p-6 rounded-2xl shadow-sm border border-border'>
+              <div className='pt-4 border-t border-border/50'>
                 <div className='flex items-center gap-3 mb-6'>
                   <div className='w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center'>
                     <Activity size={20} />
                   </div>
                   <div>
-                    <h3 className='font-bold text-slate-900 dark:text-white text-lg'>Eventos</h3>
-                    <p className='text-sm text-slate-500'>
-                      Quais eventos devem gerar notificacoes?
+                    <h3 className='font-bold text-foreground text-lg'>Eventos</h3>
+                    <p className='text-sm text-muted-foreground'>
+                      Quais eventos devem gerar notificações?
                     </p>
                   </div>
                 </div>
@@ -325,10 +327,10 @@ const Settings: React.FC = () => {
                         <DollarSign size={18} />
                       </div>
                       <div>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                          Pagamento Recebido
+                        <p className='font-bold text-sm text-foreground'>Pagamento Recebido</p>
+                        <p className='text-xs text-muted-foreground'>
+                          Confirmar quando o inquilino pagar
                         </p>
-                        <p className='text-xs text-slate-500'>Confirmar quando o inquilino pagar</p>
                       </div>
                     </div>
                     <button
@@ -338,7 +340,7 @@ const Settings: React.FC = () => {
                           payment_received: !h.notifications.payment_received,
                         })
                       }
-                      className={`transition-all ${h.notifications.payment_received ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-all ${h.notifications.payment_received ? 'text-primary' : 'text-muted-foreground/50'}`}
                     >
                       {h.notifications.payment_received ? (
                         <ToggleRight size={32} strokeWidth={1.5} />
@@ -353,10 +355,10 @@ const Settings: React.FC = () => {
                         <AlertTriangle size={18} />
                       </div>
                       <div>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                          Pagamento em Atraso
+                        <p className='font-bold text-sm text-foreground'>Pagamento em Atraso</p>
+                        <p className='text-xs text-muted-foreground'>
+                          Alertar quando um pagamento vencer
                         </p>
-                        <p className='text-xs text-slate-500'>Alertar quando um pagamento vencer</p>
                       </div>
                     </div>
                     <button
@@ -366,7 +368,7 @@ const Settings: React.FC = () => {
                           late_payment: !h.notifications.late_payment,
                         })
                       }
-                      className={`transition-all ${h.notifications.late_payment ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-all ${h.notifications.late_payment ? 'text-primary' : 'text-muted-foreground/50'}`}
                     >
                       {h.notifications.late_payment ? (
                         <ToggleRight size={32} strokeWidth={1.5} />
@@ -381,11 +383,9 @@ const Settings: React.FC = () => {
                         <Wrench size={18} />
                       </div>
                       <div>
-                        <p className='font-bold text-sm text-slate-900 dark:text-white'>
-                          Manutenção
-                        </p>
-                        <p className='text-xs text-slate-500'>
-                          Solicitacoes de reparo dos inquilinos
+                        <p className='font-bold text-sm text-foreground'>Manutenção</p>
+                        <p className='text-xs text-muted-foreground'>
+                          Solicitações de reparo dos inquilinos
                         </p>
                       </div>
                     </div>
@@ -396,7 +396,7 @@ const Settings: React.FC = () => {
                           maintenance_updates: !h.notifications.maintenance_updates,
                         })
                       }
-                      className={`transition-all ${h.notifications.maintenance_updates ? 'text-primary' : 'text-slate-300 dark:text-slate-600'}`}
+                      className={`transition-all ${h.notifications.maintenance_updates ? 'text-primary' : 'text-muted-foreground/50'}`}
                     >
                       {h.notifications.maintenance_updates ? (
                         <ToggleRight size={32} strokeWidth={1.5} />
@@ -408,33 +408,31 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className='flex justify-end'>
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
         {h.activeTab === 'tenantProfile' && (
-          <>
-            <div className='animate-fadeIn space-y-6 max-w-4xl'>
-              <div className='mb-6 px-1'>
-                <h2 className='text-xl font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]'>
-                  Perfil Padrão do Inquilino
-                </h2>
-                <p className='text-sm text-slate-500 font-medium mt-1'>
-                  Defina as exigências base que serão aplicadas automaticamente a todos os seus
-                  novos imóveis.
-                </p>
-              </div>
-              <TenantProfileConfigPanel propertyId='global' />
+          <div className='lg-card lg-card-lift p-6 space-y-6 animate-fadeIn max-w-4xl'>
+            <div className='mb-6 px-1'>
+              <h2 className='text-xl font-black text-foreground uppercase tracking-[0.2em]'>
+                Perfil Padrão do Inquilino
+              </h2>
+              <p className='text-sm text-muted-foreground font-medium mt-1'>
+                Defina as exigências base que serão aplicadas automaticamente a todos os seus novos
+                imóveis.
+              </p>
             </div>
-            <div className='flex justify-end'>
+            <TenantProfileConfigPanel propertyId='global' />
+            <div className='flex justify-end pt-4 border-t border-border/50'>
               <SaveBtn h={h} />
             </div>
-          </>
+          </div>
         )}
 
         {/* Botão Sair - Localizado no final do container de abas */}
-        <div className='px-4 md:px-8 pb-8'>
+        <div className='lg-card lg-card-lift p-4 animate-fadeIn'>
           <button
             onClick={() => signOut()}
             className='w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors'

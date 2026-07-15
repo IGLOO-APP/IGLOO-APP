@@ -120,7 +120,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
             </div>
 
             <div className='flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden bg-slate-950/40'>
-              <div className='w-full md:flex-1 bg-black/60 overflow-auto flex items-center justify-center p-4 md:p-6 relative h-[380px] md:h-auto shrink-0'>
+              <div className='w-full md:flex-1 min-w-0 bg-black/60 overflow-auto flex items-center justify-center p-4 md:p-6 relative h-[380px] md:h-auto shrink-0'>
                 {isPreviewLoading && (
                   <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-md'>
                     <Loader2 className='w-10 h-10 text-emerald-500 animate-spin mb-4' />

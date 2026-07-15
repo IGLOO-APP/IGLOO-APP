@@ -405,7 +405,7 @@ export const IglooSupportModal: React.FC<IglooSupportModalProps> = ({
 
         {/* Right Active Chat Thread */}
         <div
-          className={`flex-1 flex flex-col bg-white dark:bg-surface-dark overflow-hidden h-full ${!activeTicketId ? 'hidden md:flex' : 'flex'}`}
+          className={`flex-1 min-w-0 flex flex-col bg-white dark:bg-surface-dark overflow-hidden h-full ${!activeTicketId ? 'hidden md:flex' : 'flex'}`}
         >
           {activeTicket ? (
             <>

@@ -81,7 +81,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
 
   return (
     <div
-      className={`fixed lg:relative inset-y-0 right-0 w-[85%] sm:w-72 md:w-80 lg:w-72 bg-background border-l border-border flex flex-col h-full z-[60] lg:z-10 transition-transform duration-300 shadow-2xl lg:shadow-none min-h-0`}
+      className={`fixed lg:relative inset-y-0 right-0 w-[85%] sm:w-72 md:w-80 lg:w-72 border-l border-border flex flex-col h-full z-[60] lg:z-10 transition-transform duration-300 shadow-2xl lg:shadow-none min-h-0`}
     >
       <div className='h-14 px-4 flex items-center justify-between border-b border-border shrink-0 bg-background sticky top-0 z-10'>
         <div className='flex flex-col'>
@@ -198,7 +198,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                   </div>
                 </div>
 
-                <div className='p-4 bg-muted/30 rounded-2xl border border-border'>
+                <div className='p-4 lg-card rounded-2xl'>
                   <h4 className='text-sm font-semibold text-foreground mb-1.5'>
                     {activeChat.ticket.title}
                   </h4>
@@ -242,7 +242,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               </div>
             ) : activeChat.category === 'finance' ? (
               <div className='space-y-4'>
-                <div className='p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10'>
+                <div className='p-4 lg-card rounded-2xl border border-emerald-500/20'>
                   <div className='flex items-center justify-between mb-3'>
                     <span className='text-xs font-medium text-emerald-600 dark:text-emerald-400'>
                       Aluguel Mensal
@@ -265,7 +265,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                   {[1, 2].map((i) => (
                     <div
                       key={i}
-                      className='flex items-center justify-between p-3 bg-card rounded-2xl border border-border'
+                      className='flex items-center justify-between p-3 lg-card rounded-2xl'
                     >
                       <div className='flex flex-col'>
                         <span className='text-xs font-semibold text-foreground'>
@@ -336,7 +336,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
           </>
         ) : activeChat.category === 'support' ? (
           <div className='space-y-4'>
-            <div className='p-4 bg-cyan-500/5 rounded-2xl border border-cyan-500/10 flex flex-col items-center text-center'>
+            <div className='p-4 lg-card rounded-2xl border border-cyan-500/20 flex flex-col items-center text-center'>
               <div className='w-12 h-12 bg-cyan-500 rounded-2xl flex items-center justify-center text-white shadow-lg mb-3'>
                 <Shield size={22} />
               </div>
@@ -346,7 +346,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               <p className='text-xs text-muted-foreground leading-relaxed mb-3'>
                 Nossa equipe de especialistas operacionais está pronta para te atender.
               </p>
-              <div className='w-full p-3 bg-card rounded-2xl border border-border space-y-2.5 text-left'>
+              <div className='w-full p-3 lg-card rounded-2xl space-y-2.5 text-left'>
                 <div className='flex items-center gap-2.5'>
                   <Clock size={12} className='text-cyan-500 shrink-0' />
                   <div>
@@ -378,7 +378,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
               <span className='text-xs font-medium text-muted-foreground'>
                 Imóvel Vinculado
               </span>
-              <div className='group relative overflow-hidden rounded-2xl bg-card border border-border'>
+              <div className='group relative overflow-hidden rounded-2xl lg-card'>
                 {activeChat.propertyImage ? (
                   <img
                     src={activeChat.propertyImage}
@@ -410,7 +410,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                 Informações do Locatário
               </span>
               <div className='space-y-2'>
-                <div className='flex items-center gap-3 p-3 bg-card rounded-2xl border border-border'>
+                <div className='flex items-center gap-3 p-3 lg-card rounded-2xl'>
                   <div className='w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0'>
                     <User size={14} />
                   </div>
@@ -424,7 +424,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                   </div>
                 </div>
 
-                <div className='flex items-center gap-3 p-3 bg-card rounded-2xl border border-border'>
+                <div className='flex items-center gap-3 p-3 lg-card rounded-2xl'>
                   <div className='w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0'>
                     <Mail size={14} />
                   </div>
@@ -438,7 +438,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({
                   </div>
                 </div>
 
-                <div className='flex items-center gap-3 p-3 bg-card rounded-2xl border border-border'>
+                <div className='flex items-center gap-3 p-3 lg-card rounded-2xl'>
                   <div className='w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0'>
                     <Phone size={14} />
                   </div>

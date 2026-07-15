@@ -382,7 +382,7 @@ const TenantMaintenance: React.FC = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className='lg-card lg-card-lift p-0 flex-1 flex flex-col relative overflow-hidden h-full min-h-0'>
+      <div className='lg-card lg-card-lift p-0 flex-1 min-w-0 flex flex-col relative overflow-hidden h-full min-h-0'>
         {/* Chat Header */}
         <div className='h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0A0B0D]/60 backdrop-blur-xl z-20'>
           <div className='flex items-center gap-3'>

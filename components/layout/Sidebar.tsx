@@ -3,7 +3,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { User } from '../../types';
 import { Sun, Moon, LogOut } from 'lucide-react';
-import { Sidebar as SidebarRoot } from '../ui/sidebar';
+import { Sidebar as SidebarBase } from '../ui/sidebar';
 import { preloadRoute } from '../../lib/routePreloader';
 
 interface SidebarProps {
@@ -26,9 +26,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   logout,
 }) => {
   return (
-    <SidebarRoot
+    <SidebarBase
       collapsible='none'
-      className='hidden md:flex sticky top-0 h-full !w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
+      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar bg-sidebar border-r border-sidebar-border'
     >
       {/* Background transparent para o gradiente unificado do Layout */}
 
@@ -182,6 +182,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
       </div>
-    </SidebarRoot>
+    </SidebarBase>
   );
 };

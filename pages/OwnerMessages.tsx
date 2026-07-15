@@ -81,7 +81,7 @@ const OwnerMessages: React.FC = () => {
   } = useOwnerMessages();
 
   return (
-    <div className='flex flex-col h-full bg-background text-foreground overflow-hidden relative transition-colors duration-300'>
+    <div className='flex flex-col h-full text-foreground overflow-hidden relative transition-colors duration-300'>
       <div className={`${activeChatId ? 'hidden md:block' : 'block'} shrink-0`}>
         <TopBar title='Central de Mensagens' subtitle='Comunicação direta com locatários'>
           <div className='flex items-center gap-1.5 md:gap-2 flex-wrap sm:flex-nowrap shrink-0'>
@@ -115,7 +115,7 @@ const OwnerMessages: React.FC = () => {
         </TopBar>
       </div>
 
-      <div className='flex flex-1 overflow-hidden relative min-h-0 bg-background border-t border-border'>
+      <div className='flex flex-1 overflow-hidden relative min-h-0 border-t border-border'>
         <ChatSidebar
           activeChatId={activeChatId}
           setActiveChatId={setActiveChatId}
@@ -227,7 +227,7 @@ const OwnerMessages: React.FC = () => {
                   return (
                     <div
                       key={cat.id}
-                      className='group relative p-4 bg-card rounded-2xl border border-border flex flex-col items-center justify-center gap-3 hover:border-primary/40 hover:bg-accent/50 transition-all cursor-default'
+                      className='group relative p-4 lg-card lg-card-lift rounded-2xl flex flex-col items-center justify-center gap-3 cursor-default'
                     >
                       <div className={`p-3 rounded-2xl ${cat.bg_class} ${cat.color_class}`}>
                         <Icon size={20} strokeWidth={2.5} />
@@ -251,7 +251,7 @@ const OwnerMessages: React.FC = () => {
                 })}
 
                 {categories.length === 0 && (
-                  <div className='col-span-full p-8 text-muted-foreground text-xs font-medium bg-card/50 rounded-2xl border-2 border-dashed border-border flex items-center justify-center'>
+                  <div className='col-span-full p-8 text-muted-foreground text-xs font-medium lg-card rounded-2xl border-2 border-dashed border-border flex items-center justify-center'>
                     Nenhuma categoria configurada
                   </div>
                 )}

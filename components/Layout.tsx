@@ -62,7 +62,7 @@ const Layout: React.FC = () => {
           />
         </div>
 
-        <main className='flex-1 overflow-hidden flex flex-col relative h-full w-full text-foreground'>
+        <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full text-foreground'>
           <div className='relative z-10 flex flex-col flex-1 min-h-0'>
             {impersonatingFrom && (
               <div className='bg-amber-500 text-white px-6 py-2 flex items-center justify-between shadow-lg z-50 animate-slideDown'>

@@ -76,7 +76,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
         <div className='flex flex-col bg-background text-foreground'>
           <div>
             {/* Explanation Banner */}
-            <div className='px-6 py-3 bg-muted border-b border-border flex items-center gap-3'>
+            <div className='px-6 py-3 border-b border-border flex items-center gap-3 lg-card rounded-none border-x-0 border-t-0'>
               <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
                 <Info size={16} />
               </div>
@@ -93,7 +93,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
             </div>
 
             {/* Editor Section */}
-            <div className='p-6 border-b border-border bg-card'>
+            <div className='p-6 border-b border-border lg-card rounded-none border-x-0 border-t-0'>
               <div className='flex items-center justify-between mb-4'>
                 <div>
                   <h3 className='text-sm font-semibold text-foreground'>
@@ -149,7 +149,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                       <button
                         key={i}
                         onClick={() => setNewFaq(ex)}
-                        className='shrink-0 px-2 py-1 rounded-lg bg-muted border border-border text-xs font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-all'
+                        className='shrink-0 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-all lg-card'
                       >
                         {ex.question}
                       </button>
@@ -187,7 +187,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
               </h3>
 
               {faqs.length === 0 ? (
-                <div className='py-8 flex flex-col items-center justify-center text-center px-8 bg-muted/30 rounded-[32px] border border-dashed border-border'>
+                <div className='py-8 flex flex-col items-center justify-center text-center px-8 lg-card rounded-[32px] border border-dashed border-border'>
                   <div className='w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4 shadow-sm'>
                     <Lightbulb size={32} className='text-primary opacity-50' />
                   </div>
@@ -204,7 +204,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                       <button
                         key={i}
                         onClick={() => setNewFaq(ex)}
-                        className='p-3 rounded-2xl bg-card border border-border flex items-center justify-between group hover:border-primary/50 transition-all'
+                        className='p-3 rounded-2xl lg-card flex items-center justify-between group transition-all'
                       >
                         <div className='flex items-center gap-3'>
                           <div className='w-2 h-2 rounded-full bg-primary/30 group-hover:bg-primary transition-colors' />
@@ -225,7 +225,7 @@ export const FAQManager: React.FC<FAQManagerProps> = ({
                   {faqs.map((faq) => (
                     <div
                       key={faq.id}
-                      className={`p-4 rounded-2xl border transition-all group ${faq.is_active ? 'bg-card border-border shadow-sm' : 'bg-muted/30 border-transparent opacity-60'}`}
+                      className={`p-4 rounded-2xl transition-all group ${faq.is_active ? 'lg-card' : 'bg-muted/30 opacity-60'}`}
                     >
                       <div className='flex justify-between items-start gap-4 mb-2'>
                         <p className='text-sm font-medium text-foreground'>

@@ -9,6 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { GlassmorphismNav } from '../components/ui/GlassmorphismNav';
+import { StickyTabBar } from '../components/ui/StickyTabBar';
 import { OwnerOnboardingReviewChecklist } from '../components/tenants/OwnerOnboardingReviewChecklist';
 import { useTenantDetails } from './tenant/hooks/useTenantDetails';
 import {
@@ -97,7 +98,7 @@ const TenantDetailsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className='px-8 py-3 sticky top-[0px] z-20 flex justify-center'>
+      <StickyTabBar>
         <GlassmorphismNav
           activeTab={h.activeTab}
           onChange={h.setActiveTab}
@@ -113,7 +114,7 @@ const TenantDetailsPage: React.FC = () => {
             { id: 'history', label: 'Histórico', icon: Clock },
           ]}
         />
-      </div>
+      </StickyTabBar>
 
       <div className='flex-1 p-6 pb-32 relative space-y-6'>
         {h.activeTab === 'overview' && (

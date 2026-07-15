@@ -96,7 +96,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           <DialogDescription />
         </DialogHeader>
         <div className='bg-background text-foreground'>
-          <div className='px-6 py-3 bg-muted border-b border-border flex items-center gap-3'>
+          <div className='px-6 py-3 border-b border-border flex items-center gap-3 lg-card rounded-none border-x-0 border-t-0'>
             <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
               <Info size={16} />
             </div>
@@ -113,7 +113,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
           <div className='p-6 space-y-6'>
             {isAdding ? (
-              <div className='p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-5'>
+              <div className='p-6 rounded-2xl lg-card space-y-5 border border-primary/20'>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
                   <div className='space-y-1.5'>
                     <label className='text-xs font-medium text-muted-foreground'>
@@ -124,7 +124,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                       value={newCat.name}
                       onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
                       placeholder='Ex: Pintura, Jardinagem...'
-                      className='w-full h-11 bg-background border border-input rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-all'
+                      className='w-full h-11 rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-all lg-card'
                     />
                   </div>
                   <div className='space-y-1.5'>
@@ -155,7 +155,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                         <button
                           key={opt.name}
                           onClick={() => setNewCat({ ...newCat, icon_name: opt.name })}
-                          className={`p-3 rounded-xl flex items-center justify-center transition-all ${newCat.icon_name === opt.name ? 'bg-primary text-primary-foreground scale-110 shadow-md' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                          className={`p-3 rounded-xl flex items-center justify-center transition-all ${newCat.icon_name === opt.name ? 'bg-primary text-primary-foreground scale-110 shadow-md' : 'text-muted-foreground hover:text-foreground lg-card'}`}
                         >
                           <Icon size={20} />
                         </button>
@@ -183,7 +183,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             ) : (
               <button
                 onClick={() => setIsAdding(true)}
-                className='w-full p-6 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group'
+                className='w-full p-6 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group lg-card'
               >
                 <Plus size={24} className='group-hover:scale-110 transition-transform' />
                 <span className='text-xs font-medium'>
@@ -198,7 +198,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 return (
                   <div
                     key={cat.id}
-                    className='p-4 rounded-2xl bg-card border border-border flex items-center justify-between group hover:bg-accent/50 transition-all'
+                    className='p-4 rounded-2xl lg-card flex items-center justify-between group transition-all'
                   >
                     <div className='flex items-center gap-3'>
                       <div className={`p-2.5 rounded-xl ${cat.bg_class} ${cat.color_class}`}>

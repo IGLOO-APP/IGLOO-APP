@@ -18,7 +18,7 @@
     --lg-highlight-top: rgba(255, 255, 255, 0.55);
     --lg-highlight-bot: rgba(255, 255, 255, 0.18);
     --lg-shadow: rgba(0, 0, 0, 0.45);
-    --lg-spotlight: rgba(255, 255, 255, 0.15);
+    --lg-spotlight: rgba(255, 255, 255, 0.06);
     /* Sidebar */
     --lg-sidebar-bg: rgba(3, 5, 18, 0.72);
     --lg-sb-glow: rgba(30, 80, 255, 0.15);
@@ -38,7 +38,7 @@
     --lg-highlight-top: rgba(255, 255, 255, 0.95);
     --lg-highlight-bot: rgba(255, 255, 255, 0.5);
     --lg-shadow: rgba(0, 0, 0, 0.1);
-    --lg-spotlight: rgba(100, 140, 255, 0.09);
+    --lg-spotlight: rgba(100, 140, 255, 0.04);
     --lg-sidebar-bg: rgba(245, 247, 255, 0.82);
     --lg-sb-glow: rgba(30, 80, 255, 0.08);
     --lg-sb-active: #3b82f6;
