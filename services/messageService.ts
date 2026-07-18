@@ -317,7 +317,9 @@ export const messageService = {
   },
 
   async markAsRead(threadId: string) {
-    const [type, dbId] = threadId.split('_');
+    const [type, ...rest] = threadId.split('_');
+    const dbId = rest.join('_');
+
     if (type === 'conv') {
       await supabase.from('conversations').update({ unread_count_owner: 0 }).eq('id', dbId);
 
@@ -326,6 +328,21 @@ export const messageService = {
         .update({ is_read: true })
         .eq('conversation_id', dbId)
         .eq('sender_role', 'tenant');
+    }
+
+    if (type === 'tenant') {
+      await supabase
+        .from('conversations')
+        .update({ unread_count_owner: 0 })
+        .eq('tenant_id', dbId);
+
+      await supabase
+        .from('conversation_messages')
+        .update({ is_read: true })
+        .eq('sender_role', 'tenant')
+        .in('conversation_id', (
+          await supabase.from('conversations').select('id').eq('tenant_id', dbId)
+        ).data?.map((c) => c.id) || []);
     }
   },
 
@@ -398,5 +415,48 @@ export const messageService = {
       console.error('Error in getOrCreateConversation:', err);
       throw err;
     }
+  },
+
+  async getTenantThreads(tenantId: string): Promise<ChatThread[]> {
+    try {
+      const allChats = await this.getChats();
+      return allChats.filter((c) => c.dbId === tenantId);
+    } catch {
+      return [];
+    }
+  },
+
+  async getTenantMessagesCombined(tenantId: string) {
+    const { data: conversations } = await supabase
+      .from('conversations')
+      .select('*, properties(name)')
+      .eq('tenant_id', tenantId)
+      .eq('category', 'general');
+
+    const convIds = (conversations || []).map((c: { id: string }) => c.id);
+    const propertyName =
+      (conversations?.[0]?.properties as unknown as { name: string } | null)?.name || '';
+
+    const { data: convMsgs } = await supabase
+      .from('conversation_messages')
+      .select('*')
+      .in('conversation_id', convIds)
+      .order('created_at', { ascending: true });
+
+    const { data: requests } = await supabase
+      .from('maintenance_requests')
+      .select('id')
+      .eq('tenant_id', tenantId);
+
+    const requestIds = (requests || []).map((r: { id: string }) => r.id);
+    const { data: maintData } = requestIds.length > 0
+      ? await supabase
+          .from('maintenance_messages')
+          .select('*')
+          .in('request_id', requestIds)
+          .order('created_at', { ascending: true })
+      : { data: [] };
+
+    return { conversations: conversations || [], convMsgs: convMsgs || [], maintMsgs: maintData || [], propertyName };
   },
 };

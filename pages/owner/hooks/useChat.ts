@@ -108,78 +108,51 @@ export function useChat() {
         const supportTickets = await supportService.getTickets(user.id);
 
         if (supportTickets.length > 0) {
-          const sortedTickets = [...supportTickets].sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
+          supportThreads = supportTickets.map((t) => {
+            const statusMap = {
+              'Resolvido': 'completed' as const,
+              'Fechado': 'completed' as const,
+              'Em Andamento': 'in_progress' as const,
+            };
+            const priorityMap = {
+              'Urgente': 'urgent' as const,
+              'Alta': 'high' as const,
+              'Média': 'medium' as const,
+              'Baixa': 'low' as const,
+            };
 
-          const activeTicket =
-            sortedTickets.find((t) => t.status !== 'Fechado' && t.status !== 'Resolvido') ||
-            sortedTickets[0];
-
-          const allTicketMessages = await Promise.all(
-            supportTickets.map(async (t) => {
-              const messages = await supportService.getTicketMessages(t.id);
-              return messages.map((m) => ({ ...m, ticketSubject: t.subject, ticketId: t.id }));
-            })
-          );
-
-          const aggregatedMessages = allTicketMessages
-            .flat()
-            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-          const lastMsg = aggregatedMessages[aggregatedMessages.length - 1];
-          const unreadCount = aggregatedMessages.filter(
-            (m) => m.sender_role === 'admin' && !m.is_read
-          ).length;
-
-          const unifiedThread: ChatThread = {
-            id: 'support_unified',
-            dbId: activeTicket.id,
-            tenantName: 'Suporte Igloo',
-            tenantAvatar: undefined,
-            tenantEmail: 'suporte@igloo.com.br',
-            tenantPhone: '',
-            property: 'Central de Suporte Operacional',
-            lastMessage: lastMsg ? lastMsg.content : 'Conversa de suporte iniciada',
-            lastMessageTime: lastMsg
-              ? new Date(lastMsg.created_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : new Date(activeTicket.created_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                }),
-            unreadCount: unreadCount,
-            category: 'support',
-            messages: [],
-            hasMore: false,
-            ticket: {
-              id: `#SUP-${activeTicket.id.slice(0, 4).toUpperCase()}`,
-              title: activeTicket.subject,
-              category: activeTicket.category || 'Geral',
-              description: '',
-              status: (activeTicket.status === 'Resolvido' || activeTicket.status === 'Fechado'
-                ? 'completed'
-                : activeTicket.status === 'Em Andamento'
-                  ? 'in_progress'
-                  : 'pending') as 'pending' | 'in_progress' | 'completed',
-              priority: (activeTicket.priority === 'Urgente'
-                ? 'urgent'
-                : activeTicket.priority === 'Alta'
-                  ? 'high'
-                  : activeTicket.priority === 'Média'
-                    ? 'medium'
-                    : 'low') as 'low' | 'medium' | 'high' | 'urgent',
-              images: [],
-              realId: activeTicket.id,
-            },
-          };
-
-          supportThreads = [unifiedThread];
+            return {
+              id: `support_${t.id}`,
+              dbId: t.id,
+              tenantName: 'Suporte Igloo',
+              tenantAvatar: undefined,
+              tenantEmail: 'suporte@igloo.com.br',
+              tenantPhone: '',
+              property: t.subject,
+              lastMessage: t.subject,
+              lastMessageTime: new Date(t.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              unreadCount: 0,
+              category: 'support' as const,
+              messages: [],
+              hasMore: false,
+              ticket: {
+                id: `#SUP-${t.id.slice(0, 4).toUpperCase()}`,
+                title: t.subject,
+                category: t.category || 'Geral',
+                description: '',
+                status: statusMap[t.status as keyof typeof statusMap] || 'pending',
+                priority: priorityMap[t.priority as keyof typeof priorityMap] || 'low',
+                images: [],
+                realId: t.id,
+              },
+            };
+          });
         } else {
-          const virtualUnifiedThread: ChatThread = {
-            id: 'support_unified',
+          const virtualThread: ChatThread = {
+            id: 'support_virtual',
             dbId: 'virtual',
             tenantName: 'Suporte Igloo',
             tenantAvatar: undefined,
@@ -194,7 +167,7 @@ export function useChat() {
             hasMore: false,
             ticket: undefined,
           };
-          supportThreads = [virtualUnifiedThread];
+          supportThreads = [virtualThread];
         }
       }
 
@@ -259,22 +232,14 @@ export function useChat() {
 
   const loadMessages = useCallback(
     async (threadId: string, category: string) => {
-      if (category === 'support') {
+      if (category === 'support' && threadId.startsWith('support_')) {
+        const ticketId = threadId.replace('support_', '');
+        if (!ticketId || ticketId === 'virtual') return;
         if (!user) return;
         try {
-          const supportTickets = await supportService.getTickets(user.id);
-          const allTicketMessages = await Promise.all(
-            supportTickets.map(async (t) => {
-              const messages = await supportService.getTicketMessages(t.id);
-              return messages.map((m) => ({ ...m, ticketSubject: t.subject }));
-            })
-          );
+          const messages = await supportService.getTicketMessages(ticketId);
 
-          const aggregatedMessages = allTicketMessages
-            .flat()
-            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-          const chatMsgs: ChatMessage[] = aggregatedMessages.map((m) => ({
+          const chatMsgs: ChatMessage[] = messages.map((m) => ({
             id: m.id,
             text: m.content,
             sender: (m.sender_role === 'user'
@@ -457,7 +422,6 @@ export function useChat() {
             category: 'Geral',
             priority: 'Média',
           });
-          ticketId = 'virtual';
           await loadChats();
         } else {
           if (chat.ticket?.status === 'completed') {
@@ -466,7 +430,7 @@ export function useChat() {
           }
           await supportService.sendTicketMessage(ticketId, String(user.id), messageText);
         }
-        await loadMessages('support_unified', 'support');
+        await loadMessages(activeChatId, 'support');
         await loadChats();
       } else {
         await messageService.sendMessage(

@@ -3,6 +3,7 @@ import { Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar, NavbarBackLink } from 'konsta/react';
 import { useAuth } from '../../context/AuthContext';
+import { messageService } from '../../services/messageService';
 import { supabase } from '../../lib/supabase';
 import { announcementService } from '../../services/announcementService';
 import type { OwnerAnnouncement } from '../../types';
@@ -32,57 +33,120 @@ const TenantMessages: React.FC = () => {
     return d.toLocaleDateString('pt-BR');
   };
 
+  const loadMessages = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+
+    const data = await messageService.getTenantMessagesCombined(user.id);
+
+    if (data.conversations.length > 0) {
+      setPropertyName(data.propertyName);
+
+      const conversationMessages = (data.convMsgs as Array<{
+        id: string; content: string; type: string | null;
+        sender_role: string | null; created_at: string;
+      }>).map((m) => ({
+        id: m.id,
+        text: m.content,
+        isAnnouncement: m.type === 'announcement' || m.sender_role === 'system',
+        time: formatTime(m.created_at),
+        created_at: m.created_at,
+      }));
+
+      const maintenanceMessages = (data.maintMsgs as Array<{
+        id: string; content: string; type: string | null;
+        sender_role: string | null; created_at: string;
+      }>).map((m) => ({
+        id: m.id,
+        text: m.content,
+        isAnnouncement: m.sender_role === 'system',
+        time: formatTime(m.created_at),
+        created_at: m.created_at,
+      }));
+
+      const all = [...conversationMessages, ...maintenanceMessages]
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      setMessages(all);
+    } else {
+      const announcements = await announcementService.getForTenant(user.id);
+      const mapped = (announcements || []).map((a: OwnerAnnouncement) => ({
+        id: a.id,
+        text: `${a.title}\n\n${a.content}`,
+        isAnnouncement: true,
+        time: formatTime(a.created_at),
+        created_at: a.created_at,
+      }));
+      setMessages(mapped);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadMessages();
+  }, [user?.id]);
+
   useEffect(() => {
     if (!user?.id) return;
 
-    (async () => {
-      setLoading(true);
-      const { data: conversations } = await supabase
-        .from('conversations')
-        .select('*, properties(name)')
-        .eq('tenant_id', user.id)
-        .eq('category', 'general');
+    const convChannel = supabase
+      .channel('tenant_messages_conv')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'conversation_messages' },
+        (payload) => {
+          const newMsg = payload.new as {
+            id: string; content: string; type: string | null;
+            sender_role: string | null; created_at: string;
+            conversation_id: string;
+          };
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: newMsg.id,
+                text: newMsg.content,
+                isAnnouncement: newMsg.type === 'announcement' || newMsg.sender_role === 'system',
+                time: formatTime(newMsg.created_at),
+                created_at: newMsg.created_at,
+              },
+            ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          });
+        }
+      )
+      .subscribe();
 
-      if (conversations && conversations.length > 0) {
-        const ids = conversations.map((c) => c.id);
-        const prop = conversations[0].properties as unknown as { name: string } | null;
-        setPropertyName(prop?.name || '');
+    const maintChannel = supabase
+      .channel('tenant_messages_maint')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'maintenance_messages' },
+        (payload) => {
+          const newMsg = payload.new as {
+            id: string; content: string; type: string | null;
+            sender_role: string | null; created_at: string;
+          };
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: newMsg.id,
+                text: newMsg.content,
+                isAnnouncement: newMsg.sender_role === 'system',
+                time: formatTime(newMsg.created_at),
+                created_at: newMsg.created_at,
+              },
+            ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          });
+        }
+      )
+      .subscribe();
 
-        const { data: convMsgs } = await supabase
-          .from('conversation_messages')
-          .select('*')
-          .in('conversation_id', ids)
-          .order('created_at', { ascending: true });
-
-        const mapped = (
-          (convMsgs || []) as Array<{
-            id: string;
-            content: string;
-            type: string | null;
-            sender_role: string | null;
-            created_at: string;
-          }>
-        ).map((m) => ({
-          id: m.id,
-          text: m.content,
-          isAnnouncement: m.type === 'announcement' || m.sender_role === 'system',
-          time: formatTime(m.created_at),
-          created_at: m.created_at,
-        }));
-        setMessages(mapped);
-      } else {
-        const announcements = await announcementService.getForTenant(user.id);
-        const mapped = (announcements || []).map((a: OwnerAnnouncement) => ({
-          id: a.id,
-          text: `📢 ${a.title}\n\n${a.content}`,
-          isAnnouncement: true,
-          time: formatTime(a.created_at),
-          created_at: a.created_at,
-        }));
-        setMessages(mapped);
-      }
-      setLoading(false);
-    })();
+    return () => {
+      convChannel.unsubscribe();
+      maintChannel.unsubscribe();
+    };
   }, [user?.id]);
 
   return (
@@ -110,7 +174,7 @@ const TenantMessages: React.FC = () => {
             </div>
             <p className='text-sm font-bold text-card-foreground'>Nenhuma mensagem</p>
             <p className='text-xs text-muted-foreground mt-1'>
-              Você ainda não recebeu comunicados do proprietário.
+              Voc� ainda n�o recebeu comunicados do propriet�rio.
             </p>
           </div>
         ) : (
@@ -120,7 +184,7 @@ const TenantMessages: React.FC = () => {
                 {msg.isAnnouncement && (
                   <div className='flex items-center gap-1.5 mb-2 px-1 text-[10px] font-bold text-primary uppercase tracking-tight'>
                     <Megaphone size={12} strokeWidth={1.8} className='shrink-0' />
-                    <span>Comunicado do proprietário</span>
+                    <span>Comunicado do propriet�rio</span>
                   </div>
                 )}
                 <div

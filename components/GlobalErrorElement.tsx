@@ -1,10 +1,15 @@
 import React from 'react';
 import { useRouteError, useNavigate, isRouteErrorResponse } from 'react-router-dom';
 import { AlertCircle, RefreshCw, Home, ChevronLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const GlobalErrorElement: React.FC = () => {
   const error = useRouteError();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const role = user?.role;
+  const dashboardPath = role === 'tenant' ? '/tenant' : role === 'admin' ? '/admin' : '/';
 
   let errorMessage = 'Não conseguimos carregar as informações desta página agora.';
   let errorStatus = 500;
@@ -60,13 +65,13 @@ const GlobalErrorElement: React.FC = () => {
 
             <div className='grid grid-cols-2 gap-3'>
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(dashboardPath)}
                 className='h-14 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-200 dark:hover:bg-white/10 transition-all'
               >
                 <ChevronLeft size={18} /> Voltar
               </button>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate(dashboardPath)}
                 className='h-14 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-200 dark:hover:bg-white/10 transition-all'
               >
                 <Home size={18} /> Início

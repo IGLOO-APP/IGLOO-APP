@@ -86,7 +86,9 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isDashboard = location.pathname === '/';
+  const role = user?.role;
+  const dashboardPath = role === 'tenant' ? '/tenant' : role === 'admin' ? '/admin' : '/';
+  const isDashboard = location.pathname === dashboardPath;
   const { notifications, unreadCount, markAsRead } = useNotification();
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -206,14 +208,14 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
         {!isDashboard && (
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(dashboardPath)}
             className='w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent text-muted-foreground transition-all shrink-0'
             aria-label='Voltar'
           >
             <ArrowLeft size={18} />
           </button>
         )}
-        <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => isDashboard ? null : navigate('/')}>
+        <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => isDashboard ? null : navigate(dashboardPath)}>
           {title && (
             <h1 className='text-base md:text-lg font-bold text-foreground tracking-tight truncate'>{title}</h1>
           )}

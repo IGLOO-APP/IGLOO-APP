@@ -4,6 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { ChevronLeft, FileText, Paperclip, Send, X, Plus, Shield, Menu } from 'lucide-react';
 import type { ChatThread } from '../../services/messageService';
 import { MessageBubble } from './MessageBubble';
+import { useAuth } from '../../context/AuthContext';
 
 interface ChatWindowProps {
   activeChat: ChatThread;
@@ -47,6 +48,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onToggleMobileSidebar,
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isAddingReply, setIsAddingReply] = React.useState(false);
   const [newReplyText, setNewReplyText] = React.useState('');
 
@@ -95,7 +97,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         <div className='flex items-center gap-2 flex-1 min-w-0'>
           <div className='flex items-center gap-1 md:hidden mr-1'>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                const role = user?.role;
+                const dashboardPath = role === 'tenant' ? '/tenant' : role === 'admin' ? '/admin' : '/';
+                navigate(dashboardPath);
+              }}
               className='p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all'
               aria-label='Voltar'
               type='button'

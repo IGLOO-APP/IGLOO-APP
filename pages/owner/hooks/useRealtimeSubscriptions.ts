@@ -148,7 +148,7 @@ export function useRealtimeSubscriptions({
             .maybeSingle();
 
           if (ticket?.user_id === currentUserId) {
-            onNewIncomingMessage('support_unified', newMsg, 'support');
+            onNewIncomingMessage(`support_${newMsg.ticket_id}`, newMsg, 'support');
           }
         }
       )
