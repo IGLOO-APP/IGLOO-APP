@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Plus, AlertTriangle, ChevronRight, Settings } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { useAuth } from '../context/AuthContext';
@@ -139,14 +139,25 @@ const Dashboard: React.FC = () => {
           />
         )}
         <TopBar title='Dashboard' subtitle='Visão Geral do Patrimônio'>
-          <Button
-            onClick={() => navigate('/properties', { state: { openAdd: true } })}
-            variant='glass'
-            size='default'
-          >
-            <Plus size={16} />
-            <span className='hidden sm:inline'>Novo Imóvel</span>
-          </Button>
+          <div className='flex items-center gap-1.5'>
+            <Button
+              onClick={() => navigate('/settings')}
+              variant='glass'
+              size='icon-sm'
+              className='md:hidden'
+              title='Configurações'
+            >
+              <Settings size={16} />
+            </Button>
+            <Button
+              onClick={() => navigate('/properties', { state: { openAdd: true } })}
+              variant='glass'
+              size='default'
+            >
+              <Plus size={16} />
+              <span className='hidden sm:inline'>Novo Imóvel</span>
+            </Button>
+          </div>
         </TopBar>
 
         <div className='px-4 md:px-6 py-4 md:py-5 space-y-5 pb-20'>

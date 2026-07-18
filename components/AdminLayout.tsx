@@ -16,6 +16,7 @@ import { UserButton } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
 import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { preloadRoute } from '../lib/routePreloader';
+import { TopBar } from './layout/TopBar';
 
 const adminNavItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -127,8 +128,16 @@ const AdminLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full bg-background-light dark:bg-background-dark pointer-events-auto'>
-        {/* Header */}
-        <header className='h-20 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-8 shrink-0'>
+        {/* Mobile TopBar Header */}
+        <div className='md:hidden block shrink-0'>
+          <TopBar
+            title={filteredNavItems.find((i) => i.path === location.pathname)?.label || 'Painel Admin'}
+            subtitle='Administração'
+          />
+        </div>
+
+        {/* Desktop Header */}
+        <header className='hidden md:flex h-20 bg-white/50 dark:bg-surface-dark/50 backdrop-blur-md border-b border-gray-200 dark:border-white/5 items-center justify-between px-8 shrink-0'>
           <div>
             <h2 className='text-lg font-bold text-slate-900 dark:text-white'>
               {filteredNavItems.find((i) => i.path === location.pathname)?.label || 'Dashboard'}
@@ -143,19 +152,27 @@ const AdminLayout: React.FC = () => {
         {/* Mobile Nav — Konsta Tabbar */}
         <Toolbar className='md:hidden fixed bottom-0 left-0 right-0 z-50' tabbar>
           <Tabbar>
-            {filteredNavItems.slice(0, 4).map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <TabbarLink
-                  key={item.path}
-                  active={isActive}
-                  label={item.label.split(' ')[0]}
-                  onClick={() => navigate(item.path)}
-                >
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                </TabbarLink>
-              );
-            })}
+            {filteredNavItems
+              .filter((item) =>
+                ['/admin', '/admin/users', '/admin/conversations', '/admin/announcements', '/admin/settings'].includes(item.path)
+              )
+              .sort((a, b) => {
+                const order = ['/admin', '/admin/users', '/admin/conversations', '/admin/announcements', '/admin/settings'];
+                return order.indexOf(a.path) - order.indexOf(b.path);
+              })
+              .map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <TabbarLink
+                    key={item.path}
+                    active={isActive}
+                    label={item.label.split(' ')[0]}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  </TabbarLink>
+                );
+              })}
           </Tabbar>
         </Toolbar>
       </main>

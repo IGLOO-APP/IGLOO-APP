@@ -17,6 +17,7 @@ import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { tenantService } from '../services/tenancy/tenantService';
 import { supabase } from '../lib/supabase';
 import { preloadRoute } from '../lib/routePreloader';
+import { TopBar } from './layout/TopBar';
 
 const TenantLayout: React.FC = () => {
   const { user } = useAuth();
@@ -287,6 +288,14 @@ const TenantLayout: React.FC = () => {
           isMaintenanceRoute ? 'overflow-hidden' : 'overflow-y-auto'
         } flex flex-col relative h-full w-full custom-scrollbar`}
       >
+        {/* Mobile TopBar Header */}
+        <div className='md:hidden block shrink-0'>
+          <TopBar
+            title={navItems.find((i) => i.path === location.pathname)?.label || 'Portal do Inquilino'}
+            subtitle='Área do Locatário'
+          />
+        </div>
+
         <div
           className={`flex-1 w-full relative ${
             isMaintenanceRoute ? 'h-full min-h-0 overflow-hidden' : ''
@@ -306,37 +315,39 @@ const TenantLayout: React.FC = () => {
         {/* ─── Mobile Bottom Navigation — Konsta Tabbar ─── */}
         <Toolbar className='md:hidden fixed bottom-0 left-0 right-0 z-50' tabbar>
           <Tabbar>
-            {navItems.map((item) => {
-              const isActive = !item.disabled && location.pathname === item.path;
-              if (item.disabled) {
+            {navItems
+              .filter((item) => item.path !== '/tenant/profile' && item.path !== '/tenant/settings')
+              .map((item) => {
+                const isActive = !item.disabled && location.pathname === item.path;
+                if (item.disabled) {
+                  return (
+                    <TabbarLink
+                      key={item.path}
+                      active={false}
+                      label={item.label}
+                      className='opacity-35 cursor-not-allowed'
+                      title='Complete o onboarding para desbloquear'
+                    >
+                      <span className='relative inline-flex'>
+                        <item.icon size={21} strokeWidth={1.8} />
+                        <span className='absolute -top-1 -right-2 w-3 h-3 bg-slate-400 rounded-full flex items-center justify-center'>
+                          <Lock size={6} className='text-white' />
+                        </span>
+                      </span>
+                    </TabbarLink>
+                  );
+                }
                 return (
                   <TabbarLink
                     key={item.path}
-                    active={false}
+                    active={isActive}
                     label={item.label}
-                    className='opacity-35 cursor-not-allowed'
-                    title='Complete o onboarding para desbloquear'
+                    onClick={() => navigate(item.path)}
                   >
-                    <span className='relative inline-flex'>
-                      <item.icon size={21} strokeWidth={1.8} />
-                      <span className='absolute -top-1 -right-2 w-3 h-3 bg-slate-400 rounded-full flex items-center justify-center'>
-                        <Lock size={6} className='text-white' />
-                      </span>
-                    </span>
+                    <item.icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
                   </TabbarLink>
                 );
-              }
-              return (
-                <TabbarLink
-                  key={item.path}
-                  active={isActive}
-                  label={item.label}
-                  onClick={() => navigate(item.path)}
-                >
-                  <item.icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
-                </TabbarLink>
-              );
-            })}
+              })}
           </Tabbar>
         </Toolbar>
       </main>

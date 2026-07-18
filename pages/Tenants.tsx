@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isValidUrl } from '../utils/validation';
+import { Button } from '../components/ui/button';
 import {
   Search,
   Phone,
@@ -248,13 +249,10 @@ const Tenants: React.FC = () => {
   return (
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       <TopBar title='Inquilinos' subtitle={`${tenants.length} locatários ativos`}>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className='flex items-center justify-center gap-1.5 md:gap-2 bg-primary text-white px-4 h-10 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95'
-        >
-          <Plus size={16} strokeWidth={1.8} className='md:size-[18px]' />
+        <Button onClick={() => setShowAddForm(true)} variant='glass' size='default'>
+          <Plus size={16} strokeWidth={1.8} />
           <span className='hidden sm:inline'>Novo Inquilino</span>
-        </button>
+        </Button>
       </TopBar>
 
       <div className='px-6 py-4 flex flex-col gap-4'>

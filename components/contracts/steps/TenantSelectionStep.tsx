@@ -55,15 +55,15 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
               value={tenantSearch}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder='Buscar por nome ou CPF...'
-              className='w-full pl-12 pr-16 py-5 bg-white dark:bg-surface-dark border-2 border-transparent focus:border-primary rounded-3xl shadow-sm outline-none font-bold text-lg text-slate-900 dark:text-white transition-all placeholder-slate-300'
+              className='w-full pl-12 pr-16 py-4 bg-white/5 border border-white/10 rounded-3xl shadow-sm outline-none font-medium text-base text-foreground focus:ring-2 focus:ring-primary/50 transition-all placeholder-slate-500'
               autoFocus
             />
             <button
               onClick={() => onToggleNewForm(true)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-2xl flex items-center justify-center transition-all'
+              className='absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-primary hover:bg-primary/90 text-white rounded-2xl flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-primary/20'
               title='Novo Inquilino'
             >
-              <Plus size={24} />
+              <Plus size={22} />
             </button>
             {tenantSearch && (
               <button
@@ -91,10 +91,10 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                     onClick={() =>
                       onSelectTenant(tenant.id, tenant.name, tenant.cpf || '', tenant.email)
                     }
-                    className={`group p-4 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
+                    className={`group p-4 rounded-2xl text-left transition-all flex items-center gap-4 lg-card ${
                       selectedTenantId === tenant.id
-                        ? 'border-primary bg-primary/5 shadow-md'
-                        : 'border-white dark:border-white/5 bg-white dark:bg-surface-dark hover:border-slate-100 dark:hover:border-white/10'
+                        ? 'border-primary bg-white/10 shadow-md scale-[1.01]'
+                        : 'hover:border-white/20'
                     }`}
                   >
                     {tenant.image ? (
@@ -127,12 +127,12 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                 ))
               )}
               {!loading && filteredTenants.length === 0 && (
-                <div className='p-8 text-center bg-slate-50 dark:bg-white/5 rounded-3xl border-2 border-dashed border-slate-200 dark:border-white/10'>
-                  <User size={40} className='mx-auto text-slate-300 mb-3' />
-                  <p className='text-slate-500 font-bold'>Nenhum inquilino encontrado</p>
+                <div className='p-8 text-center bg-white/5 border border-white/10 rounded-3xl border-dashed'>
+                  <User size={40} className='mx-auto text-slate-400 mb-3 opacity-60' />
+                  <p className='text-muted-foreground font-semibold text-sm'>Nenhum inquilino encontrado</p>
                   <button
                     onClick={() => onToggleNewForm(true)}
-                    className='mt-4 px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all'
+                    className='mt-4 px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all active:scale-95'
                   >
                     Cadastrar Novo
                   </button>
@@ -143,7 +143,7 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
         </div>
       ) : (
         <div className='space-y-6 animate-slideUp'>
-          <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-6'>
+          <div className='lg-card p-8 rounded-3xl space-y-6'>
             <div className='flex items-center justify-between mb-2'>
               <span className='text-[10px] font-black text-primary uppercase tracking-widest'>
                 Novo Inquilino
@@ -167,7 +167,7 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                 <input
                   value={formData.tenantName}
                   onChange={(e) => onFormDataChange({ tenantName: e.target.value })}
-                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none transition-all font-medium text-foreground'
                   placeholder='Ex: João da Silva'
                   autoFocus
                 />
@@ -185,7 +185,7 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                 <input
                   value={formData.tenantCpf}
                   onChange={(e) => onFormDataChange({ tenantCpf: e.target.value })}
-                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none transition-all font-medium text-foreground'
                   placeholder='000.000.000-00'
                 />
               </div>
@@ -203,7 +203,7 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                   type='email'
                   value={formData.tenantEmail}
                   onChange={(e) => onFormDataChange({ tenantEmail: e.target.value })}
-                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none transition-all font-medium text-foreground'
                   placeholder='inquilino@email.com'
                 />
               </div>
@@ -220,7 +220,7 @@ export const TenantSelectionStep: React.FC<TenantSelectionStepProps> = ({
                 <input
                   value={formData.tenantPhone}
                   onChange={(e) => onFormDataChange({ tenantPhone: e.target.value })}
-                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/40 outline-none transition-all font-medium text-slate-900 dark:text-white'
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none transition-all font-medium text-foreground'
                   placeholder='(11) 99999-9999'
                 />
               </div>

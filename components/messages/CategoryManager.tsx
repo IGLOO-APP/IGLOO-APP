@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  X,
   Plus,
   Trash2,
   Droplets,
@@ -12,7 +11,7 @@ import {
   Sparkles,
   DollarSign,
   Wrench,
-  Info,
+  Layers,
 } from 'lucide-react';
 import {
   Dialog,
@@ -21,6 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Category {
   id: string;
@@ -51,14 +51,14 @@ const iconOptions = [
 ];
 
 const colorOptions = [
-  { name: 'Blue', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-  { name: 'Yellow', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
-  { name: 'Orange', color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-  { name: 'Cyan', color: 'text-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
-  { name: 'Red', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
-  { name: 'Purple', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-500/10' },
-  { name: 'Emerald', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  { name: 'Amber', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+  { name: 'Blue',    color: 'text-blue-400',    bg: 'bg-blue-500/20',    dot: 'bg-blue-400' },
+  { name: 'Yellow',  color: 'text-yellow-400',  bg: 'bg-yellow-500/20',  dot: 'bg-yellow-400' },
+  { name: 'Orange',  color: 'text-orange-400',  bg: 'bg-orange-500/20',  dot: 'bg-orange-400' },
+  { name: 'Cyan',    color: 'text-cyan-400',    bg: 'bg-cyan-500/20',    dot: 'bg-cyan-400' },
+  { name: 'Red',     color: 'text-red-400',     bg: 'bg-red-500/20',     dot: 'bg-red-400' },
+  { name: 'Purple',  color: 'text-purple-400',  bg: 'bg-purple-500/20',  dot: 'bg-purple-400' },
+  { name: 'Emerald', color: 'text-emerald-400', bg: 'bg-emerald-500/20', dot: 'bg-emerald-400' },
+  { name: 'Amber',   color: 'text-amber-400',   bg: 'bg-amber-500/20',   dot: 'bg-amber-400' },
 ];
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({
@@ -88,142 +88,168 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 max-w-xl'
+        className='max-h-[92vh] overflow-y-auto p-0 gap-0 w-full sm:max-w-xl bg-card border border-border shadow-2xl rounded-2xl'
         showCloseButton={true}
       >
-        <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
-          <DialogTitle className='text-lg font-semibold'>Gerenciar Categorias</DialogTitle>
+        {/* ── Header ── */}
+        <DialogHeader className='px-7 pt-7 pb-5 border-b border-border'>
+          <div className='flex items-center gap-4'>
+            <div
+              className='w-11 h-11 rounded-2xl flex items-center justify-center shrink-0'
+              style={{ background: 'linear-gradient(135deg,#2f6bff 0%,#3fa9ff 100%)' }}
+            >
+              <Layers size={20} className='text-white' />
+            </div>
+            <div>
+              <DialogTitle className='text-base font-bold text-foreground leading-tight'>
+                Gerenciar Categorias
+              </DialogTitle>
+              <p className='text-xs text-muted-foreground mt-0.5'>
+                Organize as solicitações dos seus locatários
+              </p>
+            </div>
+          </div>
           <DialogDescription />
         </DialogHeader>
-        <div className='bg-background text-foreground'>
-          <div className='px-6 py-3 border-b border-border flex items-center gap-3 lg-card rounded-none border-x-0 border-t-0'>
-            <div className='w-8 h-8 rounded-full bg-accent flex items-center justify-center text-muted-foreground shrink-0'>
-              <Info size={16} />
-            </div>
-            <div className='flex-1'>
-              <p className='text-xs font-medium text-muted-foreground'>
-                Para que servem as Categorias?
-              </p>
-              <p className='text-sm text-muted-foreground leading-relaxed'>
-                As categorias ajudam a organizar as solicitações dos locatários. Ao classificar um
-                chamado, você consegue filtrar demandas e gerar relatórios precisos.
-              </p>
-            </div>
-          </div>
 
-          <div className='p-6 space-y-6'>
-            {isAdding ? (
-              <div className='p-6 rounded-2xl lg-card space-y-5 border border-primary/20'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-                  <div className='space-y-1.5'>
-                    <label className='text-xs font-medium text-muted-foreground'>
-                      Nome da Categoria
-                    </label>
-                    <input
-                      type='text'
-                      value={newCat.name}
-                      onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
-                      placeholder='Ex: Pintura, Jardinagem...'
-                      className='w-full h-11 rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none transition-all lg-card'
+        <div className='px-7 py-6 space-y-5'>
+          {/* ── Add Form / Add Button ── */}
+          {isAdding ? (
+            <div className='rounded-2xl border border-border bg-muted/30 p-5 space-y-5'>
+              {/* Name */}
+              <div className='space-y-2'>
+                <label className='text-[11px] font-bold uppercase tracking-widest text-muted-foreground'>
+                  Nome da Categoria
+                </label>
+                <input
+                  type='text'
+                  autoFocus
+                  value={newCat.name}
+                  onChange={(e) => setNewCat({ ...newCat, name: e.target.value })}
+                  placeholder='Ex: Pintura, Jardinagem, Elétrica…'
+                  className='w-full h-12 rounded-xl px-4 text-sm font-medium bg-background border border-border text-foreground placeholder:text-muted-foreground focus:border-[#13c8ec] focus:ring-2 focus:ring-[#13c8ec]/20 outline-none transition-all'
+                />
+              </div>
+
+              {/* Color */}
+              <div className='space-y-2'>
+                <label className='text-[11px] font-bold uppercase tracking-widest text-muted-foreground'>
+                  Cor Temática
+                </label>
+                <div className='flex gap-3 flex-wrap'>
+                  {colorOptions.map((opt) => (
+                    <button
+                      key={opt.name}
+                      onClick={() => setSelectedColor(opt)}
+                      title={opt.name}
+                      className={`w-7 h-7 rounded-full transition-all duration-200 ${opt.dot} ${
+                        selectedColor.name === opt.name
+                          ? 'ring-2 ring-offset-2 ring-offset-card ring-[#13c8ec] scale-110'
+                          : 'opacity-50 hover:opacity-90 hover:scale-105'
+                      }`}
                     />
-                  </div>
-                  <div className='space-y-1.5'>
-                    <label className='text-xs font-medium text-muted-foreground'>
-                      Cor Temática
-                    </label>
-                    <div className='flex flex-wrap gap-2'>
-                      {colorOptions.map((opt) => (
-                        <button
-                          key={opt.name}
-                          onClick={() => setSelectedColor(opt)}
-                          className={`w-8 h-8 rounded-full ${opt.bg} border-2 ${selectedColor.name === opt.name ? 'border-primary' : 'border-transparent'} transition-all`}
-                          title={opt.name}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className='space-y-1.5'>
-                  <label className='text-xs font-medium text-muted-foreground'>
-                    Selecione um Ícone
-                  </label>
-                  <div className='grid grid-cols-5 sm:grid-cols-9 gap-3'>
-                    {iconOptions.map((opt) => {
-                      const Icon = opt.icon;
-                      return (
-                        <button
-                          key={opt.name}
-                          onClick={() => setNewCat({ ...newCat, icon_name: opt.name })}
-                          className={`p-3 rounded-xl flex items-center justify-center transition-all ${newCat.icon_name === opt.name ? 'bg-primary text-primary-foreground scale-110 shadow-md' : 'text-muted-foreground hover:text-foreground lg-card'}`}
-                        >
-                          <Icon size={20} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className='flex gap-3 pt-2'>
-                  <button
-                    onClick={handleSave}
-                    disabled={!newCat.name}
-                    className='flex-1 h-11 bg-primary text-primary-foreground rounded-xl font-semibold text-xs transition-all active:scale-95 disabled:opacity-50'
-                  >
-                    Salvar Categoria
-                  </button>
-                  <button
-                    onClick={() => setIsAdding(false)}
-                    className='px-6 h-11 bg-muted text-muted-foreground rounded-xl text-xs font-medium hover:bg-accent transition-all'
-                  >
-                    Cancelar
-                  </button>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <button
-                onClick={() => setIsAdding(true)}
-                className='w-full p-6 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 group lg-card'
-              >
-                <Plus size={24} className='group-hover:scale-110 transition-transform' />
-                <span className='text-xs font-medium'>
-                  Adicionar Nova Categoria
-                </span>
-              </button>
-            )}
 
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-              {categories.map((cat) => {
-                const Icon = iconOptions.find((i) => i.name === cat.icon_name)?.icon || Wrench;
-                return (
-                  <div
-                    key={cat.id}
-                    className='p-4 rounded-2xl lg-card flex items-center justify-between group transition-all'
-                  >
-                    <div className='flex items-center gap-3'>
-                      <div className={`p-2.5 rounded-xl ${cat.bg_class} ${cat.color_class}`}>
+              {/* Icon picker */}
+              <div className='space-y-2'>
+                <label className='text-[11px] font-bold uppercase tracking-widest text-muted-foreground'>
+                  Ícone
+                </label>
+                <div className='grid grid-cols-5 sm:grid-cols-9 gap-2'>
+                  {iconOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    const active = newCat.icon_name === opt.name;
+                    return (
+                      <button
+                        key={opt.name}
+                        onClick={() => setNewCat({ ...newCat, icon_name: opt.name })}
+                        className={`h-11 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                          active
+                            ? 'text-white scale-105'
+                            : 'text-muted-foreground hover:text-foreground bg-background border border-border'
+                        }`}
+                        style={
+                          active
+                            ? { background: 'linear-gradient(135deg,#2f6bff 0%,#3fa9ff 100%)' }
+                            : {}
+                        }
+                      >
                         <Icon size={18} />
-                      </div>
-                      <div>
-                        <h4 className='text-sm font-medium text-foreground'>
-                          {cat.name}
-                        </h4>
-                        <p className='text-xs text-muted-foreground'>
-                          {cat.icon_name}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => onDelete(cat.id)}
-                      className='p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all'
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                );
-              })}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className='flex gap-3 pt-1'>
+                <Button
+                  onClick={handleSave}
+                  disabled={!newCat.name.trim()}
+                  variant='glass'
+                  className='flex-1 h-11 text-sm'
+                >
+                  Salvar Categoria
+                </Button>
+                <button
+                  onClick={() => setIsAdding(false)}
+                  className='px-6 h-11 rounded-full bg-muted text-muted-foreground text-sm font-semibold hover:bg-muted/80 transition-all'
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <button
+              onClick={() => setIsAdding(true)}
+              className='w-full py-5 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-[#13c8ec]/50 hover:text-[#13c8ec] transition-all group flex items-center justify-center gap-3 bg-muted/20'
+            >
+              <div className='w-9 h-9 rounded-full bg-muted flex items-center justify-center group-hover:bg-[#13c8ec]/10 transition-all'>
+                <Plus size={18} className='group-hover:scale-110 transition-transform' />
+              </div>
+              <span className='text-sm font-semibold'>Adicionar Nova Categoria</span>
+            </button>
+          )}
+
+          {/* ── Categories list ── */}
+          {categories.length > 0 && (
+            <div className='space-y-3'>
+              <p className='text-[11px] font-bold uppercase tracking-widest text-muted-foreground px-1'>
+                Categorias ativas · {categories.length}
+              </p>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                {categories.map((cat) => {
+                  const Icon = iconOptions.find((i) => i.name === cat.icon_name)?.icon || Wrench;
+                  return (
+                    <div
+                      key={cat.id}
+                      className='rounded-2xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between group hover:border-border/80 transition-all'
+                    >
+                      <div className='flex items-center gap-3'>
+                        <div
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center ${cat.bg_class} ${cat.color_class}`}
+                        >
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <p className='text-sm font-semibold text-foreground'>{cat.name}</p>
+                          <p className='text-[11px] text-muted-foreground'>{cat.icon_name}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => onDelete(cat.id)}
+                        className='p-2 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all'
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

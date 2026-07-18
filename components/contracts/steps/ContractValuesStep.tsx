@@ -72,7 +72,7 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
             </div>
           </div>
 
-          <div className='p-4 bg-white dark:bg-surface-dark rounded-2xl border border-slate-100 dark:border-white/5 flex items-center gap-3'>
+          <div className='p-4 lg-card rounded-2xl flex items-center gap-3'>
             <div className='w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400'>
               <Building2 size={20} />
             </div>
@@ -86,7 +86,7 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
         </div>
 
         <div className='md:col-span-3 space-y-6'>
-          <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-8'>
+          <div className='lg-card p-8 rounded-3xl space-y-8'>
             <div>
               <div className='flex items-center justify-between mb-2 ml-1'>
                 <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase font-black'>
@@ -113,7 +113,7 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
                   type='number'
                   value={formData.rentValue}
                   onChange={(e) => onFormDataChange({ rentValue: e.target.value })}
-                  className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                  className='w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none font-black text-2xl text-foreground transition-all'
                   placeholder='0,00'
                   autoFocus
                 />
@@ -147,12 +147,12 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
                   type='number'
                   value={formData.depositValue}
                   onChange={(e) => onFormDataChange({ depositValue: e.target.value })}
-                  className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                  className='w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none font-black text-2xl text-foreground transition-all'
                   placeholder='0,00'
                 />
               </div>
-              <div className='mt-4 p-4 bg-slate-50 dark:bg-black/30 rounded-2xl border border-slate-100 dark:border-white/5'>
-                <p className='text-xs text-slate-500 leading-relaxed font-medium'>
+              <div className='mt-4 p-4 bg-white/5 rounded-2xl border border-white/10'>
+                <p className='text-xs text-muted-foreground leading-relaxed font-medium'>
                   O valor da garantia é retido para cobrir eventuais danos ou inadimplência ao final
                   do contrato. O padrão de mercado é de até 3 vezes o valor do aluguel.
                 </p>
@@ -172,7 +172,7 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
                     type='number'
                     value={formData.condominiumValue}
                     onChange={(e) => onFormDataChange({ condominiumValue: e.target.value })}
-                    className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                    className='w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none font-black text-2xl text-foreground transition-all'
                     placeholder='0,00'
                   />
                 </div>
@@ -189,7 +189,7 @@ export const ContractValuesStep: React.FC<ContractValuesStepProps> = ({
                     type='number'
                     value={formData.iptuValue}
                     onChange={(e) => onFormDataChange({ iptuValue: e.target.value })}
-                    className='w-full pl-12 pr-4 py-5 rounded-2xl border-2 border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-black text-3xl text-slate-900 dark:text-white transition-all'
+                    className='w-full pl-12 pr-4 py-4 rounded-2xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none font-black text-2xl text-foreground transition-all'
                     placeholder='0,00'
                   />
                 </div>

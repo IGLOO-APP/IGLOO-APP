@@ -33,8 +33,8 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
 
       <div className='grid grid-cols-1 md:grid-cols-5 gap-8'>
         <div className='md:col-span-2 space-y-6'>
-          <div className='bg-white dark:bg-surface-dark p-6 rounded-3xl border border-slate-100 dark:border-white/5 relative'>
-            <div className='absolute left-10 top-16 bottom-16 w-0.5 border-l-2 border-dashed border-slate-200 dark:border-white/10'></div>
+          <div className='lg-card p-6 rounded-3xl relative'>
+            <div className='absolute left-10 top-16 bottom-16 w-0.5 border-l border-dashed border-white/10'></div>
             <div className='space-y-12 relative z-10'>
               <div className='flex items-start gap-4'>
                 <div className='w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20'>
@@ -95,7 +95,7 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
         </div>
 
         <div className='md:col-span-3 space-y-6'>
-          <div className='bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 space-y-8'>
+          <div className='lg-card p-8 rounded-3xl space-y-8'>
             <div>
               <label className='block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-4 ml-1'>
                 Quanto tempo durará o contrato?
@@ -105,7 +105,7 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
                   <button
                     key={m}
                     onClick={() => onFormDataChange({ duration: m.toString() })}
-                    className={`py-4 rounded-2xl border-2 font-black transition-all ${formData.duration === m.toString() ? 'border-primary bg-primary/5 text-primary scale-[1.02] shadow-md' : 'border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 text-slate-400 hover:border-slate-200'}`}
+                    className={`py-4 rounded-2xl border font-black transition-all ${formData.duration === m.toString() ? 'border-primary bg-white/10 text-primary scale-[1.02] shadow-md' : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'}`}
                   >
                     {m} Meses
                   </button>
@@ -126,14 +126,14 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
                   type='date'
                   value={formData.startDate}
                   onChange={(e) => onFormDataChange({ startDate: e.target.value })}
-                  className='w-full pl-12 pr-4 py-4 rounded-xl border-2 border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white dark:focus:bg-black/40 outline-none font-bold text-slate-900 dark:text-white transition-all'
+                  className='w-full pl-12 pr-4 py-4 rounded-xl border border-white/10 bg-white/5 focus:ring-2 focus:ring-primary/50 focus:bg-white/10 outline-none font-bold text-foreground transition-all'
                 />
               </div>
             </div>
 
             <div
               onClick={() => onFormDataChange({ autoRenew: !formData.autoRenew })}
-              className={`relative group flex items-center gap-4 p-6 rounded-3xl border-2 cursor-pointer transition-all overflow-hidden ${formData.autoRenew ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-slate-50 dark:bg-black/20 border-transparent hover:border-slate-200'}`}
+              className={`relative group flex items-center gap-4 p-6 rounded-3xl border cursor-pointer transition-all overflow-hidden ${formData.autoRenew ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
             >
               {formData.autoRenew && (
                 <div className='absolute -right-4 -bottom-4 text-emerald-500/10 rotate-12'>
@@ -141,7 +141,7 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
                 </div>
               )}
               <div
-                className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all ${formData.autoRenew ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-transparent text-slate-300'}`}
+                className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all ${formData.autoRenew ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110' : 'border-white/10 bg-white/5 text-slate-400'}`}
               >
                 {formData.autoRenew ? <InfinityIcon size={24} /> : <RotateCcw size={20} />}
               </div>
@@ -166,7 +166,7 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
                   <button
                     key={m}
                     onClick={() => onFormDataChange({ earlyTerminationFee: m.toString() })}
-                    className={`py-4 rounded-2xl border-2 font-black transition-all relative overflow-hidden ${formData.earlyTerminationFee === m.toString() ? 'border-primary bg-primary/5 text-primary scale-[1.02] shadow-md' : 'border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 text-slate-400 hover:border-slate-200'}`}
+                    className={`py-4 rounded-2xl border font-black transition-all relative overflow-hidden ${formData.earlyTerminationFee === m.toString() ? 'border-primary bg-white/10 text-primary scale-[1.02] shadow-md' : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'}`}
                   >
                     {m} {m === 1 ? 'Mês' : 'Meses'}
                     {parseInt(formData.duration) <= 12 && m === 1 && (
@@ -197,14 +197,14 @@ export const ContractDurationStep: React.FC<ContractDurationStepProps> = ({
                   <button
                     key={m}
                     onClick={() => onFormDataChange({ lockInPeriod: m.toString() })}
-                    className={`py-4 rounded-2xl border-2 font-black transition-all ${formData.lockInPeriod === m.toString() ? 'border-primary bg-primary/5 text-primary scale-[1.02] shadow-md' : 'border-slate-50 dark:border-white/5 bg-slate-50 dark:bg-black/20 text-slate-400 hover:border-slate-200'}`}
+                    className={`py-4 rounded-2xl border font-black transition-all ${formData.lockInPeriod === m.toString() ? 'border-primary bg-white/10 text-primary scale-[1.02] shadow-md' : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20'}`}
                   >
                     {m} Meses
                   </button>
                 ))}
               </div>
-              <div className='mt-3 p-3 bg-slate-50 dark:bg-black/30 rounded-2xl border border-slate-100 dark:border-white/5'>
-                <p className='text-[10px] text-slate-500 font-bold leading-relaxed'>
+              <div className='mt-3 p-3 bg-white/5 rounded-2xl border border-white/10'>
+                <p className='text-[10px] text-muted-foreground font-semibold leading-relaxed'>
                   Período mínimo em que a multa rescisória é cobrada integralmente, sem
                   proporcionalidade. Protege o investimento de reforma entre inquilinos.
                 </p>

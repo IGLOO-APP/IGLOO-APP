@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, FilePlus2, Bed, Bath, Square, Clock, Eye, User } from 'lucide-react';
 import { Property } from '../../types';
+import { Button } from '@/components/ui/button';
 
 interface PropertyCardProps {
   property: Property;
@@ -221,15 +222,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {/* Action — fixed height, shows button or empty spacer */}
           <div className='mt-auto h-8'>
             {isAvailable && onCreateContract ? (
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onCreateContract(property);
                 }}
-                className='w-full flex h-8 items-center justify-center gap-1.5 rounded-xl bg-white/10 border border-white/10 text-slate-300 hover:bg-white/20 text-xs font-bold transition-all active-tap'
+                variant='glass'
+                className='w-full h-8 text-xs font-bold'
               >
-                <FilePlus2 size={13} strokeWidth={1.8} /> Criar Contrato
-              </button>
+                <FilePlus2 size={13} strokeWidth={1.8} className='mr-1.5' /> Criar Contrato
+              </Button>
             ) : (
               <div className='h-8' />
             )}
@@ -384,26 +386,28 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         {/* Right action */}
         <div className='shrink-0'>
           {isAvailable && onCreateContract ? (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onCreateContract(property);
               }}
-              className='flex h-9 px-3 items-center justify-center gap-1.5 rounded-xl bg-white/10 border border-white/10 text-slate-300 hover:bg-white/20 text-xs font-bold transition-all active-tap whitespace-nowrap'
+              variant='glass'
+              className='h-9 px-3 text-xs font-bold whitespace-nowrap'
             >
-              <FilePlus2 size={14} strokeWidth={1.8} /> Criar Contrato
-            </button>
+              <FilePlus2 size={14} strokeWidth={1.8} className='mr-1.5' /> Criar Contrato
+            </Button>
           ) : tenantName ? (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate('/tenants');
               }}
-              className='flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-400 whitespace-nowrap max-w-[140px] hover:bg-white/10 transition-colors'
+              variant='outline'
+              className='flex h-9 items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-medium text-slate-400 hover:text-white whitespace-nowrap max-w-[140px] hover:bg-white/10 transition-colors'
             >
               <User size={13} strokeWidth={1.8} className='text-slate-400 shrink-0' />
               <span className='truncate'>{tenantName}</span>
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>

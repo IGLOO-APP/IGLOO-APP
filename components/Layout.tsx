@@ -33,7 +33,13 @@ const adminItems = [
   { path: '/admin/announcements', label: 'Comunicados', icon: MessageSquare },
 ];
 
-const mobileNavItems = navItems.filter((item) => item.path !== '/');
+const mobileNavItems = [
+  { path: '/', label: 'Início', icon: LayoutDashboard },
+  { path: '/properties', label: 'Imóveis', icon: Building2 },
+  { path: '/tenants', label: 'Inquilinos', icon: Users },
+  { path: '/messages', label: 'Mensagens', icon: MessageSquare },
+  { path: '/financials', label: 'Finanças', icon: Receipt },
+];
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -99,7 +105,9 @@ const Layout: React.FC = () => {
               <Outlet />
             </div>
 
-            <MobileNav navItems={mobileNavItems} />
+            {!(location.pathname === '/messages' && new URLSearchParams(location.search).has('chat')) && (
+              <MobileNav navItems={mobileNavItems} />
+            )}
           </div>
         </main>
       </div>

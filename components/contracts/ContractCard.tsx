@@ -49,15 +49,12 @@ export const ContractCard: React.FC<ContractCardProps> = ({
   return (
     <div
       onClick={() => onClick(contract)}
-      className='group bg-card text-card-foreground p-6 rounded-[24px] border border-border shadow-sm hover:shadow-xl hover:border-primary/40 transition-all duration-300 cursor-pointer relative overflow-hidden'
+      className='group lg-card lg-card-lift p-6 cursor-pointer relative overflow-hidden'
     >
       {/* Background Watermark */}
       <div className='absolute -right-8 -bottom-8 text-slate-100 dark:text-white/5 transform -rotate-12 group-hover:scale-110 transition-transform duration-500'>
         <FileText size={160} strokeWidth={0.5} />
       </div>
-
-      {/* Side Status Bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusColor.split(' ')[0]}`}></div>
 
       <div className='relative z-10'>
         <div className='flex justify-between items-start mb-4'>
@@ -107,30 +104,30 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         </div>
 
         <div className='space-y-4 mb-6'>
-          <div className='flex items-center gap-3 bg-muted/50 p-3 rounded-2xl border border-border'>
-            <div className='w-8 h-8 rounded-xl bg-background flex items-center justify-center text-muted-foreground border border-border'>
+          <div className='flex items-center gap-3 bg-white/5 border border-white/10 p-3 rounded-2xl'>
+            <div className='w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground border border-white/10'>
               <Users size={16} />
             </div>
             <div className='flex flex-col'>
-              <span className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+              <span className='text-[9px] font-black text-muted-foreground uppercase tracking-widest'>
                 Locatário
               </span>
-              <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>
+              <span className='text-sm font-bold text-foreground'>
                 {contract.tenant_name}
               </span>
             </div>
           </div>
 
           <div className='flex items-center justify-between gap-4'>
-            <div className='flex-1 flex items-center gap-3 bg-muted/50 p-3 rounded-2xl border border-border'>
-              <div className='w-8 h-8 rounded-xl bg-background flex items-center justify-center text-muted-foreground border border-border'>
+            <div className='flex-1 flex items-center gap-3 bg-white/5 border border-white/10 p-3 rounded-2xl'>
+              <div className='w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground border border-white/10'>
                 <Calendar size={16} />
               </div>
               <div className='flex flex-col'>
-                <span className='text-[9px] font-black text-slate-400 uppercase tracking-widest'>
+                <span className='text-[9px] font-black text-muted-foreground uppercase tracking-widest'>
                   Término em
                 </span>
-                <span className='text-sm font-bold text-slate-700 dark:text-slate-200'>
+                <span className='text-sm font-bold text-foreground'>
                   {new Date(contract.end_date).toLocaleDateString('pt-BR')}
                 </span>
               </div>

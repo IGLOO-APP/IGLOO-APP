@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, RefreshCw, FileText, BarChart3, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -239,41 +239,26 @@ const Contracts: React.FC = () => {
     <div className='h-full flex flex-col w-full max-w-[1600px] mx-auto relative'>
       {/* Header */}
       <TopBar title='Gestão de Contratos' subtitle='Ciclo de vida e assinaturas digitais'>
-        <Button onClick={() => setShowWizard(true)} variant='default' size='default'>
-          <Plus size={16} />
+        <Button onClick={() => setShowWizard(true)} variant='glass' size='default'>
+          <Plus size={16} strokeWidth={1.8} />
           <span className='hidden sm:inline'>Novo Contrato</span>
         </Button>
       </TopBar>
 
       <div className='flex-1 overflow-y-auto px-6 pb-24'>
         {/* Stats Row */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 py-6'>
-          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
-            <div>
-              <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Ativos</p>
-              <p className='text-2xl font-black text-emerald-500'>{activeCount}</p>
-            </div>
-            <div className='p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600'>
-              <FileText size={24} />
-            </div>
+        <div className='grid grid-cols-3 gap-3 py-5'>
+          <div className='lg-card p-4 flex flex-col gap-1'>
+            <p className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider'>Ativos</p>
+            <p className='text-2xl font-black text-emerald-500'>{activeCount}</p>
           </div>
-          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
-            <div>
-              <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Pendentes</p>
-              <p className='text-2xl font-black text-blue-500'>{pendingCount}</p>
-            </div>
-            <div className='p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600'>
-              <RefreshCw size={24} />
-            </div>
+          <div className='lg-card p-4 flex flex-col gap-1'>
+            <p className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider'>Pendentes</p>
+            <p className='text-2xl font-black text-blue-500'>{pendingCount}</p>
           </div>
-          <div className='bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-sm flex items-center justify-between'>
-            <div>
-              <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>Vencendo</p>
-              <p className='text-2xl font-black text-amber-500'>{expiringCount}</p>
-            </div>
-            <div className='p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-amber-600'>
-              <BarChart3 size={24} />
-            </div>
+          <div className='lg-card p-4 flex flex-col gap-1'>
+            <p className='text-[10px] font-bold text-muted-foreground uppercase tracking-wider'>Vencendo</p>
+            <p className='text-2xl font-black text-amber-500'>{expiringCount}</p>
           </div>
         </div>
 
@@ -302,10 +287,10 @@ const Contracts: React.FC = () => {
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id as ContractStatus)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap border transition-all active-tap ${
                   filter === f.id
-                    ? 'bg-foreground text-background border-transparent'
-                    : 'bg-muted text-muted-foreground border-border hover:bg-accent'
+                    ? 'bg-white/10 text-foreground border-white/20'
+                    : 'bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-white/5'
                 }`}
               >
                 {f.label}

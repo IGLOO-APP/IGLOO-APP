@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Plus, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface GeneralTabProps {
   user: any;
@@ -76,14 +77,15 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <input
                 value={profileData.email}
                 disabled
-                className='flex-1 px-4 py-3 rounded-xl bg-muted/70 border border-border text-muted-foreground outline-none cursor-not-allowed text-sm'
+                className='flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-muted-foreground outline-none cursor-not-allowed text-sm'
               />
-              <button
+              <Button
                 onClick={onOpenUserProfile}
-                className='px-4 py-2 bg-muted border border-border rounded-xl text-xs font-bold hover:bg-accent transition-colors flex items-center gap-2 text-foreground'
+                variant='outline'
+                className='h-11 px-4 border border-white/10 rounded-xl text-xs font-bold hover:bg-white/10 transition-colors flex items-center gap-2 text-foreground'
               >
                 Alterar e-mail <ArrowRight size={14} />
-              </button>
+              </Button>
             </div>
           </div>
           <div>
@@ -93,7 +95,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
             <input
               value={profileData.name}
               onChange={(e) => update('name', e.target.value)}
-              className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
+              className='w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-foreground'
             />
           </div>
           {(user?.role === 'owner' || user?.role === 'admin') && (
@@ -104,7 +106,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <input
                 value={profileData.companyName}
                 onChange={(e) => update('companyName', e.target.value)}
-                className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
+                className='w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-foreground'
               />
             </div>
           )}
@@ -115,7 +117,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
             <input
               value={profileData.phone}
               onChange={(e) => update('phone', e.target.value)}
-              className='w-full px-4 py-3 rounded-xl bg-muted border border-input outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors text-foreground'
+              className='w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-foreground'
               placeholder='(00) 00000-0000'
             />
           </div>
@@ -126,17 +128,18 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
         <p className='text-sm text-muted-foreground mb-6'>
           Gerencie sua senha, autenticação de dois fatores e sessões ativas.
         </p>
-        <button
+        <Button
           onClick={onOpenUserProfile}
-          className='flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg hover:bg-primary/90 transition-all active:scale-[0.98]'
+          variant='glass'
+          className='flex items-center gap-3 px-6 py-6 rounded-2xl font-bold shadow-lg transition-all active:scale-[0.98]'
         >
-          <ShieldCheck size={24} />
+          <ShieldCheck size={24} className='mr-1' />
           <div className='text-left'>
-            <p className='text-sm'>Gerenciar Segurança e Senha</p>
-            <p className='text-[10px] opacity-70 font-medium'>Proteja sua conta Igloo</p>
+            <p className='text-sm text-white'>Gerenciar Segurança e Senha</p>
+            <p className='text-[10px] text-white/70 font-medium'>Proteja sua conta Igloo</p>
           </div>
-          <ArrowRight size={18} className='ml-4' />
-        </button>
+          <ArrowRight size={18} className='ml-4 text-white' />
+        </Button>
       </div>
     </div>
   );

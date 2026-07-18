@@ -1,5 +1,6 @@
 import React from 'react';
 import { HelpCircle, Filter, Megaphone, Plus, Shield, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ChatSidebar } from '../components/messages/ChatSidebar';
 import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
@@ -85,32 +86,35 @@ const OwnerMessages: React.FC = () => {
       <div className={`${activeChatId ? 'hidden md:block' : 'block'} shrink-0`}>
         <TopBar title='Central de Mensagens' subtitle='Comunicação direta com locatários'>
           <div className='flex items-center gap-1.5 md:gap-2 flex-wrap sm:flex-nowrap shrink-0'>
-            <button
+            <Button
               onClick={() => setShowFAQManager(true)}
-              className='flex items-center justify-center gap-1 bg-muted hover:bg-accent text-muted-foreground px-2 py-1.5 rounded-xl font-semibold text-xs transition-all active:scale-95 shrink-0'
+              variant='glass'
+              className='flex items-center justify-center gap-1 px-3 h-9 text-xs font-semibold'
               title='Gerenciar FAQs'
             >
-              <HelpCircle size={12} className='text-primary' />
+              <HelpCircle size={13} />
               <span>FAQs</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => setShowCategoryManager(true)}
-              className='flex items-center justify-center gap-1 bg-muted hover:bg-accent text-muted-foreground px-2 py-1.5 rounded-xl font-semibold text-xs transition-all active:scale-95 shrink-0'
+              variant='glass'
+              className='flex items-center justify-center gap-1 px-3 h-9 text-xs font-semibold'
               title='Gerenciar Categorias'
             >
-              <Filter size={12} className='text-orange-500' />
+              <Filter size={13} />
               <span>Categorias</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => setShowAnnouncementModal(true)}
-              className='flex items-center justify-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground px-2.5 py-1.5 rounded-xl font-semibold text-xs shadow-md transition-all active:scale-95 shrink-0'
+              variant='glass'
+              className='flex items-center justify-center gap-1.5 px-3.5 h-9 text-xs font-semibold'
               title='Novo Comunicado'
             >
-              <Megaphone size={12} />
+              <Megaphone size={13} />
               <span>Comunicado</span>
-            </button>
+            </Button>
           </div>
         </TopBar>
       </div>

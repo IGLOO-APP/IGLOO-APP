@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Moon, Sun } from 'lucide-react';
+import { Bell, Moon, Sun, Settings } from 'lucide-react';
 import { User as UserType } from '../../../types';
 
 interface DashboardHeaderProps {
@@ -69,6 +69,14 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
 
       <div className='flex items-center gap-3 relative z-30'>
+        <button
+          onClick={() => onNavigate('/tenant/settings')}
+          className='w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap'
+          title='Configurações'
+        >
+          <Settings size={16} strokeWidth={1.8} />
+        </button>
+
         <button
           onClick={onToggleTheme}
           className='w-9 h-9 flex items-center justify-center rounded-full bg-white/5 dark:bg-white/6 border border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10 transition-all active-tap'

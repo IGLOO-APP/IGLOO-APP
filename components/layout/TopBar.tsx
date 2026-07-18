@@ -20,6 +20,8 @@ import { useNotification } from '../../context/NotificationContext';
 import { propertyService } from '../../services/propertyService';
 import { tenantService } from '../../services/tenancy/tenantService';
 import { useTheme } from '../../hooks/useTheme';
+import { useAuth } from '../../context/AuthContext';
+import { UserButton } from '@clerk/clerk-react';
 
 interface TopBarProps {
   title?: string;
@@ -80,6 +82,7 @@ const navItems = [
 
 export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => {
   const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -188,23 +191,34 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
   }, [isSearchOpen, selectedIndex, query, properties, tenants]);
 
   return (
-    <header className='sticky top-0 z-40 lg-topbar px-4 md:px-8 py-4 flex justify-between items-center transition-colors min-h-[64px] sm:min-h-[80px] overflow-visible'>
-      <div className='flex items-center gap-2 min-w-0 flex-1 mr-2'>
+    <header className='sticky top-0 z-40 lg-topbar px-4 md:px-8 py-3 md:py-4 flex justify-between items-center transition-all min-h-[56px] md:min-h-[80px] overflow-visible border-b border-border/10 bg-background/80 backdrop-blur-md'>
+      <div className='flex items-center gap-3 min-w-0 flex-1 mr-2'>
+        {/* Clerk User Button on Mobile Left */}
+        <div className='md:hidden shrink-0 flex items-center justify-center'>
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: 'w-8 h-8 rounded-full border border-border/20 shadow-sm',
+              },
+            }}
+          />
+        </div>
+
         {!isDashboard && (
           <button
-            onClick={() => navigate('/')}
-            className='md:hidden w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-accent text-muted-foreground transition-all shrink-0'
-            aria-label='Voltar ao início'
+            onClick={() => navigate(-1)}
+            className='w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent text-muted-foreground transition-all shrink-0'
+            aria-label='Voltar'
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </button>
         )}
-        <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => navigate('/')}>
+        <div className='flex flex-col min-w-0 flex-1 cursor-pointer' onClick={() => isDashboard ? null : navigate('/')}>
           {title && (
-            <h1 className='text-lg font-bold text-foreground tracking-tight truncate'>{title}</h1>
+            <h1 className='text-base md:text-lg font-bold text-foreground tracking-tight truncate'>{title}</h1>
           )}
           {subtitle && (
-            <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest truncate'>
+            <p className='text-[9px] md:text-[10px] font-black text-muted-foreground uppercase tracking-widest truncate'>
               {subtitle}
             </p>
           )}
@@ -213,9 +227,9 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
 
       <div className='flex items-center gap-1.5 md:gap-3 shrink-0' ref={searchRef}>
         {/* Inline Search */}
-        <div className='relative'>
+        <div className={isSearchOpen ? 'absolute inset-x-4 md:relative md:inset-auto z-50 flex items-center' : 'relative'}>
           {isSearchOpen ? (
-            <div className='flex items-center bg-card rounded-2xl border border-border shadow-sm focus-within:border-primary transition-all'>
+            <div className='flex items-center w-full md:w-[280px] bg-card rounded-2xl border border-border shadow-sm focus-within:border-primary transition-all p-1'>
               <Search size={16} className='text-muted-foreground ml-3 shrink-0' />
               <input
                 ref={inputRef}
@@ -226,7 +240,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
                   setSelectedIndex(0);
                 }}
                 placeholder='Pesquisar...'
-                className='w-[200px] md:w-[280px] bg-transparent border-none focus:outline-none focus:ring-0 px-2.5 py-2 text-sm text-foreground placeholder:text-muted-foreground'
+                className='flex-1 md:w-[240px] bg-transparent border-none focus:outline-none focus:ring-0 px-2.5 py-1 text-sm text-foreground placeholder:text-muted-foreground'
               />
               <button
                 onClick={() => setIsSearchOpen(false)}
@@ -321,6 +335,15 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
             </div>
           )}
         </div>
+
+        {/* Settings Button Mobile */}
+        <button
+          onClick={() => navigate(location.pathname.startsWith('/tenant') ? '/tenant/settings' : location.pathname.startsWith('/admin') ? '/admin/settings' : '/settings')}
+          className='md:hidden w-9 h-9 flex items-center justify-center rounded-full bg-card/50 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground hover:bg-card transition-all active-tap'
+          aria-label='Configurações'
+        >
+          <Settings size={16} />
+        </button>
 
         {/* Theme Toggle Mobile */}
         <button

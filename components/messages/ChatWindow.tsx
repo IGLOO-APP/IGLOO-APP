@@ -87,7 +87,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     <div
       className={`flex-1 min-w-0 flex flex-col absolute md:relative inset-0 md:inset-auto w-full md:w-auto h-full transition-transform duration-300 z-30 md:z-10 ${activeChat ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
     >
-      <div className='h-14 px-4 flex items-center justify-between bg-background border-b border-border shrink-0 z-20 shadow-sm'>
+      <div className='h-14 px-4 flex items-center justify-between bg-white/[0.02] backdrop-blur-xl border-b border-white/10 shrink-0 z-20 shadow-sm'>
         <div className='flex items-center gap-2 flex-1 min-w-0'>
           <button
             onClick={() => setActiveChatId(null)}
@@ -231,7 +231,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className='p-3 pb-24 md:pb-4 bg-background border-t border-border shrink-0 lg-card rounded-none border-x-0 border-b-0'>
+        <div className='p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4 bg-white/[0.02] backdrop-blur-xl border-t border-white/10 shrink-0'>
           <div className='flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1 items-center'>
             <span className='hidden md:inline-block text-xs text-muted-foreground self-center mr-1 shrink-0'>
               Sugestões:
@@ -275,14 +275,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               </button>
             )}
 
-            <div className='h-3 w-px bg-border mx-1 shrink-0' />
+            <div className='h-3 w-px bg-white/10 mx-1 shrink-0' />
 
             <div className='flex gap-1.5 overflow-x-auto hide-scrollbar pr-8'>
               {quickReplies.map((reply, i) => (
                 <div key={i} className='relative group shrink-0'>
                   <button
                     onClick={() => handleSendMessage(undefined, reply)}
-                    className='whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:bg-foreground hover:text-background transition-all shadow-sm bg-muted/20'
+                    className='whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all shadow-sm bg-white/5 border border-white/10'
                   >
                     {reply}
                   </button>
@@ -317,7 +317,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               accept='image/*'
               onChange={handleFileUpload}
             />
-            <div className='flex-1 rounded-[18px] border border-border focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all overflow-hidden flex items-center bg-muted/10'>
+            <div className='flex-1 rounded-[18px] border border-white/10 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/30 transition-all overflow-hidden flex items-center bg-white/5'>
               <input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -327,7 +327,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   }
                 }}
                 placeholder='Mensagem... (Ctrl+Enter para enviar)'
-                className='w-full h-10 px-4 bg-transparent border-none focus:ring-0 text-sm font-medium text-foreground placeholder:text-muted-foreground'
+                className='w-full h-10 px-4 bg-transparent border-none focus:ring-0 text-sm font-medium text-foreground placeholder:text-slate-500'
               />
             </div>
             <button

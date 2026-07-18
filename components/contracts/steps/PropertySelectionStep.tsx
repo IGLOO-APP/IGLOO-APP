@@ -70,12 +70,12 @@ export const PropertySelectionStep: React.FC<PropertySelectionStepProps> = ({
                   const rentVal = parseFloat(cleanPrice) || 0;
                   onSelect(prop.id, prop.name, rentVal.toString(), (rentVal * 3).toString());
                 }}
-                className={`group relative overflow-hidden rounded-3xl border-2 text-left transition-all duration-300 flex flex-col bg-white dark:bg-surface-dark ${
+                className={`group relative overflow-hidden rounded-3xl text-left transition-all duration-300 flex flex-col lg-card ${
                   isSelected
-                    ? 'border-primary ring-4 ring-primary/10 shadow-2xl'
+                    ? 'border-primary ring-4 ring-primary/10 shadow-2xl scale-[1.01]'
                     : isAvailable
-                      ? 'border-white dark:border-white/5 hover:border-slate-200 dark:hover:border-white/20 shadow-sm hover:shadow-lg'
-                      : 'border-white dark:border-white/5 opacity-50 grayscale cursor-not-allowed'
+                      ? 'hover:border-white/20 hover:scale-[1.005]'
+                      : 'opacity-50 grayscale cursor-not-allowed'
                 }`}
               >
                 <div className='flex items-stretch'>
@@ -120,7 +120,7 @@ export const PropertySelectionStep: React.FC<PropertySelectionStepProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className='bg-slate-50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 p-3 px-4 md:px-6 flex items-center justify-between'>
+                <div className='bg-white/5 border-t border-white/10 p-3 px-4 md:px-6 flex items-center justify-between'>
                   <div className='flex items-center gap-4 md:gap-6'>
                     {[
                       { icon: Bed, value: prop.beds, label: 'Quartos' },

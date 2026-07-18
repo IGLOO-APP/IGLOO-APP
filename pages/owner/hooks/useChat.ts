@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { messageService } from '../../../services/messageService';
 import { supportService } from '../../../services/supportService';
 import { tenantService } from '../../../services/tenancy/tenantService';
@@ -11,9 +11,20 @@ import type { Property, Tenant } from '../../../types';
 export function useChat() {
   const location = useLocation();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const activeChatId = searchParams.get('chat');
+  const setActiveChatId = useCallback(
+    (id: string | null) => {
+      if (id) {
+        setSearchParams({ chat: id }, { replace: false });
+      } else {
+        setSearchParams({}, { replace: false });
+      }
+    },
+    [setSearchParams]
+  );
   const [inputText, setInputText] = useState('');
   const [activeFilter, setActiveFilter] = useState<
     'all' | 'maintenance' | 'finance' | 'general' | 'urgent' | 'support'

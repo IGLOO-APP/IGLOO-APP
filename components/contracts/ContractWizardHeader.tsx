@@ -36,7 +36,7 @@ export const ContractWizardHeader: React.FC<ContractWizardHeaderProps> = ({
 }) => {
   return (
     <>
-      <div className='flex-none bg-white dark:bg-surface-dark border-b border-slate-200 dark:border-white/5 z-40 shadow-sm'>
+      <div className='flex-none bg-white/5 border-b border-white/10 backdrop-blur-xl z-40 shadow-sm'>
         <div className='max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between'>
           <div className='flex items-center gap-4 min-w-[200px]'>
             <button
@@ -101,10 +101,10 @@ export const ContractWizardHeader: React.FC<ContractWizardHeaderProps> = ({
               <button
                 onClick={onNext}
                 disabled={!canAdvance || saving}
-                className={`px-5 py-2 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all flex items-center gap-2 ${
+                className={`px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all flex items-center gap-2 ${
                   !canAdvance || saving
-                    ? 'bg-slate-200 dark:bg-white/5 text-slate-400 cursor-not-allowed'
-                    : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 active:scale-95'
+                    ? 'bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed'
+                    : 'bg-gradient-to-br from-[#2f6bff] to-[#3fa9ff] text-white hover:brightness-110 active:scale-95'
                 }`}
               >
                 {saving ? (
