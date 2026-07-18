@@ -12,6 +12,8 @@ import { TopBar } from '../components/layout/TopBar';
 import { useOwnerMessages } from './owner/hooks/useOwnerMessages';
 
 const OwnerMessages: React.FC = () => {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -81,6 +83,10 @@ const OwnerMessages: React.FC = () => {
     getIconComponent,
   } = useOwnerMessages();
 
+  React.useEffect(() => {
+    if (!activeChatId) setMobileSidebarOpen(false);
+  }, [activeChatId]);
+
   return (
     <div className='flex flex-col h-full text-foreground overflow-hidden relative transition-colors duration-300'>
       <div className={`${activeChatId ? 'hidden md:block' : 'block'} shrink-0`}>
@@ -123,6 +129,8 @@ const OwnerMessages: React.FC = () => {
         <ChatSidebar
           activeChatId={activeChatId}
           setActiveChatId={setActiveChatId}
+          isMobileOpen={mobileSidebarOpen}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           showAdvancedFilters={showAdvancedFilters}
@@ -153,6 +161,7 @@ const OwnerMessages: React.FC = () => {
             <ChatWindow
               activeChat={activeChat}
               setActiveChatId={setActiveChatId}
+              onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
               setShowDetailsPanel={setShowDetailsPanel}
               showDetailsPanel={showDetailsPanel}
               activeRightTab={activeRightTab}

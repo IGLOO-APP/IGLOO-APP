@@ -226,6 +226,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
       </div>
 
       <div className='flex items-center gap-1.5 md:gap-3 shrink-0' ref={searchRef}>
+        {isDashboard && (<>
         {/* Inline Search */}
         <div className={isSearchOpen ? 'absolute inset-x-4 md:relative md:inset-auto z-50 flex items-center' : 'relative'}>
           {isSearchOpen ? (
@@ -415,6 +416,7 @@ export const TopBar: React.FC<TopBarProps> = ({ title, subtitle, children }) => 
             </>
           )}
         </div>
+        </>)}
 
         {/* Custom Action Buttons */}
         {children && (

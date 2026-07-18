@@ -1,6 +1,7 @@
 import React, { useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ChevronLeft, FileText, Paperclip, Send, X, Plus, Shield } from 'lucide-react';
+import { ChevronLeft, FileText, Paperclip, Send, X, Plus, Shield, Menu } from 'lucide-react';
 import type { ChatThread } from '../../services/messageService';
 import { MessageBubble } from './MessageBubble';
 
@@ -23,6 +24,7 @@ interface ChatWindowProps {
   typingUsers: Record<string, boolean>;
   onAddQuickReply: (text: string) => void;
   onRemoveQuickReply: (index: number) => void;
+  onToggleMobileSidebar?: () => void;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -42,7 +44,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   typingUsers,
   loadMoreMessages,
   loadingMore,
+  onToggleMobileSidebar,
 }) => {
+  const navigate = useNavigate();
   const [isAddingReply, setIsAddingReply] = React.useState(false);
   const [newReplyText, setNewReplyText] = React.useState('');
 
@@ -89,13 +93,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     >
       <div className='h-14 px-4 flex items-center justify-between bg-white/[0.02] backdrop-blur-xl border-b border-white/10 shrink-0 z-20 shadow-sm'>
         <div className='flex items-center gap-2 flex-1 min-w-0'>
-          <button
-            onClick={() => setActiveChatId(null)}
-            className='p-1.5 -ml-1 rounded-xl hover:bg-accent text-muted-foreground md:hidden active:scale-95 transition-all'
-            aria-label='Voltar'
-          >
-            <ChevronLeft size={16} />
-          </button>
+          <div className='flex items-center gap-1 md:hidden mr-1'>
+            <button
+              onClick={() => navigate(-1)}
+              className='p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all'
+              aria-label='Voltar'
+              type='button'
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={onToggleMobileSidebar}
+              className='p-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all'
+              aria-label='Lista de conversas'
+              type='button'
+            >
+              <Menu size={16} />
+            </button>
+          </div>
 
           <div className='flex items-center gap-2.5 flex-1 min-w-0'>
             {activeChat.category === 'support' ? (

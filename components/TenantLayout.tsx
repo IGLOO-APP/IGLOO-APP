@@ -173,7 +173,7 @@ const TenantLayout: React.FC = () => {
 
   return (
     <div
-      className='flex h-full w-full overflow-hidden text-foreground relative p-5 gap-5'
+      className='flex h-full w-full overflow-hidden text-foreground relative gap-5'
       style={{ background: 'transparent' }}
     >
       {/* Blob background */}
@@ -182,7 +182,7 @@ const TenantLayout: React.FC = () => {
 
       {/* ─── Desktop Sidebar ─── */}
       <aside
-        className='hidden md:flex flex-col w-64 shrink-0 relative z-10 lg-sidebar'
+        className='hidden md:flex flex-col w-64 shrink-0 relative z-10 lg-sidebar pl-5'
         style={{ background: 'transparent' }}
       >
         <div className='px-6 mb-6 mt-4'>

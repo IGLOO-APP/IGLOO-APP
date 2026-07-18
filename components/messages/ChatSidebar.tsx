@@ -40,6 +40,8 @@ interface ChatSidebarProps {
   isDragging: boolean;
   setIsCreateSupportOpen?: (open: boolean) => void;
   loading?: boolean;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const ChatSidebar = React.memo(
@@ -68,6 +70,8 @@ export const ChatSidebar = React.memo(
     isDragging,
     setIsCreateSupportOpen,
     loading = false,
+    isMobileOpen = false,
+    onCloseMobile,
   }: ChatSidebarProps) => {
     const getAvatarColor = (name: string) => {
       const colors = [
@@ -85,9 +89,17 @@ export const ChatSidebar = React.memo(
     };
 
     return (
-      <div
-        className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col border-r border-white/10 text-foreground transition-transform duration-300 absolute md:relative z-20 h-full min-h-0 ${activeChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}
-      >
+      <>
+        {isMobileOpen && onCloseMobile && (
+          <div
+            className='fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden animate-fadeIn'
+            onClick={onCloseMobile}
+          />
+        )}
+        <div
+          className={`w-full md:w-64 lg:w-72 shrink-0 flex flex-col border-r border-white/10 text-foreground transition-transform duration-300 h-full min-h-0
+            ${isMobileOpen ? 'fixed inset-y-0 left-0 z-50 max-w-[85vw] md:relative md:inset-auto md:z-20 md:max-w-none translate-x-0 shadow-2xl' : activeChatId ? 'absolute md:relative z-20 -translate-x-full md:translate-x-0' : 'relative z-20 translate-x-0'}`}
+        >
         <div className='p-4 border-b border-white/10 bg-white/[0.02] backdrop-blur-xl sticky top-0 z-30 border-x-0 border-t-0'>
           <div className='flex gap-2 mb-3'>
             <div className='relative flex-1'>
@@ -417,6 +429,7 @@ export const ChatSidebar = React.memo(
         )}
         </div>
       </div>
+      </>
     );
   }
 );
