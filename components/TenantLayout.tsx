@@ -10,17 +10,26 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../hooks/useTheme';
 import { tenantService } from '../services/tenancy/tenantService';
 import { inspectionService } from '../services/maintenance/inspectionService';
-import { TopBar } from './layout/TopBar';
+import { SidebarProvider } from './ui/sidebar';
+import { MobileNav } from './layout/MobileNav';
 import { TenantSidebar } from './tenant/TenantSidebar';
-import { TenantMobileNav } from './tenant/TenantMobileNav';
+
+const mobileNavItems = [
+  { path: '/tenant', label: 'Início', icon: Home },
+  { path: '/tenant/contract', label: 'Contrato', icon: FileText },
+  { path: '/tenant/payments', label: 'Pagamentos', icon: Receipt },
+  { path: '/tenant/maintenance', label: 'Suporte', icon: LifeBuoy },
+  { path: '/tenant/messages', label: 'Mensagens', icon: MessageSquare },
+];
 
 const TenantLayout: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const isMaintenanceRoute = location.pathname === '/tenant/maintenance';
 
   const [isOnboardingRequired, setIsOnboardingRequired] = useState(false);
   const [loadingOnboarding, setLoadingOnboarding] = useState(true);
@@ -160,48 +169,44 @@ const TenantLayout: React.FC = () => {
   }
 
   return (
-    <div
-      className='flex h-full w-full overflow-hidden text-foreground relative gap-5'
-      style={{ background: 'transparent' }}
-    >
+    <SidebarProvider className='h-full w-full overflow-hidden'>
       <div className='lg-blob-field' aria-hidden='true' />
       <div className='lg-blob-3' aria-hidden='true' />
 
-      <TenantSidebar
-        navItems={navItems}
-        userName={user?.name}
-        onboardingRequired={isOnboardingRequired}
-      />
-
-      <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full'>
-        <div className='md:hidden block shrink-0'>
-          <TopBar
-            title={
-              navItems.find((i) => i.path === location.pathname)?.label || 'Portal do Inquilino'
-            }
-            subtitle='Área do Locatário'
+      <div
+        className='flex h-full w-full overflow-hidden text-foreground relative gap-5'
+        style={{ background: 'transparent' }}
+      >
+        <div className='hidden md:block shrink-0 relative z-10 pl-5'>
+          <TenantSidebar
+            navItems={navItems}
+            userName={user?.name}
+            onboardingRequired={isOnboardingRequired}
+            isDark={isDark}
+            toggleTheme={toggleTheme}
+            logout={logout}
           />
         </div>
 
-        <div
-          className={`flex-1 overflow-y-auto pb-24 w-full scroll-smooth ${
-            isMaintenanceRoute ? 'h-full min-h-0 overflow-hidden' : ''
-          }`}
-        >
-          <Outlet
-            context={{
-              isOnboardingRequired,
-              loadingOnboarding,
-              tenantData,
-              pendingInspection,
-              refetchOnboarding: checkOnboardingStatus,
-            }}
-          />
-        </div>
+        <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full text-foreground'>
+          <div className='relative z-10 flex flex-col flex-1 min-h-0'>
+            <div className='flex-1 overflow-y-auto w-full scroll-smooth pb-24 md:pb-0'>
+              <Outlet
+                context={{
+                  isOnboardingRequired,
+                  loadingOnboarding,
+                  tenantData,
+                  pendingInspection,
+                  refetchOnboarding: checkOnboardingStatus,
+                }}
+              />
+            </div>
 
-        <TenantMobileNav navItems={navItems} />
-      </main>
-    </div>
+            <MobileNav navItems={mobileNavItems} />
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
-import { Lock, Zap } from 'lucide-react';
+import { Lock, Zap, Sun, Moon, LogOut } from 'lucide-react';
+import { Sidebar as SidebarBase } from '../ui/sidebar';
 import { preloadRoute } from '../../lib/routePreloader';
 
 interface NavItem {
@@ -16,28 +17,34 @@ interface TenantSidebarProps {
   navItems: NavItem[];
   userName?: string;
   onboardingRequired: boolean;
+  isDark: boolean;
+  toggleTheme: () => void;
+  logout: () => void;
 }
 
 export const TenantSidebar: React.FC<TenantSidebarProps> = ({
   navItems,
   userName,
   onboardingRequired,
+  isDark,
+  toggleTheme,
+  logout,
 }) => {
   return (
-    <aside
-      className='hidden md:flex flex-col w-64 shrink-0 relative z-10 lg-sidebar pl-5'
-      style={{ background: 'transparent' }}
+    <SidebarBase
+      collapsible='none'
+      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar bg-sidebar border-r border-sidebar-border'
     >
-      <div className='px-6 mb-6 mt-4'>
-        <Link to='/tenant' className='inline-block'>
-          <h1 className='font-sans text-4xl font-bold tracking-tight text-foreground transition-colors duration-200'>
-            Igloo
-          </h1>
-        </Link>
-      </div>
+      <div className='flex flex-col flex-grow relative z-10'>
+        <div className='px-6 mb-8 mt-4'>
+          <Link to='/tenant' className='inline-block'>
+            <h1 className='font-sans text-4xl font-bold tracking-tight text-foreground transition-colors duration-200'>
+              Igloo
+            </h1>
+          </Link>
+        </div>
 
-      <nav className='flex-1 overflow-y-auto scroll-smooth custom-scrollbar'>
-        <ul className='flex flex-col gap-0.5 px-6'>
+        <ul className='flex flex-col gap-0.5 px-6 flex-grow overflow-y-auto scroll-smooth custom-scrollbar'>
           <p className='px-4 mb-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]'>
             Menu Principal
           </p>
@@ -98,9 +105,9 @@ export const TenantSidebar: React.FC<TenantSidebarProps> = ({
             </li>
           )}
         </ul>
-      </nav>
+      </div>
 
-      <div className='px-6 flex flex-col gap-2 pt-3 border-t border-sidebar-border mt-auto relative z-10'>
+      <div className='px-4 flex flex-col gap-1.5 pt-2 border-t border-sidebar-border mx-3 mt-auto relative z-10'>
         <Link to='/tenant/settings' className='flex items-center gap-3 group/profile'>
           <div className='pointer-events-none transition-transform duration-200 group-hover/profile:scale-105'>
             <UserButton
@@ -119,7 +126,33 @@ export const TenantSidebar: React.FC<TenantSidebarProps> = ({
             <span className='text-xs text-muted-foreground capitalize'>Inquilino</span>
           </div>
         </Link>
+
+        <div className='flex flex-col gap-0.5'>
+          <button
+            onClick={toggleTheme}
+            className='flex items-center gap-3 px-3 py-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-lg transition-all duration-200 text-left w-full'
+          >
+            {isDark ? (
+              <>
+                <Sun size={18} strokeWidth={1.8} className='text-sidebar-foreground/50' />
+                <span className='text-sm font-medium'>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon size={18} strokeWidth={1.8} className='text-sidebar-foreground/50' />
+                <span className='text-sm font-medium'>Modo Escuro</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={logout}
+            className='flex items-center gap-3 px-3 py-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200 text-left w-full'
+          >
+            <LogOut size={18} strokeWidth={1.8} />
+            <span className='text-sm font-medium'>Sair</span>
+          </button>
+        </div>
       </div>
-    </aside>
+    </SidebarBase>
   );
 };
