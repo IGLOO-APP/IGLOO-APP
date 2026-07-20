@@ -249,14 +249,16 @@ const TenantPayments: React.FC = () => {
       <div className='flex items-center justify-center h-full'>
         <div className='flex flex-col items-center gap-3'>
           <div className='w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin' />
-          <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>Carregando...</p>
+          <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>
+            Carregando...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
+    <div className='flex flex-col h-full'>
       <header className='sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-200 dark:border-white/5 flex justify-between items-center transition-colors'>
         <div>
           <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Pagamentos</h1>

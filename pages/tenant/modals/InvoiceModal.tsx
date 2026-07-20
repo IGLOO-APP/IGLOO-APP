@@ -22,10 +22,35 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl'
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl border border-white/10 rounded-[22px]'
         showCloseButton={false}
+        style={{
+          background: 'rgba(12,14,26,0.92)',
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        }}
       >
-        <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
+        <div
+          aria-hidden='true'
+          className='absolute inset-0 overflow-hidden pointer-events-none'
+          style={{ borderRadius: 'inherit' }}
+        >
+          <div
+            className='absolute w-[50vw] h-[50vw] top-[-20%] left-[-20%] rounded-full opacity-50'
+            style={{
+              background: 'radial-gradient(circle, var(--lg-blob-1), transparent 70%)',
+              filter: 'blur(90px)',
+            }}
+          />
+          <div
+            className='absolute w-[42vw] h-[42vw] bottom-[-20%] right-[-20%] rounded-full opacity-50'
+            style={{
+              background: 'radial-gradient(circle, var(--lg-blob-2), transparent 70%)',
+              filter: 'blur(80px)',
+            }}
+          />
+        </div>
+        <div className='relative z-10'>
           <div className='flex items-center justify-between px-4 md:px-6 pt-2 pb-2 md:pb-4 shrink-0'>
             <h2 className='text-xl font-bold text-slate-900 dark:text-white'>Detalhes do Boleto</h2>
             <div className='flex items-center gap-2'>
@@ -43,7 +68,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               </button>
             </div>
           </div>
-          <div className='flex-1 overflow-y-auto px-4 md:px-6 bg-background-light dark:bg-background-dark scroll-smooth pb-8'>
+          <div className='flex-1 overflow-y-auto px-4 md:px-6 scroll-smooth pb-8'>
             <div className='bg-white dark:bg-surface-dark border border-slate-400 dark:border-gray-600 font-sans text-slate-900 dark:text-white mb-4'>
               <div className='flex items-center border-b border-slate-400 dark:border-gray-600 px-3 py-2 gap-4'>
                 <div className='flex items-center gap-3 px-2 border-r-2 border-slate-400 dark:border-gray-500 pr-4'>
@@ -67,7 +92,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
               </div>
             </div>
           </div>
-          <div className='flex-none p-4 md:p-6 pt-2 bg-background-light dark:bg-background-dark border-t border-transparent z-20'>
+          <div className='flex-none p-4 md:p-6 pt-2 border-t border-white/10 z-20'>
             <button
               onClick={onCopyBarcode}
               className='w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-slate-900/20 dark:shadow-none whitespace-nowrap'
