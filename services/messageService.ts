@@ -459,4 +459,43 @@ export const messageService = {
 
     return { conversations: conversations || [], convMsgs: convMsgs || [], maintMsgs: maintData || [], propertyName };
   },
+
+  subscribeToConversationMessages(
+    tenantId: string,
+    onInsert: (msg: { id: string; content: string; type: string | null; sender_role: string | null; created_at: string }) => void
+  ) {
+    const channel = supabase
+      .channel('tenant_messages_conv')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'conversation_messages' },
+        (payload) => {
+          onInsert(payload.new as {
+            id: string; content: string; type: string | null;
+            sender_role: string | null; created_at: string;
+          });
+        }
+      )
+      .subscribe();
+    return channel;
+  },
+
+  subscribeToMaintenanceMessages(
+    onInsert: (msg: { id: string; content: string; type: string | null; sender_role: string | null; created_at: string }) => void
+  ) {
+    const channel = supabase
+      .channel('tenant_messages_maint')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'maintenance_messages' },
+        (payload) => {
+          onInsert(payload.new as {
+            id: string; content: string; type: string | null;
+            sender_role: string | null; created_at: string;
+          });
+        }
+      )
+      .subscribe();
+    return channel;
+  },
 };

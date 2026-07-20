@@ -296,7 +296,7 @@ const TenantMaintenance: React.FC = () => {
   return (
     <div className='flex h-full w-full overflow-hidden'>
       {/* ── Sidebar: Lista de Chamados (FIXA) ── */}
-      <div className='lg-card lg-card-lift p-4 flex w-[320px] h-full flex-col shrink-0 overflow-hidden'>
+      <div className='lg-card lg-card-lift p-4 flex w-full md:w-[320px] h-full flex-col shrink-0 overflow-hidden'>
         <div className='p-6 space-y-6 shrink-0'>
           <div className='flex items-center justify-between'>
             <h1 className='text-xl font-black text-white tracking-tighter'>Atendimentos</h1>
@@ -465,7 +465,7 @@ const TenantMaintenance: React.FC = () => {
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed ${
+                    className={`px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed break-words ${
                       isMe
                         ? 'bg-primary text-white rounded-tr-none shadow-lg shadow-primary/10'
                         : 'bg-white/10 text-white/90 rounded-tl-none border border-white/5'

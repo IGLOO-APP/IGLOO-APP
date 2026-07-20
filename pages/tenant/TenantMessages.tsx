@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar, NavbarBackLink } from 'konsta/react';
 import { useAuth } from '../../context/AuthContext';
 import { messageService } from '../../services/messageService';
-import { supabase } from '../../lib/supabase';
 import { announcementService } from '../../services/announcementService';
 import type { OwnerAnnouncement } from '../../types';
 
@@ -88,60 +87,37 @@ const TenantMessages: React.FC = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const convChannel = supabase
-      .channel('tenant_messages_conv')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'conversation_messages' },
-        (payload) => {
-          const newMsg = payload.new as {
-            id: string; content: string; type: string | null;
-            sender_role: string | null; created_at: string;
-            conversation_id: string;
-          };
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            return [
-              ...prev,
-              {
-                id: newMsg.id,
-                text: newMsg.content,
-                isAnnouncement: newMsg.type === 'announcement' || newMsg.sender_role === 'system',
-                time: formatTime(newMsg.created_at),
-                created_at: newMsg.created_at,
-              },
-            ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          });
-        }
-      )
-      .subscribe();
+    const convChannel = messageService.subscribeToConversationMessages(user.id, (newMsg) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev;
+        return [
+          ...prev,
+          {
+            id: newMsg.id,
+            text: newMsg.content,
+            isAnnouncement: newMsg.type === 'announcement' || newMsg.sender_role === 'system',
+            time: formatTime(newMsg.created_at),
+            created_at: newMsg.created_at,
+          },
+        ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      });
+    });
 
-    const maintChannel = supabase
-      .channel('tenant_messages_maint')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'maintenance_messages' },
-        (payload) => {
-          const newMsg = payload.new as {
-            id: string; content: string; type: string | null;
-            sender_role: string | null; created_at: string;
-          };
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            return [
-              ...prev,
-              {
-                id: newMsg.id,
-                text: newMsg.content,
-                isAnnouncement: newMsg.sender_role === 'system',
-                time: formatTime(newMsg.created_at),
-                created_at: newMsg.created_at,
-              },
-            ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          });
-        }
-      )
-      .subscribe();
+    const maintChannel = messageService.subscribeToMaintenanceMessages((newMsg) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === newMsg.id)) return prev;
+        return [
+          ...prev,
+          {
+            id: newMsg.id,
+            text: newMsg.content,
+            isAnnouncement: newMsg.sender_role === 'system',
+            time: formatTime(newMsg.created_at),
+            created_at: newMsg.created_at,
+          },
+        ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      });
+    });
 
     return () => {
       convChannel.unsubscribe();
@@ -174,7 +150,7 @@ const TenantMessages: React.FC = () => {
             </div>
             <p className='text-sm font-bold text-card-foreground'>Nenhuma mensagem</p>
             <p className='text-xs text-muted-foreground mt-1'>
-              Voc� ainda n�o recebeu comunicados do propriet�rio.
+              Você ainda não recebeu comunicados do proprietário.
             </p>
           </div>
         ) : (
@@ -184,7 +160,7 @@ const TenantMessages: React.FC = () => {
                 {msg.isAnnouncement && (
                   <div className='flex items-center gap-1.5 mb-2 px-1 text-[10px] font-bold text-primary uppercase tracking-tight'>
                     <Megaphone size={12} strokeWidth={1.8} className='shrink-0' />
-                    <span>Comunicado do propriet�rio</span>
+                    <span>Comunicado do proprietário</span>
                   </div>
                 )}
                 <div

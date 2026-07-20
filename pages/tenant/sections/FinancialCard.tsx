@@ -346,14 +346,14 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
               label: 'Chat',
               desc: 'Fale com o dono',
               color: 'bg-emerald-100 text-emerald-600',
-              action: () => onNavigate('/tenant/maintenance'),
+              action: () => onNavigate('/tenant/messages'),
             },
             {
               icon: Key,
               label: 'Chaves',
               desc: 'Segunda via',
               color: 'bg-amber-100 text-amber-600',
-              action: () => alert('Solicitação de chave enviada!'),
+              action: () => import('sonner').then(({ toast }) => toast.success('Solicitação de chave enviada!')),
             },
           ].map((item, i) => (
             <button key={i} onClick={item.action} className='flex flex-col items-center group'>

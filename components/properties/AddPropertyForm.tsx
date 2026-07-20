@@ -706,21 +706,21 @@ export const AddPropertyForm: React.FC<AddPropertyFormProps> = ({
                       <item.icon size={14} className='text-slate-400' /> {item.label}
                     </label>
                     <div className='flex items-center justify-between bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/10 rounded-xl px-2 py-2'>
-                      <button
-                        type='button'
-                        onClick={() => handleCounter(item.field as any, 'dec')}
-                        className='w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
-                      >
-                        -
-                      </button>
-                      <span className='font-bold text-slate-900 dark:text-white'>{item.value}</span>
-                      <button
-                        type='button'
-                        onClick={() => handleCounter(item.field as any, 'inc')}
-                        className='w-7 h-7 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors'
-                      >
-                        +
-                      </button>
+                        <button
+                          type='button'
+                          onClick={() => handleCounter(item.field as any, 'dec')}
+                          className='w-11 h-11 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors'
+                        >
+                          -
+                        </button>
+                        <span className='font-bold text-slate-900 dark:text-white px-2'>{item.value}</span>
+                        <button
+                          type='button'
+                          onClick={() => handleCounter(item.field as any, 'inc')}
+                          className='w-11 h-11 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors'
+                        >
+                          +
+                        </button>
                     </div>
                   </div>
                 ))}

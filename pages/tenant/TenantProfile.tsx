@@ -41,6 +41,7 @@ const TenantProfile: React.FC = () => {
     guarantorFileResidence,
     setGuarantorFileResidence,
     calculateTimeAtCompany,
+    spouse,
   } = useTenantProfile();
 
   return (
@@ -147,13 +148,9 @@ const TenantProfile: React.FC = () => {
             config={config}
             pendingItems={pendingItems}
             completionPercent={completionPercent}
-            totalRequired={totalRequired}
             getFieldClass={getFieldClass}
             handleSaveProfile={handleSaveProfile}
             setActiveTab={setActiveTab}
-            avatarInputRef={avatarInputRef}
-            handleAvatarChange={handleAvatarChange}
-            isSaving={isSaving}
             calculateTimeAtCompany={calculateTimeAtCompany}
           />
         )}
@@ -173,6 +170,8 @@ const TenantProfile: React.FC = () => {
             guarantorFileResidence={guarantorFileResidence}
             setGuarantorFileResidence={setGuarantorFileResidence}
             isEditing={isEditing}
+            maritalStatus={profileData.maritalStatus}
+            spouse={spouse}
           />
         )}
 

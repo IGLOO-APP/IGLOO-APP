@@ -47,7 +47,8 @@ const TenantSettings: React.FC = () => {
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error('Error saving notification prefs:', err);
-      alert('Erro ao salvar preferências.');
+      const { toast } = await import('sonner');
+      toast.error('Erro ao salvar preferências.');
     } finally {
       setSaving(false);
     }

@@ -1,17 +1,18 @@
 import React from 'react';
 import { HelpCircle, Filter, Megaphone, Plus, Shield, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChatSidebar } from '../components/messages/ChatSidebar';
 import { ChatWindow } from '../components/messages/ChatWindow';
 import { ContextPanel } from '../components/messages/ContextPanel';
 import { FAQManager } from '../components/messages/FAQManager';
 import { CategoryManager } from '../components/messages/CategoryManager';
-import CreateAnnouncementModal from '../components/announcements/CreateAnnouncementModal';
 import { CreateTicketModal } from '../components/support/CreateTicketModal';
 import { TopBar } from '../components/layout/TopBar';
 import { useOwnerMessages } from './owner/hooks/useOwnerMessages';
 
 const OwnerMessages: React.FC = () => {
+  const navigate = useNavigate();
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
 
   const {
@@ -37,8 +38,6 @@ const OwnerMessages: React.FC = () => {
     setEditingFaq,
     newFaq,
     setNewFaq,
-    showAnnouncementModal,
-    setShowAnnouncementModal,
     showAdvancedFilters,
     setShowAdvancedFilters,
     priorityFilter,
@@ -113,7 +112,7 @@ const OwnerMessages: React.FC = () => {
             </Button>
 
             <Button
-              onClick={() => setShowAnnouncementModal(true)}
+              onClick={() => navigate('/governance', { state: { create: true } })}
               variant='glass'
               className='flex items-center justify-center gap-1.5 px-3.5 h-9 text-xs font-semibold'
               title='Novo Comunicado'
@@ -293,15 +292,6 @@ const OwnerMessages: React.FC = () => {
         categories={categories}
         onSave={handleSaveCategory}
         onDelete={handleDeleteCategory}
-      />
-
-      <CreateAnnouncementModal
-        isOpen={showAnnouncementModal}
-        onClose={() => setShowAnnouncementModal(false)}
-        properties={properties}
-        onSuccess={() => {
-          setShowAnnouncementModal(false);
-        }}
       />
 
       <CreateTicketModal

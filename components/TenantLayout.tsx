@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { UserButton } from '@clerk/clerk-react';
 import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { tenantService } from '../services/tenancy/tenantService';
-import { supabase } from '../lib/supabase';
+import { inspectionService } from '../services/maintenance/inspectionService';
 import { preloadRoute } from '../lib/routePreloader';
 import { TopBar } from './layout/TopBar';
 
@@ -38,18 +38,11 @@ const TenantLayout: React.FC = () => {
         setTenantData(data);
 
         if (data.property_id) {
-          const { data: inspRes } = await supabase
-            .from('inspections')
-            .select('*')
-            .eq('property_id', data.property_id)
-            .in('status', ['Pendente', 'Em Revisão'])
-            .maybeSingle();
-
-          if (inspRes) {
-            setPendingInspection(inspRes);
-          } else {
-            setPendingInspection(null);
-          }
+          const inspections = await inspectionService.getByProperty(data.property_id);
+          const pending = inspections.find((i) =>
+            ['Pendente', 'Em Revisão'].includes(i.status)
+          );
+          setPendingInspection(pending || null);
         } else {
           setPendingInspection(null);
         }

@@ -9,6 +9,7 @@ import {
   Shield,
   User,
   MapPin,
+  Heart,
 } from 'lucide-react';
 import { TenantProfileConfig, RequirementStatus, Guarantor } from '../../../types';
 
@@ -27,6 +28,8 @@ interface DocumentsTabProps {
   guarantorFileResidence?: File | null;
   setGuarantorFileResidence?: React.Dispatch<React.SetStateAction<File | null>>;
   isEditing?: boolean;
+  maritalStatus?: string;
+  spouse?: { name?: string; rg_url?: string; income_url?: string };
 }
 
 export const DocumentsTab: React.FC<DocumentsTabProps> = ({
@@ -43,6 +46,8 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
   guarantorFileResidence,
   setGuarantorFileResidence,
   isEditing,
+  maritalStatus,
+  spouse,
 }) => {
   return (
     <div className='animate-fadeIn pb-8 space-y-8'>
@@ -62,21 +67,18 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
               id: 'contract',
               name: 'Contrato de Locação Assinado',
               icon: FileCheck,
-              date: '10/01/2024',
               active: config.sections.sharedDocs.contract,
             },
             {
               id: 'inspection',
               name: 'Laudo de Vistoria de Entrada',
               icon: Camera,
-              date: '08/01/2024',
               active: config.sections.sharedDocs.inspection,
             },
             {
               id: 'rules',
               name: 'Regimento Interno do Condomínio',
               icon: Shield,
-              date: '01/01/2024',
               active: config.sections.sharedDocs.rules,
             },
           ]
@@ -95,11 +97,14 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
                       {doc.name}
                     </span>
                     <span className='text-[10px] text-slate-400 font-bold uppercase tracking-wider'>
-                      Disponível desde {doc.date}
+                      Documento compartilhado
                     </span>
                   </div>
                 </div>
-                <button className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'>
+                <button
+                  onClick={() => import('sonner').then(({ toast }) => toast.info('Download não disponível no momento'))}
+                  className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'
+                >
                   <Download size={22} />
                 </button>
               </div>
@@ -126,7 +131,10 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
                     </span>
                   </div>
                 </div>
-                <button className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'>
+                <button
+                  onClick={() => import('sonner').then(({ toast }) => toast.info('Download não disponível no momento'))}
+                  className='p-2.5 rounded-xl text-slate-400 hover:text-primary hover:bg-white dark:hover:bg-white/10 transition-all'
+                >
                   <Download size={22} />
                 </button>
               </div>
@@ -179,6 +187,12 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
               label: 'Selfie com Documento',
               desc: 'Selfie segurando o documento ao lado do rosto',
               status: 'required',
+            },
+            {
+              id: 'certidaoEstadoCivil',
+              label: 'Certidão de Estado Civil',
+              desc: 'Casamento, nascimento ou união estável',
+              status: maritalStatus === 'casado' ? 'required' : 'optional',
             },
             {
               id: 'guarantee',
@@ -284,6 +298,83 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
             })}
         </div>
       </section>
+
+      {/* Spouse Documents */}
+      {maritalStatus === 'casado' && spouse && (
+        <>
+          <div className='h-px w-full bg-gradient-to-r from-transparent via-gray-200 dark:via-white/10 to-transparent my-10'></div>
+          <section>
+            <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 px-1 text-sm uppercase tracking-widest'>
+              <Heart className='text-red-500' size={20} /> Documentos do Cônjuge
+            </h3>
+            <div className='grid gap-4'>
+              {[
+                {
+                  id: 'spouseRg',
+                  label: 'RG do Cônjuge',
+                  desc: 'Documento de identidade',
+                  status: 'required' as const,
+                },
+                {
+                  id: 'spouseIncome',
+                  label: 'Comp. Renda do Cônjuge',
+                  desc: 'Holerite ou declaração',
+                  status: 'required' as const,
+                },
+                {
+                  id: 'spouseMarriageCert',
+                  label: 'Certidão de Casamento',
+                  desc: 'Certidão atualizada',
+                  status: 'required' as const,
+                },
+              ].map((doc) => {
+                const docState = documents[doc.id] || { status: 'pending', date: null };
+                return (
+                  <div
+                    key={doc.id}
+                    className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
+                  >
+                    <div className='flex items-center gap-4'>
+                      <div
+                        className={`p-3 rounded-xl ${docState.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'} dark:bg-opacity-10`}
+                      >
+                        <FileText size={22} />
+                      </div>
+                      <div>
+                        <h4 className='text-sm font-black text-slate-900 dark:text-white leading-tight mb-0.5'>
+                          {doc.label}
+                        </h4>
+                        <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                          {doc.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-4 ml-auto md:ml-0'>
+                      {docState.date && (
+                        <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline'>
+                          Enviado em {docState.date}
+                        </span>
+                      )}
+                      {getStatusBadge(docState.status, doc.status)}
+                      <div className='flex flex-col items-center gap-1'>
+                        <button
+                          onClick={() => handleDocUpload(doc.id)}
+                          className='p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-primary hover:bg-primary/10 transition-all active:scale-95'
+                        >
+                          <Upload size={20} />
+                        </button>
+                        <span className='text-[9px] font-bold text-slate-400 uppercase'>
+                          PDF ou imagem, máx. 5MB
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* 3. Garantia da Locação */}
       {config.sections.requiredDocs.guarantee !== 'hidden' && setGuaranteeType && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Wrench, DollarSign, HelpCircle, AlertTriangle, Sparkles } from 'lucide-react';
 import {
   Dialog,
@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { useTicketForm } from './hooks/useTicketForm';
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -24,70 +25,32 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('technical');
-  const [priority, setPriority] = useState('Média');
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    subject,
+    setSubject,
+    description,
+    setDescription,
+    category,
+    setCategory,
+    priority,
+    setPriority,
+    submitting,
+    handleSubmit,
+  } = useTicketForm(onSubmit, onClose);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject.trim() || !description.trim()) return;
-
-    setSubmitting(true);
-    try {
-      await onSubmit({
-        subject: subject.trim(),
-        description: description.trim(),
-        category,
-        priority,
-      });
-      setSubject('');
-      setDescription('');
-      setCategory('technical');
-      setPriority('Média');
-      onClose();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const categories = [
-    {
-      id: 'technical',
-      name: 'Suporte Técnico',
-      icon: Wrench,
-      color: 'text-cyan-500 bg-cyan-500/10',
-    },
-    {
-      id: 'billing',
-      name: 'Financeiro',
-      icon: DollarSign,
-      color: 'text-emerald-500 bg-emerald-500/10',
-    },
-    {
-      id: 'feature_request',
-      name: 'Sugestão',
-      icon: Sparkles,
-      color: 'text-purple-500 bg-purple-500/10',
-    },
-    {
-      id: 'bug',
-      name: 'Bug no Sistema',
-      icon: AlertTriangle,
-      color: 'text-rose-500 bg-rose-500/10',
-    },
+    { id: 'technical', name: 'Suporte Técnico', icon: Wrench, color: 'text-cyan-500 bg-cyan-500/10' },
+    { id: 'billing', name: 'Financeiro', icon: DollarSign, color: 'text-emerald-500 bg-emerald-500/10' },
+    { id: 'feature_request', name: 'Sugestão', icon: Sparkles, color: 'text-purple-500 bg-purple-500/10' },
+    { id: 'bug', name: 'Bug no Sistema', icon: AlertTriangle, color: 'text-rose-500 bg-rose-500/10' },
     { id: 'other', name: 'Outros', icon: HelpCircle, color: 'text-slate-500 bg-slate-500/10' },
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className='max-w-lg p-0 gap-0 overflow-hidden'>
-        {/* Header */}
         <DialogHeader className='px-6 py-4 border-b border-border shrink-0'>
           <DialogTitle className='text-base font-black tracking-tight uppercase'>
             Abrir Novo Chamado
@@ -97,9 +60,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className='p-6 space-y-4 overflow-y-auto max-h-[75vh]'>
-          {/* Category Select */}
           <div className='space-y-2'>
             <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Categoria do Chamado
@@ -131,7 +92,6 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             </div>
           </div>
 
-          {/* Subject */}
           <div className='space-y-2'>
             <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Assunto
@@ -146,7 +106,6 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             />
           </div>
 
-          {/* Description */}
           <div className='space-y-2'>
             <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Descrição detalhada
@@ -156,12 +115,11 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder='Descreva detalhadamente o seu problema para que nossa equipe possa ajudar de forma mais rápida...'
+              placeholder='Descreva detalhadamente o seu problema...'
               className='w-full p-4 rounded-xl bg-muted border border-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none'
             />
           </div>
 
-          {/* Priority */}
           <div className='space-y-2'>
             <label className='text-[9px] font-black text-muted-foreground uppercase tracking-widest px-1 block'>
               Prioridade
@@ -170,30 +128,17 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               {['Baixa', 'Média', 'Alta', 'Urgente'].map((prio) => {
                 const isSelected = priority === prio;
                 const getPrioColor = () => {
-                  if (prio === 'Baixa')
-                    return isSelected
-                      ? 'bg-muted text-foreground border-border'
-                      : 'hover:border-border/60';
-                  if (prio === 'Média')
-                    return isSelected
-                      ? 'bg-primary/10 text-primary border-primary/30'
-                      : 'hover:border-primary/20';
-                  if (prio === 'Alta')
-                    return isSelected
-                      ? 'bg-orange-500/10 text-orange-500 border-orange-500/30'
-                      : 'hover:border-orange-500/20';
-                  return isSelected
-                    ? 'bg-rose-500/10 text-rose-500 border-rose-500/30'
-                    : 'hover:border-rose-500/20';
+                  if (prio === 'Baixa') return isSelected ? 'bg-muted text-foreground border-border' : 'hover:border-border/60';
+                  if (prio === 'Média') return isSelected ? 'bg-primary/10 text-primary border-primary/30' : 'hover:border-primary/20';
+                  if (prio === 'Alta') return isSelected ? 'bg-orange-500/10 text-orange-500 border-orange-500/30' : 'hover:border-orange-500/20';
+                  return isSelected ? 'bg-rose-500/10 text-rose-500 border-rose-500/30' : 'hover:border-rose-500/20';
                 };
                 return (
                   <button
                     key={prio}
                     type='button'
                     onClick={() => setPriority(prio)}
-                    className={`flex-1 py-2 rounded-lg border text-[10px] font-bold transition-all ${getPrioColor()} ${
-                      isSelected ? 'border-2' : 'border-border text-muted-foreground'
-                    }`}
+                    className={`flex-1 py-2 rounded-lg border text-[10px] font-bold transition-all ${getPrioColor()} ${isSelected ? 'border-2' : 'border-border text-muted-foreground'}`}
                   >
                     {prio}
                   </button>
@@ -202,7 +147,6 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             </div>
           </div>
 
-          {/* Actions */}
           <div className='flex gap-3 pt-2'>
             <button
               type='button'

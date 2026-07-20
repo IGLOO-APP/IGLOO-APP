@@ -74,6 +74,35 @@ export interface Tenant {
   admission_date?: string;
   // Guarantee
   guarantee_type?: 'fiador' | 'seguro_fianca' | 'deposito_caucao' | 'outros';
+  // Tenant registration expanded fields
+  birth_date?: string;
+  marital_status?: string;
+  nationality?: string;
+  rg_issuer?: string;
+  rg_uf?: string;
+  cep?: string;
+  street?: string;
+  street_number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  residence_time?: string;
+  phone_commercial?: string;
+  other_income?: number;
+  adults_count?: number;
+  children_count?: number;
+  currently_pays_rent?: boolean;
+  current_rent_where?: string;
+  // Pessoa Jurídica
+  tenant_type?: 'pf' | 'pj';
+  company_legal_name?: string;
+  company_trade_name?: string;
+  company_state_registration?: string;
+  // Relations
+  spouse?: TenantSpouse;
+  references?: TenantReference[];
+  legal_representatives?: TenantLegalRepresentative[];
   // Onboarding
   onboarding_stage?: string;
   has_completed_onboarding?: boolean;
@@ -83,6 +112,7 @@ export interface Tenant {
   onboarding_inspection_status?: string;
   onboarding_profile_rejected_reason?: string;
   onboarding_documents_rejected_reason?: string;
+  owner_pix_key?: string;
   onboarding_documents_urls?: {
     rg_url?: string;
     rg_name?: string;
@@ -112,6 +142,46 @@ export interface Guarantor {
   rg_document_url?: string;
   income_proof_url?: string;
   status?: 'pendente' | 'aprovado' | 'reprovado';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TenantSpouse {
+  id?: string;
+  tenant_id: string;
+  name: string;
+  cpf?: string;
+  rg?: string;
+  birth_date?: string;
+  phone?: string;
+  occupation?: string;
+  monthly_income?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TenantReference {
+  id?: string;
+  tenant_id: string;
+  type: 'bancaria' | 'pessoal';
+  bank_name?: string;
+  bank_agency?: string;
+  bank_account?: string;
+  name?: string;
+  phone?: string;
+  relationship?: string;
+  created_at?: string;
+}
+
+export interface TenantLegalRepresentative {
+  id?: string;
+  tenant_id: string;
+  name: string;
+  cpf?: string;
+  rg?: string;
+  position?: string;
+  email?: string;
+  phone?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -148,14 +218,44 @@ export interface TenantProfileConfig {
   sections: {
     personal: {
       occupation: RequirementStatus;
+      birth_date: RequirementStatus;
+      marital_status: RequirementStatus;
+      nationality: RequirementStatus;
+      rg_issuer: RequirementStatus;
+    };
+    address: {
+      status: RequirementStatus;
+      previous_address: RequirementStatus;
     };
     residential: {
       vehicle: RequirementStatus;
       pets: RequirementStatus;
       residents: RequirementStatus;
+      adults_children: RequirementStatus;
+    };
+    professional: {
+      company_cnpj: RequirementStatus;
+      company_address: RequirementStatus;
+      other_income: RequirementStatus;
+      employment_type: RequirementStatus;
+      time_at_company: RequirementStatus;
+    };
+    financial: {
+      current_rent: RequirementStatus;
+    };
+    spouse: {
+      status: RequirementStatus;
+    };
+    references: {
+      bancaria: RequirementStatus;
+      pessoal: RequirementStatus;
     };
     emergency: {
-      status: RequirementStatus; // Controls the whole section
+      status: RequirementStatus;
+    };
+    legalEntity: {
+      status: RequirementStatus;
+      representatives: RequirementStatus;
     };
     sharedDocs: {
       contract: boolean;

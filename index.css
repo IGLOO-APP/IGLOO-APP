@@ -1,12 +1,18 @@
 @import '@fontsource-variable/geist';
 @import 'tw-animate-css';
 @import 'konsta/react/theme.css';
+/* Mobile-first adjustments for iOS zoom prevention */
+@media (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* ─── Liquid Glass System ─── */
   :root {
     /* Blob colours */
     --lg-blob-1: rgba(30, 80, 255, 0.55);

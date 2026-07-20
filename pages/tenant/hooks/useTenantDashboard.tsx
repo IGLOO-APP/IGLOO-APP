@@ -41,7 +41,6 @@ export function useTenantDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInspection, setShowInspection] = useState(false);
   const [pendingInspection, setPendingInspection] = useState<any | null>(null);
 
@@ -207,12 +206,14 @@ export function useTenantDashboard() {
     });
     observer.observe(document.documentElement, { attributes: true });
 
+    const abortController = new AbortController();
     const fetchData = async () => {
       if (!user?.id) return;
 
       try {
         setLoading(true);
         const data = await tenantService.getById(user.id.toString());
+        if (abortController.signal.aborted) return;
         setTenantData(data);
 
         if (!data) {
@@ -261,16 +262,6 @@ export function useTenantDashboard() {
 
           if (inspRes) setPendingInspection(inspRes);
 
-          const hasPendingContract = data.contract?.status === 'pending_signature';
-          const hasIncompleteProfile = !data.cpf || !data.name;
-          const hasPendingInspection = !!inspRes;
-
-          if (hasPendingContract || hasIncompleteProfile || hasPendingInspection) {
-            const onboardingSeen = sessionStorage.getItem(`onboarding_seen_${user.id}`);
-            if (!onboardingSeen) {
-              setShowOnboarding(true);
-            }
-          }
         }
       } catch (err) {
         console.error('Error fetching tenant dashboard data:', err);
@@ -281,7 +272,10 @@ export function useTenantDashboard() {
 
     fetchData();
 
-    return () => observer.disconnect();
+    return () => {
+      abortController.abort();
+      observer.disconnect();
+    };
   }, [user?.id]);
 
   const toggleTheme = () => {
@@ -300,12 +294,18 @@ export function useTenantDashboard() {
   };
 
   const handleCopyPix = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const pixKey = tenantData?.owner_pix_key || '';
+    if (pixKey) {
+      navigator.clipboard.writeText(pixKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      import('sonner').then(({ toast }) => toast.info('Chave Pix não disponível. Consulte o proprietário.'));
+    }
   };
 
   const handleCopyBarcode = () => {
-    navigator.clipboard.writeText('34191.79001 01043.510047 91020.150008 5 89230000015000');
+    import('sonner').then(({ toast }) => toast.info('Boleto não disponível para este pagamento.'));
     setInvoiceCopied(true);
     setTimeout(() => setInvoiceCopied(false), 2000);
   };
@@ -375,8 +375,6 @@ export function useTenantDashboard() {
     showNotifications,
     setShowNotifications,
     isDark,
-    showOnboarding,
-    setShowOnboarding,
     showInspection,
     setShowInspection,
     pendingInspection,

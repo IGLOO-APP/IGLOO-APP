@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { messageService } from '../../../services/messageService';
 import { supportService } from '../../../services/supportService';
@@ -275,9 +275,14 @@ export function useChat() {
     [user]
   );
 
+  // ── Stable activeChat reference ──
+  const activeChat = useMemo(() => 
+    chats.find((c) => c.id === activeChatId), 
+    [chats, activeChatId]
+  );
+
   useEffect(() => {
     if (activeChatId) {
-      const activeChat = chats.find((c) => c.id === activeChatId);
       if (activeChat) {
         loadMessages(activeChatId, activeChat.category);
       }
@@ -356,19 +361,26 @@ export function useChat() {
   );
 
   useEffect(() => {
-    if (activeChatId) {
-      const chat = chats.find((c) => c.id === activeChatId);
-      if (chat?.category === 'support') {
-        const ticketId = chat.dbId;
-        if (ticketId && ticketId !== 'virtual') {
-          supportService.markMessagesAsRead(ticketId);
-        }
-      } else {
-        messageService.markAsRead(activeChatId);
+    if (!activeChatId) return;
+
+    const chat = chats.find((c) => c.id === activeChatId);
+    if (!chat) return;
+
+    // Ações de leitura no backend
+    if (chat.category === 'support') {
+      const ticketId = chat.dbId;
+      if (ticketId && ticketId !== 'virtual') {
+        supportService.markMessagesAsRead(ticketId);
       }
-      setChats((prev) => prev.map((c) => (c.id === activeChatId ? { ...c, unreadCount: 0 } : c)));
+    } else {
+      messageService.markAsRead(activeChatId);
     }
-  }, [activeChatId, chats]);
+
+    // Atualização de estado segura
+    setChats((prev) =>
+      prev.map((c) => (c.id === activeChatId && c.unreadCount !== 0 ? { ...c, unreadCount: 0 } : c))
+    );
+  }, [activeChatId]); // Removido 'chats' da dependência para evitar loop infinito ao alternar chats
 
   const activeMessages = chats.find((c) => c.id === activeChatId)?.messages;
   useEffect(() => {
@@ -527,8 +539,6 @@ export function useChat() {
 
     return matchesSearch && matchesFilter && matchesPriority && matchesProperty;
   });
-
-  const activeChat = chats.find((c) => c.id === activeChatId);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {

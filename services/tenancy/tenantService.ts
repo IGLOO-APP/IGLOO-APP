@@ -42,7 +42,10 @@ export const tenantService = {
         contracts:contracts!contracts_tenant_id_fkey(
           *,
           property:properties(*)
-        )
+        ),
+        spouse:tenant_spouses(*),
+        references:tenant_references(*),
+        legal_representatives:tenant_legal_representatives(*)
       `
       )
       .or(`id.eq.${id},email.eq.${id}`)
@@ -79,12 +82,46 @@ export const tenantService = {
           )
         : null,
       admission_date: tenantData.admissionDate || tenantData.admission_date,
+      birth_date: tenantData.birthDate || tenantData.birth_date,
+      marital_status: tenantData.maritalStatus || tenantData.marital_status,
+      nationality: tenantData.nationality,
+      rg_issuer: tenantData.rgIssuer || tenantData.rg_issuer,
+      rg_uf: tenantData.rgUf || tenantData.rg_uf,
+      cep: tenantData.cep,
+      street: tenantData.street,
+      street_number: tenantData.streetNumber || tenantData.street_number,
+      complement: tenantData.complement,
+      neighborhood: tenantData.neighborhood,
+      city: tenantData.city,
+      state: tenantData.state,
+      residence_time: tenantData.residenceTime || tenantData.residence_time,
+      phone_commercial: tenantData.phoneCommercial || tenantData.phone_commercial,
+      other_income: tenantData.otherIncome
+        ? parseFloat(String(tenantData.otherIncome).replace(/[^0-9,.]/g, '').replace(',', '.'))
+        : null,
+      adults_count: tenantData.adultsCount || tenantData.adults_count || 1,
+      children_count: tenantData.childrenCount || tenantData.children_count || 0,
+      currently_pays_rent: tenantData.currentlyPaysRent ?? tenantData.currently_pays_rent ?? false,
+      current_rent_where: tenantData.currentRentWhere || tenantData.current_rent_where,
+      tenant_type: tenantData.tenantType || tenantData.tenant_type || 'pf',
+      company_legal_name: tenantData.companyLegalName || tenantData.company_legal_name,
+      company_trade_name: tenantData.companyTradeName || tenantData.company_trade_name,
+      company_state_registration: tenantData.companyStateRegistration || tenantData.company_state_registration,
       property_id: tenantData.propertyId,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     if (error) {
       handleServiceError(error, 'Erro ao cadastrar inquilino');
+    }
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateProfile(id: string, data: any): Promise<void> {
+    const { error } = await supabase.from('profiles').update(data).eq('id', id);
+
+    if (error) {
+      handleServiceError(error, 'Erro ao atualizar perfil do inquilino');
     }
   },
 
@@ -110,6 +147,9 @@ export const tenantService = {
           )
         : null,
       admission_date: tenantData.admissionDate || tenantData.admission_date,
+      birth_date: tenantData.birthDate || tenantData.birth_date,
+      marital_status: tenantData.maritalStatus || tenantData.marital_status,
+      tenant_type: tenantData.tenantType || tenantData.tenant_type || 'pf',
       property_id: tenantData.propertyId,
       is_pending: true,
       created_at: new Date().toISOString(),

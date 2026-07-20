@@ -4,6 +4,8 @@ import { useAuth } from '../../../context/AuthContext';
 import { tenantConfigService, DEFAULT_CONFIG } from '../../../services/tenancy/tenantConfigService';
 import { profileService } from '../../../services/profileService';
 import { guarantorService } from '../../../services/tenancy/guarantorService';
+import { spouseService } from '../../../services/tenancy/spouseService';
+import { referenceService } from '../../../services/tenancy/referenceService';
 import { storageService } from '../../../services/storageService';
 import { RequirementStatus, Guarantor } from '../../../types';
 
@@ -39,6 +41,7 @@ export const useTenantProfile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [currentDocKey, setCurrentDocKey] = useState<string | null>(null);
+  const pendingDocFiles = useRef<Record<string, File>>({});
 
   const [profileData, setProfileData] = useState(() => ({
     name: user?.name || profile?.name || '',
@@ -46,8 +49,11 @@ export const useTenantProfile = () => {
     phone: profile?.phone || '',
     cpf: profile?.cpf || '',
     rg: profile?.rg || '',
-    birthDate: '',
-    maritalStatus: 'Solteiro(a)',
+    birthDate: profile?.birth_date || '',
+    maritalStatus: profile?.marital_status || '',
+    nationality: profile?.nationality || '',
+    rgIssuer: profile?.rg_issuer || '',
+    rgUf: profile?.rg_uf || '',
     residentsCount: '1',
     hasPets: 'Não',
     pets: '',
@@ -56,15 +62,47 @@ export const useTenantProfile = () => {
     company_cnpj: profile?.company_cnpj || '',
     company_address: profile?.company_address || '',
     monthlyIncome: profile?.monthly_income ? `R$ ${profile.monthly_income.toFixed(2)}` : '',
+    otherIncome: profile?.other_income ? `R$ ${profile.other_income.toFixed(2)}` : '',
     employmentType: 'CLT',
     admission_date: profile?.admission_date || '',
-    cep: '',
-    address: '',
-    residenceTime: '',
+    cep: profile?.cep || '',
+    street: profile?.street || '',
+    streetNumber: profile?.street_number || '',
+    complement: profile?.complement || '',
+    neighborhood: profile?.neighborhood || '',
+    city: profile?.city || '',
+    state: profile?.state || '',
+    residenceTime: profile?.residence_time || '',
+    phoneCommercial: profile?.phone_commercial || '',
+    adultsCount: String(profile?.adults_count || 1),
+    childrenCount: String(profile?.children_count || 0),
+    currentlyPaysRent: profile?.currently_pays_rent ? 'Sim' : 'Não',
+    currentRentWhere: profile?.current_rent_where || '',
+    tenantType: profile?.tenant_type || 'pf',
+    companyLegalName: profile?.company_legal_name || '',
+    companyTradeName: profile?.company_trade_name || '',
+    companyStateRegistration: profile?.company_state_registration || '',
     vehiclePlate: '',
     residents: '',
     emergencyName: '',
     emergencyPhone: '',
+    hasSpouse: profile?.spouse?.name ? 'Sim' : 'Não',
+    spouseName: profile?.spouse?.name || '',
+    spouseCpf: profile?.spouse?.cpf || '',
+    spouseRg: profile?.spouse?.rg || '',
+    spouseBirthDate: profile?.spouse?.birth_date || '',
+    spousePhone: profile?.spouse?.phone || '',
+    spouseOccupation: profile?.spouse?.occupation || '',
+    spouseIncome: profile?.spouse?.monthly_income ? `R$ ${(profile.spouse.monthly_income).toFixed(2)}` : '',
+    refBankName: '',
+    refBankAgency: '',
+    refBankAccount: '',
+    refPersonal1Name: '',
+    refPersonal1Phone: '',
+    refPersonal1Relation: '',
+    refPersonal2Name: '',
+    refPersonal2Phone: '',
+    refPersonal2Relation: '',
     avatar: user?.avatar || profile?.avatar_url || 'https://i.pravatar.cc/150?u=tenant',
     lastPasswordChange: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 7),
   }));
@@ -78,6 +116,11 @@ export const useTenantProfile = () => {
         phone: profile.phone || prev.phone,
         cpf: profile.cpf || prev.cpf,
         rg: profile.rg || prev.rg,
+        birthDate: profile.birth_date || prev.birthDate,
+        maritalStatus: profile.marital_status || prev.maritalStatus,
+        nationality: profile.nationality || prev.nationality,
+        rgIssuer: profile.rg_issuer || prev.rgIssuer,
+        rgUf: profile.rg_uf || prev.rgUf,
         occupation: profile.occupation || prev.occupation,
         employer: profile.company_name || prev.employer,
         company_cnpj: profile.company_cnpj || prev.company_cnpj,
@@ -85,8 +128,59 @@ export const useTenantProfile = () => {
         monthlyIncome: profile.monthly_income
           ? `R$ ${profile.monthly_income.toFixed(2)}`
           : prev.monthlyIncome,
+        otherIncome: profile.other_income
+          ? `R$ ${profile.other_income.toFixed(2)}`
+          : prev.otherIncome,
         admission_date: profile.admission_date || prev.admission_date,
+        cep: profile.cep || prev.cep,
+        street: profile.street || prev.street,
+        streetNumber: profile.street_number || prev.streetNumber,
+        complement: profile.complement || prev.complement,
+        neighborhood: profile.neighborhood || prev.neighborhood,
+        city: profile.city || prev.city,
+        state: profile.state || prev.state,
+        residenceTime: profile.residence_time || prev.residenceTime,
+        phoneCommercial: profile.phone_commercial || prev.phoneCommercial,
+        adultsCount: profile.adults_count ? String(profile.adults_count) : prev.adultsCount,
+        childrenCount: profile.children_count ? String(profile.children_count) : prev.childrenCount,
+        currentlyPaysRent: profile.currently_pays_rent ? 'Sim' : 'Não',
+        currentRentWhere: profile.current_rent_where || prev.currentRentWhere,
+        tenantType: profile.tenant_type || prev.tenantType,
+        companyLegalName: profile.company_legal_name || prev.companyLegalName,
+        companyTradeName: profile.company_trade_name || prev.companyTradeName,
+        companyStateRegistration: profile.company_state_registration || prev.companyStateRegistration,
+        spouseName: profile.spouse?.name || prev.spouseName,
+        spouseCpf: profile.spouse?.cpf || prev.spouseCpf,
+        spouseRg: profile.spouse?.rg || prev.spouseRg,
+        spouseBirthDate: profile.spouse?.birth_date || prev.spouseBirthDate,
+        spousePhone: profile.spouse?.phone || prev.spousePhone,
+        spouseOccupation: profile.spouse?.occupation || prev.spouseOccupation,
+        spouseIncome: profile.spouse?.monthly_income
+          ? `R$ ${profile.spouse.monthly_income.toFixed(2)}`
+          : prev.spouseIncome,
+        hasSpouse: profile.spouse?.name ? 'Sim' : 'Não',
       }));
+      const bankRef = profile.references?.find((r: { type: string }) => r.type === 'bancaria');
+      if (bankRef) {
+        setProfileData((prev) => ({
+          ...prev,
+          refBankName: bankRef.bank_name || prev.refBankName,
+          refBankAgency: bankRef.bank_agency || prev.refBankAgency,
+          refBankAccount: bankRef.bank_account || prev.refBankAccount,
+        }));
+      }
+      const personalRefs = profile.references?.filter((r: { type: string }) => r.type === 'pessoal') || [];
+      if (personalRefs.length > 0) {
+        setProfileData((prev) => ({
+          ...prev,
+          refPersonal1Name: personalRefs[0]?.name || prev.refPersonal1Name,
+          refPersonal1Phone: personalRefs[0]?.phone || prev.refPersonal1Phone,
+          refPersonal1Relation: personalRefs[0]?.relationship || prev.refPersonal1Relation,
+          refPersonal2Name: personalRefs[1]?.name || prev.refPersonal2Name,
+          refPersonal2Phone: personalRefs[1]?.phone || prev.refPersonal2Phone,
+          refPersonal2Relation: personalRefs[1]?.relationship || prev.refPersonal2Relation,
+        }));
+      }
     }
   }, [profile]);
 
@@ -141,7 +235,11 @@ export const useTenantProfile = () => {
     income: { status: 'pending', date: null },
     residence: { status: 'pending', date: null },
     selfie: { status: 'pending', date: null },
+    certidaoEstadoCivil: { status: 'pending', date: null },
     guarantee: { status: 'pending', date: null },
+    spouseRg: { status: 'pending', date: null },
+    spouseIncome: { status: 'pending', date: null },
+    spouseMarriageCert: { status: 'pending', date: null },
   });
 
   useEffect(() => {
@@ -174,26 +272,53 @@ export const useTenantProfile = () => {
     }
   }, [profile?.onboarding_documents_urls, profile?.cpf]);
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const parseIncome = (v: string): number | null => {
+    if (!v) return null;
+    return parseFloat(v.replace(/[R$\s.]/g, '').replace(',', '.'));
+  };
+
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!user?.id) return;
     setIsSaving(true);
     try {
-      const monthlyIncomeNum = profileData.monthlyIncome
-        ? parseFloat(profileData.monthlyIncome.replace(/[R$\s.]/g, '').replace(',', '.'))
-        : null;
+      const monthlyIncomeNum = parseIncome(profileData.monthlyIncome);
+      const otherIncomeNum = parseIncome(profileData.otherIncome);
 
       await profileService.update(user.id, {
         name: profileData.name,
         phone: profileData.phone,
         cpf: profileData.cpf,
         rg: profileData.rg,
+        birth_date: profileData.birthDate || null,
+        marital_status: profileData.maritalStatus || null,
+        nationality: profileData.nationality || null,
+        rg_issuer: profileData.rgIssuer || null,
+        rg_uf: profileData.rgUf || null,
         company_name: profileData.employer,
         company_cnpj: profileData.company_cnpj || null,
         company_address: profileData.company_address || null,
         occupation: profileData.occupation,
         monthly_income: monthlyIncomeNum,
+        other_income: otherIncomeNum,
         admission_date: profileData.admission_date || null,
+        cep: profileData.cep || null,
+        street: profileData.street || null,
+        street_number: profileData.streetNumber || null,
+        complement: profileData.complement || null,
+        neighborhood: profileData.neighborhood || null,
+        city: profileData.city || null,
+        state: profileData.state || null,
+        residence_time: profileData.residenceTime || null,
+        phone_commercial: profileData.phoneCommercial || null,
+        adults_count: parseInt(profileData.adultsCount) || 1,
+        children_count: parseInt(profileData.childrenCount) || 0,
+        currently_pays_rent: profileData.currentlyPaysRent === 'Sim',
+        current_rent_where: profileData.currentRentWhere || null,
+        tenant_type: profileData.tenantType || 'pf',
+        company_legal_name: profileData.companyLegalName || null,
+        company_trade_name: profileData.companyTradeName || null,
+        company_state_registration: profileData.companyStateRegistration || null,
         guarantee_type: guaranteeType || null,
         onboarding_profile_status: 'submitted',
         onboarding_stage: 'documents',
@@ -230,6 +355,59 @@ export const useTenantProfile = () => {
         await guarantorService.delete(user.id);
       }
 
+      const spouseIncomeNum = parseIncome(profileData.spouseIncome);
+      if (profileData.hasSpouse === 'Sim' && profileData.spouseName) {
+        await spouseService.upsert({
+          tenant_id: user.id,
+          name: profileData.spouseName,
+          cpf: profileData.spouseCpf?.replace(/\D/g, '') || undefined,
+          rg: profileData.spouseRg || undefined,
+          birth_date: profileData.spouseBirthDate || undefined,
+          phone: profileData.spousePhone || undefined,
+          occupation: profileData.spouseOccupation || undefined,
+          monthly_income: spouseIncomeNum ?? undefined,
+        });
+      } else if (profile?.spouse?.id) {
+        await spouseService.delete(user.id);
+      }
+
+      const refs: { type: 'bancaria' | 'pessoal'; bank_name?: string; bank_agency?: string; bank_account?: string; name?: string; phone?: string; relationship?: string }[] = [];
+      if (profileData.refBankName) {
+        refs.push({ type: 'bancaria', bank_name: profileData.refBankName, bank_agency: profileData.refBankAgency, bank_account: profileData.refBankAccount });
+      }
+      if (profileData.refPersonal1Name) {
+        refs.push({ type: 'pessoal', name: profileData.refPersonal1Name, phone: profileData.refPersonal1Phone, relationship: profileData.refPersonal1Relation });
+      }
+      if (profileData.refPersonal2Name) {
+        refs.push({ type: 'pessoal', name: profileData.refPersonal2Name, phone: profileData.refPersonal2Phone, relationship: profileData.refPersonal2Relation });
+      }
+      if (refs.length > 0) {
+        await referenceService.upsertMany(user.id, refs);
+      }
+
+      const pendingKeys = Object.keys(pendingDocFiles.current);
+      if (pendingKeys.length > 0) {
+        const uploadResults: Record<string, string> = {};
+        for (const key of pendingKeys) {
+          const file = pendingDocFiles.current[key];
+          const path = `${user.id}/doc_${key}_${Date.now()}_${file.name}`;
+          const url = await storageService.uploadFile('tenant-documents', path, file);
+          if (url) {
+            uploadResults[`${key}_url`] = url;
+            uploadResults[`${key}_name`] = file.name;
+          }
+        }
+        if (Object.keys(uploadResults).length > 0) {
+          await profileService.update(user.id, {
+            onboarding_documents_urls: {
+              ...profile?.onboarding_documents_urls,
+              ...uploadResults,
+            },
+          });
+        }
+        pendingDocFiles.current = {};
+      }
+
       queryClient.invalidateQueries({ queryKey: ['tenant-profile', user.id] });
       setIsEditing(false);
       setIsSaving(false);
@@ -258,6 +436,7 @@ export const useTenantProfile = () => {
   const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && currentDocKey) {
+      pendingDocFiles.current[currentDocKey] = file;
       setDocuments({
         ...documents,
         [currentDocKey]: { status: 'review', date: new Date().toLocaleDateString() },
@@ -433,6 +612,8 @@ export const useTenantProfile = () => {
     return `${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
   };
 
+  const spouse = profile?.spouse || null;
+
   return {
     profileData,
     setProfileData,
@@ -470,5 +651,6 @@ export const useTenantProfile = () => {
     guarantorFileResidence,
     setGuarantorFileResidence,
     calculateTimeAtCompany,
+    spouse,
   };
 };

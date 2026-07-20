@@ -56,6 +56,13 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
     | Record<string, unknown>
     | undefined;
 
+  const spouseRaw = t.spouse;
+  const spouseData = Array.isArray(spouseRaw)
+    ? (spouseRaw as Record<string, unknown>[])[0]
+    : (spouseRaw as Record<string, unknown> | undefined);
+  const refsData = t.references as Record<string, unknown>[] | undefined;
+  const repsData = t.legal_representatives as Record<string, unknown>[] | undefined;
+
   return {
     id: t.id as string,
     name: (t.name as string) || 'Sem Nome',
@@ -69,6 +76,48 @@ export const mapTenant = (t: Record<string, unknown>): Tenant => {
     occupation: t.occupation as string | undefined,
     monthly_income: t.monthly_income as number | undefined,
     admission_date: t.admission_date as string | undefined,
+    birth_date: t.birth_date as string | undefined,
+    marital_status: t.marital_status as string | undefined,
+    nationality: t.nationality as string | undefined,
+    rg_issuer: t.rg_issuer as string | undefined,
+    rg_uf: t.rg_uf as string | undefined,
+    cep: t.cep as string | undefined,
+    street: t.street as string | undefined,
+    street_number: t.street_number as string | undefined,
+    complement: t.complement as string | undefined,
+    neighborhood: t.neighborhood as string | undefined,
+    city: t.city as string | undefined,
+    state: t.state as string | undefined,
+    residence_time: t.residence_time as string | undefined,
+    phone_commercial: t.phone_commercial as string | undefined,
+    other_income: t.other_income as number | undefined,
+    adults_count: t.adults_count as number | undefined,
+    children_count: t.children_count as number | undefined,
+    currently_pays_rent: t.currently_pays_rent as boolean | undefined,
+    current_rent_where: t.current_rent_where as string | undefined,
+    tenant_type: (t.tenant_type as 'pf' | 'pj') || 'pf',
+    company_legal_name: t.company_legal_name as string | undefined,
+    company_trade_name: t.company_trade_name as string | undefined,
+    company_state_registration: t.company_state_registration as string | undefined,
+    spouse: spouseData && spouseData.id
+      ? ({
+          id: spouseData.id as string,
+          tenant_id: spouseData.tenant_id as string,
+          name: spouseData.name as string,
+          cpf: spouseData.cpf as string | undefined,
+          rg: spouseData.rg as string | undefined,
+          birth_date: spouseData.birth_date as string | undefined,
+          phone: spouseData.phone as string | undefined,
+          occupation: spouseData.occupation as string | undefined,
+          monthly_income: spouseData.monthly_income as number | undefined,
+        } as Tenant['spouse'])
+      : undefined,
+    references: refsData
+      ? (refsData as unknown as Tenant['references'])
+      : undefined,
+    legal_representatives: repsData
+      ? (repsData as unknown as Tenant['legal_representatives'])
+      : undefined,
     guarantee_type: t.guarantee_type as Tenant['guarantee_type'],
     image: t.avatar_url as string | undefined,
     status: (!activeContract

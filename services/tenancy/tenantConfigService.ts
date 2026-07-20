@@ -16,14 +16,44 @@ export const DEFAULT_CONFIG: Omit<TenantProfileConfig, 'propertyId'> = {
   sections: {
     personal: {
       occupation: 'required',
+      birth_date: 'required',
+      marital_status: 'required',
+      nationality: 'optional',
+      rg_issuer: 'optional',
+    },
+    address: {
+      status: 'required',
+      previous_address: 'optional',
     },
     residential: {
       vehicle: 'required',
       pets: 'required',
       residents: 'required',
+      adults_children: 'optional',
+    },
+    professional: {
+      company_cnpj: 'optional',
+      company_address: 'optional',
+      other_income: 'optional',
+      employment_type: 'required',
+      time_at_company: 'optional',
+    },
+    financial: {
+      current_rent: 'optional',
+    },
+    spouse: {
+      status: 'optional',
+    },
+    references: {
+      bancaria: 'optional',
+      pessoal: 'optional',
     },
     emergency: {
       status: 'required',
+    },
+    legalEntity: {
+      status: 'hidden',
+      representatives: 'hidden',
     },
     sharedDocs: {
       contract: true,
@@ -49,7 +79,7 @@ export const TEMPLATES = {
       ...DEFAULT_CONFIG,
       sections: {
         ...DEFAULT_CONFIG.sections,
-        personal: { occupation: 'hidden' as RequirementStatus },
+        personal: { ...DEFAULT_CONFIG.sections.personal, occupation: 'hidden' as RequirementStatus },
         residential: {
           ...DEFAULT_CONFIG.sections.residential,
           vehicle: 'hidden' as RequirementStatus,
@@ -58,6 +88,9 @@ export const TEMPLATES = {
           ...DEFAULT_CONFIG.sections.requiredDocs,
           guarantee: 'hidden' as RequirementStatus,
         },
+        spouse: { status: 'hidden' as RequirementStatus },
+        references: { bancaria: 'hidden' as RequirementStatus, pessoal: 'hidden' as RequirementStatus },
+        financial: { current_rent: 'hidden' as RequirementStatus },
       },
     },
   },

@@ -112,7 +112,7 @@ export const TenantOnboardingChecklist: React.FC<TenantOnboardingChecklistProps>
       contractService.getWithDetails(tenant.contract.id.toString()).then((data) => {
         if (data) setFullContract(data);
         setLoadingContract(false);
-      });
+      }).catch(() => setLoadingContract(false));
     }
   }, [expandedStep, tenant.contract?.id, fullContract]);
 

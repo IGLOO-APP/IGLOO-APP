@@ -104,7 +104,8 @@ export const profileService = {
     return created;
   },
 
-  async update(id: string, updates: ProfileUpdate): Promise<Profile> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async update(id: string, updates: any): Promise<Profile> {
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
@@ -120,7 +121,8 @@ export const profileService = {
     return data;
   },
 
-  async updateByEmail(email: string, updates: ProfileUpdate): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateByEmail(email: string, updates: any): Promise<void> {
     const { error } = await supabase.from('profiles').update(updates).eq('email', email);
 
     if (error) {

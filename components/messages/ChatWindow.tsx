@@ -354,10 +354,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <button
               type='submit'
               disabled={!inputText.trim()}
-              className='h-10 w-10 rounded-xl bg-foreground disabled:bg-muted text-background flex items-center justify-center shadow-md hover:scale-105 active:scale-90 transition-all shrink-0'
+              className='h-12 w-12 rounded-xl bg-foreground disabled:bg-muted text-background flex items-center justify-center shadow-md hover:scale-105 active:scale-90 transition-all shrink-0'
               aria-label='Enviar'
             >
-              <Send size={16} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
+              <Send size={18} strokeWidth={2.5} className={inputText.trim() ? 'ml-0.5' : ''} />
             </button>
           </form>
         </div>

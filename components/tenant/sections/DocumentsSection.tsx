@@ -236,6 +236,101 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             </div>
           </div>
 
+          {/* Selfie + Certidão Estado Civil */}
+          <div className='pt-2'>
+            <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
+              Documentos Complementares
+            </p>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className='p-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-surface-dark flex flex-col items-center justify-center text-center space-y-2 relative group hover:border-primary/50 transition-colors'>
+                <input
+                  type='file'
+                  accept='image/*,application/pdf'
+                  onChange={(e) => docs.setSelfieFile(e.target.files?.[0] || null)}
+                  className='absolute inset-0 opacity-0 cursor-pointer'
+                />
+                <div className='w-10 h-10 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                  <Upload size={20} />
+                </div>
+                <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                  {docs.selfieFile ? docs.selfieFile.name : 'Selfie com Documento'}
+                </span>
+                <span className='text-[10px] text-slate-400'>Segurando RG/CNH ao lado do rosto</span>
+              </div>
+              <div className='p-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-surface-dark flex flex-col items-center justify-center text-center space-y-2 relative group hover:border-primary/50 transition-colors'>
+                <input
+                  type='file'
+                  accept='image/*,application/pdf'
+                  onChange={(e) => docs.setCertidaoEstadoCivilFile(e.target.files?.[0] || null)}
+                  className='absolute inset-0 opacity-0 cursor-pointer'
+                />
+                <div className='w-10 h-10 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                  <Upload size={20} />
+                </div>
+                <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                  {docs.certidaoEstadoCivilFile ? docs.certidaoEstadoCivilFile.name : 'Certidão de Estado Civil'}
+                </span>
+                <span className='text-[10px] text-slate-400'>Casamento, nascimento ou união estável</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cônjuge Document Uploads */}
+          {tenant.marital_status === 'casado' && (
+            <div className='pt-2'>
+              <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
+                Documentos do Cônjuge
+              </p>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <div className='p-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-surface-dark flex flex-col items-center justify-center text-center space-y-2 relative group hover:border-primary/50 transition-colors'>
+                  <input
+                    type='file'
+                    accept='image/*,application/pdf'
+                    onChange={(e) => docs.setSpouseRgFile(e.target.files?.[0] || null)}
+                    className='absolute inset-0 opacity-0 cursor-pointer'
+                  />
+                  <div className='w-10 h-10 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                    <Upload size={20} />
+                  </div>
+                  <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                    {docs.spouseRgFile ? docs.spouseRgFile.name : 'RG do Cônjuge'}
+                  </span>
+                  <span className='text-[10px] text-slate-400'>PDF, JPG ou PNG</span>
+                </div>
+                <div className='p-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-surface-dark flex flex-col items-center justify-center text-center space-y-2 relative group hover:border-primary/50 transition-colors'>
+                  <input
+                    type='file'
+                    accept='image/*,application/pdf'
+                    onChange={(e) => docs.setSpouseIncomeFile(e.target.files?.[0] || null)}
+                    className='absolute inset-0 opacity-0 cursor-pointer'
+                  />
+                  <div className='w-10 h-10 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                    <Upload size={20} />
+                  </div>
+                  <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                    {docs.spouseIncomeFile ? docs.spouseIncomeFile.name : 'Comp. Renda do Cônjuge'}
+                  </span>
+                  <span className='text-[10px] text-slate-400'>Holerite ou declaração</span>
+                </div>
+                <div className='p-4 border border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white dark:bg-surface-dark flex flex-col items-center justify-center text-center space-y-2 relative group hover:border-primary/50 transition-colors'>
+                  <input
+                    type='file'
+                    accept='image/*,application/pdf'
+                    onChange={(e) => docs.setSpouseMarriageCertFile(e.target.files?.[0] || null)}
+                    className='absolute inset-0 opacity-0 cursor-pointer'
+                  />
+                  <div className='w-10 h-10 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors'>
+                    <Upload size={20} />
+                  </div>
+                  <span className='text-xs font-bold text-slate-700 dark:text-slate-300'>
+                    {docs.spouseMarriageCertFile ? docs.spouseMarriageCertFile.name : 'Certidão de Casamento'}
+                  </span>
+                  <span className='text-[10px] text-slate-400'>PDF, JPG ou PNG</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {docs.guaranteeType === 'deposito_caucao' && docs.ownerConfig && (
             <div className='p-5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-2xl space-y-4'>
               <p className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2'>

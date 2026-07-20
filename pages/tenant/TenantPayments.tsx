@@ -47,7 +47,7 @@ interface Payment {
 
 const TenantPayments: React.FC = () => {
   const { user } = useAuth();
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tenantData, setTenantData] = useState<any | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -72,14 +72,12 @@ const TenantPayments: React.FC = () => {
     try {
       setLoading(true);
       const { tenantService } = await import('../../services/tenancy/tenantService');
+      const { MONTH_NAMES: monthNames } = await import('../../utils/formatters');
       const tData = await tenantService.getById(user.id.toString());
       setTenantData(tData);
 
       if (tData?.contract?.id) {
         const rawPayments = await tenantService.getPayments(tData.contract.id.toString());
-
-        // Transform real payments for UI
-        const { MONTH_NAMES: monthNames } = await import('../../utils/formatters');
 
         const transformed: Payment[] = rawPayments.map((p) => {
           const dDate = new Date(p.due_date);
@@ -198,7 +196,8 @@ const TenantPayments: React.FC = () => {
       setStep('success');
     } catch (error) {
       console.error(error);
-      alert('Erro ao processar pagamento');
+      const { toast } = await import('sonner');
+      toast.error('Erro ao processar pagamento');
     } finally {
       setIsPaying(false);
     }
@@ -244,6 +243,17 @@ const TenantPayments: React.FC = () => {
   const totalPaidPaymentsCount = payments.filter(
     (p) => p.status === 'paid' || p.status === 'late'
   ).length;
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <div className='flex flex-col items-center gap-3'>
+          <div className='w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin' />
+          <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col h-full bg-background-light dark:bg-background-dark'>
