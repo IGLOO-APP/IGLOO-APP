@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   Receipt,
@@ -7,17 +7,14 @@ import {
   LifeBuoy,
   Settings as SettingsIcon,
   FileText,
-  Lock,
-  Zap,
   MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { UserButton } from '@clerk/clerk-react';
-import { Toolbar, Tabbar, TabbarLink } from 'konsta/react';
 import { tenantService } from '../services/tenancy/tenantService';
 import { inspectionService } from '../services/maintenance/inspectionService';
-import { preloadRoute } from '../lib/routePreloader';
 import { TopBar } from './layout/TopBar';
+import { TenantSidebar } from './tenant/TenantSidebar';
+import { TenantMobileNav } from './tenant/TenantMobileNav';
 
 const TenantLayout: React.FC = () => {
   const { user } = useAuth();
@@ -39,9 +36,7 @@ const TenantLayout: React.FC = () => {
 
         if (data.property_id) {
           const inspections = await inspectionService.getByProperty(data.property_id);
-          const pending = inspections.find((i) =>
-            ['Pendente', 'Em Revisão'].includes(i.status)
-          );
+          const pending = inspections.find((i) => ['Pendente', 'Em Revisão'].includes(i.status));
           setPendingInspection(pending || null);
         } else {
           setPendingInspection(null);
@@ -50,7 +45,6 @@ const TenantLayout: React.FC = () => {
         const hasActiveContract = data.contract?.status === 'active';
         const hasCpf = !!data.cpf;
 
-        // Check if ANY step is rejected or pending
         const hasRejectedProfile = data.onboarding_profile_status === 'rejected';
         const hasRejectedDocuments = data.onboarding_documents_status === 'rejected';
         const hasRejectedContract = data.onboarding_contract_status === 'rejected';
@@ -102,6 +96,7 @@ const TenantLayout: React.FC = () => {
       label: 'Início',
       icon: Home,
       description: 'Painel principal',
+      disabled: false,
     },
     {
       path: '/tenant/contract',
@@ -169,118 +164,21 @@ const TenantLayout: React.FC = () => {
       className='flex h-full w-full overflow-hidden text-foreground relative gap-5'
       style={{ background: 'transparent' }}
     >
-      {/* Blob background */}
       <div className='lg-blob-field' aria-hidden='true' />
       <div className='lg-blob-3' aria-hidden='true' />
 
-      {/* ─── Desktop Sidebar ─── */}
-      <aside
-        className='hidden md:flex flex-col w-64 shrink-0 relative z-10 lg-sidebar pl-5'
-        style={{ background: 'transparent' }}
-      >
-        <div className='px-6 mb-6 mt-4'>
-          <Link to='/tenant' className='inline-block'>
-            <h1 className='font-sans text-4xl font-bold tracking-tight text-foreground transition-colors duration-200'>
-              Igloo
-            </h1>
-          </Link>
-        </div>
+      <TenantSidebar
+        navItems={navItems}
+        userName={user?.name}
+        onboardingRequired={isOnboardingRequired}
+      />
 
-        <nav className='flex-1 overflow-y-auto scroll-smooth custom-scrollbar'>
-          <ul className='flex flex-col gap-0.5 px-6'>
-            <p className='px-4 mb-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]'>
-              Menu Principal
-            </p>
-            {navItems.map((item) => {
-              const isDisabled = item.disabled;
-
-              if (isDisabled) {
-                return (
-                  <li key={item.path}>
-                    <div
-                      title='Complete o onboarding para desbloquear este menu'
-                      className='flex items-center gap-4 px-6 py-3 rounded-xl text-sidebar-foreground/40 cursor-not-allowed select-none'
-                    >
-                      <item.icon size={20} strokeWidth={1.8} />
-                      <span className='text-sm font-medium'>{item.label}</span>
-                      <Lock size={12} strokeWidth={1.8} className='ml-auto shrink-0' />
-                    </div>
-                  </li>
-                );
-              }
-
-              return (
-                <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    end={item.path === '/tenant'}
-                    onMouseEnter={() => preloadRoute(item.path)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-4 px-6 py-3 rounded-xl transition-all duration-200 ${
-                        isActive
-                          ? 'sidebar-item-active'
-                          : 'text-sidebar-foreground/70 hover:text-white hover:bg-white/[0.04]'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon
-                          size={20}
-                          strokeWidth={1.8}
-                          className={`transition-colors duration-200 ${
-                            isActive ? 'text-white' : 'text-sidebar-foreground/50'
-                          }`}
-                        />
-                        <span className='text-sm font-medium'>{item.label}</span>
-                      </>
-                    )}
-                  </NavLink>
-                </li>
-              );
-            })}
-            {isOnboardingRequired && (
-              <li className='px-6 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20'>
-                <div className='flex items-center gap-2'>
-                  <Zap size={13} strokeWidth={1.8} className='text-amber-500 shrink-0' />
-                  <span className='text-[10px] font-semibold text-amber-400 uppercase tracking-[0.1em]'>
-                    Complete o cadastro
-                  </span>
-                </div>
-              </li>
-            )}
-          </ul>
-        </nav>
-
-        {/* Bottom Section: Profile */}
-        <div className='px-6 flex flex-col gap-2 pt-3 border-t border-sidebar-border mt-auto relative z-10'>
-          <Link to='/tenant/settings' className='flex items-center gap-3 group/profile'>
-            <div className='pointer-events-none transition-transform duration-200 group-hover/profile:scale-105'>
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: 'w-9 h-9 rounded-full',
-                    userButtonTrigger: 'pointer-events-none',
-                  },
-                }}
-              />
-            </div>
-            <div className='flex flex-col min-w-0'>
-              <span className='text-sm font-semibold text-foreground truncate group-hover/profile:text-primary transition-colors duration-200'>
-                {user?.name || 'Carregando...'}
-              </span>
-              <span className='text-xs text-muted-foreground capitalize'>Inquilino</span>
-            </div>
-          </Link>
-        </div>
-      </aside>
-
-      {/* ─── Main Content ─── */}
       <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full'>
-        {/* Mobile TopBar — fixed via lg-topbar classes */}
         <div className='md:hidden block shrink-0'>
           <TopBar
-            title={navItems.find((i) => i.path === location.pathname)?.label || 'Portal do Inquilino'}
+            title={
+              navItems.find((i) => i.path === location.pathname)?.label || 'Portal do Inquilino'
+            }
             subtitle='Área do Locatário'
           />
         </div>
@@ -301,44 +199,7 @@ const TenantLayout: React.FC = () => {
           />
         </div>
 
-        {/* ─── Mobile Bottom Navigation — Konsta Tabbar ─── */}
-        <Toolbar className='md:hidden fixed bottom-0 left-0 right-0 z-50' tabbar>
-          <Tabbar>
-            {navItems
-              .filter((item) => item.path !== '/tenant/profile' && item.path !== '/tenant/settings')
-              .map((item) => {
-                const isActive = !item.disabled && location.pathname === item.path;
-                if (item.disabled) {
-                  return (
-                    <TabbarLink
-                      key={item.path}
-                      active={false}
-                      label={item.label}
-                      className='opacity-35 cursor-not-allowed'
-                      title='Complete o onboarding para desbloquear'
-                    >
-                      <span className='relative inline-flex'>
-                        <item.icon size={21} strokeWidth={1.8} />
-                        <span className='absolute -top-1 -right-2 w-3 h-3 bg-slate-400 rounded-full flex items-center justify-center'>
-                          <Lock size={6} className='text-white' />
-                        </span>
-                      </span>
-                    </TabbarLink>
-                  );
-                }
-                return (
-                  <TabbarLink
-                    key={item.path}
-                    active={isActive}
-                    label={item.label}
-                    onClick={() => navigate(item.path)}
-                  >
-                    <item.icon size={21} strokeWidth={isActive ? 2.5 : 1.8} />
-                  </TabbarLink>
-                );
-              })}
-          </Tabbar>
-        </Toolbar>
+        <TenantMobileNav navItems={navItems} />
       </main>
     </div>
   );
