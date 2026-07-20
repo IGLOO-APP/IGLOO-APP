@@ -276,12 +276,8 @@ const TenantLayout: React.FC = () => {
       </aside>
 
       {/* ─── Main Content ─── */}
-      <main
-        className={`flex-1 lg-card p-0 ${
-          isMaintenanceRoute ? 'overflow-hidden' : 'overflow-y-auto'
-        } flex flex-col relative h-full w-full custom-scrollbar`}
-      >
-        {/* Mobile TopBar Header */}
+      <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full'>
+        {/* Mobile TopBar — fixed via lg-topbar classes */}
         <div className='md:hidden block shrink-0'>
           <TopBar
             title={navItems.find((i) => i.path === location.pathname)?.label || 'Portal do Inquilino'}
@@ -290,7 +286,7 @@ const TenantLayout: React.FC = () => {
         </div>
 
         <div
-          className={`flex-1 w-full relative ${
+          className={`flex-1 overflow-y-auto pb-24 w-full scroll-smooth ${
             isMaintenanceRoute ? 'h-full min-h-0 overflow-hidden' : ''
           }`}
         >
