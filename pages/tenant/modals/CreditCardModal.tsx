@@ -17,13 +17,14 @@ interface CreditCardModalProps {
 }
 
 export const CreditCardModal: React.FC<CreditCardModalProps> = ({
+  show,
   onClose,
   processingPayment,
   paymentSuccess,
   onCardPayment,
 }) => {
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0'>
         <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
           <DialogTitle className='text-xl font-bold'>Pagar com Cartão</DialogTitle>

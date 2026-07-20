@@ -12,6 +12,7 @@ interface InvoiceModalProps {
 }
 
 export const InvoiceModal: React.FC<InvoiceModalProps> = ({
+  show,
   onClose,
   monthlyValue,
   paymentDay,
@@ -19,7 +20,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   onCopyBarcode,
 }) => {
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl'
         showCloseButton={false}
