@@ -6,6 +6,7 @@ import { ticketsService } from './admin/ticketsService';
 import { adminAnnouncementsService } from './admin/announcementsService';
 import { teamService } from './admin/teamService';
 import { templatesService } from './admin/templatesService';
+import { plansAdminService } from './admin/plansService';
 
 export { setCurrentAdminId };
 
@@ -20,6 +21,7 @@ for (const svc of [
   adminAnnouncementsService,
   teamService,
   templatesService,
+  plansAdminService,
 ]) {
   for (const key of Object.keys(svc)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,4 +41,5 @@ export const adminService = merged as typeof auditService &
   typeof ticketsService &
   typeof adminAnnouncementsService &
   typeof teamService &
-  typeof templatesService;
+  typeof templatesService &
+  typeof plansAdminService;

@@ -12,9 +12,14 @@ const FeatureFlagManager: React.FC = () => {
 
   const fetchFlags = async () => {
     setLoading(true);
-    const data = await featureFlagService.getAll();
-    setFlags(data);
-    setLoading(false);
+    try {
+      const data = await featureFlagService.getAll();
+      setFlags(data);
+    } catch (err) {
+      console.error('Erro ao carregar feature flags:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

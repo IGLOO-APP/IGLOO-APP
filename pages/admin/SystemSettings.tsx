@@ -59,11 +59,20 @@ const SystemSettings: React.FC = () => {
           </p>
         </div>
         <div className='flex gap-3'>
-          <button className='flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-white/5 rounded-2xl font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-all'>
+          <button
+            onClick={() => {
+              setTemplateContent(templateContent);
+              showToast('Alterações descartadas.', 'success');
+            }}
+            className='flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-white/5 rounded-2xl font-bold text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-all'
+          >
             <RotateCcw size={18} />
             Descartar
           </button>
-          <button className='flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'>
+          <button
+            onClick={() => handleSaveTemplate()}
+            className='flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'
+          >
             <Save size={18} />
             Salvar Alterações
           </button>

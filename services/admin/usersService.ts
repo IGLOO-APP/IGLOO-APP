@@ -103,6 +103,20 @@ export const usersService = {
     await auditService.logActivity('update_role', 'user', userId, { role });
   },
 
+  async updateAdminType(userId: string, adminType: string) {
+    const { error } = await supabase.from('profiles').update({ admin_type: adminType }).eq('id', userId);
+    if (error) throw error;
+    await auditService.logActivity('update_admin_type', 'user', userId, { admin_type: adminType });
+  },
+
+  async updateProfile(userId: string, data: { name?: string; phone?: string; avatar_url?: string }) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (error) throw error;
+  },
+
   async exportUserData(userId: string) {
     const { data: profile, error: pError } = await supabase
       .from('profiles')

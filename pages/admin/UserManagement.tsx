@@ -4,6 +4,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminService } from '../../services/adminService';
 import { User } from '../../types';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 // Components
 import { UserFilters } from './components/UserManagement/UserFilters';
@@ -34,7 +42,12 @@ const UserManagement: React.FC = () => {
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [isAddOwnerModalOpen, setIsAddOwnerModalOpen] = useState(false);
   const [newPlan, setNewPlan] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Confirmation modals
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'impersonate' | 'unsuspend' | 'approve';
+    user: User;
+  } | null>(null);
 
   const itemsPerPage = 10;
 
@@ -59,21 +72,20 @@ const UserManagement: React.FC = () => {
         filterRole,
         filterPeriod
       ),
-    placeholderData: (previousData) => previousData, // Maintain UI during fetch
+    placeholderData: (previousData) => previousData,
   });
 
   const users = data?.users || [];
   const totalUsers = data?.total || 0;
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  const handleImpersonate = (u: User) => {
+    setConfirmAction({ type: 'impersonate', user: u });
   };
 
-  const handleImpersonate = (u: User) => {
-    if (window.confirm(`Deseja acessar o sistema como ${u.name}?`)) {
-      startImpersonation(u);
-    }
+  const handleConfirmImpersonate = () => {
+    if (!confirmAction) return;
+    startImpersonation(confirmAction.user);
+    setConfirmAction(null);
   };
 
   const handleExportCSV = async () => {
@@ -84,8 +96,8 @@ const UserManagement: React.FC = () => {
       u.email,
       u.role,
       u.is_suspended ? 'Suspenso' : 'Ativo',
-      (u as any).plan || 'Free',
-      (u as any).created_at || '-',
+      u.plan || 'Free',
+      u.created_at || '-',
     ]);
     const csvContent = [headers, ...rows].map((e) => e.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -93,28 +105,34 @@ const UserManagement: React.FC = () => {
     link.href = URL.createObjectURL(blob);
     link.download = 'usuarios_igloo.csv';
     link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   const handleUpdatePlan = async () => {
     if (!selectedUser || !newPlan) return;
     try {
       await adminService.updateUserPlan(selectedUser.id.toString(), newPlan);
-      showToast('Plano atualizado com sucesso.');
+      toast.success('Plano atualizado com sucesso.');
       setIsPlanModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
     } catch {
-      showToast('Erro ao atualizar plano.', 'error');
+      toast.error('Erro ao atualizar plano.');
     }
   };
 
-  const handleUnsuspend = async (user: User) => {
-    if (!window.confirm(`Deseja reativar a conta de ${user.name}?`)) return;
+  const handleUnsuspend = (user: User) => {
+    setConfirmAction({ type: 'unsuspend', user });
+  };
+
+  const handleConfirmUnsuspend = async () => {
+    if (!confirmAction) return;
     try {
-      await adminService.unsuspendUser(user.id.toString());
-      showToast('Usuário reativado com sucesso.');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      await adminService.unsuspendUser(confirmAction.user.id.toString());
+      toast.success('Usuário reativado com sucesso.');
+      setConfirmAction(null);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
     } catch {
-      showToast('Erro ao reativar usuário.', 'error');
+      toast.error('Erro ao reativar usuário.');
     }
   };
 
@@ -126,21 +144,26 @@ const UserManagement: React.FC = () => {
   ) => {
     try {
       await adminService.suspendUser(userId, reason, notes, notifyUser);
-      showToast('Usuário suspenso com sucesso.');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Usuário suspenso com sucesso.');
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
     } catch {
-      showToast('Erro ao suspender usuário.', 'error');
+      toast.error('Erro ao suspender usuário.');
     }
   };
 
-  const handleApprove = async (user: User) => {
-    if (!window.confirm(`Deseja aprovar o acesso de ${user.name} como Proprietário?`)) return;
+  const handleApprove = (user: User) => {
+    setConfirmAction({ type: 'approve', user });
+  };
+
+  const handleConfirmApprove = async () => {
+    if (!confirmAction) return;
     try {
-      await adminService.updateUserRole(user.id.toString(), 'owner');
-      showToast('Usuário aprovado com sucesso.');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      await adminService.updateUserRole(confirmAction.user.id.toString(), 'owner');
+      toast.success('Usuário aprovado com sucesso.');
+      setConfirmAction(null);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
     } catch {
-      showToast('Erro ao aprovar usuário.', 'error');
+      toast.error('Erro ao aprovar usuário.');
     }
   };
 
@@ -153,21 +176,35 @@ const UserManagement: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const confirmConfig = (() => {
+    if (!confirmAction) return null;
+    switch (confirmAction.type) {
+      case 'impersonate':
+        return {
+          title: 'Acessar como Usuário',
+          description: `Deseja acessar o sistema como ${confirmAction.user.name}? Você poderá ver o dashboard, mensagens e configurações como se fosse este usuário.`,
+          confirmLabel: 'Acessar',
+          onConfirm: handleConfirmImpersonate,
+        };
+      case 'unsuspend':
+        return {
+          title: 'Reativar Usuário',
+          description: `Deseja reativar a conta de ${confirmAction.user.name}? O usuário poderá acessar o sistema novamente.`,
+          confirmLabel: 'Reativar',
+          onConfirm: handleConfirmUnsuspend,
+        };
+      case 'approve':
+        return {
+          title: 'Aprovar Proprietário',
+          description: `Deseja aprovar o acesso de ${confirmAction.user.name} como Proprietário? Ele terá acesso completo ao painel de proprietário.`,
+          confirmLabel: 'Aprovar',
+          onConfirm: handleConfirmApprove,
+        };
+    }
+  })();
+
   return (
     <div className='p-8 space-y-6 animate-fadeIn'>
-      {toast && (
-        <div
-          className={`fixed top-4 right-4 z-[60] px-6 py-3 rounded-xl text-white font-bold shadow-xl animate-slideDown ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}
-        >
-          <div className='flex items-center gap-3'>
-            <span>{toast.message}</span>
-            <button onClick={() => setToast(null)} className='opacity-70 hover:opacity-100'>
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
       <UserFilters
         searchTerm={searchTerm}
         setSearchTerm={(val) => {
@@ -201,7 +238,7 @@ const UserManagement: React.FC = () => {
         }}
         onUpdatePlan={(u) => {
           setSelectedUser(u);
-          setNewPlan((u as any).plan || 'Free');
+          setNewPlan(u.plan || 'Free');
           setIsPlanModalOpen(true);
         }}
         onSuspend={(u) => {
@@ -220,13 +257,40 @@ const UserManagement: React.FC = () => {
             link.download = `export_${u.name.replace(/\s+/g, '_')}_${u.id.substring(0, 5)}.json`;
             link.click();
             URL.revokeObjectURL(url);
-            showToast('Dados exportados com sucesso.');
+            toast.success('Dados exportados com sucesso.');
           } catch {
-            showToast('Erro ao exportar dados.', 'error');
+            toast.error('Erro ao exportar dados.');
           }
         }}
         onClearFilters={handleClearFilters}
       />
+
+      {/* Confirmation Dialog */}
+      <Dialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <DialogContent className='max-w-md p-0 gap-0'>
+          <DialogHeader className='px-6 py-4 border-b border-border'>
+            <DialogTitle className='text-lg font-bold'>{confirmConfig?.title}</DialogTitle>
+            <DialogDescription />
+          </DialogHeader>
+          <div className='p-6 space-y-4'>
+            <p className='text-sm text-muted-foreground'>{confirmConfig?.description}</p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setConfirmAction(null)}
+                className='flex-1 py-3 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold text-sm rounded-xl hover:bg-slate-200 transition-all'
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmConfig?.onConfirm}
+                className='flex-[2] py-3 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all'
+              >
+                {confirmConfig?.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modals */}
       {selectedUser && (
@@ -254,7 +318,7 @@ const UserManagement: React.FC = () => {
             isOpen={isAddOwnerModalOpen}
             onClose={() => setIsAddOwnerModalOpen(false)}
             onSuccess={() => {
-              showToast('Proprietário adicionado com sucesso!');
+              toast.success('Proprietário adicionado com sucesso!');
               queryClient.invalidateQueries({ queryKey: ['users'] });
             }}
           />
@@ -267,7 +331,7 @@ const UserManagement: React.FC = () => {
           isOpen={isAddOwnerModalOpen}
           onClose={() => setIsAddOwnerModalOpen(false)}
           onSuccess={() => {
-            showToast('Proprietário adicionado com sucesso!');
+            toast.success('Proprietário adicionado com sucesso!');
             queryClient.invalidateQueries({ queryKey: ['users'] });
           }}
         />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Megaphone,
   Plus,
@@ -23,6 +23,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { adminService } from '../../services/adminService';
 
 interface Announcement {
   id: string;
@@ -37,64 +38,61 @@ interface Announcement {
   show_until?: string;
 }
 
-import { adminService } from '../../services/adminService';
-// Mock announcements removed
+const TYPE_STYLES: Record<Announcement['type'], string> = {
+  feature: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20',
+  warning: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-100 dark:border-amber-500/20',
+  maintenance: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border-blue-100 dark:border-blue-500/20',
+  info: 'bg-slate-50 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400 border-slate-100 dark:border-slate-500/20',
+};
+
+const getTypeStyles = (type: Announcement['type']) => TYPE_STYLES[type] || TYPE_STYLES.info;
+
+const getTypeIcon = (type: Announcement['type']) => {
+  switch (type) {
+    case 'feature':
+      return <Zap size={14} />;
+    case 'warning':
+      return <AlertTriangle size={14} />;
+    case 'maintenance':
+      return <Clock size={14} />;
+    default:
+      return <Info size={14} />;
+  }
+};
 
 const Announcements: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [stats, setStats] = useState({ total_views: 0, total_clicks: 0, ctr: '0.0' });
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Announcement | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'draft' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'all' | Announcement['type']>('all');
 
-  const loadAnnouncements = async () => {
+  const loadAnnouncements = useCallback(async () => {
+    setLoading(true);
     try {
       const { list, stats: s } = await adminService.getAnnouncements();
       setAnnouncements((list as Announcement[]) || []);
       setStats(s);
     } catch (err) {
-      console.error(err);
+      console.error('Erro ao carregar comunicados:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadAnnouncements();
-  }, []);
+    void loadAnnouncements();
+  }, [loadAnnouncements]);
 
   // Form State
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newType, setNewType] = useState<Announcement['type']>('info');
   const [newTarget, setNewTarget] = useState<Announcement['target_audience']>('all');
-
-  const getTypeStyles = (type: Announcement['type']) => {
-    switch (type) {
-      case 'feature':
-        return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20';
-      case 'warning':
-        return 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-100 dark:border-amber-500/20';
-      case 'maintenance':
-        return 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border-blue-100 dark:border-blue-500/20';
-      default:
-        return 'bg-slate-50 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400 border-slate-100 dark:border-slate-500/20';
-    }
-  };
-
-  const getTypeIcon = (type: Announcement['type']) => {
-    switch (type) {
-      case 'feature':
-        return <Zap size={14} />;
-      case 'warning':
-        return <AlertTriangle size={14} />;
-      case 'maintenance':
-        return <Clock size={14} />;
-      default:
-        return <Info size={14} />;
-    }
-  };
 
   return (
     <div className='p-8 space-y-8 animate-fadeIn'>
@@ -109,12 +107,36 @@ const Announcements: React.FC = () => {
           </p>
         </div>
         <div className='flex items-center gap-3'>
-          <button className='px-4 py-2 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm'>
-            <Filter size={18} />
-            Filtrar
-          </button>
+          <div className='relative group'>
+            <button className='px-4 py-2 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm'>
+              <Filter size={18} />
+              {filterType === 'all' ? 'Filtrar' : filterType}
+            </button>
+            <div className='absolute top-full right-0 mt-2 w-44 bg-white dark:bg-surface-dark rounded-xl shadow-xl border border-gray-100 dark:border-white/10 py-1.5 z-20 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all translate-y-2 group-hover:translate-y-0'>
+              {(['all', 'info', 'feature', 'warning', 'maintenance'] as const).map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setFilterType(opt)}
+                  className={`w-full text-left px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+                    filterType === opt
+                      ? 'text-primary'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-primary'
+                  }`}
+                >
+                  {opt === 'all' ? 'Todos os tipos' : opt}
+                </button>
+              ))}
+            </div>
+          </div>
           <button
-            onClick={() => setShowNewModal(true)}
+            onClick={() => {
+              setEditingAnnouncement(null);
+              setNewTitle('');
+              setNewContent('');
+              setNewType('info');
+              setNewTarget('all');
+              setShowNewModal(true);
+            }}
             className='px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all flex items-center gap-2'
           >
             <Plus size={18} />
@@ -129,7 +151,7 @@ const Announcements: React.FC = () => {
           {
             label: 'Visu. Totais',
             value: stats.total_views.toLocaleString(),
-            change: '+0',
+            change: `${announcements.length} comunicados`,
             icon: Eye,
             color: 'primary',
             tooltipTitle: 'Visualizações Totais',
@@ -235,7 +257,16 @@ const Announcements: React.FC = () => {
               Nenhum comunicado encontrado.
             </div>
           ) : (
-            announcements.map((ann) => (
+            announcements
+              .filter((ann) => filterType === 'all' || ann.type === filterType)
+              .filter((ann) => activeTab === 'all' || ann.status === activeTab)
+              .filter(
+                (ann) =>
+                  !searchQuery ||
+                  ann.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  ann.content.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map((ann) => (
               <div
                 key={ann.id}
                 className='p-6 hover:bg-slate-50 dark:hover:bg-white/5 transition-all group flex items-start gap-4'
@@ -281,10 +312,23 @@ const Announcements: React.FC = () => {
                 </div>
 
                 <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                  <button className='p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-primary transition-colors'>
+                  <button
+                    onClick={() => {
+                      setEditingAnnouncement(ann);
+                      setNewTitle(ann.title);
+                      setNewContent(ann.content);
+                      setNewType(ann.type);
+                      setNewTarget(ann.target_audience);
+                      setShowNewModal(true);
+                    }}
+                    className='p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-primary transition-colors'
+                  >
                     <Edit size={18} />
                   </button>
-                  <button className='p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-red-500 transition-colors'>
+                  <button
+                    onClick={() => setDeleteTarget(ann)}
+                    className='p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-red-500 transition-colors'
+                  >
                     <Trash2 size={18} />
                   </button>
                 </div>
@@ -338,11 +382,13 @@ const Announcements: React.FC = () => {
         </div>
       </div>
 
-      {/* New Announcement Modal */}
+      {/* Create/Edit Announcement Modal */}
       <Dialog open={showNewModal} onOpenChange={(open) => !open && setShowNewModal(false)}>
         <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-2xl'>
           <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
-            <DialogTitle className='text-xl font-bold'>Criar Novo Comunicado</DialogTitle>
+            <DialogTitle className='text-xl font-bold'>
+              {editingAnnouncement ? 'Editar Comunicado' : 'Criar Novo Comunicado'}
+            </DialogTitle>
             <DialogDescription />
           </DialogHeader>
           <div className='p-6 space-y-6 bg-background-light dark:bg-background-dark'>
@@ -367,7 +413,7 @@ const Announcements: React.FC = () => {
                   </label>
                   <select
                     value={newType}
-                    onChange={(e) => setNewType(e.target.value as any)}
+                    onChange={(e) => setNewType(e.target.value as Announcement['type'])}
                     className='w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm font-medium'
                   >
                     <option value='info'>Informação</option>
@@ -382,7 +428,7 @@ const Announcements: React.FC = () => {
                   </label>
                   <select
                     value={newTarget}
-                    onChange={(e) => setNewTarget(e.target.value as any)}
+                    onChange={(e) => setNewTarget(e.target.value as Announcement['target_audience'])}
                     className='w-full px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all dark:text-white text-sm font-medium'
                   >
                     <option value='all'>Todos os Proprietários</option>
@@ -408,33 +454,91 @@ const Announcements: React.FC = () => {
 
             <div className='flex gap-3 pt-4'>
               <button
-                onClick={() => setShowNewModal(false)}
+                onClick={() => {
+                  setShowNewModal(false);
+                  setEditingAnnouncement(null);
+                }}
                 className='flex-1 py-3 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold text-sm rounded-xl hover:bg-slate-200 transition-all'
               >
                 Cancelar
               </button>
               <button
                 onClick={async () => {
+                  const toastModule = await import('sonner');
                   try {
-                    await adminService.createAnnouncement({
-                      title: newTitle,
-                      content: newContent,
-                      type: newType,
-                      target_audience: newTarget,
-                      status: 'active',
-                    });
+                    if (editingAnnouncement) {
+                      await adminService.updateAnnouncement(editingAnnouncement.id, {
+                        title: newTitle,
+                        content: newContent,
+                        type: newType,
+                        target_audience: newTarget,
+                      });
+                      toastModule.toast.success('Comunicado atualizado com sucesso.');
+                    } else {
+                      await adminService.createAnnouncement({
+                        title: newTitle,
+                        content: newContent,
+                        type: newType,
+                        target_audience: newTarget,
+                        status: 'active',
+                      });
+                      toastModule.toast.success('Comunicado publicado com sucesso.');
+                    }
                     setShowNewModal(false);
-                    loadAnnouncements();
+                    setEditingAnnouncement(null);
+                    void loadAnnouncements();
                     setNewTitle('');
                     setNewContent('');
                   } catch (err) {
-                    alert('Erro ao publicar: ' + (err as Error).message);
+                    toastModule.toast.error('Erro ao salvar: ' + (err as Error).message);
                   }
                 }}
                 disabled={!newTitle || !newContent}
                 className='flex-[2] py-3 bg-primary text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50'
               >
-                Publicar Comunicado
+                {editingAnnouncement ? 'Salvar Alterações' : 'Publicar Comunicado'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent className='max-w-md p-0 gap-0'>
+          <DialogHeader className='px-6 py-4 border-b border-border'>
+            <DialogTitle className='text-lg font-bold'>Excluir Comunicado</DialogTitle>
+            <DialogDescription />
+          </DialogHeader>
+          <div className='p-6 space-y-4'>
+            <p className='text-sm text-muted-foreground'>
+              Tem certeza que deseja excluir o comunicado{' '}
+              <strong className='text-foreground'>{deleteTarget?.title}</strong>? Esta ação não
+              pode ser desfeita.
+            </p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className='flex-1 py-3 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 font-bold text-sm rounded-xl hover:bg-slate-200 transition-all'
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  if (!deleteTarget) return;
+                  const toastModule = await import('sonner');
+                  try {
+                    await adminService.deleteAnnouncement(deleteTarget.id);
+                    toastModule.toast.success('Comunicado excluído.');
+                    setDeleteTarget(null);
+                    void loadAnnouncements();
+                  } catch (err) {
+                    toastModule.toast.error('Erro ao excluir: ' + (err as Error).message);
+                  }
+                }}
+                className='flex-1 py-3 bg-red-500 text-white font-bold text-sm rounded-xl hover:bg-red-600 transition-all'
+              >
+                Excluir
               </button>
             </div>
           </div>

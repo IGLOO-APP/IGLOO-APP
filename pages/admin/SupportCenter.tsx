@@ -70,6 +70,8 @@ const SupportCenter: React.FC = () => {
     messages,
     selectedTicket,
     filteredTickets,
+    loadingTickets,
+    loadingMessages,
     handleSaveFAQ,
     handleDeleteFAQ,
     toggleFAQStatus,
@@ -136,8 +138,7 @@ const SupportCenter: React.FC = () => {
                   <select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value)}
-                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
-                    style={{ colorScheme: 'dark' }}
+                    className='px-3 py-2 bg-white dark:bg-white/5 rounded-xl text-xs font-bold border-none outline-none cursor-pointer [color-scheme:dark]'
                   >
                     <option
                       value='Todos'
@@ -177,10 +178,9 @@ const SupportCenter: React.FC = () => {
                 </label>
                 <div className='relative'>
                   <select
-                    value={assigneeFilter}
-                    onChange={(e) => setAssigneeFilter(e.target.value)}
-                    className='w-full pl-4 pr-10 py-2.5 bg-white dark:bg-white/5 border border-transparent rounded-xl text-xs font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer'
-                    style={{ colorScheme: 'dark' }}
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className='px-3 py-2 bg-white dark:bg-white/5 rounded-xl text-xs font-bold border-none outline-none cursor-pointer [color-scheme:dark]'
                   >
                     <option
                       value='Todos'
@@ -246,7 +246,15 @@ const SupportCenter: React.FC = () => {
         </div>
 
         <div className='flex-1 overflow-y-auto p-2 space-y-1'>
-          {filteredTickets.map((t: any) => {
+          {loadingTickets ? (
+            <div className='p-8 text-center text-muted-foreground text-xs font-bold'>
+              Carregando tickets...
+            </div>
+          ) : filteredTickets.length === 0 ? (
+            <div className='p-8 text-center text-muted-foreground text-xs font-bold'>
+              Nenhum ticket encontrado.
+            </div>
+          ) : filteredTickets.map((t: any) => {
             const sla = getSLAStatus(t);
             return (
               <div
@@ -373,7 +381,15 @@ const SupportCenter: React.FC = () => {
                     </div>
                   </div>
 
-                  {messages.map((msg: any) => (
+                  {loadingMessages ? (
+                    <div className='p-8 text-center text-muted-foreground text-xs font-bold'>
+                      Carregando mensagens...
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className='p-8 text-center text-muted-foreground text-xs font-bold'>
+                      Nenhuma mensagem neste ticket.
+                    </div>
+                  ) : messages.map((msg: any) => (
                     <div
                       key={msg.id}
                       className={`flex w-full ${msg.sender_role === 'admin' || msg.sender_role === 'me' ? 'justify-end' : msg.sender_role === 'system' ? 'justify-center' : 'justify-start'}`}
@@ -549,8 +565,7 @@ const SupportCenter: React.FC = () => {
                             onChange={(e) =>
                               handleAssign(selectedTicket.id, e.target.value || null)
                             }
-                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer'
-                            style={{ colorScheme: 'dark' }}
+                            className='w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl text-[11px] font-bold text-slate-700 dark:text-white appearance-none focus:ring-2 focus:ring-primary outline-none cursor-pointer [color-scheme:dark]'
                           >
                             <option value='' className='dark:bg-slate-800'>
                               Não atribuído

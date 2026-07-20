@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -33,8 +34,10 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 
 const SubscriptionManagement: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [revenuePeriod, setRevenuePeriod] = useState('Últimos 6 meses');
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
+  const [savingPlan, setSavingPlan] = useState(false);
   const [stats, setStats] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [revenueData, setRevenueData] = useState<any[]>([]);
@@ -52,7 +55,7 @@ const SubscriptionManagement: React.FC = () => {
         console.error(err);
       }
     };
-    loadStats();
+    void loadStats();
   }, []);
 
   // New Plan form state
@@ -116,8 +119,8 @@ const SubscriptionManagement: React.FC = () => {
     },
     {
       label: 'Churn Rate',
-      value: '0%',
-      change: '0%',
+      value: stats?.churn_rate !== undefined ? `${stats.churn_rate}%` : '...',
+      change: `${stats?.churn_rate ?? 0}%`,
       trend: 'down',
       icon: Users,
       color: 'rose',
@@ -127,14 +130,17 @@ const SubscriptionManagement: React.FC = () => {
     },
     {
       label: 'Ticket Médio',
-      value: 'R$ 0,00',
-      change: '0%',
+      value:
+        stats?.mrr !== undefined && stats?.active_owners
+          ? `R$ ${(stats.mrr / Math.max(stats.active_owners, 1)).toFixed(2)}`
+          : 'R$ 0,00',
+      change: `${stats?.active_owners ?? 0} ativos`,
       trend: 'up',
       icon: CreditCard,
       color: 'amber',
       type: 'positive',
       tooltipTitle: 'Ticket Médio',
-      tooltipDesc: 'Valor médio pago por assinatura na plataforma.',
+      tooltipDesc: 'Valor médio pago por assinatura na plataforma (MRR / proprietários ativos).',
     },
   ];
 
@@ -152,6 +158,34 @@ const SubscriptionManagement: React.FC = () => {
     return 'text-slate-500 bg-slate-500/10';
   };
 
+  const handleExportReport = () => {
+    if (!stats) return;
+    const headers = ['Métrica', 'Valor'];
+    const rows: ([string, string])[] = [
+      ['MRR Global', `R$ ${(stats.mrr ?? 0).toLocaleString()}`],
+      ['ARR Estimado', `R$ ${(stats.arr ?? 0).toLocaleString()}`],
+    ];
+    const planRows = (stats.planDistribution || []).map(
+      (p: { name: string; count: number; percentage: number; mrr: string | number }) =>
+        [`Plano: ${p.name}`, `${p.count} assinaturas (${(p.percentage as number).toFixed(1)}%) — R$ ${p.mrr}`] as [string, string]
+    );
+    const movementRows: [string, string][] = [
+      ['Upgrades', String(stats.recentMovements?.upgrades ?? 0)],
+      ['Downgrades', String(stats.recentMovements?.downgrades ?? 0)],
+      ['Cancelamentos', String(stats.recentMovements?.cancelamentos ?? 0)],
+    ];
+    const csvContent = [...headers, ...rows, ['', ''], ...planRows, ['', ''], ...movementRows]
+      .map((r) => r.map((c: string) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_assinaturas_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className='p-8 space-y-8 animate-fadeIn'>
       <div className='flex items-center justify-between'>
@@ -164,7 +198,11 @@ const SubscriptionManagement: React.FC = () => {
           </p>
         </div>
         <div className='flex gap-3'>
-          <button className='flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all'>
+          <button
+            onClick={handleExportReport}
+            disabled={!stats}
+            className='flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
             <Download size={18} />
             Exportar Relatório
           </button>
@@ -312,7 +350,7 @@ const SubscriptionManagement: React.FC = () => {
                       return (
                         <div className='bg-slate-900 text-white p-3 rounded-xl shadow-xl border border-white/10'>
                           <p className='text-[10px] font-bold text-slate-400 uppercase mb-1'>
-                            {label} 2024
+                            {label} {new Date().getFullYear()}
                           </p>
                           <p className='text-sm font-bold'>
                             R$ {(payload[0]?.value ?? 0).toLocaleString()}
@@ -548,14 +586,57 @@ const SubscriptionManagement: React.FC = () => {
                 Cancelar
               </button>
               <button
-                onClick={() => {
-                  alert('Plano criado com sucesso!');
-                  setShowNewPlanModal(false);
+                onClick={async () => {
+                  if (!newPlanName || !newPlanMonthly || !newPlanProps || !newPlanTenants) return;
+                  setSavingPlan(true);
+                  const planId = newPlanName.toLowerCase().replace(/\s+/g, '-');
+                  try {
+                    await adminService.upsert({
+                      id: planId,
+                      name: newPlanName,
+                      description: newPlanDesc,
+                      price: {
+                        monthly: parseFloat(newPlanMonthly),
+                        annual: newPlanAnnual ? parseFloat(newPlanAnnual) : undefined,
+                      },
+                      limits: {
+                        properties: parseInt(newPlanProps, 10),
+                        tenants: parseInt(newPlanTenants, 10),
+                        storage_gb: 10,
+                        users: 1,
+                      },
+                      features: featuresList.map((text) => ({ text, included: true })),
+                      is_active: newPlanStatus === 'active',
+                    });
+                    setShowNewPlanModal(false);
+                    setNewPlanName('');
+                    setNewPlanDesc('');
+                    setNewPlanMonthly('');
+                    setNewPlanAnnual('');
+                    setNewPlanProps('');
+                    setNewPlanTenants('');
+                    setFeaturesList([]);
+                    await queryClient.invalidateQueries({ queryKey: ['plans'] });
+                    const { toast } = await import('sonner');
+                    toast.success('Plano criado com sucesso.');
+                  } catch (err) {
+                    const { toast } = await import('sonner');
+                    toast.error('Erro ao salvar plano: ' + (err as Error).message);
+                  } finally {
+                    setSavingPlan(false);
+                  }
                 }}
-                disabled={!newPlanName || !newPlanMonthly || !newPlanProps || !newPlanTenants}
-                className='flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed'
+                disabled={!newPlanName || !newPlanMonthly || !newPlanProps || !newPlanTenants || savingPlan}
+                className='flex-[2] py-4 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
               >
-                Salvar Plano
+                {savingPlan ? (
+                  <>
+                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar Plano'
+                )}
               </button>
             </div>
           </div>

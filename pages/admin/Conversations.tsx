@@ -75,8 +75,14 @@ const AdminConversations: React.FC = () => {
                     <p className='text-xs text-slate-500 truncate max-w-[150px]'>{owner.email}</p>
                   </div>
                 </div>
-                <div className='px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest'>
-                  Ativo
+                <div
+                  className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                    owner.is_suspended
+                      ? 'bg-red-500/10 text-red-500'
+                      : 'bg-emerald-500/10 text-emerald-500'
+                  }`}
+                >
+                  {owner.is_suspended ? 'Suspenso' : 'Ativo'}
                 </div>
               </div>
 
@@ -86,23 +92,28 @@ const AdminConversations: React.FC = () => {
                     <Building2 size={12} />
                     <span className='text-[10px] font-bold uppercase tracking-widest'>Imóveis</span>
                   </div>
-                  <p className='text-sm font-black text-slate-900 dark:text-white'>12 Ativos</p>
+                  <p className='text-sm font-black text-slate-900 dark:text-white'>
+                    {owner.metrics?.properties ?? 0} Ativos
+                  </p>
                 </div>
                 <div className='p-3 bg-slate-50 dark:bg-white/5 rounded-2xl'>
                   <div className='flex items-center gap-2 text-slate-400 mb-1'>
                     <Calendar size={12} />
                     <span className='text-[10px] font-bold uppercase tracking-widest'>Plano</span>
                   </div>
-                  <p className='text-sm font-black text-slate-900 dark:text-white'>Pro</p>
+                  <p className='text-sm font-black text-slate-900 dark:text-white'>
+                    {owner.plan || 'Free'}
+                  </p>
                 </div>
               </div>
 
               <button
                 onClick={() => startImpersonation(owner, '/messages')}
                 className='w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-lg'
+                disabled={owner.is_suspended}
               >
                 <MessageSquare size={16} />
-                Acessar Mensagens
+                {owner.is_suspended ? 'Usuário Suspenso' : 'Acessar Mensagens'}
                 <ExternalLink size={14} className='opacity-50' />
               </button>
             </div>

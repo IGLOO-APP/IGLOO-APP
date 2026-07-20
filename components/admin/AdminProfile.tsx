@@ -19,7 +19,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { adminService } from '../../services/adminService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const AdminProfile: React.FC = () => {
@@ -36,17 +36,11 @@ const AdminProfile: React.FC = () => {
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
       setIsUpdating(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name,
-          phone,
-          avatar_url: avatar,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', String(user?.id ?? ''));
-
-      if (error) throw error;
+      await adminService.updateProfile(String(user?.id ?? ''), {
+        name,
+        phone,
+        avatar_url: avatar,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });

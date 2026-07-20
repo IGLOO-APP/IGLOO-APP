@@ -46,7 +46,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                   {user.role === 'owner' ? 'Proprietário' : 'Inquilino'}
                 </span>
                 <span className='px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400'>
-                  {(user as any).plan || 'Free'}
+                  {user.plan || 'Free'}
                 </span>
               </div>
             </div>
@@ -58,8 +58,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, isOpen
                 Cadastro
               </p>
               <p className='font-bold text-foreground'>
-                {(user as any).created_at
-                  ? new Date((user as any).created_at).toLocaleDateString('pt-BR', {
+                {user.created_at
+                  ? new Date(user.created_at).toLocaleDateString('pt-BR', {
                       day: '2-digit',
                       month: 'long',
                       year: 'numeric',

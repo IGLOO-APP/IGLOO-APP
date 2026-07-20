@@ -158,7 +158,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       </span>
                     ) : (
                       <span className='text-[10px] font-black px-2.5 py-1 bg-slate-100 dark:bg-white/10 rounded-lg text-slate-600 dark:text-slate-400 uppercase tracking-widest'>
-                        {(u as any).plan || 'Free'}
+                        {u.plan || 'Free'}
                       </span>
                     )}
                   </td>
@@ -223,8 +223,8 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </td>
                   <td className='px-8 py-5'>
                     <p className='text-sm font-bold text-slate-600 dark:text-slate-400'>
-                      {(u as any).created_at
-                        ? new Date((u as any).created_at).toLocaleDateString('pt-BR', {
+                      {u.created_at
+                        ? new Date(u.created_at).toLocaleDateString('pt-BR', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',

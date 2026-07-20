@@ -155,7 +155,7 @@ const AdminManager: React.FC = () => {
     if (!selectedAdmin) return;
     try {
       const newRole = selectedAdmin.admin_type === 'super' ? 'support' : 'super';
-      await adminService.updateUserPlan(selectedAdmin.id.toString(), newRole);
+      await adminService.updateAdminType(selectedAdmin.id.toString(), newRole);
 
       await adminService.logActivity('update_admin_role', 'user', selectedAdmin.id.toString(), {
         name: selectedAdmin.name,

@@ -10,9 +10,14 @@ const PlanManager: React.FC = () => {
 
   const fetchPlans = async () => {
     setLoading(true);
-    const data = await plansAdminService.getAll();
-    setPlans(data);
-    setLoading(false);
+    try {
+      const data = await plansAdminService.getAll();
+      setPlans(data);
+    } catch (err) {
+      console.error('Error fetching plans:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -34,12 +39,15 @@ const PlanManager: React.FC = () => {
   };
 
   const handleDeletePlan = async (id: string) => {
-    if (!confirm('Tem certeza? Isso pode afetar assinaturas existentes!')) return;
     try {
       await plansAdminService.remove(id);
       setPlans(plans.filter((p) => p.id !== id));
-    } catch {
-      // Silently fail — row-level security may prevent deletion
+      const { toast } = await import('sonner');
+      toast.success('Plano removido com sucesso.');
+    } catch (err) {
+      const { toast } = await import('sonner');
+      toast.error('Erro ao remover plano. Verifique permissões.');
+      console.error('Error removing plan:', err);
     }
   };
 

@@ -32,4 +32,19 @@ export const adminAnnouncementsService = {
     if (error) throw error;
     return data;
   },
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateAnnouncement(id: string, updates: any) {
+    const { data, error } = await supabase
+      .from('system_announcements')
+      .update(updates)
+      .eq('id', id);
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteAnnouncement(id: string) {
+    const { error } = await supabase.from('system_announcements').delete().eq('id', id);
+    if (error) throw error;
+  },
 };

@@ -30,6 +30,29 @@ const ConversionReport: React.FC = () => {
     queryFn: () => adminService.getConversionStats(),
   });
 
+  const label = period === '7_days' ? '7d' : period === '30_days' ? '30d' : '90d';
+
+  const handleExport = () => {
+    if (!stats) return;
+    const headers = ['Métrica', 'Valor'];
+    const rows = [
+      ['Novos Trials', stats.total_trials],
+      ['Conversões', stats.total_converted],
+      ['Taxa de Conversão (%)', stats.conversion_rate],
+      ['Tempo Médio p/ Converter (dias)', stats.time_to_convert_avg],
+    ];
+    const csvContent = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `conversao_trial_${period}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (isLoading || !stats) {
     return (
       <div className='p-8 flex items-center justify-center min-h-[400px]'>
@@ -66,7 +89,7 @@ const ConversionReport: React.FC = () => {
               </button>
             ))}
           </div>
-          <button className='p-2 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl hover:bg-slate-50 transition-all text-slate-500 shadow-sm'>
+          <button onClick={handleExport} className='p-2 bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 rounded-xl hover:bg-slate-50 transition-all text-slate-500 shadow-sm'>
             <Download size={20} />
           </button>
         </div>
@@ -81,7 +104,7 @@ const ConversionReport: React.FC = () => {
                 <div className='p-3 bg-indigo-500/10 text-indigo-500 rounded-xl'>
                   <Users size={20} />
                 </div>
-                <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
+                <span className='flex items-center text-xs font-bold text-slate-400'>{label}</span>
               </div>
               <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
                 Novos Trials
@@ -107,7 +130,7 @@ const ConversionReport: React.FC = () => {
                 <div className='p-3 bg-emerald-500/10 text-emerald-500 rounded-xl'>
                   <CreditCard size={20} />
                 </div>
-                <span className='flex items-center text-xs font-bold text-slate-400'>+0%</span>
+                <span className='flex items-center text-xs font-bold text-slate-400'>{label}</span>
               </div>
               <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1'>
                 Conversões
