@@ -190,7 +190,9 @@ const TenantLayout: React.FC = () => {
 
         <main className='flex-1 min-w-0 overflow-hidden flex flex-col relative h-full w-full text-foreground'>
           <div className='relative z-10 flex flex-col flex-1 min-h-0'>
-            <div className='flex-1 overflow-y-auto w-full scroll-smooth pb-24 md:pb-0'>
+            <div
+              className={`flex-1 overflow-y-auto w-full scroll-smooth ${location.pathname === '/tenant/messages' ? 'pb-0' : 'pb-24 md:pb-0'}`}
+            >
               <Outlet
                 context={{
                   isOnboardingRequired,

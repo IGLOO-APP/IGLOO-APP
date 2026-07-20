@@ -33,7 +33,7 @@ export const TenantSidebar: React.FC<TenantSidebarProps> = ({
   return (
     <SidebarBase
       collapsible='none'
-      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar bg-sidebar border-r border-sidebar-border'
+      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
     >
       <div className='flex flex-col flex-grow relative z-10'>
         <div className='px-6 mb-8 mt-4'>

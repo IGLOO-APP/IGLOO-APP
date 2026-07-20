@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <SidebarBase
       collapsible='none'
-      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar bg-sidebar border-r border-sidebar-border'
+      className='hidden md:flex sticky top-0 h-full w-80 flex-col py-4 justify-between select-none text-sidebar-foreground transition-colors duration-200 relative overflow-hidden lg-sidebar'
     >
       {/* Background transparent para o gradiente unificado do Layout */}
 
