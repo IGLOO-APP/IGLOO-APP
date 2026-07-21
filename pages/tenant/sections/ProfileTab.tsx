@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { User, Star, Car, Briefcase, Activity, AlertCircle, CheckCircle, Building2, Heart, BookOpen } from 'lucide-react';
 import { TenantProfileConfig } from '../../../types';
 
@@ -35,7 +35,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   return (
     <div className='animate-fadeIn pb-8 space-y-6'>
       {/* Profile Completion Card */}
-      <div className='bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+      <div className='lg-card lg-card-lift p-6'>
         <div className='flex justify-between items-center mb-4'>
           <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>
             Status do Perfil
@@ -43,7 +43,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           <span
             className={`text-xs font-bold ${completionPercent === 100 ? 'text-emerald-500' : 'text-primary'}`}
           >
-            {completionPercent}% Concluído
+            {completionPercent}% ConcluÃ­do
           </span>
         </div>
         <div className='h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-6'>
@@ -56,7 +56,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         {pendingItems.length > 0 ? (
           <div className='space-y-3'>
             <p className='text-[11px] text-slate-500 font-bold uppercase tracking-tight'>
-              Ações pendentes para 100%:
+              AÃ§Ãµes pendentes para 100%:
             </p>
             <div className='flex flex-wrap gap-2'>
               {pendingItems.map((item) => (
@@ -89,7 +89,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       <form onSubmit={handleSaveProfile} className='space-y-6'>
         {/* Tipo de Cadastro PF/PJ */}
         {config.sections.personal.occupation !== 'hidden' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+          <section className='lg-card lg-card-lift p-6'>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                 Tipo de Cadastro
@@ -107,7 +107,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                         : 'text-slate-400 hover:text-slate-600'
                     } ${!isEditing ? 'opacity-70 cursor-default' : 'cursor-pointer'}`}
                   >
-                    {t === 'pf' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                    {t === 'pf' ? 'Pessoa FÃ­sica' : 'Pessoa JurÃ­dica'}
                   </button>
                 ))}
               </div>
@@ -116,10 +116,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         )}
 
         {/* Personal Info */}
-        <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-blue-500/30'>
+        <section className='lg-card lg-card-lift p-6'>
           <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
             <User size={18} className='text-blue-500' />
-            Informações Pessoais
+            InformaÃ§Ãµes Pessoais
           </h3>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div className='space-y-2'>
@@ -209,12 +209,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <option value='casado'>Casado(a)</option>
                 <option value='separado'>Separado(a)</option>
                 <option value='divorciado'>Divorciado(a)</option>
-                <option value='viuvo'>Viúvo(a)</option>
+                <option value='viuvo'>ViÃºvo(a)</option>
               </select>
             </div>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                Nº de Ocupantes (Moradores)
+                NÂº de Ocupantes (Moradores)
               </label>
               <input
                 type='number'
@@ -234,14 +234,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 onChange={(e) => setProfileData({ ...profileData, hasPets: e.target.value })}
                 className={getFieldClass(profileData.hasPets)}
               >
-                <option value='Não'>Não</option>
+                <option value='NÃ£o'>NÃ£o</option>
                 <option value='Sim'>Sim</option>
               </select>
             </div>
             {profileData.hasPets === 'Sim' && (
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Especificação dos Animais
+                  EspecificaÃ§Ã£o dos Animais
                 </label>
                 <input
                   type='text'
@@ -258,7 +258,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         {/* PF content / PJ content */}
         {profileData.tenantType === 'pj' ? (
           /* PJ: Dados da Empresa */
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-amber-500/30'>
+          <section className='lg-card lg-card-lift p-6'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Building2 size={18} className='text-amber-500' />
               Dados da Empresa
@@ -266,7 +266,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div className='space-y-2 md:col-span-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Razão Social
+                  RazÃ£o Social
                 </label>
                 <input
                   type='text'
@@ -303,7 +303,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Inscrição Estadual/Municipal <span className='text-slate-300'>(opcional)</span>
+                  InscriÃ§Ã£o Estadual/Municipal <span className='text-slate-300'>(opcional)</span>
                 </label>
                 <input
                   type='text'
@@ -315,7 +315,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
               <div className='space-y-2 md:col-span-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Endereço da Empresa
+                  EndereÃ§o da Empresa
                 </label>
                 <input
                   type='text'
@@ -341,11 +341,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </section>
         ) : (
           <>
-            {/* Endereço Atual — expanded address fields */}
-            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-emerald-500/30'>
+            {/* EndereÃ§o Atual â€” expanded address fields */}
+            <section className='lg-card lg-card-lift p-6'>
               <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
                 <Car size={18} className='text-emerald-500' />
-                Endereço Atual
+                EndereÃ§o Atual
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div className='space-y-2'>
@@ -375,7 +375,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Número
+                    NÃºmero
                   </label>
                   <input
                     type='text'
@@ -436,7 +436,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Tempo de Residência
+                    Tempo de ResidÃªncia
                   </label>
                   <input
                     type='text'
@@ -450,11 +450,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
             </section>
 
-            {/* Vínculo Empregatício */}
-            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-purple-500/30'>
+            {/* VÃ­nculo EmpregatÃ­cio */}
+            <section className='lg-card lg-card-lift p-6'>
               <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
                 <Briefcase size={18} className='text-purple-500' />
-                Vínculo Empregatício
+                VÃ­nculo EmpregatÃ­cio
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div className='space-y-2'>
@@ -484,7 +484,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2 md:col-span-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Endereço da Empresa
+                    EndereÃ§o da Empresa
                   </label>
                   <input
                     type='text'
@@ -510,7 +510,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Salário / Renda Mensal
+                    SalÃ¡rio / Renda Mensal
                   </label>
                   <input
                     type='text'
@@ -522,7 +522,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Data de Admissão
+                    Data de AdmissÃ£o
                   </label>
                   <input
                     type='date'
@@ -543,12 +543,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                       ? calculateTimeAtCompany()
                       : profileData.admission_date
                         ? 'Calculando...'
-                        : '—'}
+                        : 'â€”'}
                   </div>
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Tipo de Vínculo
+                    Tipo de VÃ­nculo
                   </label>
                   <select
                     disabled={!isEditing}
@@ -557,8 +557,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     className={getFieldClass(profileData.employmentType)}
                   >
                     <option>CLT</option>
-                    <option>Autônomo</option>
-                    <option>Empresário / PJ</option>
+                    <option>AutÃ´nomo</option>
+                    <option>EmpresÃ¡rio / PJ</option>
                     <option>Aposentado / Pensionista</option>
                     <option>Outros</option>
                   </select>
@@ -568,17 +568,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </>
         )}
 
-        {/* Cônjuge — only shown for PF when casado */}
+        {/* CÃ´njuge â€” only shown for PF when casado */}
         {profileData.tenantType !== 'pj' && profileData.maritalStatus === 'casado' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-pink-500/30'>
+          <section className='lg-card lg-card-lift p-6'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Heart size={18} className='text-pink-500' />
-              Cônjuge
+              CÃ´njuge
             </h3>
             <div className='space-y-4'>
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Possui cônjuge?
+                  Possui cÃ´njuge?
                 </label>
                 <select
                   disabled={!isEditing}
@@ -586,7 +586,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   onChange={(e) => setProfileData({ ...profileData, hasSpouse: e.target.value })}
                   className={getFieldClass(profileData.hasSpouse)}
                 >
-                  <option value='Não'>Não</option>
+                  <option value='NÃ£o'>NÃ£o</option>
                   <option value='Sim'>Sim</option>
                 </select>
               </div>
@@ -655,7 +655,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   </div>
                   <div className='space-y-2'>
                     <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                      Profissão
+                      ProfissÃ£o
                     </label>
                     <input
                       type='text'
@@ -684,17 +684,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </section>
         )}
 
-        {/* Referências — only shown for PF */}
+        {/* ReferÃªncias â€” only shown for PF */}
         {profileData.tenantType !== 'pj' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-indigo-500/30'>
+          <section className='lg-card lg-card-lift p-6'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <BookOpen size={18} className='text-indigo-500' />
-              Referências
+              ReferÃªncias
             </h3>
             <div className='space-y-6'>
               <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10'>
                 <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
-                  Referência Bancária <span className='text-slate-300'>(opcional)</span>
+                  ReferÃªncia BancÃ¡ria <span className='text-slate-300'>(opcional)</span>
                 </p>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                   <div className='space-y-2'>
@@ -711,7 +711,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   </div>
                   <div className='space-y-2'>
                     <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                      Agência
+                      AgÃªncia
                     </label>
                     <input
                       type='text'
@@ -737,11 +737,11 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
               <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10'>
                 <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
-                  Referências Pessoais <span className='text-slate-300'>(opcional)</span>
+                  ReferÃªncias Pessoais <span className='text-slate-300'>(opcional)</span>
                 </p>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-3'>
-                    <p className='text-[9px] font-bold text-slate-400 uppercase tracking-wider'>Referência 1</p>
+                    <p className='text-[9px] font-bold text-slate-400 uppercase tracking-wider'>ReferÃªncia 1</p>
                     <div className='space-y-2'>
                       <input
                         type='text'
@@ -768,13 +768,13 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                         value={profileData.refPersonal1Relation}
                         readOnly={!isEditing}
                         onChange={(e) => setProfileData({ ...profileData, refPersonal1Relation: e.target.value })}
-                        placeholder='Relação (amigo, parente...)'
+                        placeholder='RelaÃ§Ã£o (amigo, parente...)'
                         className={getFieldClass(profileData.refPersonal1Relation)}
                       />
                     </div>
                   </div>
                   <div className='space-y-3'>
-                    <p className='text-[9px] font-bold text-slate-400 uppercase tracking-wider'>Referência 2</p>
+                    <p className='text-[9px] font-bold text-slate-400 uppercase tracking-wider'>ReferÃªncia 2</p>
                     <div className='space-y-2'>
                       <input
                         type='text'
@@ -801,7 +801,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                         value={profileData.refPersonal2Relation}
                         readOnly={!isEditing}
                         onChange={(e) => setProfileData({ ...profileData, refPersonal2Relation: e.target.value })}
-                        placeholder='Relação (amigo, parente...)'
+                        placeholder='RelaÃ§Ã£o (amigo, parente...)'
                         className={getFieldClass(profileData.refPersonal2Relation)}
                       />
                     </div>
@@ -814,10 +814,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
         {/* Emergency Contact */}
         {config.sections.emergency.status !== 'hidden' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-red-500/30'>
+          <section className='lg-card lg-card-lift p-6'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Activity size={18} className='text-red-500' />
-              Contato de Emergência
+              Contato de EmergÃªncia
             </h3>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div className='space-y-2'>
@@ -836,7 +836,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Telefone de Emergência
+                  Telefone de EmergÃªncia
                 </label>
                 <input
                   type='text'

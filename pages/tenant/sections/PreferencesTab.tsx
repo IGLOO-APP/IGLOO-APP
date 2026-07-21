@@ -24,7 +24,7 @@ export const PreferencesTab: React.FC<PreferencesTabProps> = ({
   return (
     <div className='animate-fadeIn pb-8 space-y-8'>
       {/* Notifications */}
-      <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+      <section className='lg-card lg-card-lift p-6'>
         <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
           <Bell size={18} className='text-primary' /> Central de Notificações
         </h3>
@@ -113,7 +113,7 @@ export const PreferencesTab: React.FC<PreferencesTabProps> = ({
       </section>
 
       {/* Security */}
-      <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
+      <section className='lg-card lg-card-lift p-6'>
         <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
           <Lock size={18} className='text-amber-500' /> Segurança e Privacidade
         </h3>

@@ -61,7 +61,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
             Compartilhado pelo proprietário
           </p>
         </div>
-        <div className='bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm'>
+        <div className='lg-card lg-card-lift'>
           {[
             {
               id: 'contract',
@@ -207,7 +207,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
               return (
                 <div
                   key={doc.id}
-                  className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
+                  className='lg-card lg-card-lift p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all'
                 >
                   <div className='flex items-center gap-4'>
                     <div
@@ -256,7 +256,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
               return (
                 <div
                   key={doc.id}
-                  className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
+                  className='lg-card lg-card-lift p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all'
                 >
                   <div className='flex items-center gap-4'>
                     <div
@@ -332,7 +332,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
                 return (
                   <div
                     key={doc.id}
-                    className='bg-white dark:bg-surface-dark p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-primary/20'
+                    className='lg-card lg-card-lift p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all'
                   >
                     <div className='flex items-center gap-4'>
                       <div
@@ -386,7 +386,7 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
               <Shield className='text-amber-500' size={20} /> Garantia da Locação
             </h3>
 
-            <div className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 space-y-6'>
+            <div className='lg-card lg-card-lift p-6 space-y-6'>
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                   Tipo de Garantia

@@ -44,7 +44,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             </div>
           </div>
           <div className='flex-1 overflow-y-auto px-4 md:px-6 scroll-smooth pb-8'>
-            <div className='bg-white dark:bg-surface-dark border border-slate-400 dark:border-gray-600 font-sans text-slate-900 dark:text-white mb-4'>
+            <div className='lg-card font-sans mb-4'>
               <div className='flex items-center border-b border-slate-400 dark:border-gray-600 px-3 py-2 gap-4'>
                 <div className='flex items-center gap-3 px-2 border-r-2 border-slate-400 dark:border-gray-500 pr-4'>
                   <div className='w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white font-bold text-xs shrink-0'>

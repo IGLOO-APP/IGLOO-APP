@@ -75,10 +75,7 @@ const TenantProfile: React.FC = () => {
                 <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
                   {profileData.occupation}
                 </span>
-                <span className='w-1 h-1 rounded-full bg-slate-300 dark:bg-white/10'></span>
-                <span className='text-[10px] font-black text-emerald-500 uppercase tracking-widest'>
-                  Inquilino Nível 5
-                </span>
+
               </div>
             </div>
           </div>
