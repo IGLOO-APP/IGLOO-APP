@@ -39,10 +39,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   notifications,
 }) => {
   return (
-    <header
-      className='flex items-center px-6 py-5 justify-between sticky top-0 z-30 transition-colors'
-      style={{ background: 'transparent' }}
-    >
+    <header className='w-full lg-topbar px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-30'>
       <div className='flex items-center gap-4'>
         <button
           onClick={() => onNavigate('/tenant/profile')}
@@ -104,9 +101,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 className='fixed inset-0 z-20 cursor-default'
                 onClick={onCloseNotifications}
               ></div>
-              <div className='absolute top-full right-0 mt-2 w-80 backdrop-blur-xl bg-background/95 rounded-2xl shadow-2xl border border-border/50 py-2 animate-scaleUp origin-top-right z-30 overflow-hidden'>
-                <div className='px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-slate-50/50 dark:bg-white/5'>
-                  <h3 className='text-sm font-bold text-slate-900 dark:text-white'>Notificações</h3>
+              <div className='lg-card absolute top-full right-0 mt-2 w-80 animate-scaleUp origin-top-right z-30 overflow-hidden'>
+                <div className='px-4 py-3 border-b border-white/10 flex justify-between items-center'>
+                  <h3 className='text-sm font-bold text-foreground'>Notificações</h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={onMarkAllAsRead}
@@ -125,8 +122,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                           onMarkAsRead(notif.id);
                           if (notif.link) onNavigate(notif.link);
                         }}
-                        className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0 transition-colors ${
-                          !notif.is_read ? 'bg-primary/5 dark:bg-primary/10' : ''
+                        className={`px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors ${
+                          !notif.is_read ? 'bg-primary/5' : ''
                         }`}
                       >
                         <div className='flex justify-between items-start gap-3'>
@@ -134,16 +131,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <p
                               className={`text-sm ${
                                 !notif.is_read
-                                  ? 'font-bold text-slate-900 dark:text-white'
-                                  : 'font-medium text-slate-600 dark:text-slate-300'
+                                  ? 'font-bold text-foreground'
+                                  : 'font-medium text-muted-foreground'
                               }`}
                             >
                               {notif.title}
                             </p>
-                            <p className='text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2'>
+                            <p className='text-xs text-muted-foreground mt-0.5 line-clamp-2'>
                               {notif.message}
                             </p>
-                            <p className='text-[10px] text-slate-400 mt-1'>
+                            <p className='text-[10px] text-muted-foreground/60 mt-1'>
                               {new Date(notif.created_at).toLocaleDateString()}{' '}
                               {new Date(notif.created_at).toLocaleTimeString([], {
                                 hour: '2-digit',
@@ -158,16 +155,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                       </div>
                     ))
                   ) : (
-                    <div className='p-8 text-center text-slate-400 text-sm'>
+                    <div className='p-8 text-center text-muted-foreground text-sm'>
                       <Bell size={24} className='mx-auto mb-2 opacity-50' />
                       Nenhuma notificação
                     </div>
                   )}
                 </div>
-                <div className='p-2 border-t border-gray-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 text-center'>
+                <div className='p-2 border-t border-white/10 text-center'>
                   <button
                     onClick={onTriggerTestNotification}
-                    className='text-[10px] font-bold text-slate-400 hover:text-primary transition-colors'
+                    className='text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors'
                   >
                     Simular Notificação (Teste)
                   </button>

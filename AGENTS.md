@@ -183,6 +183,29 @@ On every session start, run `npx tsc --noEmit --skipLibCheck` and fix any syntax
 - `index.css` — removed duplicate `@import '@fontsource-variable/geist'`
 
 **Result:** `tsc --noEmit --skipLibCheck` passes cleanly. `ModalWrapper`, `InfoTooltip`, `Toast` — all 3 custom components removed from `components/ui/`.
+### 2026-07-21 — Tenant liquid glass redesign + code fixes
+
+**Scope:** Aplicar design system liquid glass do proprietário ao perfil inquilino; corrigir violações críticas do AGENTS.md.
+
+**Mudanças visuais (liquid glass):**
+- `DashboardHeader.tsx` — substituído `style={{ background: 'transparent' }}` por `lg-topbar` (glassmorfismo completo com backdrop-blur, borda, sombra)
+- `TenantMessages.tsx` — substituído `Navbar` do Konsta por header com `lg-topbar` + botão Voltar
+- `InvoiceModal.tsx` / `CreditCardModal.tsx` — removidos 8 `style={{}}` inline, agora usam `lg-card`
+- `FinancialCard.tsx` — removido score falso hardcoded (95/100, "Nível Elite")
+- `ProfileTab.tsx` — removidas 7 side-stripes (`w-1 h-full bg-*`) → `border-l-2 border-*/30`; removido score falso
+- `TenantPayments.tsx` — removido `style={{ background: 'rgba(3,5,18,0.85)' }}` (agora usa `lg-card`)
+
+**Correções de código (violações AGENTS.md):**
+- `useTenantDashboard.tsx` — removido `localStorage.theme` + `document.documentElement` toggle → `useTheme()` hook; removido `supabase.from('inspections')` → `inspectionService.getByProperty()`
+- `TenantMaintenance.tsx` — removido `import { supabase }` + 2 chamadas `supabase.from()`: `maintenanceService.getMessagesByRequestIds()` e `contractService.getByTenantId()`; criados métodos nos services
+- `TenantPayments.tsx:575` — adicionado `.catch(() => {})` ao fire-and-forget `detachPaymentMethod().then()`
+
+**Novos métodos em services:**
+- `services/maintenance/maintenanceService.ts` — `getMessagesByRequestIds(requestIds: string[])`
+- `services/tenancy/contractService.ts` — `getByTenantId(tenantId: string): Promise<Contract | null>`
+
+**Resultado:** `tsc --noEmit --skipLibCheck` passa limpo. 0 erros.
+
 ### 2026-07-13 — PWA resilience + error diagnostics
 
 **Scope:**

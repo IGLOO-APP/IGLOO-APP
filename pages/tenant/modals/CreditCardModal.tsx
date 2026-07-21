@@ -26,33 +26,8 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 border border-white/10 rounded-[22px]'
-        style={{
-          background: 'rgba(12,14,26,0.92)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        }}
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 lg-card'
       >
-        <div
-          aria-hidden='true'
-          className='absolute inset-0 overflow-hidden pointer-events-none'
-          style={{ borderRadius: 'inherit' }}
-        >
-          <div
-            className='absolute w-[50vw] h-[50vw] top-[-20%] left-[-20%] rounded-full opacity-50'
-            style={{
-              background: 'radial-gradient(circle, var(--lg-blob-1), transparent 70%)',
-              filter: 'blur(90px)',
-            }}
-          />
-          <div
-            className='absolute w-[42vw] h-[42vw] bottom-[-20%] right-[-20%] rounded-full opacity-50'
-            style={{
-              background: 'radial-gradient(circle, var(--lg-blob-2), transparent 70%)',
-              filter: 'blur(80px)',
-            }}
-          />
-        </div>
         <div className='relative z-10'>
           <DialogHeader className='px-6 py-4 border-b border-white/10 flex-shrink-0'>
             <DialogTitle className='text-xl font-bold'>Pagar com Cartão</DialogTitle>

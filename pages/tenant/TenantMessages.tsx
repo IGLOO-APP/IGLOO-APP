@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar, NavbarBackLink } from 'konsta/react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { messageService } from '../../services/messageService';
 import { announcementService } from '../../services/announcementService';
@@ -127,16 +127,25 @@ const TenantMessages: React.FC = () => {
 
   return (
     <div className='flex flex-col h-full w-full'>
-      <Navbar
-        title='Mensagens'
-        subtitle={propertyName || undefined}
-        left={<NavbarBackLink onClick={() => navigate('/tenant')} />}
-        right={
-          <div className='w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
-            <Megaphone size={18} strokeWidth={1.8} />
+      <div className='lg-topbar px-4 md:px-6 py-3 flex items-center justify-between w-full sticky top-0 z-30'>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => navigate('/tenant')}
+            className='w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all'
+          >
+            <ArrowLeft size={18} strokeWidth={1.8} />
+          </button>
+          <div>
+            <h1 className='text-sm font-bold text-foreground'>Mensagens</h1>
+            {propertyName && (
+              <p className='text-[10px] font-medium text-muted-foreground'>{propertyName}</p>
+            )}
           </div>
-        }
-      />
+        </div>
+        <div className='w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary'>
+          <Megaphone size={18} strokeWidth={1.8} />
+        </div>
+      </div>
 
       <div className='flex-1 overflow-y-auto p-4 space-y-4'>
         {loading ? (

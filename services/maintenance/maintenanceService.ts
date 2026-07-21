@@ -82,6 +82,20 @@ export const maintenanceService = {
     return data;
   },
 
+  async getMessagesByRequestIds(requestIds: string[]): Promise<any[]> {
+    if (requestIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from('maintenance_messages')
+      .select('*')
+      .in('request_id', requestIds)
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('[maintenanceService] Error fetching maintenance messages:', error);
+      return [];
+    }
+    return data;
+  },
+
   async sendMessage(
     requestId: string,
     senderId: string,

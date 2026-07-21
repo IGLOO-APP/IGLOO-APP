@@ -5,8 +5,6 @@ import {
   CreditCard,
   Barcode,
   AlertTriangle,
-  Award,
-  Star,
   Camera,
   FileText,
   MessageCircle,
@@ -265,60 +263,7 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
         </div>
       </div>
 
-      {/* Tenant Score */}
-      <div className='mb-6'>
-        <div
-          className='lg-card lg-card-lift p-6 relative overflow-hidden'
-          style={{ background: 'rgba(3,5,18,0.85)' }}
-        >
-          <div className='absolute right-0 top-0 p-6 opacity-10'>
-            <Award size={100} strokeWidth={1.8} />
-          </div>
-          <div className='flex justify-between items-start relative z-10'>
-            <div>
-              <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2'>
-                Seu Score
-              </p>
-              <h3 className='text-4xl font-black flex items-center gap-2 tracking-tighter'>
-                95<span className='text-xl text-slate-500 font-bold'>/100</span>
-              </h3>
-              <div className='flex gap-1.5 mt-3'>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    size={14}
-                    strokeWidth={1.8}
-                    className='text-yellow-400 fill-yellow-400'
-                  />
-                ))}
-              </div>
-            </div>
-            <div className='text-right'>
-              <p className='text-[10px] font-bold text-slate-400 uppercase tracking-wider'>
-                Inquilino Nível
-              </p>
-              <p className='text-xl font-black text-yellow-400 tracking-tight'>5 Estrelas!</p>
-            </div>
-          </div>
-          <p className='text-[10px] text-slate-500 font-medium mt-4 italic'>
-            Seu histórico como inquilino nos últimos 12 meses
-          </p>
-          <div className='mt-5 pt-5 border-t border-white/10 flex justify-between'>
-            <div className='flex flex-col'>
-              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>
-                Pontualidade
-              </span>
-              <span className='text-sm font-bold text-emerald-400'>100%</span>
-            </div>
-            <div className='flex flex-col text-right'>
-              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>
-                Cuidado
-              </span>
-              <span className='text-sm font-bold text-primary'>90%</span>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Quick Access Grid */}
       <div className='mb-6'>

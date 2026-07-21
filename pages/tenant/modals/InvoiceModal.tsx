@@ -22,34 +22,9 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl border border-white/10 rounded-[22px]'
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-3xl lg-card'
         showCloseButton={false}
-        style={{
-          background: 'rgba(12,14,26,0.92)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        }}
       >
-        <div
-          aria-hidden='true'
-          className='absolute inset-0 overflow-hidden pointer-events-none'
-          style={{ borderRadius: 'inherit' }}
-        >
-          <div
-            className='absolute w-[50vw] h-[50vw] top-[-20%] left-[-20%] rounded-full opacity-50'
-            style={{
-              background: 'radial-gradient(circle, var(--lg-blob-1), transparent 70%)',
-              filter: 'blur(90px)',
-            }}
-          />
-          <div
-            className='absolute w-[42vw] h-[42vw] bottom-[-20%] right-[-20%] rounded-full opacity-50'
-            style={{
-              background: 'radial-gradient(circle, var(--lg-blob-2), transparent 70%)',
-              filter: 'blur(80px)',
-            }}
-          />
-        </div>
         <div className='relative z-10'>
           <div className='flex items-center justify-between px-4 md:px-6 pt-2 pb-2 md:pb-4 shrink-0'>
             <h2 className='text-xl font-bold text-slate-900 dark:text-white'>Detalhes do Boleto</h2>

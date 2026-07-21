@@ -24,7 +24,8 @@ import {
 import { tenantService } from '../../services/tenancy/tenantService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { maintenanceService } from '../../services/maintenance/maintenanceService';
+import { contractService } from '../../services/tenancy/contractService';
 
 // ─── Types ───────────────────────────────────────────────
 interface UnifiedMessage {
@@ -113,13 +114,7 @@ const TenantMaintenance: React.FC = () => {
       if (requests.length === 0) return [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const requestIds = requests.map((r: any) => r.id);
-      const { data: rawMsgs, error } = await supabase
-        .from('maintenance_messages')
-        .select('*')
-        .in('request_id', requestIds)
-        .order('created_at', { ascending: true });
-
-      if (error) return [];
+      const rawMsgs = await maintenanceService.getMessagesByRequestIds(requestIds);
 
       const timeline: UnifiedMessage[] = [];
       for (const req of requests) {
@@ -207,13 +202,7 @@ const TenantMaintenance: React.FC = () => {
     mutationFn: async (newTicket: any) => {
       let propertyId = tenantProfile?.property_id || requests?.[0]?.property_id || '';
       if (!propertyId) {
-        const { data: contract } = await supabase
-          .from('contracts')
-          .select('property_id')
-          .eq('tenant_id', currentUser!.id.toString())
-          .in('status', ['active', 'pending'])
-          .limit(1)
-          .maybeSingle();
+        const contract = await contractService.getByTenantId(currentUser!.id.toString());
         propertyId = contract?.property_id || '';
       }
       if (!propertyId) throw new Error('Imóvel não encontrado.');

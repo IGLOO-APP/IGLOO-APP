@@ -118,7 +118,7 @@ const TenantDashboard: React.FC = () => {
                   Vistoria {pendingInspection.status}
                 </h4>
                 <p className='text-sm text-orange-200/70 mt-0.5'>
-                  {pendingInspection.type === 'IN' ? 'Entrada' : 'Saída'} • Revise os itens do
+                  {pendingInspection.type === 'entrada' ? 'Entrada' : pendingInspection.type === 'saída' ? 'Saída' : 'Periódica'} • Revise os itens do
                   imóvel.
                 </p>
               </div>

@@ -5,16 +5,16 @@ import { useNotification } from '../../../context/NotificationContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { tenantService } from '../../../services/tenancy/tenantService';
 import { announcementService } from '../../../services/announcementService';
-import { supabase } from '../../../lib/supabase';
-import { Property, Tenant, SystemAnnouncement } from '../../../types';
+import { inspectionService } from '../../../services/maintenance/inspectionService';
+import { useTheme } from '../../../hooks/useTheme';
+import { Tenant, Property, SystemAnnouncement, OwnerAnnouncement, PaymentRecord } from '../../../types';
+import type { Inspection } from '../../../services/maintenance/inspectionService';
 
 interface OutletCtx {
   isOnboardingRequired: boolean;
   loadingOnboarding: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tenantData: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pendingInspection: any;
+  tenantData: Tenant | null;
+  pendingInspection: Inspection | null;
   refetchOnboarding: () => Promise<void>;
 }
 
@@ -30,28 +30,28 @@ export function useTenantDashboard() {
 
   const { notifications, unreadCount, markAsRead, markAllAsRead, triggerTestNotification } =
     useNotification();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [tenantData, setTenantData] = useState<Tenant | null>(null);
-  const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [recentPayments, setRecentPayments] = useState<PaymentRecord[]>([]);
   const [announcements, setAnnouncements] = useState<SystemAnnouncement[]>([]);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'late'>('pending');
   const [copied, setCopied] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const [showInspection, setShowInspection] = useState(false);
-  const [pendingInspection, setPendingInspection] = useState<any | null>(null);
+  const [pendingInspection, setPendingInspection] = useState<Inspection | null>(null);
 
   const currentTenant = contextTenantData || tenantData;
 
-  const tenantProperty: Property | null = currentTenant
-    ? {
+  const tenantProperty = currentTenant
+    ? ({
         id: currentTenant.property_id || '',
         name: currentTenant.property || 'Seu Imóvel',
         address: currentTenant.property_address || '',
-        status: 'ALUGADO',
+        status: 'ALUGADO' as const,
         price: `R$ ${currentTenant.contract?.monthly_value?.toLocaleString('pt-BR') || '0,00'}`,
         numeric_price: currentTenant.contract?.monthly_value,
         area: currentTenant.property_details?.area
@@ -70,7 +70,7 @@ export function useTenantDashboard() {
               value: `R$ ${currentTenant.contract.monthly_value.toLocaleString('pt-BR')}`,
             }
           : null,
-      }
+      } as Property)
     : null;
 
   const [showInvoice, setShowInvoice] = useState(false);
@@ -193,19 +193,6 @@ export function useTenantDashboard() {
   };
 
   useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    checkTheme();
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          checkTheme();
-        }
-      });
-    });
-    observer.observe(document.documentElement, { attributes: true });
-
     const abortController = new AbortController();
     const fetchData = async () => {
       if (!user?.id) return;
@@ -244,24 +231,18 @@ export function useTenantDashboard() {
           announcementService.getForTenant(user.id.toString(), data.property_id, condoName),
         ]);
 
-        const combined: any[] = [...(systemAnn || []), ...(ownerAnn || [])].sort((a, b) => {
+        const combined = [...(systemAnn || []), ...(ownerAnn || [])].sort((a, b) => {
           const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
           const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
           return dateB - dateA;
-        });
+        }) as SystemAnnouncement[];
 
         setAnnouncements(combined.slice(0, 3));
 
         if (data?.property_id) {
-          const { data: inspRes } = await supabase
-            .from('inspections')
-            .select('*')
-            .eq('property_id', data.property_id)
-            .in('status', ['Pendente', 'Em Revisão'])
-            .maybeSingle();
-
-          if (inspRes) setPendingInspection(inspRes);
-
+          const inspections = await inspectionService.getByProperty(data.property_id);
+          const pending = inspections.find((i) => ['Pendente', 'Em Revisão', 'pendente_assinatura', 'rascunho'].includes(i.status));
+          if (pending) setPendingInspection(pending);
         }
       } catch (err) {
         console.error('Error fetching tenant dashboard data:', err);
@@ -274,19 +255,8 @@ export function useTenantDashboard() {
 
     return () => {
       abortController.abort();
-      observer.disconnect();
     };
   }, [user?.id]);
-
-  const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.theme = 'dark';
-    }
-  };
 
   const handleUserMenuClick = () => {
     setShowUserMenu(!showUserMenu);

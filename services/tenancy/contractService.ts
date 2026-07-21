@@ -322,6 +322,18 @@ export const contractService = {
     }
   },
 
+  async getByTenantId(tenantId: string): Promise<Contract | null> {
+    const { data, error } = await supabase
+      .from('contracts')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .in('status', ['active', 'pending'])
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data as Contract | null;
+  },
+
   async getExpiring(ownerId: string): Promise<Contract[]> {
     const { data, error } = await supabase
       .from('contracts')

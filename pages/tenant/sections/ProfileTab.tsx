@@ -34,48 +34,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 }) => {
   return (
     <div className='animate-fadeIn pb-8 space-y-6'>
-      {/* AI Score Insights Card */}
-      <div className='bg-slate-900 dark:bg-surface-dark rounded-3xl p-6 text-white shadow-xl relative overflow-hidden'>
-        <div className='absolute right-0 top-0 p-6 opacity-10'>
-          <Star size={120} />
-        </div>
-        <div className='relative z-10'>
-          <div className='flex justify-between items-start mb-6'>
-            <div>
-              <p className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2'>
-                Seu Score IGLOO
-              </p>
-              <h3 className='text-5xl font-black flex items-center gap-2 tracking-tighter'>
-                95<span className='text-xl text-slate-500 font-bold'>/100</span>
-              </h3>
-            </div>
-            <div className='text-right'>
-              <span className='px-3 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest'>
-                Nível Elite
-              </span>
-            </div>
-          </div>
-
-          <div className='grid grid-cols-2 gap-4 pt-4 border-t border-white/10'>
-            <div className='flex flex-col'>
-              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>
-                Pontualidade
-              </span>
-              <span className='text-sm font-bold text-emerald-400'>Exemplar</span>
-            </div>
-            <div className='flex flex-col text-right'>
-              <span className='text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1'>
-                Conservação
-              </span>
-              <span className='text-sm font-bold text-primary'>Nota 9.5</span>
-            </div>
-          </div>
-          <p className='text-[10px] text-slate-400 font-medium mt-4 italic'>
-            * Este score é visível para o proprietário e ajuda em futuras renovações.
-          </p>
-        </div>
-      </div>
-
       {/* Profile Completion Card */}
       <div className='bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5'>
         <div className='flex justify-between items-center mb-4'>
@@ -158,8 +116,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         )}
 
         {/* Personal Info */}
-        <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-          <div className='absolute top-0 left-0 w-1 h-full bg-blue-500'></div>
+        <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-blue-500/30'>
           <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
             <User size={18} className='text-blue-500' />
             Informações Pessoais
@@ -301,8 +258,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         {/* PF content / PJ content */}
         {profileData.tenantType === 'pj' ? (
           /* PJ: Dados da Empresa */
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-            <div className='absolute top-0 left-0 w-1 h-full bg-amber-500'></div>
+          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-amber-500/30'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Building2 size={18} className='text-amber-500' />
               Dados da Empresa
@@ -386,8 +342,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         ) : (
           <>
             {/* Endereço Atual — expanded address fields */}
-            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-              <div className='absolute top-0 left-0 w-1 h-full bg-emerald-500'></div>
+            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-emerald-500/30'>
               <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
                 <Car size={18} className='text-emerald-500' />
                 Endereço Atual
@@ -496,8 +451,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </section>
 
             {/* Vínculo Empregatício */}
-            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-              <div className='absolute top-0 left-0 w-1 h-full bg-purple-500'></div>
+            <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-purple-500/30'>
               <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
                 <Briefcase size={18} className='text-purple-500' />
                 Vínculo Empregatício
@@ -616,8 +570,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
         {/* Cônjuge — only shown for PF when casado */}
         {profileData.tenantType !== 'pj' && profileData.maritalStatus === 'casado' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-            <div className='absolute top-0 left-0 w-1 h-full bg-pink-500'></div>
+          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-pink-500/30'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Heart size={18} className='text-pink-500' />
               Cônjuge
@@ -733,8 +686,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
         {/* Referências — only shown for PF */}
         {profileData.tenantType !== 'pj' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-            <div className='absolute top-0 left-0 w-1 h-full bg-indigo-500'></div>
+          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-indigo-500/30'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <BookOpen size={18} className='text-indigo-500' />
               Referências
@@ -862,8 +814,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
         {/* Emergency Contact */}
         {config.sections.emergency.status !== 'hidden' && (
-          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden'>
-            <div className='absolute top-0 left-0 w-1 h-full bg-red-500'></div>
+          <section className='bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden border-l-2 border-red-500/30'>
             <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
               <Activity size={18} className='text-red-500' />
               Contato de Emergência

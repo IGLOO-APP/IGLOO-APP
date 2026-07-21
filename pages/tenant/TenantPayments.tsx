@@ -271,7 +271,7 @@ const TenantPayments: React.FC = () => {
 
       <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6'>
         {/* Summary Card */}
-        <div className='lg-card lg-card-lift p-6' style={{ background: 'rgba(3,5,18,0.85)' }}>
+        <div className='lg-card lg-card-lift p-6'>
           <div className='absolute top-0 right-0 p-4 opacity-10'>
             <PieChart size={100} strokeWidth={1.8} />
           </div>
@@ -572,7 +572,7 @@ const TenantPayments: React.FC = () => {
                         selectedId={selectedCardId || undefined}
                         onSelect={setSelectedCardId}
                         onDelete={(id) =>
-                          stripeService.detachPaymentMethod(id).then(loadPaymentMethods)
+                          stripeService.detachPaymentMethod(id).then(loadPaymentMethods).catch(() => {})
                         }
                         onAddNew={() => setShowAddNewCard(true)}
                       />
