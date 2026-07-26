@@ -463,7 +463,7 @@ const TenantPayments: React.FC = () => {
       {/* PAYMENT MODAL FLOW */}
       {!selectedPayment ? null : (
         <Dialog open onOpenChange={(open) => !open && setSelectedPayment(null)}>
-          <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-lg'>
+          <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 w-full max-w-[calc(100vw-1.5rem)] sm:max-w-lg'>
             <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
               <DialogTitle className='text-xl font-bold'>
                 {step === 'success' ? 'Sucesso!' : `Pagamento - ${selectedPayment?.month}`}

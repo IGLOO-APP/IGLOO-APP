@@ -26,7 +26,7 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className='max-h-[90vh] overflow-y-auto p-0 gap-0 lg-card'
+        className='max-h-[90vh] overflow-y-auto p-0 gap-0 w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md lg-card'
       >
         <div className='relative z-10'>
           <DialogHeader className='px-6 py-4 border-b border-white/10 flex-shrink-0'>
@@ -56,24 +56,24 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
                 </form>
               )}
             </div>
-            {!paymentSuccess && (
-              <div className='p-6 border-t border-white/10 z-20'>
-                <button
-                  form='card-form'
-                  type='submit'
-                  disabled={processingPayment}
-                  className='w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]'
-                >
-                  {processingPayment ? (
-                    <Loader className='animate-spin' size={24} />
-                  ) : (
-                    <>
-                      <CreditCard size={24} /> Pagar Agora
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+              {!paymentSuccess && (
+                <div className='p-6 border-t border-white/10 z-20'>
+                  <button
+                    form='card-form'
+                    type='submit'
+                    disabled={processingPayment}
+                    className='w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98]'
+                  >
+                    {processingPayment ? (
+                      <Loader className='animate-spin' size={24} />
+                    ) : (
+                      <>
+                        <CreditCard size={24} /> Pagar Agora
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
           </div>
         </div>
       </DialogContent>

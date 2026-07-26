@@ -1,12 +1,19 @@
 import React from 'react';
 import { FileText, Search, Download } from 'lucide-react';
 import { isValidUrl } from '../../../utils/validation';
+import { Tenant } from '../../../types';
+
+export interface TenantDocumentItem {
+  id?: string;
+  name: string;
+  url: string;
+  type?: string;
+  date?: string;
+}
 
 interface DocsTabProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tenant: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  docs: any[];
+  tenant: Tenant;
+  docs: TenantDocumentItem[];
   onOpenPreview: (url: string, title: string, id?: string) => void;
 }
 
@@ -66,10 +73,10 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
         </h3>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {tenant.contract && (
-            <div className='flex items-center justify-between lg-card lg-card-lift p-6 hover:border-primary/20 min-h-[80px]'>
-              <div className='flex items-center gap-3.5 min-w-0'>
-                <div className='w-10 h-10 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center shrink-0'>
-                  <FileText size={20} strokeWidth={1.8} />
+            <div className='flex items-center gap-3 lg-card lg-card-lift p-4 md:p-6 hover:border-primary/20 min-h-[72px]'>
+              <div className='flex items-center gap-3 min-w-0 flex-1'>
+                <div className='w-9 h-9 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center shrink-0'>
+                  <FileText size={18} strokeWidth={1.8} />
                 </div>
                 <div className='min-w-0'>
                   <p className='text-xs font-semibold text-foreground truncate'>
@@ -80,7 +87,7 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
                   </p>
                 </div>
               </div>
-              <div className='flex items-center gap-2'>
+              <div className='flex items-center gap-1.5 shrink-0'>
                 <button
                   onClick={() =>
                     onOpenPreview(
@@ -109,15 +116,14 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
             </div>
           )}
           {docs.length > 0 ? (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            docs.map((doc: any, idx: number) => (
+            docs.map((doc: TenantDocumentItem, idx: number) => (
               <div
                 key={idx}
-                className='flex items-center justify-between lg-card lg-card-lift p-6 hover:border-primary/20 min-h-[80px] transition-all duration-200'
+                className='flex items-center gap-3 lg-card lg-card-lift p-4 md:p-6 hover:border-primary/20 min-h-[72px] transition-all duration-200'
               >
-                <div className='flex items-center gap-3.5 min-w-0'>
-                  <div className='w-10 h-10 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center text-muted-foreground shrink-0'>
-                    <FileText size={20} strokeWidth={1.8} />
+                <div className='flex items-center gap-3 min-w-0 flex-1'>
+                  <div className='w-9 h-9 rounded-xl bg-muted/50 border border-border/50 backdrop-blur-sm flex items-center justify-center text-muted-foreground shrink-0'>
+                    <FileText size={18} strokeWidth={1.8} />
                   </div>
                   <div className='min-w-0'>
                     <p className='text-xs font-semibold text-foreground truncate'>{doc.name}</p>
@@ -126,7 +132,7 @@ export const DocsTab: React.FC<DocsTabProps> = ({ tenant, docs, onOpenPreview })
                     </p>
                   </div>
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1.5 shrink-0'>
                   <button
                     onClick={() => onOpenPreview(doc.url, doc.name, doc.id)}
                     className='w-8 h-8 rounded-lg bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center shrink-0'

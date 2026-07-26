@@ -41,7 +41,7 @@ export const InspectionListView: React.FC<InspectionListViewProps> = ({
   return (
     <div className='flex-1 flex flex-col overflow-hidden'>
       {/* Header */}
-      <div className='flex flex-col md:flex-row justify-between items-center px-8 py-6 bg-white dark:bg-black/10 border-b border-gray-100 dark:border-white/5 gap-4'>
+      <div className='flex flex-col md:flex-row justify-between items-center px-4 md:px-8 py-5 md:py-6 bg-white dark:bg-black/10 border-b border-gray-100 dark:border-white/5 gap-4'>
         <div>
           <div className='flex items-center gap-2 mb-0.5'>
             <h2 className='text-xl font-black text-slate-900 dark:text-white tracking-tight'>

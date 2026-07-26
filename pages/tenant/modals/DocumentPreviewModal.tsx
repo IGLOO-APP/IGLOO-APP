@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogOverlay, DialogPortal } from '@/components
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tenant } from '@/types';
 
 interface DocumentPreviewModalProps {
   previewUrl: string | null;
@@ -24,7 +25,7 @@ interface DocumentPreviewModalProps {
   apyPreviewUrl: string | null;
   previewError: string | null;
   originalUrl: string | null;
-  tenant: any;
+  tenant: Tenant | null;
   modalActionLoading: boolean;
   modalRejectReason: string;
   showModalRejectInput: boolean;
@@ -60,7 +61,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         <DialogOverlay className='bg-black/90 backdrop-blur-sm' />
         <DialogContent
           showCloseButton={false}
-          className='fixed inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] w-full h-full p-0 m-0 bg-slate-900 border border-white/10 ring-0 shadow-2xl data-open:zoom-in-100 rounded-3xl md:rounded-[40px]'
+          className='fixed inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-[calc(100vw-1rem)] max-h-[calc(100svh-1rem)] w-full h-full p-0 m-0 bg-slate-900 border border-white/10 ring-0 shadow-2xl data-open:zoom-in-100 rounded-2xl md:rounded-[40px]'
         >
           <div className='flex flex-col h-full overflow-hidden'>
             <div className='flex flex-col sm:flex-row sm:items-center justify-between p-4 md:p-6 gap-3 border-b border-white/5 bg-slate-950/80 backdrop-blur-md shrink-0'>
@@ -119,8 +120,8 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               </div>
             </div>
 
-            <div className='flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden bg-slate-950/40'>
-              <div className='w-full md:flex-1 min-w-0 bg-black/60 overflow-auto flex items-center justify-center p-4 md:p-6 relative h-[380px] md:h-auto shrink-0'>
+            <div className='flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-950/40'>
+              <div className='w-full md:flex-1 min-w-0 bg-black/60 overflow-auto flex items-center justify-center p-3 md:p-6 relative h-[45svh] min-h-[220px] md:h-auto shrink-0'>
                 {isPreviewLoading && (
                   <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-md'>
                     <Loader2 className='w-10 h-10 text-emerald-500 animate-spin mb-4' />
@@ -184,7 +185,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 )}
               </div>
 
-              <div className='w-full md:w-[380px] border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/60 backdrop-blur-md p-6 flex flex-col justify-between overflow-y-auto shrink-0'>
+              <div className='w-full md:w-[360px] border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/60 backdrop-blur-md p-4 md:p-6 flex flex-col justify-between overflow-y-auto shrink-0 max-h-[50svh] md:max-h-none'>
                 <div className='space-y-6'>
                   <div>
                     <h4 className='text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1'>

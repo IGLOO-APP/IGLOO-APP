@@ -22,7 +22,7 @@ export const InspectionModal: React.FC<InspectionModalProps> = ({
 
   return (
     <Dialog open={show} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-5xl'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 w-full max-w-[calc(100vw-1.5rem)] sm:max-w-2xl md:max-w-5xl'>
         <PropertyInspection
           property={property}
           onClose={onClose}

@@ -65,7 +65,7 @@ export const InspectionCreateForm: React.FC<InspectionCreateFormProps> = ({
   return (
     <div className='flex-1 flex flex-col overflow-hidden'>
       {/* Header */}
-      <div className='flex justify-between items-center px-8 py-6 bg-white/5 border-b border-white/10'>
+      <div className='flex justify-between items-center px-4 md:px-8 py-5 md:py-6 bg-white/5 border-b border-white/10'>
         <div>
           <h2 className='text-base font-black text-slate-900 dark:text-white uppercase tracking-wider'>
             Nova Vistoria

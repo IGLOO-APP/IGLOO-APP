@@ -115,9 +115,8 @@ const TenantProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* --- TABS NAVIGATION --- */}
-      <div className='px-6 pt-4 pb-2 sticky top-[105px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md'>
-        <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl overflow-x-auto hide-scrollbar'>
+      <div className='pt-4 pb-2 sticky top-[105px] z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6'>
+        <div className='flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl overflow-x-auto hide-scrollbar snap-x snap-mandatory'>
           {[
             { id: 'profile', label: 'Meus Dados', icon: User },
             { id: 'documents', label: 'Documentação', icon: FileText },
@@ -127,7 +126,11 @@ const TenantProfile: React.FC = () => {
               key={tab.id}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 min-w-[110px] py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white/10 text-foreground border border-white/20' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'}`}
+              className={`flex-1 min-w-[120px] snap-start py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-white/10 text-foreground border border-white/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              }`}
             >
               <tab.icon size={14} strokeWidth={1.8} /> {tab.label}
             </button>
