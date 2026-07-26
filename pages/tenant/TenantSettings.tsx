@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Moon, Sun, Globe, Lock, Smartphone, Save, CheckCircle } from 'lucide-react';
+import { Bell, Moon, Sun, Globe, Lock, Smartphone, Save, CheckCircle, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
 import { notificationService, NotificationPrefs } from '../../services/notificationService';
 
 const TenantSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const theme = isDark ? 'dark' : 'light';
   const setTheme = (val: string) => {
@@ -214,6 +214,19 @@ const TenantSettings: React.FC = () => {
             Gerenciar segurança da conta →
           </a>
         </div>
+      </div>
+
+      {/* Account Management */}
+      <div className='flex justify-between items-center px-2'>
+        <button className='text-xs font-black text-rose-500 uppercase tracking-widest hover:underline'>
+          Excluir minha conta
+        </button>
+        <button
+          onClick={logout}
+          className='flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all cursor-pointer'
+        >
+          <LogOut size={16} /> Sair da Conta
+        </button>
       </div>
 
       {/* Salvar */}
