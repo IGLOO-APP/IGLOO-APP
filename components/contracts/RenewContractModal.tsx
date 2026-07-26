@@ -30,7 +30,7 @@ export const RenewContractModal: React.FC<RenewContractModalProps> = ({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 md:max-w-xl'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto p-0 gap-0 w-full max-w-[calc(100vw-1.5rem)] sm:max-w-xl'>
         <DialogHeader className='px-6 py-4 border-b border-border flex-shrink-0'>
           <DialogTitle className='text-xl font-bold'>Renovação de Contrato</DialogTitle>
         </DialogHeader>

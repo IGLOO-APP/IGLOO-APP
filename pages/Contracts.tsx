@@ -163,10 +163,21 @@ const Contracts: React.FC = () => {
     }
   };
 
-  const handleUpdateContract = (updated: Contract) => {
-    // In a real app, this would also call a service update method
-    setContracts(contracts.map((c) => (c.id === updated.id ? updated : c)));
-    setSelectedContract(updated);
+  const handleUpdateContract = async (updated: Contract) => {
+    try {
+      await contractService.update(updated.id, {
+        status: updated.status,
+        signers: updated.signers,
+        history: updated.history,
+        pdf_url: updated.pdf_url,
+      });
+      setContracts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      setSelectedContract(updated);
+      addToast('Contrato Atualizado', 'As alterações do contrato foram salvas com sucesso.', 'success');
+    } catch (error) {
+      console.error('Error updating contract in Supabase:', error);
+      addToast('Erro', 'Erro ao salvar alterações no contrato.', 'error');
+    }
   };
 
   const handleRenewContract = async (data: {
@@ -217,7 +228,16 @@ const Contracts: React.FC = () => {
       c.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.contract_number.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || c.status === filter;
+
+    let matchesFilter = filter === 'all' || c.status === filter;
+    if (filter === 'expiring_soon') {
+      if (c.status === 'cancelled' || c.status === 'draft') return false;
+      const today = new Date();
+      const endDate = new Date(c.end_date);
+      const diffTime = endDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      matchesFilter = diffDays <= 30;
+    }
     return matchesSearch && matchesFilter;
   });
 

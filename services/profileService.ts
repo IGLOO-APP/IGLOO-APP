@@ -160,4 +160,41 @@ export const profileService = {
 
     return data;
   },
+
+  async uploadAvatar(userId: string, file: File): Promise<string> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        if (data?.publicUrl) {
+          await this.update(userId, { avatar_url: data.publicUrl });
+          return data.publicUrl;
+        }
+      }
+    } catch {
+      /* Fallback to Data URL if storage bucket fails or not configured */
+    }
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const dataUrl = reader.result as string;
+        try {
+          await this.update(userId, { avatar_url: dataUrl });
+          resolve(dataUrl);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
 };
