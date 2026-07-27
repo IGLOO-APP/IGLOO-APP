@@ -26,6 +26,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { maintenanceService } from '../../services/maintenance/maintenanceService';
 import { contractService } from '../../services/tenancy/contractService';
+import { messageService } from '../../services/messageService';
 
 // ─── Types ───────────────────────────────────────────────
 interface UnifiedMessage {
@@ -52,6 +53,8 @@ const TenantMaintenance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [pendingTicket, setPendingTicket] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ─── Data Queries ────────────────────────────────────────
