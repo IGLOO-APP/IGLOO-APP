@@ -19,10 +19,9 @@ import { TenantSidebar } from './tenant/TenantSidebar';
 
 const mobileNavItems = [
   { path: '/tenant', label: 'Início', icon: Home },
-  { path: '/tenant/contract', label: 'Contrato', icon: FileText },
   { path: '/tenant/payments', label: 'Pagamentos', icon: Receipt },
-  { path: '/tenant/maintenance', label: 'Suporte', icon: LifeBuoy },
-  { path: '/tenant/messages', label: 'Mensagens', icon: MessageSquare },
+  { path: '/tenant/messages', label: 'Suporte & Mensagens', icon: LifeBuoy },
+  { path: '/tenant/profile', label: 'Perfil', icon: User },
 ];
 
 const TenantLayout: React.FC = () => {
@@ -122,17 +121,10 @@ const TenantLayout: React.FC = () => {
       disabled: isOnboardingRequired,
     },
     {
-      path: '/tenant/maintenance',
-      label: 'Suporte',
-      icon: LifeBuoy,
-      description: 'Chamados e ajuda',
-      disabled: isOnboardingRequired,
-    },
-    {
       path: '/tenant/messages',
-      label: 'Mensagens',
+      label: 'Suporte & Mensagens',
       icon: MessageSquare,
-      description: 'Comunicados e conversas',
+      description: 'Chamados, ajuda e comunicados',
       disabled: isOnboardingRequired,
     },
     {

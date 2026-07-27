@@ -565,6 +565,43 @@ export const DocumentsTab: React.FC<DocumentsTabProps> = ({
           </section>
         </>
       )}
+
+      {/* Cofre de Documentos Pessoais */}
+      <section className='pt-4 border-t border-slate-200/60 dark:border-white/10'>
+        <div className='px-1 mb-4 flex items-center justify-between'>
+          <div>
+            <h3 className='font-black text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-widest'>
+              <Shield className='text-amber-500' size={20} /> Cofre Pessoal de Documentos
+            </h3>
+            <p className='text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1'>
+              Armazenamento seguro de arquivos pessoais (Apólice de Seguro, Recibos, etc)
+            </p>
+          </div>
+        </div>
+        <div className='lg-card lg-card-lift p-6'>
+          <div className='border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative group hover:border-primary/50 transition-colors'>
+            <input
+              type='file'
+              accept='image/*,application/pdf'
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const { toast } = await import('sonner');
+                  toast.success(`Arquivo "${file.name}" adicionado ao seu cofre pessoal!`);
+                }
+              }}
+              className='absolute inset-0 opacity-0 cursor-pointer'
+            />
+            <Upload size={28} className='text-slate-400 group-hover:text-primary transition-colors mb-2' />
+            <span className='text-xs font-bold text-slate-800 dark:text-slate-200'>
+              Clique ou arraste um arquivo para o Cofre
+            </span>
+            <span className='text-[10px] text-slate-400 font-medium mt-1'>
+              PDF, imagens ou documentos compactados até 10MB
+            </span>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

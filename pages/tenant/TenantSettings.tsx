@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Moon, Sun, Globe, Lock, Smartphone, Save, CheckCircle, LogOut } from 'lucide-react';
+import { Bell, Moon, Sun, Globe, Lock, Smartphone, Save, CheckCircle, LogOut, KeyRound } from 'lucide-react';
+import { useClerk } from '@clerk/clerk-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../hooks/useTheme';
 import { notificationService, NotificationPrefs } from '../../services/notificationService';
 
 const TenantSettings: React.FC = () => {
   const { user, logout } = useAuth();
+  const { openUserProfile } = useClerk();
   const { isDark, toggleTheme } = useTheme();
   const theme = isDark ? 'dark' : 'light';
   const setTheme = (val: string) => {
@@ -198,21 +200,20 @@ const TenantSettings: React.FC = () => {
             <p className='text-xs text-gray-500 dark:text-gray-400'>Conta logada via Clerk</p>
           </div>
         </div>
-        <div className='space-y-2 text-sm text-gray-600 dark:text-gray-300'>
+        <div className='space-y-3 text-sm text-gray-600 dark:text-gray-300'>
           <p>
             <span className='font-medium'>E-mail:</span> {user?.email}
           </p>
           <p>
-            <span className='font-medium'>Autenticação:</span> Gerenciada pelo Clerk
+            <span className='font-medium'>Autenticação:</span> Gerenciada de forma segura pelo Clerk
           </p>
-          <a
-            href='https://accounts.clerk.dev/user'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='inline-flex items-center gap-1 text-primary hover:underline text-sm mt-2'
+          <button
+            onClick={() => openUserProfile()}
+            className='inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider hover:bg-primary/20 transition-all cursor-pointer mt-2'
           >
-            Gerenciar segurança da conta →
-          </a>
+            <KeyRound size={14} />
+            Gerenciar Senha & Seguranca (2FA)
+          </button>
         </div>
       </div>
 

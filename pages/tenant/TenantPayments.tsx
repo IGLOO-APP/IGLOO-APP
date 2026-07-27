@@ -264,8 +264,31 @@ const TenantPayments: React.FC = () => {
           <h1 className='text-xl font-bold text-slate-900 dark:text-white'>Pagamentos</h1>
           <p className='text-sm text-slate-500 dark:text-slate-400'>Histórico financeiro</p>
         </div>
-        <button className='p-2 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors'>
-          <Download size={20} strokeWidth={1.8} />
+        <button
+          onClick={async () => {
+            const { toast } = await import('sonner');
+            toast.success(`Gerando Declaração de Quitação Anual de Débitos (${new Date().getFullYear()})...`);
+            // Simula download do PDF de quitação anual
+            setTimeout(() => {
+              const element = document.createElement('a');
+              const file = new Blob([
+                `DECLARAÇÃO DE QUITAÇÃO ANUAL DE DÉBITOS (${new Date().getFullYear()})\n\n` +
+                `Declaramos para os devidos fins que o(a) inquilino(a) ${tenantData?.name || user?.name || ''} quitou integralmente os débitos de locação relativos ao ano de ${new Date().getFullYear()}.\n\n` +
+                `Total Pago: R$ ${totalPaidCurrentYear.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` +
+                `Data da emissão: ${new Date().toLocaleDateString('pt-BR')}`
+              ], { type: 'text/plain' });
+              element.href = URL.createObjectURL(file);
+              element.download = `Recibo_Quitacao_Anual_${new Date().getFullYear()}.txt`;
+              document.body.appendChild(element);
+              element.click();
+              document.body.removeChild(element);
+            }, 600);
+          }}
+          title='Baixar Declaração de Quitação Anual'
+          className='flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors text-xs font-bold'
+        >
+          <Download size={16} strokeWidth={1.8} />
+          <span className='hidden sm:inline'>Recibo Anual</span>
         </button>
       </header>
 

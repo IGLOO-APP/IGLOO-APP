@@ -22,6 +22,7 @@ import { useAuth } from '../context/AuthContext';
 import { profileService } from '../services/profileService';
 import { propertyService } from '../services/propertyService';
 import { contractService } from '../services/tenancy/contractService';
+import { documentService } from '../services/documentService';
 
 interface VaultDocument {
   id: string;
@@ -70,10 +71,11 @@ const OwnerProfile: React.FC = () => {
       if (!user?.id) return;
       setLoading(true);
       try {
-        const [profile, properties, contracts] = await Promise.all([
+        const [profile, properties, contracts, userDocs] = await Promise.all([
           profileService.getById(user.id).catch(() => null),
           propertyService.getAll().catch(() => []),
           contractService.getAll().catch(() => []),
+          documentService.getByUser(user.id).catch(() => []),
         ]);
 
         if (profile) {
@@ -82,9 +84,9 @@ const OwnerProfile: React.FC = () => {
             email: profile.email || user.email || '',
             phone: profile.phone || '',
             cpf: profile.cpf || '',
-            companyName: profile.company_name || '',
-            bio: ((profile as Record<string, unknown>).bio as string) || '',
-            address: ((profile as Record<string, unknown>).address as string) || '',
+            companyName: profile.company_name || profile.company_cnpj || '',
+            bio: ((profile as Record<string, unknown>).occupation as string) || '',
+            address: profile.company_address || '',
             avatar: profile.avatar_url || user.avatar || '',
           });
         }
@@ -103,6 +105,18 @@ const OwnerProfile: React.FC = () => {
           occupancyRate: rate,
           totalTenants: activeCount,
         });
+
+        if (userDocs && userDocs.length > 0) {
+          setVaultDocs(
+            userDocs.map((d) => ({
+              id: d.id,
+              name: d.name,
+              url: d.url || '#',
+              uploadedAt: d.uploadDate,
+              size: d.size,
+            }))
+          );
+        }
       } catch (err) {
         console.error('Error fetching owner profile:', err);
       } finally {
@@ -122,8 +136,8 @@ const OwnerProfile: React.FC = () => {
         phone: profileData.phone || null,
         cpf: profileData.cpf || null,
         company_name: profileData.companyName || null,
-        bio: profileData.bio || null,
-        address: profileData.address || null,
+        occupation: profileData.bio || null,
+        company_address: profileData.address || null,
       });
 
       const { toast } = await import('sonner');
@@ -157,25 +171,50 @@ const OwnerProfile: React.FC = () => {
     }
   };
 
-  const handleDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user?.id) return;
 
-    const newDoc: VaultDocument = {
-      id: crypto.randomUUID(),
-      name: file.name,
-      url: URL.createObjectURL(file),
-      uploadedAt: new Date().toLocaleDateString('pt-BR'),
-      size: `${(file.size / 1024).toFixed(0)} KB`,
-    };
+    const { toast } = await import('sonner');
+    toast.loading('Enviando documento para o Cofre...', { id: 'vault-upload' });
 
-    setVaultDocs((prev) => [newDoc, ...prev]);
-    import('sonner').then(({ toast }) => toast.success('Documento adicionado ao Cofre!'));
+    try {
+      const created = await documentService.uploadVaultDocument(user.id, file);
+      if (created) {
+        setVaultDocs((prev) => [
+          {
+            id: created.id,
+            name: created.name,
+            url: created.url || '#',
+            uploadedAt: created.uploadDate,
+            size: created.size,
+          },
+          ...prev,
+        ]);
+        toast.success('Documento adicionado ao Cofre com sucesso!', { id: 'vault-upload' });
+      } else {
+        toast.error('Não foi possível salvar o documento.', { id: 'vault-upload' });
+      }
+    } catch (err) {
+      console.error('Error uploading vault document:', err);
+      toast.error('Erro ao enviar documento.', { id: 'vault-upload' });
+    }
   };
 
-  const handleRemoveDoc = (id: string) => {
-    setVaultDocs((prev) => prev.filter((d) => d.id !== id));
-    import('sonner').then(({ toast }) => toast.info('Documento removido.'));
+  const handleRemoveDoc = async (id: string) => {
+    const { toast } = await import('sonner');
+    try {
+      const success = await documentService.delete(id);
+      if (success) {
+        setVaultDocs((prev) => prev.filter((d) => d.id !== id));
+        toast.success('Documento removido.');
+      } else {
+        toast.error('Erro ao remover documento.');
+      }
+    } catch (err) {
+      console.error('Error removing document:', err);
+      toast.error('Erro ao remover documento.');
+    }
   };
 
   if (loading) {

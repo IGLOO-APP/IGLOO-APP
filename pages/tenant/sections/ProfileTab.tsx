@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { User, Star, Car, Briefcase, Activity, AlertCircle, CheckCircle, Building2, Heart, BookOpen } from 'lucide-react';
+import React from 'react';
+import { User, Star, Car, Briefcase, Activity, AlertCircle, CheckCircle, Building2, Heart, BookOpen, Info } from 'lucide-react';
 import { TenantProfileConfig } from '../../../types';
 
 interface ProfileTabProps {
@@ -17,6 +17,7 @@ interface ProfileTabProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setActiveTab: (tab: any) => void;
   calculateTimeAtCompany?: () => string;
+  handleCepChange?: (cep: string) => void;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
@@ -31,65 +32,98 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   handleSaveProfile,
   setActiveTab,
   calculateTimeAtCompany,
+  handleCepChange,
 }) => {
   return (
     <div className='animate-fadeIn pb-8 space-y-6'>
-      {/* Profile Completion Card */}
-      <div className='lg-card lg-card-lift p-6'>
-        <div className='flex justify-between items-center mb-4'>
-          <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>
-            Status do Perfil
-          </h4>
-          <span
-            className={`text-xs font-bold ${completionPercent === 100 ? 'text-emerald-500' : 'text-primary'}`}
-          >
-            {completionPercent}% ConcluÃ­do
-          </span>
-        </div>
-        <div className='h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-6'>
-          <div
-            className={`h-full transition-all duration-1000 ${completionPercent === 100 ? 'bg-emerald-500' : 'bg-primary'}`}
-            style={{ width: `${completionPercent}%` }}
-          />
+      {/* Profile Completion & Reputation Card */}
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+        <div className='md:col-span-2 lg-card lg-card-lift p-6'>
+          <div className='flex justify-between items-center mb-4'>
+            <h4 className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>
+              Status do Perfil
+            </h4>
+            <span
+              className={`text-xs font-bold ${completionPercent === 100 ? 'text-emerald-500' : 'text-primary'}`}
+            >
+              {completionPercent}% Concluído
+            </span>
+          </div>
+          <div className='h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-6'>
+            <div
+              className={`h-full transition-all duration-1000 ${completionPercent === 100 ? 'bg-emerald-500' : 'bg-primary'}`}
+              style={{ width: `${completionPercent}%` }}
+            />
+          </div>
+
+          {pendingItems.length > 0 ? (
+            <div className='space-y-3'>
+              <p className='text-[11px] text-slate-500 font-bold uppercase tracking-tight'>
+                Ações pendentes para 100%:
+              </p>
+              <div className='flex flex-wrap gap-2'>
+                {pendingItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      setActiveTab(item.tab as any);
+                      if (item.tab === 'profile') setIsEditing(true);
+                    }}
+                    className='px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary transition-all flex items-center gap-1.5'
+                  >
+                    <AlertCircle size={12} className='text-orange-500' />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className='flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20'>
+              <CheckCircle size={20} className='text-emerald-500' />
+              <p className='text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-tight'>
+                Perfil completo e verificado!
+              </p>
+            </div>
+          )}
         </div>
 
-        {pendingItems.length > 0 ? (
-          <div className='space-y-3'>
-            <p className='text-[11px] text-slate-500 font-bold uppercase tracking-tight'>
-              AÃ§Ãµes pendentes para 100%:
-            </p>
-            <div className='flex flex-wrap gap-2'>
-              {pendingItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    setActiveTab(item.tab as any);
-                    if (item.tab === 'profile') setIsEditing(true);
-                  }}
-                  className='px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary transition-all flex items-center gap-1.5'
-                >
-                  <AlertCircle size={12} className='text-orange-500' />
-                  {item.label}
-                </button>
-              ))}
+        {/* Reputation Badge */}
+        <div className='lg-card lg-card-lift p-6 flex flex-col justify-between border border-emerald-500/20 bg-emerald-500/5'>
+          <div>
+            <div className='flex items-center gap-2 mb-2'>
+              <Star size={18} className='text-amber-500 fill-amber-500' />
+              <span className='text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest'>
+                Reputação Igloo
+              </span>
             </div>
-          </div>
-        ) : (
-          <div className='flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20'>
-            <CheckCircle size={20} className='text-emerald-500' />
-            <p className='text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-tight'>
-              Perfil completo e verificado!
+            <p className='text-[11px] font-medium text-slate-500 dark:text-slate-400'>
+              Inquilino Nota A • Pontualidade Impecável
             </p>
           </div>
-        )}
+          <div className='mt-4 pt-4 border-t border-slate-200/50 dark:border-white/10 flex items-center justify-between'>
+            <span className='text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1'>
+              <CheckCircle size={12} /> 100% Pontual
+            </span>
+            <span className='px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest'>
+              Verificado
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSaveProfile} className='space-y-6'>
         {/* Tipo de Cadastro PF/PJ */}
         {config.sections.personal.occupation !== 'hidden' && (
-          <section className='lg-card lg-card-lift p-6'>
+          <section className='lg-card lg-card-lift p-6 space-y-4'>
+            <div className='p-4 bg-primary/10 rounded-2xl border border-primary/20 flex items-start gap-3'>
+              <Info size={18} className='text-primary shrink-0 mt-0.5' />
+              <p className='text-xs text-muted-foreground leading-relaxed font-medium'>
+                <strong className='text-foreground'>Por que precisamos dessa informação?</strong> Escolha entre Pessoa Física (CPF) ou Jurídica (CNPJ) para definir o modelo de contrato e a emissão dos comprovantes de locação.
+              </p>
+            </div>
+
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
                 Tipo de Cadastro
@@ -107,7 +141,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                         : 'text-slate-400 hover:text-slate-600'
                     } ${!isEditing ? 'opacity-70 cursor-default' : 'cursor-pointer'}`}
                   >
-                    {t === 'pf' ? 'Pessoa FÃ­sica' : 'Pessoa JurÃ­dica'}
+                    {t === 'pf' ? 'Pessoa Física' : 'Pessoa Jurídica'}
                   </button>
                 ))}
               </div>
@@ -116,11 +150,16 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         )}
 
         {/* Personal Info */}
-        <section className='lg-card lg-card-lift p-6'>
-          <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-            <User size={18} className='text-blue-500' />
-            InformaÃ§Ãµes Pessoais
-          </h3>
+        <section className='lg-card lg-card-lift p-6 space-y-6'>
+          <div>
+            <h3 className='font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm uppercase tracking-widest'>
+              <User size={18} className='text-blue-500' />
+              Informações Pessoais
+            </h3>
+            <p className='text-xs text-muted-foreground leading-relaxed font-medium mb-4'>
+              Seus dados de identificação básica são utilizados para preencher o contrato de locação e validar sua identidade com total segurança e sigilo.
+            </p>
+          </div>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div className='space-y-2'>
               <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
@@ -341,12 +380,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </section>
         ) : (
           <>
-            {/* EndereÃ§o Atual â€” expanded address fields */}
-            <section className='lg-card lg-card-lift p-6'>
-              <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-                <Car size={18} className='text-emerald-500' />
-                EndereÃ§o Atual
-              </h3>
+            {/* Endereço Atual */}
+            <section className='lg-card lg-card-lift p-6 space-y-6'>
+              <div>
+                <h3 className='font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                  <Car size={18} className='text-emerald-500' />
+                  Endereço Atual
+                </h3>
+                <p className='text-xs text-muted-foreground leading-relaxed font-medium mb-4'>
+                  Seu endereço atual é importante para comprovação de residência e cadastro no contrato de locação.
+                </p>
+              </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
@@ -356,7 +400,13 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     type='text'
                     value={profileData.cep}
                     readOnly={!isEditing}
-                    onChange={(e) => setProfileData({ ...profileData, cep: e.target.value })}
+                    onChange={(e) => {
+                      if (handleCepChange) {
+                        handleCepChange(e.target.value);
+                      } else {
+                        setProfileData({ ...profileData, cep: e.target.value });
+                      }
+                    }}
                     className={getFieldClass(profileData.cep)}
                     placeholder='00000-000'
                   />
@@ -375,7 +425,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    NÃºmero
+                    Número
                   </label>
                   <input
                     type='text'
@@ -436,7 +486,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Tempo de ResidÃªncia
+                    Tempo de Residência
                   </label>
                   <input
                     type='text'
@@ -450,12 +500,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </div>
             </section>
 
-            {/* VÃ­nculo EmpregatÃ­cio */}
-            <section className='lg-card lg-card-lift p-6'>
-              <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-                <Briefcase size={18} className='text-purple-500' />
-                VÃ­nculo EmpregatÃ­cio
-              </h3>
+            {/* Vínculo Empregatício */}
+            <section className='lg-card lg-card-lift p-6 space-y-6'>
+              <div>
+                <h3 className='font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                  <Briefcase size={18} className='text-purple-500' />
+                  Vínculo Empregatício e Renda
+                </h3>
+                <p className='text-xs text-muted-foreground leading-relaxed font-medium mb-4'>
+                  Estes dados servem para comprovação de renda e análise de crédito locatício, oferecendo segurança para você e para o proprietário.
+                </p>
+              </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
@@ -484,7 +539,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2 md:col-span-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    EndereÃ§o da Empresa
+                    Endereço da Empresa
                   </label>
                   <input
                     type='text'
@@ -510,7 +565,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    SalÃ¡rio / Renda Mensal
+                    Salário / Renda Mensal
                   </label>
                   <input
                     type='text'
@@ -522,7 +577,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Data de AdmissÃ£o
+                    Data de Admissão
                   </label>
                   <input
                     type='date'
@@ -543,12 +598,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                       ? calculateTimeAtCompany()
                       : profileData.admission_date
                         ? 'Calculando...'
-                        : 'â€”'}
+                        : '—'}
                   </div>
                 </div>
                 <div className='space-y-2'>
                   <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                    Tipo de VÃ­nculo
+                    Tipo de Vínculo
                   </label>
                   <select
                     disabled={!isEditing}
@@ -557,8 +612,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                     className={getFieldClass(profileData.employmentType)}
                   >
                     <option>CLT</option>
-                    <option>AutÃ´nomo</option>
-                    <option>EmpresÃ¡rio / PJ</option>
+                    <option>Autônomo</option>
+                    <option>Empresário / PJ</option>
                     <option>Aposentado / Pensionista</option>
                     <option>Outros</option>
                   </select>
@@ -568,17 +623,22 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </>
         )}
 
-        {/* CÃ´njuge â€” only shown for PF when casado */}
+        {/* Cônjuge */}
         {profileData.tenantType !== 'pj' && profileData.maritalStatus === 'casado' && (
-          <section className='lg-card lg-card-lift p-6'>
-            <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-              <Heart size={18} className='text-pink-500' />
-              CÃ´njuge
-            </h3>
+          <section className='lg-card lg-card-lift p-6 space-y-6'>
+            <div>
+              <h3 className='font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                <Heart size={18} className='text-pink-500' />
+                Dados do Cônjuge
+              </h3>
+              <p className='text-xs text-muted-foreground leading-relaxed font-medium mb-4'>
+                Para pessoas casadas, os dados do cônjuge são necessários para constar como co-locatário ou anuente no contrato.
+              </p>
+            </div>
             <div className='space-y-4'>
               <div className='space-y-2'>
                 <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                  Possui cÃ´njuge?
+                  Possui cônjuge?
                 </label>
                 <select
                   disabled={!isEditing}
@@ -586,7 +646,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   onChange={(e) => setProfileData({ ...profileData, hasSpouse: e.target.value })}
                   className={getFieldClass(profileData.hasSpouse)}
                 >
-                  <option value='NÃ£o'>NÃ£o</option>
+                  <option value='Não'>Não</option>
                   <option value='Sim'>Sim</option>
                 </select>
               </div>
@@ -655,7 +715,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   </div>
                   <div className='space-y-2'>
                     <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
-                      ProfissÃ£o
+                      Profissão
                     </label>
                     <input
                       type='text'
@@ -684,17 +744,22 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </section>
         )}
 
-        {/* ReferÃªncias â€” only shown for PF */}
+        {/* Referências */}
         {profileData.tenantType !== 'pj' && (
-          <section className='lg-card lg-card-lift p-6'>
-            <h3 className='font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 text-sm uppercase tracking-widest'>
-              <BookOpen size={18} className='text-indigo-500' />
-              ReferÃªncias
-            </h3>
+          <section className='lg-card lg-card-lift p-6 space-y-6'>
+            <div>
+              <h3 className='font-black text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm uppercase tracking-widest'>
+                <BookOpen size={18} className='text-indigo-500' />
+                Referências Comerciais e Pessoais
+              </h3>
+              <p className='text-xs text-muted-foreground leading-relaxed font-medium mb-4'>
+                Referências opcionais que aumentam seu Score de Reputação no Igloo e agilizam a aprovação de novos contratos.
+              </p>
+            </div>
             <div className='space-y-6'>
               <div className='p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10'>
                 <p className='text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
-                  ReferÃªncia BancÃ¡ria <span className='text-slate-300'>(opcional)</span>
+                  Referência Bancária <span className='text-slate-300'>(opcional)</span>
                 </p>
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                   <div className='space-y-2'>

@@ -41,6 +41,7 @@ const TenantProfile: React.FC = () => {
     guarantorFileResidence,
     setGuarantorFileResidence,
     calculateTimeAtCompany,
+    handleCepChange,
     spouse,
   } = useTenantProfile();
 
@@ -149,6 +150,7 @@ const TenantProfile: React.FC = () => {
             handleSaveProfile={handleSaveProfile}
             setActiveTab={setActiveTab}
             calculateTimeAtCompany={calculateTimeAtCompany}
+            handleCepChange={handleCepChange}
           />
         )}
 

@@ -330,4 +330,92 @@ export const documentService = {
     }
     return true;
   },
+
+  async getByUser(userId: string): Promise<PropertyDocument[]> {
+    const { data, error } = await supabase
+      .from('property_documents')
+      .select('*')
+      .eq('tenant_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[documentService] Error fetching user vault docs:', error);
+      return [];
+    }
+
+    return data.map((doc) => ({
+      id: doc.id,
+      name: doc.name,
+      category: doc.category as PropertyDocument['category'],
+      type: doc.type,
+      size: doc.size || '0 KB',
+      status: (doc.status as PropertyDocument['status']) || 'Validado',
+      uploadDate: doc.created_at ? new Date(doc.created_at).toLocaleDateString('pt-BR') : 'N/A',
+      url: doc.url || undefined,
+      document_type: doc.document_type || undefined,
+      tenant_id: doc.tenant_id || undefined,
+    }));
+  },
+
+  async uploadVaultDocument(userId: string, file: File): Promise<PropertyDocument | null> {
+    const fileExt = file.name.split('.').pop() || 'pdf';
+    const filePath = `vault/${userId}/${crypto.randomUUID()}.${fileExt}`;
+
+    let publicUrl: string | null = null;
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, { upsert: true });
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from('documents').getPublicUrl(filePath);
+        publicUrl = data?.publicUrl || null;
+      }
+    } catch (err) {
+      console.warn('[documentService] Storage upload failed, falling back to data URL:', err);
+    }
+
+    if (!publicUrl) {
+      publicUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('property_documents')
+      .insert({
+        name: file.name,
+        category: 'Outros',
+        type: fileExt.toUpperCase(),
+        size: `${(file.size / 1024).toFixed(0)} KB`,
+        status: 'Validado',
+        url: publicUrl,
+        document_type: 'vault_document',
+        tenant_id: userId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[documentService] Error inserting vault doc record:', error);
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      category: data.category as PropertyDocument['category'],
+      type: data.type,
+      size: data.size || '0 KB',
+      status: 'Validado',
+      uploadDate: data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : 'N/A',
+      url: data.url || undefined,
+      document_type: data.document_type || undefined,
+      tenant_id: data.tenant_id || undefined,
+    };
+  },
 };
+

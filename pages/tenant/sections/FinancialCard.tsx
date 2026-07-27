@@ -277,7 +277,7 @@ export const FinancialCard: React.FC<FinancialCardProps> = ({
               label: 'Enviar Foto',
               desc: 'Registre problemas',
               color: 'bg-blue-100 text-blue-600',
-              action: () => onNavigate('/tenant/maintenance'),
+              action: () => onNavigate('/tenant/messages'),
             },
             {
               icon: FileText,

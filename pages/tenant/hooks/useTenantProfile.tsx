@@ -597,6 +597,32 @@ export const useTenantProfile = () => {
     }`;
   };
 
+  const handleCepChange = async (cepRaw: string) => {
+    setProfileData((prev) => ({ ...prev, cep: cepRaw }));
+    const cleaned = cepRaw.replace(/\D/g, '');
+    if (cleaned.length === 8) {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.erro) {
+            setProfileData((prev) => ({
+              ...prev,
+              street: data.logradouro || prev.street,
+              neighborhood: data.bairro || prev.neighborhood,
+              city: data.localidade || prev.city,
+              state: data.uf || prev.state,
+            }));
+            const { toast } = await import('sonner');
+            toast.success('Endereço localizado via CEP!');
+          }
+        }
+      } catch {
+        /* ignore fetch error */
+      }
+    }
+  };
+
   const calculateTimeAtCompany = (): string => {
     if (!profileData.admission_date) return '';
     const admission = new Date(profileData.admission_date);
@@ -651,6 +677,7 @@ export const useTenantProfile = () => {
     guarantorFileResidence,
     setGuarantorFileResidence,
     calculateTimeAtCompany,
+    handleCepChange,
     spouse,
   };
 };

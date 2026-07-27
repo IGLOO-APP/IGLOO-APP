@@ -51,13 +51,7 @@ const TenantMaintenance: React.FC = () => {
   const [newCategory, setNewCategory] = useState('');
   const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open');
   const [searchTerm, setSearchTerm] = useState('');
-  const [pendingTicket, setPendingTicket] = useState<{
-    id: string;
-    title: string;
-    category: string;
-    created_at: string;
-    status?: string;
-  } | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // ─── Data Queries ────────────────────────────────────────
@@ -128,6 +122,7 @@ const TenantMaintenance: React.FC = () => {
           ticketTitle: req.title,
           ticketStatus: req.status,
           ticketId: req.id,
+          requestId: req.id,
         });
       }
 
@@ -155,8 +150,11 @@ const TenantMaintenance: React.FC = () => {
 
   const activeTicket =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    requests.find((r: any) => r.id === selectedTicketId) ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     requests.find((r: any) => ['pending', 'in_progress', 'open'].includes(r.status)) ||
-    pendingTicket;
+    pendingTicket ||
+    requests[0];
 
   const activeTicketMessages = activeTicket
     ? allMessages.filter(
@@ -165,15 +163,9 @@ const TenantMaintenance: React.FC = () => {
       )
     : [];
 
-  const hasOwnerResponse = activeTicketMessages.some(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (m: any) => m.sender_role === 'owner' || m.sender_role === 'admin'
-  );
-
   const shouldDisableInput =
     (isCreating && !newCategory) ||
-    (!isCreating && !activeTicket) ||
-    (!isCreating && activeTicket && !hasOwnerResponse);
+    (!isCreating && !activeTicket);
 
   const filteredRequests = requests.filter((r) => {
     const isClosed = ['completed', 'resolved'].includes(r.status);
@@ -224,6 +216,7 @@ const TenantMaintenance: React.FC = () => {
         created_at: data.created_at,
         status: 'open',
       });
+      setSelectedTicketId(data.id);
       queryClient.invalidateQueries({ queryKey: ['tenant_maintenance_tickets'] });
       queryClient.invalidateQueries({ queryKey: ['tenant_all_maintenance_messages'] });
       setIsCreating(false);
@@ -248,21 +241,9 @@ const TenantMaintenance: React.FC = () => {
     },
   });
 
-  const scrollToTicket = (ticketId: string) => {
-    const element = document.getElementById(`ticket_${ticketId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Add a brief highlight effect
-      element.classList.add('ring-2', 'ring-primary', 'ring-offset-4', 'ring-offset-[#050608]');
-      setTimeout(() => {
-        element.classList.remove(
-          'ring-2',
-          'ring-primary',
-          'ring-offset-4',
-          'ring-offset-[#050608]'
-        );
-      }, 2000);
-    }
+  const handleSelectTicket = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setIsCreating(false);
   };
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -338,35 +319,54 @@ const TenantMaintenance: React.FC = () => {
             </div>
           )}
 
-          {displayRequests.map((req) => (
-            <button
-              key={req.id}
-              onClick={() => scrollToTicket(req.id)}
-              className='w-full p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.04] text-left transition-colors group'
-            >
-              <div className='flex justify-between items-start mb-2'>
-                <span className='text-[8px] font-black text-slate-500 uppercase tracking-widest'>
-                  {req.category}
-                </span>
-                <div
-                  className={`w-1.5 h-1.5 rounded-full ${['completed', 'resolved'].includes(req.status || '') ? 'bg-emerald-500' : 'bg-orange-500'}`}
-                />
-              </div>
-              <h3 className='text-xs font-bold text-white/90 line-clamp-1 group-hover:text-primary transition-colors'>
-                {req.title}
-              </h3>
-              <div className='flex items-center justify-between mt-3'>
-                <span className='text-[9px] font-bold text-slate-600'>
-                  {new Date(req.created_at).toLocaleDateString()}
-                </span>
-                <ChevronRight
-                  size={12}
-                  strokeWidth={1.8}
-                  className='text-slate-700 group-hover:translate-x-1 transition-transform'
-                />
-              </div>
-            </button>
-          ))}
+          {displayRequests.map((req) => {
+            const isSelected = activeTicket?.id === req.id;
+            return (
+              <button
+                key={req.id}
+                onClick={() => handleSelectTicket(req.id)}
+                className={`w-full p-4 rounded-2xl border text-left transition-all group ${
+                  isSelected
+                    ? 'bg-primary/10 border-primary/40 shadow-lg shadow-primary/5'
+                    : 'bg-white/5 border-white/5 hover:bg-white/[0.08]'
+                }`}
+              >
+                <div className='flex justify-between items-start mb-2'>
+                  <span
+                    className={`text-[8px] font-black uppercase tracking-widest ${
+                      isSelected ? 'text-primary' : 'text-slate-500'
+                    }`}
+                  >
+                    {req.category}
+                  </span>
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full ${['completed', 'resolved'].includes(req.status || '') ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                  />
+                </div>
+                <h3
+                  className={`text-xs font-bold line-clamp-1 transition-colors ${
+                    isSelected ? 'text-white font-black' : 'text-white/90 group-hover:text-primary'
+                  }`}
+                >
+                  {req.title}
+                </h3>
+                <div className='flex items-center justify-between mt-3'>
+                  <span className='text-[9px] font-bold text-slate-600'>
+                    {new Date(req.created_at).toLocaleDateString()}
+                  </span>
+                  <ChevronRight
+                    size={12}
+                    strokeWidth={1.8}
+                    className={`transition-transform ${
+                      isSelected
+                        ? 'text-primary translate-x-1'
+                        : 'text-slate-700 group-hover:translate-x-1'
+                    }`}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -380,10 +380,10 @@ const TenantMaintenance: React.FC = () => {
             </div>
             <div>
               <h2 className='text-xs font-black text-white uppercase tracking-widest'>
-                Histórico de Conversa
+                {activeTicket ? activeTicket.title : 'Central de Comunicação'}
               </h2>
               <p className='text-[10px] font-bold text-slate-500'>
-                Central unificada de manutenção
+                {activeTicket ? `Chamado #${activeTicket.id.slice(0, 6)} • ${activeTicket.category}` : 'Central unificada de manutenção e suporte'}
               </p>
             </div>
           </div>
@@ -391,7 +391,7 @@ const TenantMaintenance: React.FC = () => {
 
         {/* Messages Scroll Area */}
         <div className='flex-1 overflow-y-auto px-6 py-8 space-y-6 custom-scrollbar'>
-          {allMessages.map((msg) => {
+          {(activeTicket ? activeTicketMessages : allMessages).map((msg) => {
             // Evento: Ticket Criado
             if (msg.type === 'ticket_created') {
               return (
@@ -566,9 +566,28 @@ const TenantMaintenance: React.FC = () => {
               )}
 
               {newCategory && (
-                <div className='flex justify-end'>
-                  <div className='px-4 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest'>
-                    {newCategory}
+                <div className='space-y-3 bg-white/5 p-4 rounded-2xl border border-white/5'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-[10px] font-black uppercase tracking-widest text-slate-400'>
+                      Categoria:
+                    </span>
+                    <span className='px-3 py-1 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest'>
+                      {newCategory}
+                    </span>
+                  </div>
+                  <div className='space-y-1.5 pt-2 border-t border-white/5'>
+                    <label className='text-[10px] font-black uppercase tracking-widest text-slate-400'>
+                      Horário Preferencial para Visita Técnica:
+                    </label>
+                    <select
+                      className='w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-white focus:ring-1 focus:ring-primary'
+                      defaultValue='Manhã (08h - 12h)'
+                    >
+                      <option value='Manhã (08h - 12h)'>Manhã (08h - 12h)</option>
+                      <option value='Tarde (13h - 18h)'>Tarde (13h - 18h)</option>
+                      <option value='Noite (18h - 21h)'>Noite (18h - 21h)</option>
+                      <option value='Fim de Semana'>Fim de Semana</option>
+                    </select>
                   </div>
                 </div>
               )}
@@ -610,9 +629,32 @@ const TenantMaintenance: React.FC = () => {
             className='relative max-w-4xl mx-auto'
           >
             <div className='absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2'>
+              <input
+                type='file'
+                id='tenant-attachment-input'
+                className='hidden'
+                accept='image/*,.pdf,.doc,.docx'
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !activeTicket) return;
+                  const { toast } = await import('sonner');
+                  toast.loading('Enviando anexo...', { id: 'file-upload' });
+                  try {
+                    const publicUrl = await messageService.uploadFile(file);
+                    await sendMessageMutation.mutateAsync(`[Anexo enviado](${publicUrl})`);
+                    toast.success('Anexo enviado com sucesso!', { id: 'file-upload' });
+                  } catch (err) {
+                    console.error('Error uploading file:', err);
+                    toast.error('Erro ao enviar anexo.', { id: 'file-upload' });
+                  }
+                }}
+              />
               <button
                 type='button'
-                className='p-2 text-slate-600 hover:text-primary transition-colors'
+                onClick={() => document.getElementById('tenant-attachment-input')?.click()}
+                disabled={!activeTicket || isCreating}
+                className='p-2 text-slate-600 hover:text-primary transition-colors disabled:opacity-40'
+                title='Anexar imagem ou documento'
               >
                 <Paperclip size={20} strokeWidth={1.8} />
               </button>
@@ -627,9 +669,7 @@ const TenantMaintenance: React.FC = () => {
                   ? 'Descreva o problema e aperte Enter...'
                   : !activeTicket
                     ? 'Nenhum chamado ativo'
-                    : !hasOwnerResponse
-                      ? 'Aguardando resposta do proprietário...'
-                      : 'Escreva uma mensagem...'
+                    : 'Escreva uma mensagem...'
               }
               className='w-full h-14 pl-14 pr-20 bg-white/5 border border-white/5 rounded-2xl text-sm font-medium text-white placeholder-slate-700 focus:ring-1 focus:ring-primary/40 focus:bg-white/[0.07] transition-all'
             />
